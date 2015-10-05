@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleHandler", "ConsoleHandler\ConsoleHandler.csproj", "{331FAD45-5DF2-4ED2-B23A-B486DF9D4C32}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocationHandler", "LocationHandler\LocationHandler.csproj", "{C6C143C9-82C4-4A1D-8722-26A140046B62}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{331FAD45-5DF2-4ED2-B23A-B486DF9D4C32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{331FAD45-5DF2-4ED2-B23A-B486DF9D4C32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{331FAD45-5DF2-4ED2-B23A-B486DF9D4C32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{331FAD45-5DF2-4ED2-B23A-B486DF9D4C32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6C143C9-82C4-4A1D-8722-26A140046B62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6C143C9-82C4-4A1D-8722-26A140046B62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6C143C9-82C4-4A1D-8722-26A140046B62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6C143C9-82C4-4A1D-8722-26A140046B62}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
