@@ -87,7 +87,7 @@ namespace ConsoleHandler
             List<Location> Map = new List<Location>();
 
             galway.name = "Galway";
-            galway.abbreviation = "GAL";
+            galway.abbreviation = "GAW";
             galway.type = LocationType.Town;
             galway.isEastern = false;
             galway.byRoad.Add(dublin);
@@ -638,7 +638,7 @@ namespace ConsoleHandler
             Map.Add(bucharest);
 
             galatz.name = "Galatz";
-            galatz.abbreviation = "GAL";
+            galatz.abbreviation = "GAT";
             galatz.type = LocationType.Town;
             galatz.isEastern = true;
             galatz.byRoad.Add(klausenburg);
@@ -657,6 +657,17 @@ namespace ConsoleHandler
             varna.byTrain.Add(sofia);
             varna.bySea.Add(blacksea);
             Map.Add(varna);
+
+            constanta.name = "Constanta";
+            constanta.abbreviation = "CON";
+            constanta.type = LocationType.City;
+            constanta.isEastern = true;
+            constanta.byRoad.Add(galatz);
+            constanta.byRoad.Add(varna);
+            constanta.byRoad.Add(bucharest);
+            constanta.byTrain.Add(bucharest);
+            constanta.bySea.Add(blacksea);
+            Map.Add(constanta);
 
             string line;
             string command;
