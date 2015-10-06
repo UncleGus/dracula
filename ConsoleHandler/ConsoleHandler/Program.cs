@@ -571,6 +571,93 @@ namespace ConsoleHandler
             szeged.byTrain.Add(belgrade);
             Map.Add(szeged);
 
+            budapest.name = "Budapest";
+            budapest.abbreviation = "BUD";
+            budapest.type = LocationType.City;
+            budapest.isEastern = true;
+            budapest.byRoad.Add(vienna);
+            budapest.byRoad.Add(klausenburg);
+            budapest.byRoad.Add(szeged);
+            budapest.byRoad.Add(zagreb);
+            budapest.byTrain.Add(vienna);
+            budapest.byTrain.Add(szeged);
+            Map.Add(budapest);
+
+            belgrade.name = "Belgrade";
+            belgrade.abbreviation = "BEL";
+            belgrade.type = LocationType.Town;
+            belgrade.isEastern = true;
+            belgrade.byRoad.Add(stjosephandstmary);
+            belgrade.byRoad.Add(szeged);
+            belgrade.byRoad.Add(klausenburg);
+            belgrade.byRoad.Add(bucharest);
+            belgrade.byRoad.Add(sofia);
+            belgrade.byRoad.Add(sarajevo);
+            belgrade.byTrain.Add(szeged);
+            belgrade.byTrain.Add(sofia);
+            Map.Add(belgrade);
+
+            klausenburg.name = "Klausenburg";
+            klausenburg.abbreviation = "KLA";
+            klausenburg.type = LocationType.Town;
+            klausenburg.isEastern = true;
+            klausenburg.byRoad.Add(budapest);
+            klausenburg.byRoad.Add(castledracula);
+            klausenburg.byRoad.Add(galatz);
+            klausenburg.byRoad.Add(bucharest);
+            klausenburg.byRoad.Add(belgrade);
+            klausenburg.byRoad.Add(szeged);
+            Map.Add(klausenburg);
+
+            sofia.name = "Sofia";
+            sofia.abbreviation = "SOF";
+            sofia.type = LocationType.Town;
+            sofia.isEastern = true;
+            sofia.byRoad.Add(sarajevo);
+            sofia.byRoad.Add(belgrade);
+            sofia.byRoad.Add(bucharest);
+            sofia.byRoad.Add(varna);
+            sofia.byRoad.Add(salonica);
+            sofia.byRoad.Add(valona);
+            sofia.byTrain.Add(belgrade);
+            sofia.byTrain.Add(salonica);
+            Map.Add(sofia);
+
+            bucharest.name = "Bucharest";
+            bucharest.abbreviation = "BUC";
+            bucharest.type = LocationType.City;
+            bucharest.isEastern = true;
+            bucharest.byRoad.Add(belgrade);
+            bucharest.byRoad.Add(klausenburg);
+            bucharest.byRoad.Add(galatz);
+            bucharest.byRoad.Add(constanta);
+            bucharest.byRoad.Add(sofia);
+            bucharest.byTrain.Add(szeged);
+            bucharest.byTrain.Add(galatz);
+            bucharest.byTrain.Add(constanta);
+            Map.Add(bucharest);
+
+            galatz.name = "Galatz";
+            galatz.abbreviation = "GAL";
+            galatz.type = LocationType.Town;
+            galatz.isEastern = true;
+            galatz.byRoad.Add(klausenburg);
+            galatz.byRoad.Add(castledracula);
+            galatz.byRoad.Add(constanta);
+            galatz.byRoad.Add(bucharest);
+            galatz.byTrain.Add(bucharest);
+            Map.Add(galatz);
+
+            varna.name = "Varna";
+            varna.abbreviation = "VAR";
+            varna.type = LocationType.City;
+            varna.isEastern = true;
+            varna.byRoad.Add(sofia);
+            varna.byRoad.Add(constanta);
+            varna.byTrain.Add(sofia);
+            varna.bySea.Add(blacksea);
+            Map.Add(varna);
+
             string line;
             string command;
             string argument1;
