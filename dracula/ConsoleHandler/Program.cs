@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using LocationHandler;
+using DraculaHandler;
 
 namespace ConsoleHandler
 {
@@ -907,6 +908,11 @@ namespace ConsoleHandler
             blacksea.bySea.Add(constanta);
             Map.Add(blacksea);
 
+            Dracula dracula = new Dracula(Map[new Random().Next(0, Map.Count())]);
+
+            int time = 5;
+            string[] timesOfDay = new string[6] { "Dawn", "Noon", "Dusk", "Twilight", "Midnight", "Small Hours" };
+
             string line;
             string command;
             string argument1;
@@ -934,8 +940,18 @@ namespace ConsoleHandler
                 switch (command)
                 {
                     case "s": LocationHelper.ShowLocationDetails(GetLocationFromName(argument1, Map)); break;
+                    case "d": dracula.ShowLocation(); break;
+                    case "m":
+                        {
+                            time = (time + 1) % 6;
+                            dracula.MoveDracula(time);
+                            break;
+                        }
+                    case "t": dracula.ShowTrail(); break;
+                    case "exit": break;
                     default: Console.WriteLine("I don't know what you're talking about"); break;
                 }
+                Console.WriteLine("The time is " + timesOfDay[time]);
 
             } while (command != "exit");
         }
