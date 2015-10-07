@@ -15,17 +15,44 @@ namespace LocationHandler
         public List<Location> byRoad;
         public List<Location> byTrain;
         public List<Location> bySea;
+        public bool isRevealed;
 
         public Location()
         {
             byRoad = new List<Location>();
             byTrain = new List<Location>();
             bySea = new List<Location>();
+            isRevealed = false;
         }
 
         public bool IsPort()
         {
             return bySea.Count() > 0 && (type == LocationType.Town || type == LocationType.City);
+        }
+
+        public void DrawLocation()
+        {
+            if (type == LocationType.Sea)
+            {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+            }
+            else if (type == LocationType.Power)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
+            } else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+            }
+
+            if (isRevealed)
+            {
+                Console.Write(abbreviation + " ");
+            }
+            else
+            {
+                Console.Write("### ");
+            }
+            Console.ResetColor();
         }
     }
 
@@ -35,7 +62,8 @@ namespace LocationHandler
         City,
         Sea,
         Castle,
-        Hospital
+        Hospital,
+        Power
     }
 
     public static class LocationHelper
@@ -74,6 +102,15 @@ namespace LocationHandler
                     Console.WriteLine("    " + location.bySea[i].name);
                 }
             }
+        }
+
+        public static void RevealLocation(List<Location> trail, int trailIndex)
+        {
+            try
+            {
+                trail[trailIndex].isRevealed = true;
+            } catch (ArgumentOutOfRangeException)
+            { }
         }
 
     }

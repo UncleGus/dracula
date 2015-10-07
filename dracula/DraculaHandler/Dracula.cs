@@ -64,7 +64,6 @@ namespace DraculaHandler
             if (chosenActionIndex > possibleMoves.Count() - 1)
             {
                 chosenActionIndex -= possibleMoves.Count();
-                Console.WriteLine("Dracula used " + possiblePowers[chosenActionIndex].name);
 
                 if (possiblePowers[chosenActionIndex].name == "Dark Call" || possiblePowers[chosenActionIndex].name == "Feed" || possiblePowers[chosenActionIndex].name == "Hide")
                 {
@@ -72,21 +71,46 @@ namespace DraculaHandler
                     Location powerCard = new Location();
                     powerCard.name = possiblePowers[chosenActionIndex].name;
                     powerCard.abbreviation = possiblePowers[chosenActionIndex].name.Substring(0, 3).ToUpper();
+                    if (powerCard.name != "Hide")
+                    {
+                        powerCard.isRevealed = true;
+                        powerCard.type = LocationType.Power;
+                    }
                     trail.Insert(0, powerCard);
-                    while (trail.Count() > 6)
-                    {
-                        trail.Remove(trail.Last());
-                    }
-                    for (int i = 0; i < powers.Count(); i++)
-                    {
-                        powers[i].positionInTrail++;
-                    }
+                    MovePowersAlongTrail();
+                    TrimTrail(6);
 
                 }
                 else if (possiblePowers[chosenActionIndex].name == "Double Back")
                 {
                     // choose a location from the possible double back moves
                     int doubleBackLocation = new Random().Next(0, possibleDoubleBackMoves.Count());
+
+                    int doubleBackPositionInTrail = trail.FindIndex(location => location == possibleDoubleBackMoves[doubleBackLocation]);
+                    if (doubleBackPositionInTrail > 0)
+                    {
+                        if (trail[doubleBackPositionInTrail - 1].name == "Hide")
+                        {
+                            Console.WriteLine("Dracula Doubled Back to a location where he previously used Hide");
+                            RevealHide(doubleBackPositionInTrail - 1);
+                        }
+                        else if (doubleBackPositionInTrail > 1)
+                        {
+                            if (trail[doubleBackPositionInTrail - 1].type == LocationType.Power && trail[doubleBackPositionInTrail - 2].name == "Hide")
+                            {
+                                Console.WriteLine("Dracula Doubled Back to a location where he previously used Hide");
+                                RevealHide(doubleBackPositionInTrail - 2);
+                            }
+                            else if (doubleBackPositionInTrail > 2)
+                            {
+                                if (trail[doubleBackPositionInTrail - 1].type == LocationType.Power && trail[doubleBackPositionInTrail - 2].type == LocationType.Power && trail[doubleBackPositionInTrail - 3].name == "Hide")
+                                {
+                                    Console.WriteLine("Dracula Doubled Back to a location where he previously used Hide");
+                                    RevealHide(doubleBackPositionInTrail - 3);
+                                }
+                            }
+                        }
+                    }
 
                     // move location to the front of the trail
                     Location tempLocation = possibleDoubleBackMoves[doubleBackLocation];
@@ -106,6 +130,7 @@ namespace DraculaHandler
                             powers[i].positionInTrail++;
                         }
                     }
+
                 }
                 else if (possiblePowers[chosenActionIndex].name == "Wolf Form")
                 {
@@ -171,7 +196,10 @@ namespace DraculaHandler
 
             for (int i = 0; i < trail.Count(); i++)
             {
-                possibleDoubleBackMoves.Add(trail[i]);
+                if (trail[i].name != "Dark Call" && trail[i].name != "Hide" && trail[i].name != "Feed")
+                {
+                    possibleDoubleBackMoves.Add(trail[i]);
+                }
                 possibleMoves.Remove(trail[i]);
             }
             possibleDoubleBackMoves.Remove(currentLocation);
@@ -179,14 +207,12 @@ namespace DraculaHandler
 
         public void determinePossibleWolfFormLocations()
         {
-            // remove sea locations from possible moves
-            for (int i = 0; i < possibleMoves.Count(); i++)
+            possibleMoves.Clear();
+            for (int i = 0; i < currentLocation.byRoad.Count(); i++)
             {
-                if (possibleMoves[i].type == LocationType.Sea)
-                {
-                    possibleMoves.Remove(possibleMoves[i]);
-                }
+                possibleMoves.Add(currentLocation.byRoad[i]);
             }
+
             // extend every remaining location by road
             List<Location> extendedLocations = new List<Location>();
             for (int i = 0; i < possibleMoves.Count(); i++)
@@ -202,6 +228,10 @@ namespace DraculaHandler
             }
             possibleMoves.AddRange(extendedLocations);
             possibleMoves.Remove(currentLocation);
+            for (int i = 0; i < trail.Count(); i++)
+            {
+                possibleMoves.Remove(trail[i]);
+            }
 
         }
 
@@ -225,14 +255,53 @@ namespace DraculaHandler
             currentLocation = possibleMoves[new Random().Next(0, possibleMoves.Count())];
 
             trail.Insert(0, currentLocation);
-            while (trail.Count() > 6)
+            MovePowersAlongTrail();
+            TrimTrail(6);
+        }
+
+        public void TrimTrail(int length)
+        {
+            while (trail.Count() > length)
             {
+                for (int i = 0; i < powers.Count(); i++)
+                {
+                    if (powers[i].positionInTrail > length - 1)
+                    {
+                        powers[i].positionInTrail = 6;
+                    }
+                }
+                trail.Last().isRevealed = false;
                 trail.Remove(trail.Last());
             }
+        }
+
+        public void MovePowersAlongTrail()
+        {
             for (int i = 0; i < powers.Count(); i++)
             {
                 powers[i].positionInTrail++;
             }
+        }
+
+        public void RevealHide(int hideIndex)
+        {
+            // remove Hide from the trail
+            trail.Remove(trail[hideIndex]);
+            // move all power cards beyond that point up one position
+            for (int i = 0; i < powers.Count(); i++)
+            {
+                if (powers[i].name == "Hide")
+                {
+                    powers[i].positionInTrail = 6;
+                }
+                else if (powers[i].positionInTrail > hideIndex && powers[i].positionInTrail < 6)
+                {
+                    powers[i].positionInTrail--;
+                }
+            }
+            // set Hide position out of the trail
+
+            Console.WriteLine("Dracula was hiding");
         }
 
     }

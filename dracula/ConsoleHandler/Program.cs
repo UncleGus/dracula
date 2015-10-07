@@ -487,7 +487,7 @@ namespace ConsoleHandler
             Map.Add(florence);
 
             venice.name = "Venice";
-            venice.abbreviation = "Ven";
+            venice.abbreviation = "VEN";
             venice.type = LocationType.Town;
             venice.isEastern = true;
             venice.byRoad.Add(florence);
@@ -918,7 +918,7 @@ namespace ConsoleHandler
             string argument1;
             do
             {
-                drawTrail(dracula.trail, dracula.powers);
+                drawTrail(dracula.trail, dracula.powers, timesOfDay[time]);
                 line = Console.ReadLine();
                 try
                 {
@@ -949,11 +949,49 @@ namespace ConsoleHandler
                             break;
                         }
                     case "t": dracula.ShowTrail(); break;
+                    case "r":
+                        {
+                            int trailIndex;
+                            if (int.TryParse(argument1, out trailIndex))
+                            {
+                                try
+                                {
+                                    if (dracula.trail[trailIndex - 1].name == "Hide")
+                                    {
+                                        dracula.RevealHide(trailIndex - 1);
+                                    }
+                                    else
+                                    {
+                                        LocationHelper.RevealLocation(dracula.trail, trailIndex - 1);
+                                    }
+                                }
+                                catch (ArgumentOutOfRangeException)
+                                {
+                                    Console.WriteLine("Unable to reveal card " + argument1);
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("Unable to reveal card " + argument1);
+                            }
+                            break;
+                        }
+                    case "c":
+                        {
+                            int trailLength;
+                            if (int.TryParse(argument1, out trailLength))
+                            {
+                                dracula.TrimTrail(Math.Max(1, trailLength));
+                            }
+                            else
+                            {
+                                Console.WriteLine("Unable to clear Dracula's trail to length " + argument1);
+                            }
+                            break;
+                        }
                     case "exit": break;
                     default: Console.WriteLine("I don't know what you're talking about"); break;
                 }
-                Console.WriteLine("The time is " + timesOfDay[time]);
-
             } while (command != "exit");
         }
 
@@ -971,65 +1009,90 @@ namespace ConsoleHandler
             return unknownLocation;
         }
 
-        public static void drawTrail(List<Location> trail, List<DraculaPower> powers)
+        public static void drawTrail(List<Location> trail, List<DraculaPower> powers, string timeOfDay)
         {
-            Console.WriteLine("6th 5th 4th 3rd 2nd 1st");
-            string trailString = trail[0].abbreviation;
-            if (trail.Count() > 1)
+            Console.WriteLine("6th 5th 4th 3rd 2nd 1st   Time");
+            for (int i = 5; i >= 0; i--)
             {
-                trailString = trail[1].abbreviation + " " + trailString;
-                if (trail.Count() > 2)
+                if (i + 1 > trail.Count())
                 {
-                    trailString = trail[2].abbreviation + " " + trailString;
-                    if (trail.Count() > 3)
+                    Console.Write("    ");
+                }
+                else
+                {
+                    trail[i].DrawLocation();
+                }
+            }
+
+            switch (timeOfDay)
+            {
+                case "Dawn": Console.ForegroundColor = ConsoleColor.DarkYellow; break;
+                case "Noon": Console.ForegroundColor = ConsoleColor.Yellow; break;
+                case "Dusk": Console.ForegroundColor = ConsoleColor.DarkYellow; break;
+                case "Twilight": Console.ForegroundColor = ConsoleColor.Cyan; break;
+                case "Midnight": Console.ForegroundColor = ConsoleColor.Blue; break;
+                case "Small Hours": Console.ForegroundColor = ConsoleColor.Cyan; break;
+            }
+            Console.WriteLine("  " + timeOfDay);
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            string powerString;
+            for (int counter = 5; counter > -1; counter--)
+            {
+                powerString = "    ";
+                for (int i = 0; i < powers.Count(); i++)
+                {
+                    if (powers[i].positionInTrail == counter && powers[i].name != "Hide" && powers[i].name != "Dark Call" && powers[i].name != "Feed")
                     {
-                        trailString = trail[3].abbreviation + " " + trailString;
-                        if (trail.Count() > 4)
-                        {
-                            trailString = trail[4].abbreviation + " " + trailString;
-                            if (trail.Count() > 5)
-                            {
-                                trailString = trail[5].abbreviation + " " + trailString;
-                            } else
-                            {
-                                trailString = "    " + trailString;
-                            }
-                        } else
-                        {
-                            trailString = "        " + trailString;
-                        }
-                    } else
-                    {
-                        trailString = "            " + trailString;
+                        powerString = powers[i].name.Substring(0, 3).ToUpper() + " ";
                     }
-                } else
-                {
-                    trailString = "                " + trailString;
                 }
+                Console.Write(powerString);
             }
-            else {
-                trailString = "                    " + trailString;
-            }
-            Console.WriteLine(trailString);
-            string power6 = "    ";
-            string power5 = "    ";
-            string power4 = "    ";
-            string power3 = "    ";
-            string power2 = "    ";
-            string power1 = "    ";
-            for (int i = 0; i < powers.Count(); i++)
-            {
-                switch (powers[i].positionInTrail)
-                {
-                    case 5: power6 = powers[i].name.Substring(0, 3).ToUpper() + " "; break;
-                    case 4: power5 = powers[i].name.Substring(0, 3).ToUpper() + " "; break;
-                    case 3: power4 = powers[i].name.Substring(0, 3).ToUpper() + " "; break;
-                    case 2: power3 = powers[i].name.Substring(0, 3).ToUpper() + " "; break;
-                    case 1: power2 = powers[i].name.Substring(0, 3).ToUpper() + " "; break;
-                    case 0: power1 = powers[i].name.Substring(0, 3).ToUpper() + " "; break;
-                }
-            }
-            Console.WriteLine(power6 + power5 + power4 + power3 + power2 + power1);
+            Console.ResetColor();
+            Console.WriteLine("");
+
+            //string power6 = "    ";
+            //string power5 = "    ";
+            //string power4 = "    ";
+            //string power3 = "    ";
+            //string power2 = "    ";
+            //string power1 = "    ";
+            //for (int i = 0; i < powers.Count(); i++)
+            //{
+            //    switch (powers[i].positionInTrail)
+            //    {
+            //        case 5: if (powers[i].name == "Wolf Form" || powers[i].name == "Double Back")
+            //            {
+            //                power6 = powers[i].name.Substring(0, 3).ToUpper() + " ";
+            //            } break;
+            //        case 4: if (powers[i].name == "Wolf Form" || powers[i].name == "Double Back")
+            //            {
+            //                power5 = powers[i].name.Substring(0, 3).ToUpper() + " ";
+            //            } break;
+            //        case 3: if (powers[i].name == "Wolf Form" || powers[i].name == "Double Back")
+            //            {
+            //                power4 = powers[i].name.Substring(0, 3).ToUpper() + " ";
+            //            } break;
+            //        case 2: if (powers[i].name == "Wolf Form" || powers[i].name == "Double Back")
+            //            {
+            //                power3 = powers[i].name.Substring(0, 3).ToUpper() + " ";
+            //            } break;
+            //        case 1: if (powers[i].name == "Wolf Form" || powers[i].name == "Double Back")
+            //            {
+            //                power2 = powers[i].name.Substring(0, 3).ToUpper() + " ";
+            //            } break;
+            //        case 0: if (powers[i].name == "Wolf Form" || powers[i].name == "Double Back")
+            //            {
+            //                power1 = powers[i].name.Substring(0, 3).ToUpper() + " ";
+            //            } break;
+            //    }
+            //}
+            //Console.Write(power6);
+            //Console.Write(power5);
+            //Console.Write(power4);
+            //Console.Write(power3);
+            //Console.Write(power2);
+            //Console.Write(power1);
         }
 
     }
