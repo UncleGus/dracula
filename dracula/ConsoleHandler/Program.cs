@@ -386,7 +386,7 @@ namespace ConsoleHandler
             Map.Add(toulouse);
 
             barcelona.name = "Barcelona";
-            barcelona.abbreviation = "BAR";
+            barcelona.abbreviation = "BAC";
             barcelona.type = LocationType.City;
             barcelona.isEastern = false;
             barcelona.byRoad.Add(saragossa);
@@ -669,6 +669,244 @@ namespace ConsoleHandler
             constanta.bySea.Add(blacksea);
             Map.Add(constanta);
 
+            lisbon.name = "Lisbon";
+            lisbon.abbreviation = "LIS";
+            lisbon.type = LocationType.City;
+            lisbon.isEastern = false;
+            lisbon.byRoad.Add(santander);
+            lisbon.byRoad.Add(madrid);
+            lisbon.byRoad.Add(cadiz);
+            lisbon.byTrain.Add(madrid);
+            lisbon.bySea.Add(atlanticocean);
+            Map.Add(lisbon);
+
+            cadiz.name = "Cadiz";
+            cadiz.abbreviation = "CAD";
+            cadiz.type = LocationType.City;
+            cadiz.isEastern = false;
+            cadiz.byRoad.Add(lisbon);
+            cadiz.byRoad.Add(madrid);
+            cadiz.byRoad.Add(granada);
+            cadiz.bySea.Add(atlanticocean);
+            Map.Add(cadiz);
+
+            madrid.name = "Madrid";
+            madrid.abbreviation = "MAD";
+            madrid.type = LocationType.City;
+            madrid.isEastern = false;
+            madrid.byRoad.Add(lisbon);
+            madrid.byRoad.Add(santander);
+            madrid.byRoad.Add(saragossa);
+            madrid.byRoad.Add(alicante);
+            madrid.byRoad.Add(granada);
+            madrid.byRoad.Add(cadiz);
+            madrid.byTrain.Add(lisbon);
+            madrid.byTrain.Add(santander);
+            madrid.byTrain.Add(saragossa);
+            madrid.byTrain.Add(alicante);
+            Map.Add(madrid);
+
+            granada.name = "Granada";
+            granada.abbreviation = "GRA";
+            granada.type = LocationType.Town;
+            granada.isEastern = false;
+            granada.byRoad.Add(cadiz);
+            granada.byRoad.Add(madrid);
+            granada.byRoad.Add(alicante);
+            Map.Add(granada);
+
+            alicante.name = "Alicante";
+            alicante.abbreviation = "ALI";
+            alicante.type = LocationType.Town;
+            alicante.isEastern = false;
+            alicante.byRoad.Add(granada);
+            alicante.byRoad.Add(madrid);
+            alicante.byRoad.Add(saragossa);
+            alicante.byTrain.Add(madrid);
+            alicante.byTrain.Add(barcelona);
+            alicante.bySea.Add(mediterraneansea);
+            Map.Add(alicante);
+
+            cagliari.name = "Cagliari";
+            cagliari.abbreviation = "CAG";
+            cagliari.type = LocationType.Town;
+            cagliari.isEastern = true;
+            cagliari.bySea.Add(mediterraneansea);
+            cagliari.bySea.Add(tyrrheniansea);
+            Map.Add(cagliari);
+
+            rome.name = "Rome";
+            rome.abbreviation = "ROM";
+            rome.type = LocationType.City;
+            rome.isEastern = true;
+            rome.byRoad.Add(florence);
+            rome.byRoad.Add(bari);
+            rome.byRoad.Add(naples);
+            rome.byTrain.Add(florence);
+            rome.byTrain.Add(naples);
+            rome.bySea.Add(tyrrheniansea);
+            Map.Add(rome);
+
+            naples.name = "Naples";
+            naples.abbreviation = "NAP";
+            naples.type = LocationType.City;
+            naples.isEastern = true;
+            naples.byRoad.Add(rome);
+            naples.byRoad.Add(bari);
+            naples.byTrain.Add(rome);
+            naples.byTrain.Add(bari);
+            naples.bySea.Add(tyrrheniansea);
+            Map.Add(naples);
+
+            bari.name = "Bari";
+            bari.abbreviation = "BAI";
+            bari.type = LocationType.Town;
+            bari.isEastern = true;
+            bari.byRoad.Add(naples);
+            bari.byRoad.Add(rome);
+            bari.byTrain.Add(naples);
+            bari.bySea.Add(adriaticsea);
+            Map.Add(bari);
+
+            valona.name = "Valona";
+            valona.abbreviation = "VAL";
+            valona.type = LocationType.Town;
+            valona.isEastern = true;
+            valona.byRoad.Add(sarajevo);
+            valona.byRoad.Add(sofia);
+            valona.byRoad.Add(salonica);
+            valona.byRoad.Add(athens);
+            valona.bySea.Add(ioniansea);
+            Map.Add(valona);
+
+            salonica.name = "Salonica";
+            salonica.abbreviation = "SAL";
+            salonica.type = LocationType.Town;
+            salonica.isEastern = true;
+            salonica.byRoad.Add(valona);
+            salonica.byRoad.Add(sofia);
+            salonica.byTrain.Add(sofia);
+            salonica.bySea.Add(ioniansea);
+            Map.Add(salonica);
+
+            athens.name = "Athens";
+            athens.abbreviation = "ATH";
+            athens.type = LocationType.City;
+            athens.isEastern = true;
+            athens.byRoad.Add(valona);
+            athens.bySea.Add(ioniansea);
+            Map.Add(athens);
+
+            atlanticocean.name = "Atlantic Ocean";
+            atlanticocean.abbreviation = "ATL";
+            atlanticocean.type = LocationType.Sea;
+            atlanticocean.isEastern = false;
+            atlanticocean.bySea.Add(northsea);
+            atlanticocean.bySea.Add(irishsea);
+            atlanticocean.bySea.Add(englishchannel);
+            atlanticocean.bySea.Add(bayofbiscay);
+            atlanticocean.bySea.Add(mediterraneansea);
+            atlanticocean.bySea.Add(galway);
+            atlanticocean.bySea.Add(lisbon);
+            atlanticocean.bySea.Add(cadiz);
+            Map.Add(atlanticocean);
+
+            irishsea.name = "Irish Sea";
+            irishsea.abbreviation = "IRI";
+            irishsea.type = LocationType.Sea;
+            irishsea.isEastern = false;
+            irishsea.bySea.Add(atlanticocean);
+            irishsea.bySea.Add(dublin);
+            irishsea.bySea.Add(liverpool);
+            irishsea.bySea.Add(swansea);
+            Map.Add(irishsea);
+
+            englishchannel.name = "English Channel";
+            englishchannel.abbreviation = "ENG";
+            englishchannel.type = LocationType.Sea;
+            englishchannel.isEastern = false;
+            englishchannel.bySea.Add(atlanticocean);
+            englishchannel.bySea.Add(northsea);
+            englishchannel.bySea.Add(plymouth);
+            englishchannel.bySea.Add(london);
+            englishchannel.bySea.Add(lehavre);
+            Map.Add(englishchannel);
+
+            northsea.name = "North Sea";
+            northsea.abbreviation = "NOR";
+            northsea.type = LocationType.Sea;
+            northsea.isEastern = false;
+            northsea.bySea.Add(atlanticocean);
+            northsea.bySea.Add(englishchannel);
+            northsea.bySea.Add(edinburgh);
+            northsea.bySea.Add(amsterdam);
+            northsea.bySea.Add(hamburg);
+            Map.Add(northsea);
+
+            bayofbiscay.name = "Bay of Biscay";
+            bayofbiscay.abbreviation = "BAY";
+            bayofbiscay.type = LocationType.Sea;
+            bayofbiscay.isEastern = false;
+            bayofbiscay.bySea.Add(atlanticocean);
+            bayofbiscay.bySea.Add(nantes);
+            bayofbiscay.bySea.Add(bordeaux);
+            bayofbiscay.bySea.Add(santander);
+            Map.Add(bayofbiscay);
+
+            mediterraneansea.name = "Mediterranean Sea";
+            mediterraneansea.abbreviation = "MED";
+            mediterraneansea.type = LocationType.Sea;
+            mediterraneansea.isEastern = true;
+            mediterraneansea.bySea.Add(atlanticocean);
+            mediterraneansea.bySea.Add(tyrrheniansea);
+            mediterraneansea.bySea.Add(alicante);
+            mediterraneansea.bySea.Add(barcelona);
+            mediterraneansea.bySea.Add(marseilles);
+            mediterraneansea.bySea.Add(cagliari);
+            Map.Add(mediterraneansea);
+
+            tyrrheniansea.name = "Tyrrhenian Sea";
+            tyrrheniansea.abbreviation = "TYR";
+            tyrrheniansea.type = LocationType.Sea;
+            tyrrheniansea.isEastern = false;
+            tyrrheniansea.bySea.Add(mediterraneansea);
+            tyrrheniansea.bySea.Add(ioniansea);
+            tyrrheniansea.bySea.Add(cagliari);
+            tyrrheniansea.bySea.Add(genoa);
+            tyrrheniansea.bySea.Add(rome);
+            tyrrheniansea.bySea.Add(naples);
+            Map.Add(tyrrheniansea);
+
+            adriaticsea.name = "Adriatic Sea";
+            adriaticsea.abbreviation = "ADR";
+            adriaticsea.type = LocationType.Sea;
+            adriaticsea.isEastern = false;
+            adriaticsea.bySea.Add(ioniansea);
+            adriaticsea.bySea.Add(bari);
+            adriaticsea.bySea.Add(venice);
+            Map.Add(adriaticsea);
+
+            ioniansea.name = "Ionian Sea";
+            ioniansea.abbreviation = "ION";
+            ioniansea.type = LocationType.Sea;
+            ioniansea.isEastern = false;
+            ioniansea.bySea.Add(mediterraneansea);
+            ioniansea.bySea.Add(adriaticsea);
+            ioniansea.bySea.Add(blacksea);
+            ioniansea.bySea.Add(valona);
+            ioniansea.bySea.Add(athens);
+            ioniansea.bySea.Add(salonica);
+            Map.Add(ioniansea);
+
+            blacksea.name = "Black Sea";
+            blacksea.abbreviation = "BLA";
+            blacksea.type = LocationType.Sea;
+            blacksea.isEastern = false;
+            blacksea.bySea.Add(ioniansea);
+            blacksea.bySea.Add(varna);
+            blacksea.bySea.Add(constanta);
+            Map.Add(blacksea);
+
             string line;
             string command;
             string argument1;
@@ -695,7 +933,8 @@ namespace ConsoleHandler
 
                 switch (command)
                 {
-                    case "showlocationdetails": LocationHelper.ShowLocationDetails(GetLocationFromName(argument1, Map)); break;
+                    case "s": LocationHelper.ShowLocationDetails(GetLocationFromName(argument1, Map)); break;
+                    default: Console.WriteLine("I don't know what you're talking about"); break;
                 }
 
             } while (command != "exit");
@@ -705,7 +944,7 @@ namespace ConsoleHandler
         {
             for (int i = 0; i < locationList.Count(); i++)
             {
-                if (locationList[i].name == locationName)
+                if ((locationList[i].name.ToLower() == locationName.ToLower()) || (locationList[i].abbreviation.ToLower() == locationName.ToLower()))
                 {
                     return locationList[i];
                 }
