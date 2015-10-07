@@ -10,9 +10,10 @@ namespace DraculaHandler
     public class Dracula
     {
         Location currentLocation;
-        List<Location> trail = new List<Location>();
-        List<DraculaPower> powers = new List<DraculaPower>();
+        public List<Location> trail = new List<Location>();
+        public List<DraculaPower> powers = new List<DraculaPower>();
         List<Location> possibleMoves = new List<Location>();
+        List<Location> possibleDoubleBackMoves = new List<Location>();
         List<DraculaPower> possiblePowers = new List<DraculaPower>();
 
         public Dracula(Location startLocation)
@@ -36,10 +37,21 @@ namespace DraculaHandler
             determinePossiblePowers(timeOfDay);
 
             // check if there are no legal moves
-            if (possibleMoves.Count() + possiblePowers.Count() < 1)
+            if (possibleMoves.Count() + possiblePowers.Count() == 0)
             {
                 Console.WriteLine("Dracula is cornered by his own trail");
                 return false;
+            } else if (possibleMoves.Count() == 0 && possiblePowers.Count() == 1 && possiblePowers.Contains(powers[1]))
+            {
+                determinePossibleWolfFormLocations();
+                if (possibleMoves.Count() == 0)
+                {
+                    Console.WriteLine("Dracula is cornered by his own trail");
+                    return false;
+                } else
+                {
+                    determinePossibleLocations();
+                }
             }
             //Console.WriteLine("Dracula has " + possibleMoves.Count() + " possible moves and " + possiblePowers.Count() + " possible powers");
 
@@ -59,6 +71,7 @@ namespace DraculaHandler
                     // add the power card to the location trail by using a dummy "location"
                     Location powerCard = new Location();
                     powerCard.name = possiblePowers[chosenActionIndex].name;
+                    powerCard.abbreviation = possiblePowers[chosenActionIndex].name.Substring(0, 3).ToUpper();
                     trail.Insert(0, powerCard);
                     while (trail.Count() > 6)
                     {
@@ -72,13 +85,14 @@ namespace DraculaHandler
                 }
                 else if (possiblePowers[chosenActionIndex].name == "Double Back")
                 {
-                    // choose a location from the trail
-                    int doubleBackLocation = new Random().Next(0, trail.Count());
+                    // choose a location from the possible double back moves
+                    int doubleBackLocation = new Random().Next(0, possibleDoubleBackMoves.Count());
 
                     // move location to the front of the trail
-                    Location tempLocation = trail[doubleBackLocation];
+                    Location tempLocation = possibleDoubleBackMoves[doubleBackLocation];
                     trail.Remove(tempLocation);
                     trail.Insert(0, tempLocation);
+                    currentLocation = trail[0];
 
                     // move the power cards that are in the trail
                     for (int i = 0; i < powers.Count(); i++)
@@ -141,6 +155,7 @@ namespace DraculaHandler
         public void determinePossibleLocations()
         {
             possibleMoves.Clear();
+            possibleDoubleBackMoves.Clear();
             for (int i = 0; i < currentLocation.byRoad.Count(); i++)
             {
                 if (currentLocation.byRoad[i].abbreviation != "STJ")
@@ -156,9 +171,10 @@ namespace DraculaHandler
 
             for (int i = 0; i < trail.Count(); i++)
             {
+                possibleDoubleBackMoves.Add(trail[i]);
                 possibleMoves.Remove(trail[i]);
             }
-
+            possibleDoubleBackMoves.Remove(currentLocation);
         }
 
         public void determinePossibleWolfFormLocations()
@@ -185,6 +201,7 @@ namespace DraculaHandler
 
             }
             possibleMoves.AddRange(extendedLocations);
+            possibleMoves.Remove(currentLocation);
 
         }
 
@@ -195,7 +212,10 @@ namespace DraculaHandler
             {
                 if (powers[i].positionInTrail > 5 && (timeOfDay > 2 || powers[i].canBeUsedDuringDaylight))
                 {
-                    possiblePowers.Add(powers[i]);
+                    if (powers[i].name != "Double Back" || possibleDoubleBackMoves.Count() > 0)
+                    {
+                        possiblePowers.Add(powers[i]);
+                    }
                 }
             }
         }

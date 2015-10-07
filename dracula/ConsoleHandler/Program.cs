@@ -918,6 +918,7 @@ namespace ConsoleHandler
             string argument1;
             do
             {
+                drawTrail(dracula.trail, dracula.powers);
                 line = Console.ReadLine();
                 try
                 {
@@ -968,6 +969,67 @@ namespace ConsoleHandler
             Location unknownLocation = new Location();
             unknownLocation.name = "Unknown location";
             return unknownLocation;
+        }
+
+        public static void drawTrail(List<Location> trail, List<DraculaPower> powers)
+        {
+            Console.WriteLine("6th 5th 4th 3rd 2nd 1st");
+            string trailString = trail[0].abbreviation;
+            if (trail.Count() > 1)
+            {
+                trailString = trail[1].abbreviation + " " + trailString;
+                if (trail.Count() > 2)
+                {
+                    trailString = trail[2].abbreviation + " " + trailString;
+                    if (trail.Count() > 3)
+                    {
+                        trailString = trail[3].abbreviation + " " + trailString;
+                        if (trail.Count() > 4)
+                        {
+                            trailString = trail[4].abbreviation + " " + trailString;
+                            if (trail.Count() > 5)
+                            {
+                                trailString = trail[5].abbreviation + " " + trailString;
+                            } else
+                            {
+                                trailString = "    " + trailString;
+                            }
+                        } else
+                        {
+                            trailString = "        " + trailString;
+                        }
+                    } else
+                    {
+                        trailString = "            " + trailString;
+                    }
+                } else
+                {
+                    trailString = "                " + trailString;
+                }
+            }
+            else {
+                trailString = "                    " + trailString;
+            }
+            Console.WriteLine(trailString);
+            string power6 = "    ";
+            string power5 = "    ";
+            string power4 = "    ";
+            string power3 = "    ";
+            string power2 = "    ";
+            string power1 = "    ";
+            for (int i = 0; i < powers.Count(); i++)
+            {
+                switch (powers[i].positionInTrail)
+                {
+                    case 5: power6 = powers[i].name.Substring(0, 3).ToUpper() + " "; break;
+                    case 4: power5 = powers[i].name.Substring(0, 3).ToUpper() + " "; break;
+                    case 3: power4 = powers[i].name.Substring(0, 3).ToUpper() + " "; break;
+                    case 2: power3 = powers[i].name.Substring(0, 3).ToUpper() + " "; break;
+                    case 1: power2 = powers[i].name.Substring(0, 3).ToUpper() + " "; break;
+                    case 0: power1 = powers[i].name.Substring(0, 3).ToUpper() + " "; break;
+                }
+            }
+            Console.WriteLine(power6 + power5 + power4 + power3 + power2 + power1);
         }
 
     }
