@@ -18,12 +18,13 @@ namespace LocationHandler
         public List<Location> bySea;
         public bool isRevealed;
         public List<Encounter> encounters;
- 
+
         public Location()
         {
             byRoad = new List<Location>();
             byTrain = new List<Location>();
             bySea = new List<Location>();
+            encounters = new List<Encounter>();
             isRevealed = false;
         }
 
@@ -41,7 +42,8 @@ namespace LocationHandler
             else if (type == LocationType.Power)
             {
                 Console.ForegroundColor = ConsoleColor.DarkGreen;
-            } else
+            }
+            else
             {
                 Console.ForegroundColor = ConsoleColor.Red;
             }
@@ -55,6 +57,46 @@ namespace LocationHandler
                 Console.Write("### ");
             }
             Console.ResetColor();
+        }
+
+        public void DrawEncounter()
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            if (encounters.Count() > 0)
+            {
+                if (encounters[0].isRevealed)
+                {
+                    Console.Write(encounters[0].abbreviation + " ");
+                }
+                else
+                {
+                        Console.Write(" ■  ");
+                }
+            }
+            else
+            {
+                Console.Write("    ");
+            }
+        }
+
+        public void DrawEncounter(bool drawingSecondEncounter)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            if (encounters.Count() > 1)
+            {
+                if (encounters[1].isRevealed)
+                {
+                    Console.Write(encounters[1].abbreviation + " ");
+                }
+                else
+                {
+                    Console.Write(" ■  ");
+                }
+            }
+            else
+            {
+                Console.Write("    ");
+            }
         }
     }
 
@@ -104,6 +146,14 @@ namespace LocationHandler
                     Console.WriteLine("    " + location.bySea[i].name);
                 }
             }
+            if (location.encounters.Count() > 0)
+            {
+                Console.WriteLine("Encounters here:");
+                for (int i = 0; i < location.encounters.Count(); i++)
+                {
+                    Console.WriteLine("    " + location.encounters[i].name);
+                }
+            }
         }
 
         public static void RevealLocation(List<Location> trail, int trailIndex)
@@ -111,9 +161,23 @@ namespace LocationHandler
             try
             {
                 trail[trailIndex].isRevealed = true;
-            } catch (ArgumentOutOfRangeException)
+            }
+            catch (ArgumentOutOfRangeException)
             { }
         }
 
+        public static void RevealEncounter(List<Location> trail, int trailIndex)
+        {
+            try
+            {
+                for (int i = 0; i < trail[trailIndex].encounters.Count(); i++)
+                {
+                    trail[trailIndex].encounters[i].isRevealed = true;
+                }
+            }
+            catch (ArgumentOutOfRangeException)
+            { }
+
+        }
     }
 }

@@ -60,7 +60,7 @@ namespace ConsoleHandler
             string argument1;
             do
             {
-                drawTrail(dracula.trail, dracula.powers, timesOfDay[time], dracula.blood);
+                drawTrail(dracula.trail, dracula.powers, timesOfDay[time], dracula.blood, dracula.vampireTracker);
                 line = Console.ReadLine();
                 try
                 {
@@ -91,6 +91,15 @@ namespace ConsoleHandler
                             {
                                 time = (time + 1) % 6;
                                 Logger.WriteToDebugLog("Time is now " + timesOfDay[time]);
+                                if (time == 0)
+                                {
+                                    dracula.vampireTracker++;
+                                    Logger.WriteToDebugLog("Increasing vampire track to " + dracula.vampireTracker);
+                                    if (dracula.vampireTracker > 0)
+                                    {
+                                        Logger.WriteToGameLog("Dracula earned a point, up to " + dracula.vampireTracker);
+                                    }
+                                }
                             }
                             else
                             {
@@ -109,7 +118,7 @@ namespace ConsoleHandler
                                 {
                                     if (dracula.trail[trailIndex - 1].name == "Hide")
                                     {
-                                        dracula.RevealHide(trailIndex - 1);
+                                        dracula.RevealHide(trailIndex - 1, true);
                                     }
                                     else
                                     {
@@ -124,6 +133,26 @@ namespace ConsoleHandler
                             else
                             {
                                 Console.WriteLine("Unable to reveal card " + argument1);
+                            }
+                            break;
+                        }
+                    case "e":
+                        {
+                            int trailIndex;
+                            if (int.TryParse(argument1, out trailIndex))
+                            {
+                                try
+                                {
+                                        LocationHelper.RevealEncounter(dracula.trail, trailIndex - 1);
+                                }
+                                catch (ArgumentOutOfRangeException)
+                                {
+                                    Console.WriteLine("Unable to reveal encounter " + argument1);
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("Unable to reveal encounter " + argument1);
                             }
                             break;
                         }
@@ -160,9 +189,9 @@ namespace ConsoleHandler
             return unknownLocation;
         }
 
-        public static void drawTrail(List<Location> trail, List<DraculaPower> powers, string timeOfDay, int draculaBlood)
+        public static void drawTrail(List<Location> trail, List<DraculaPower> powers, string timeOfDay, int draculaBlood, int vampireCount)
         {
-            Console.WriteLine("6th 5th 4th 3rd 2nd 1st   Time        Dracula");
+            Console.WriteLine("6th 5th 4th 3rd 2nd 1st   Time        Dracula  Vampires");
             for (int i = 5; i >= 0; i--)
             {
                 if (i + 1 > trail.Count())
@@ -190,20 +219,51 @@ namespace ConsoleHandler
             {
                 Console.Write(" ");
             }
-            Console.WriteLine(draculaBlood);
+            Console.Write(draculaBlood);
+            Console.ResetColor();
+            for (int i = 0; i < (9 - draculaBlood.ToString().Length); i++)
+            {
+                Console.Write(" ");
+            }
+            Console.WriteLine(Math.Max(0, vampireCount));
             Console.ForegroundColor = ConsoleColor.DarkGreen;
-            string powerString;
+            string tempString;
             for (int counter = 5; counter > -1; counter--)
             {
-                powerString = "    ";
+                tempString = "    ";
                 for (int i = 0; i < powers.Count(); i++)
                 {
                     if (powers[i].positionInTrail == counter && powers[i].name != "Hide" && powers[i].name != "Dark Call" && powers[i].name != "Feed")
                     {
-                        powerString = powers[i].name.Substring(0, 3).ToUpper() + " ";
+                        tempString = powers[i].name.Substring(0, 3).ToUpper() + " ";
                     }
                 }
-                Console.Write(powerString);
+                Console.Write(tempString);
+            }
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.WriteLine("");
+            for (int i = 5; i > -1; i--)
+            {
+                if (i + 1 > trail.Count())
+                {
+                    Console.Write("    ");
+                }
+                else
+                {
+                    trail[i].DrawEncounter();
+                }
+            }
+            Console.WriteLine("");
+            for (int i = 5; i > -1; i--)
+            {
+                if (i + 1 > trail.Count())
+                {
+                    Console.Write("    ");
+                }
+                else
+                {
+                    trail[i].DrawEncounter(true);
+                }
             }
             Console.ResetColor();
             Console.WriteLine("");
