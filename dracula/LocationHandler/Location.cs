@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EncounterHandler;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,7 +17,8 @@ namespace LocationHandler
         public List<Location> byTrain;
         public List<Location> bySea;
         public bool isRevealed;
-
+        public List<Encounter> encounters;
+ 
         public Location()
         {
             byRoad = new List<Location>();

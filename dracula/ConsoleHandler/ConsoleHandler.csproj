@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LogHandler.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -54,9 +55,17 @@
       <Project>{e1221c9d-d981-4cac-8bca-ff4c56463bde}</Project>
       <Name>DraculaHandler</Name>
     </ProjectReference>
+    <ProjectReference Include="..\EncounterHandler\EncounterHandler.csproj">
+      <Project>{fccdeff8-1459-440a-9f4a-82cafcf18463}</Project>
+      <Name>EncounterHandler</Name>
+    </ProjectReference>
     <ProjectReference Include="..\LocationHandler\LocationHandler.csproj">
       <Project>{c6c143c9-82c4-4a1d-8722-26a140046b62}</Project>
       <Name>LocationHandler</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\LogHandler\LogHandler.csproj">
+      <Project>{cab6e21a-8a34-4c10-865f-15eb74174bbb}</Project>
+      <Name>LogHandler</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

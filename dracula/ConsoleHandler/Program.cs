@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using LocationHandler;
 using DraculaHandler;
+using LogHandler;
+using EncounterHandler;
 
 namespace ConsoleHandler
 {
@@ -12,6 +14,202 @@ namespace ConsoleHandler
     {
 
         static void Main(string[] args)
+        {
+            List<Location> map = new List<Location>();
+            SetupMap(map);
+
+            List<Encounter> encounterDeck = new List<Encounter>();
+            SetupEncounters(encounterDeck);
+
+            try
+            {
+                System.IO.File.Delete(@"debuglog.txt");
+            }
+            catch (System.IO.IOException)
+            {
+                Console.WriteLine("Couldn't delete the old debug log file");
+            }
+
+            try
+            {
+                System.IO.File.Delete(@"gamelog.txt");
+            }
+            catch (System.IO.IOException)
+            {
+                Console.WriteLine("Couldn't delete the old game log file");
+            }
+
+            Logger.WriteToDebugLog("Game start");
+
+            int startLocation;
+            do
+            {
+                startLocation = new Random().Next(0, map.Count());
+            } while (map[startLocation].type == LocationType.Hospital);
+
+            Dracula dracula = new Dracula(map[startLocation], encounterDeck);
+
+            Logger.WriteToDebugLog("Dracula started in " + dracula.currentLocation.name);
+            Logger.WriteToGameLog("Dracula started in " + dracula.currentLocation.name);
+
+            int time = 5;
+            string[] timesOfDay = new string[6] { "Dawn", "Noon", "Dusk", "Twilight", "Midnight", "Small Hours" };
+
+            string line;
+            string command;
+            string argument1;
+            do
+            {
+                drawTrail(dracula.trail, dracula.powers, timesOfDay[time], dracula.blood);
+                line = Console.ReadLine();
+                try
+                {
+                    command = line.Substring(0, line.IndexOf(' '));
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    command = line;
+                }
+
+                try
+                {
+                    argument1 = line.Substring(line.IndexOf(' ') + 1);
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    argument1 = "no argument";
+                }
+
+                switch (command)
+                {
+                    case "s": LocationHelper.ShowLocationDetails(GetLocationFromName(argument1, map)); break;
+                    case "d": dracula.ShowLocation(); break;
+                    case "m":
+                        {
+                            Logger.WriteToDebugLog("STARTING DRACULA'S TURN =====================================================");
+                            if (dracula.currentLocation.type != LocationType.Sea)
+                            {
+                                time = (time + 1) % 6;
+                                Logger.WriteToDebugLog("Time is now " + timesOfDay[time]);
+                            }
+                            else
+                            {
+                                Logger.WriteToDebugLog("Dracula is at sea, skipping Timekeeping phase so time remains " + timesOfDay[time]);
+                            }
+                            dracula.MoveDracula(time);
+                            break;
+                        }
+                    case "t": dracula.ShowTrail(); break;
+                    case "r":
+                        {
+                            int trailIndex;
+                            if (int.TryParse(argument1, out trailIndex))
+                            {
+                                try
+                                {
+                                    if (dracula.trail[trailIndex - 1].name == "Hide")
+                                    {
+                                        dracula.RevealHide(trailIndex - 1);
+                                    }
+                                    else
+                                    {
+                                        LocationHelper.RevealLocation(dracula.trail, trailIndex - 1);
+                                    }
+                                }
+                                catch (ArgumentOutOfRangeException)
+                                {
+                                    Console.WriteLine("Unable to reveal card " + argument1);
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("Unable to reveal card " + argument1);
+                            }
+                            break;
+                        }
+                    case "c":
+                        {
+                            int trailLength;
+                            if (int.TryParse(argument1, out trailLength))
+                            {
+                                dracula.TrimTrail(Math.Max(1, trailLength));
+                            }
+                            else
+                            {
+                                Console.WriteLine("Unable to clear Dracula's trail to length " + argument1);
+                            }
+                            break;
+                        }
+                    case "exit": break;
+                    default: Console.WriteLine("I don't know what you're talking about"); break;
+                }
+            } while (command != "exit");
+        }
+
+        public static Location GetLocationFromName(string locationName, List<Location> locationList)
+        {
+            for (int i = 0; i < locationList.Count(); i++)
+            {
+                if ((locationList[i].name.ToLower() == locationName.ToLower()) || (locationList[i].abbreviation.ToLower() == locationName.ToLower()))
+                {
+                    return locationList[i];
+                }
+            }
+            Location unknownLocation = new Location();
+            unknownLocation.name = "Unknown location";
+            return unknownLocation;
+        }
+
+        public static void drawTrail(List<Location> trail, List<DraculaPower> powers, string timeOfDay, int draculaBlood)
+        {
+            Console.WriteLine("6th 5th 4th 3rd 2nd 1st   Time        Dracula");
+            for (int i = 5; i >= 0; i--)
+            {
+                if (i + 1 > trail.Count())
+                {
+                    Console.Write("    ");
+                }
+                else
+                {
+                    trail[i].DrawLocation();
+                }
+            }
+
+            switch (timeOfDay)
+            {
+                case "Dawn": Console.ForegroundColor = ConsoleColor.DarkYellow; break;
+                case "Noon": Console.ForegroundColor = ConsoleColor.Yellow; break;
+                case "Dusk": Console.ForegroundColor = ConsoleColor.DarkYellow; break;
+                case "Twilight": Console.ForegroundColor = ConsoleColor.Cyan; break;
+                case "Midnight": Console.ForegroundColor = ConsoleColor.Blue; break;
+                case "Small Hours": Console.ForegroundColor = ConsoleColor.Cyan; break;
+            }
+            Console.Write("  " + timeOfDay);
+            Console.ForegroundColor = ConsoleColor.Red;
+            for (int i = 0; i < (12 - timeOfDay.Length); i++)
+            {
+                Console.Write(" ");
+            }
+            Console.WriteLine(draculaBlood);
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            string powerString;
+            for (int counter = 5; counter > -1; counter--)
+            {
+                powerString = "    ";
+                for (int i = 0; i < powers.Count(); i++)
+                {
+                    if (powers[i].positionInTrail == counter && powers[i].name != "Hide" && powers[i].name != "Dark Call" && powers[i].name != "Feed")
+                    {
+                        powerString = powers[i].name.Substring(0, 3).ToUpper() + " ";
+                    }
+                }
+                Console.Write(powerString);
+            }
+            Console.ResetColor();
+            Console.WriteLine("");
+        }
+
+        public static void SetupMap(List<Location> map)
         {
             Location galway = new Location();
             Location dublin = new Location();
@@ -85,15 +283,13 @@ namespace ConsoleHandler
             Location ioniansea = new Location();
             Location blacksea = new Location();
 
-            List<Location> Map = new List<Location>();
-
             galway.name = "Galway";
             galway.abbreviation = "GAW";
             galway.type = LocationType.Town;
             galway.isEastern = false;
             galway.byRoad.Add(dublin);
             galway.bySea.Add(atlanticocean);
-            Map.Add(galway);
+            map.Add(galway);
 
             dublin.name = "Dublin";
             dublin.abbreviation = "DUB";
@@ -101,7 +297,7 @@ namespace ConsoleHandler
             dublin.isEastern = false;
             dublin.byRoad.Add(galway);
             dublin.bySea.Add(irishsea);
-            Map.Add(dublin);
+            map.Add(dublin);
 
             liverpool.name = "Liverpool";
             liverpool.abbreviation = "LIV";
@@ -111,7 +307,7 @@ namespace ConsoleHandler
             liverpool.byRoad.Add(swansea);
             liverpool.byTrain.Add(manchester);
             liverpool.bySea.Add(irishsea);
-            Map.Add(liverpool);
+            map.Add(liverpool);
 
             edinburgh.name = "Edinburgh";
             edinburgh.abbreviation = "EDI";
@@ -120,7 +316,7 @@ namespace ConsoleHandler
             edinburgh.byRoad.Add(manchester);
             edinburgh.byTrain.Add(manchester);
             edinburgh.bySea.Add(northsea);
-            Map.Add(edinburgh);
+            map.Add(edinburgh);
 
             manchester.name = "Manchester";
             manchester.abbreviation = "MAN";
@@ -132,7 +328,7 @@ namespace ConsoleHandler
             manchester.byTrain.Add(edinburgh);
             manchester.byTrain.Add(liverpool);
             manchester.byTrain.Add(london);
-            Map.Add(manchester);
+            map.Add(manchester);
 
             swansea.name = "Swansea";
             swansea.abbreviation = "SWA";
@@ -142,7 +338,7 @@ namespace ConsoleHandler
             swansea.byRoad.Add(london);
             swansea.byTrain.Add(london);
             swansea.bySea.Add(irishsea);
-            Map.Add(swansea);
+            map.Add(swansea);
 
             plymouth.name = "Plymouth";
             plymouth.abbreviation = "PLY";
@@ -150,7 +346,7 @@ namespace ConsoleHandler
             plymouth.isEastern = false;
             plymouth.byRoad.Add(london);
             plymouth.bySea.Add(englishchannel);
-            Map.Add(plymouth);
+            map.Add(plymouth);
 
             nantes.name = "Nantes";
             nantes.abbreviation = "NAN";
@@ -161,7 +357,7 @@ namespace ConsoleHandler
             nantes.byRoad.Add(clermontferrand);
             nantes.byRoad.Add(bordeaux);
             nantes.bySea.Add(bayofbiscay);
-            Map.Add(nantes);
+            map.Add(nantes);
 
             lehavre.name = "Le Havre";
             lehavre.abbreviation = "LEH";
@@ -172,7 +368,7 @@ namespace ConsoleHandler
             lehavre.byRoad.Add(brussels);
             lehavre.byTrain.Add(paris);
             lehavre.bySea.Add(englishchannel);
-            Map.Add(lehavre);
+            map.Add(lehavre);
 
             london.name = "London";
             london.abbreviation = "LON";
@@ -184,7 +380,7 @@ namespace ConsoleHandler
             london.byTrain.Add(manchester);
             london.byTrain.Add(swansea);
             london.bySea.Add(englishchannel);
-            Map.Add(london);
+            map.Add(london);
 
             paris.name = "Paris";
             paris.abbreviation = "PAR";
@@ -200,7 +396,7 @@ namespace ConsoleHandler
             paris.byTrain.Add(brussels);
             paris.byTrain.Add(marseilles);
             paris.byTrain.Add(bordeaux);
-            Map.Add(paris);
+            map.Add(paris);
 
             brussels.name = "Brussels";
             brussels.abbreviation = "BRU";
@@ -213,7 +409,7 @@ namespace ConsoleHandler
             brussels.byRoad.Add(paris);
             brussels.byTrain.Add(cologne);
             brussels.byTrain.Add(paris);
-            Map.Add(brussels);
+            map.Add(brussels);
 
             amsterdam.name = "Amsterdam";
             amsterdam.abbreviation = "AMS";
@@ -222,7 +418,7 @@ namespace ConsoleHandler
             amsterdam.byRoad.Add(brussels);
             amsterdam.byRoad.Add(cologne);
             amsterdam.bySea.Add(northsea);
-            Map.Add(amsterdam);
+            map.Add(amsterdam);
 
             strasbourg.name = "Strasbourg";
             strasbourg.abbreviation = "STR";
@@ -238,7 +434,7 @@ namespace ConsoleHandler
             strasbourg.byRoad.Add(geneva);
             strasbourg.byTrain.Add(frankfurt);
             strasbourg.byTrain.Add(zurich);
-            Map.Add(strasbourg);
+            map.Add(strasbourg);
 
             cologne.name = "Cologne";
             cologne.abbreviation = "COL";
@@ -252,7 +448,7 @@ namespace ConsoleHandler
             cologne.byRoad.Add(strasbourg);
             cologne.byTrain.Add(brussels);
             cologne.byTrain.Add(frankfurt);
-            Map.Add(cologne);
+            map.Add(cologne);
 
             hamburg.name = "Hamburg";
             hamburg.abbreviation = "HAM";
@@ -263,7 +459,7 @@ namespace ConsoleHandler
             hamburg.byRoad.Add(leipzig);
             hamburg.byTrain.Add(berlin);
             hamburg.bySea.Add(northsea);
-            Map.Add(hamburg);
+            map.Add(hamburg);
 
             frankfurt.name = "Frankfurt";
             frankfurt.abbreviation = "FRA";
@@ -276,7 +472,7 @@ namespace ConsoleHandler
             frankfurt.byTrain.Add(strasbourg);
             frankfurt.byTrain.Add(cologne);
             frankfurt.byTrain.Add(leipzig);
-            Map.Add(frankfurt);
+            map.Add(frankfurt);
 
             nuremburg.name = "Nuremburg";
             nuremburg.abbreviation = "NUR";
@@ -289,7 +485,7 @@ namespace ConsoleHandler
             nuremburg.byRoad.Add(munich);
             nuremburg.byTrain.Add(leipzig);
             nuremburg.byTrain.Add(munich);
-            Map.Add(nuremburg);
+            map.Add(nuremburg);
 
             leipzig.name = "Leipzig";
             leipzig.abbreviation = "LEI";
@@ -303,7 +499,7 @@ namespace ConsoleHandler
             leipzig.byTrain.Add(frankfurt);
             leipzig.byTrain.Add(berlin);
             leipzig.byTrain.Add(nuremburg);
-            Map.Add(leipzig);
+            map.Add(leipzig);
 
             berlin.name = "Berlin";
             berlin.abbreviation = "BER";
@@ -315,7 +511,7 @@ namespace ConsoleHandler
             berlin.byTrain.Add(hamburg);
             berlin.byTrain.Add(leipzig);
             berlin.byTrain.Add(prague);
-            Map.Add(berlin);
+            map.Add(berlin);
 
             prague.name = "Prague";
             prague.abbreviation = "PRA";
@@ -326,7 +522,7 @@ namespace ConsoleHandler
             prague.byRoad.Add(nuremburg);
             prague.byTrain.Add(berlin);
             prague.byTrain.Add(vienna);
-            Map.Add(prague);
+            map.Add(prague);
 
             castledracula.name = "Castle Dracula";
             castledracula.abbreviation = "CAS";
@@ -334,7 +530,7 @@ namespace ConsoleHandler
             castledracula.isEastern = true;
             castledracula.byRoad.Add(klausenburg);
             castledracula.byRoad.Add(galatz);
-            Map.Add(castledracula);
+            map.Add(castledracula);
 
             santander.name = "Santander";
             santander.abbreviation = "SAN";
@@ -345,7 +541,7 @@ namespace ConsoleHandler
             santander.byRoad.Add(saragossa);
             santander.byTrain.Add(madrid);
             santander.bySea.Add(bayofbiscay);
-            Map.Add(santander);
+            map.Add(santander);
 
             saragossa.name = "Saragossa";
             saragossa.abbreviation = "SAG";
@@ -360,7 +556,7 @@ namespace ConsoleHandler
             saragossa.byTrain.Add(madrid);
             saragossa.byTrain.Add(bordeaux);
             saragossa.byTrain.Add(barcelona);
-            Map.Add(saragossa);
+            map.Add(saragossa);
 
             bordeaux.name = "Bordeaux";
             bordeaux.abbreviation = "BOR";
@@ -373,7 +569,7 @@ namespace ConsoleHandler
             bordeaux.byTrain.Add(paris);
             bordeaux.byTrain.Add(saragossa);
             bordeaux.bySea.Add(bayofbiscay);
-            Map.Add(bordeaux);
+            map.Add(bordeaux);
 
             toulouse.name = "Toulouse";
             toulouse.abbreviation = "TOU";
@@ -384,7 +580,7 @@ namespace ConsoleHandler
             toulouse.byRoad.Add(clermontferrand);
             toulouse.byRoad.Add(marseilles);
             toulouse.byRoad.Add(barcelona);
-            Map.Add(toulouse);
+            map.Add(toulouse);
 
             barcelona.name = "Barcelona";
             barcelona.abbreviation = "BAC";
@@ -395,7 +591,7 @@ namespace ConsoleHandler
             barcelona.byTrain.Add(saragossa);
             barcelona.byTrain.Add(alicante);
             barcelona.bySea.Add(mediterraneansea);
-            Map.Add(barcelona);
+            map.Add(barcelona);
 
             clermontferrand.name = "Clermont Ferrand";
             clermontferrand.abbreviation = "CLE";
@@ -407,7 +603,7 @@ namespace ConsoleHandler
             clermontferrand.byRoad.Add(geneva);
             clermontferrand.byRoad.Add(marseilles);
             clermontferrand.byRoad.Add(toulouse);
-            Map.Add(clermontferrand);
+            map.Add(clermontferrand);
 
             marseilles.name = "Marseilles";
             marseilles.abbreviation = "MAR";
@@ -421,7 +617,7 @@ namespace ConsoleHandler
             marseilles.byRoad.Add(genoa);
             marseilles.byTrain.Add(paris);
             marseilles.bySea.Add(mediterraneansea);
-            Map.Add(marseilles);
+            map.Add(marseilles);
 
             geneva.name = "Geneva";
             geneva.abbreviation = "GEV";
@@ -433,7 +629,7 @@ namespace ConsoleHandler
             geneva.byRoad.Add(strasbourg);
             geneva.byRoad.Add(zurich);
             geneva.byTrain.Add(milan);
-            Map.Add(geneva);
+            map.Add(geneva);
 
             genoa.name = "Genoa";
             genoa.abbreviation = "GEO";
@@ -445,7 +641,7 @@ namespace ConsoleHandler
             genoa.byRoad.Add(florence);
             genoa.byTrain.Add(milan);
             genoa.bySea.Add(tyrrheniansea);
-            Map.Add(genoa);
+            map.Add(genoa);
 
             milan.name = "Milan";
             milan.abbreviation = "MIL";
@@ -460,7 +656,7 @@ namespace ConsoleHandler
             milan.byTrain.Add(zurich);
             milan.byTrain.Add(florence);
             milan.byTrain.Add(genoa);
-            Map.Add(milan);
+            map.Add(milan);
 
             zurich.name = "Zurich";
             zurich.abbreviation = "ZUR";
@@ -473,7 +669,7 @@ namespace ConsoleHandler
             zurich.byRoad.Add(milan);
             zurich.byTrain.Add(strasbourg);
             zurich.byTrain.Add(milan);
-            Map.Add(zurich);
+            map.Add(zurich);
 
             florence.name = "Florence";
             florence.abbreviation = "FLO";
@@ -484,7 +680,7 @@ namespace ConsoleHandler
             florence.byRoad.Add(rome);
             florence.byTrain.Add(milan);
             florence.byTrain.Add(rome);
-            Map.Add(florence);
+            map.Add(florence);
 
             venice.name = "Venice";
             venice.abbreviation = "VEN";
@@ -496,7 +692,7 @@ namespace ConsoleHandler
             venice.byRoad.Add(munich);
             venice.byTrain.Add(vienna);
             venice.bySea.Add(adriaticsea);
-            Map.Add(venice);
+            map.Add(venice);
 
             munich.name = "Munich";
             munich.abbreviation = "MUN";
@@ -510,7 +706,7 @@ namespace ConsoleHandler
             munich.byRoad.Add(zagreb);
             munich.byRoad.Add(venice);
             munich.byTrain.Add(nuremburg);
-            Map.Add(munich);
+            map.Add(munich);
 
             zagreb.name = "Zagreb";
             zagreb.abbreviation = "ZAG";
@@ -522,7 +718,7 @@ namespace ConsoleHandler
             zagreb.byRoad.Add(szeged);
             zagreb.byRoad.Add(stjosephandstmary);
             zagreb.byRoad.Add(sarajevo);
-            Map.Add(zagreb);
+            map.Add(zagreb);
 
             vienna.name = "Vienna";
             vienna.abbreviation = "VIE";
@@ -535,7 +731,7 @@ namespace ConsoleHandler
             vienna.byTrain.Add(venice);
             vienna.byTrain.Add(prague);
             vienna.byTrain.Add(budapest);
-            Map.Add(vienna);
+            map.Add(vienna);
 
             stjosephandstmary.name = "St. Joseph & St. Mary";
             stjosephandstmary.abbreviation = "STJ";
@@ -545,7 +741,7 @@ namespace ConsoleHandler
             stjosephandstmary.byRoad.Add(szeged);
             stjosephandstmary.byRoad.Add(belgrade);
             stjosephandstmary.byRoad.Add(sarajevo);
-            Map.Add(stjosephandstmary);
+            map.Add(stjosephandstmary);
 
             sarajevo.name = "Sarajevo";
             sarajevo.abbreviation = "SAJ";
@@ -556,7 +752,7 @@ namespace ConsoleHandler
             sarajevo.byRoad.Add(belgrade);
             sarajevo.byRoad.Add(sofia);
             sarajevo.byRoad.Add(valona);
-            Map.Add(sarajevo);
+            map.Add(sarajevo);
 
             szeged.name = "Szeged";
             szeged.abbreviation = "SZE";
@@ -570,7 +766,7 @@ namespace ConsoleHandler
             szeged.byTrain.Add(budapest);
             szeged.byTrain.Add(bucharest);
             szeged.byTrain.Add(belgrade);
-            Map.Add(szeged);
+            map.Add(szeged);
 
             budapest.name = "Budapest";
             budapest.abbreviation = "BUD";
@@ -582,7 +778,7 @@ namespace ConsoleHandler
             budapest.byRoad.Add(zagreb);
             budapest.byTrain.Add(vienna);
             budapest.byTrain.Add(szeged);
-            Map.Add(budapest);
+            map.Add(budapest);
 
             belgrade.name = "Belgrade";
             belgrade.abbreviation = "BEL";
@@ -596,7 +792,7 @@ namespace ConsoleHandler
             belgrade.byRoad.Add(sarajevo);
             belgrade.byTrain.Add(szeged);
             belgrade.byTrain.Add(sofia);
-            Map.Add(belgrade);
+            map.Add(belgrade);
 
             klausenburg.name = "Klausenburg";
             klausenburg.abbreviation = "KLA";
@@ -608,7 +804,7 @@ namespace ConsoleHandler
             klausenburg.byRoad.Add(bucharest);
             klausenburg.byRoad.Add(belgrade);
             klausenburg.byRoad.Add(szeged);
-            Map.Add(klausenburg);
+            map.Add(klausenburg);
 
             sofia.name = "Sofia";
             sofia.abbreviation = "SOF";
@@ -622,7 +818,7 @@ namespace ConsoleHandler
             sofia.byRoad.Add(valona);
             sofia.byTrain.Add(belgrade);
             sofia.byTrain.Add(salonica);
-            Map.Add(sofia);
+            map.Add(sofia);
 
             bucharest.name = "Bucharest";
             bucharest.abbreviation = "BUC";
@@ -636,7 +832,7 @@ namespace ConsoleHandler
             bucharest.byTrain.Add(szeged);
             bucharest.byTrain.Add(galatz);
             bucharest.byTrain.Add(constanta);
-            Map.Add(bucharest);
+            map.Add(bucharest);
 
             galatz.name = "Galatz";
             galatz.abbreviation = "GAT";
@@ -647,7 +843,7 @@ namespace ConsoleHandler
             galatz.byRoad.Add(constanta);
             galatz.byRoad.Add(bucharest);
             galatz.byTrain.Add(bucharest);
-            Map.Add(galatz);
+            map.Add(galatz);
 
             varna.name = "Varna";
             varna.abbreviation = "VAR";
@@ -657,7 +853,7 @@ namespace ConsoleHandler
             varna.byRoad.Add(constanta);
             varna.byTrain.Add(sofia);
             varna.bySea.Add(blacksea);
-            Map.Add(varna);
+            map.Add(varna);
 
             constanta.name = "Constanta";
             constanta.abbreviation = "CON";
@@ -668,7 +864,7 @@ namespace ConsoleHandler
             constanta.byRoad.Add(bucharest);
             constanta.byTrain.Add(bucharest);
             constanta.bySea.Add(blacksea);
-            Map.Add(constanta);
+            map.Add(constanta);
 
             lisbon.name = "Lisbon";
             lisbon.abbreviation = "LIS";
@@ -679,7 +875,7 @@ namespace ConsoleHandler
             lisbon.byRoad.Add(cadiz);
             lisbon.byTrain.Add(madrid);
             lisbon.bySea.Add(atlanticocean);
-            Map.Add(lisbon);
+            map.Add(lisbon);
 
             cadiz.name = "Cadiz";
             cadiz.abbreviation = "CAD";
@@ -689,7 +885,7 @@ namespace ConsoleHandler
             cadiz.byRoad.Add(madrid);
             cadiz.byRoad.Add(granada);
             cadiz.bySea.Add(atlanticocean);
-            Map.Add(cadiz);
+            map.Add(cadiz);
 
             madrid.name = "Madrid";
             madrid.abbreviation = "MAD";
@@ -705,7 +901,7 @@ namespace ConsoleHandler
             madrid.byTrain.Add(santander);
             madrid.byTrain.Add(saragossa);
             madrid.byTrain.Add(alicante);
-            Map.Add(madrid);
+            map.Add(madrid);
 
             granada.name = "Granada";
             granada.abbreviation = "GRA";
@@ -714,7 +910,7 @@ namespace ConsoleHandler
             granada.byRoad.Add(cadiz);
             granada.byRoad.Add(madrid);
             granada.byRoad.Add(alicante);
-            Map.Add(granada);
+            map.Add(granada);
 
             alicante.name = "Alicante";
             alicante.abbreviation = "ALI";
@@ -726,7 +922,7 @@ namespace ConsoleHandler
             alicante.byTrain.Add(madrid);
             alicante.byTrain.Add(barcelona);
             alicante.bySea.Add(mediterraneansea);
-            Map.Add(alicante);
+            map.Add(alicante);
 
             cagliari.name = "Cagliari";
             cagliari.abbreviation = "CAG";
@@ -734,7 +930,7 @@ namespace ConsoleHandler
             cagliari.isEastern = true;
             cagliari.bySea.Add(mediterraneansea);
             cagliari.bySea.Add(tyrrheniansea);
-            Map.Add(cagliari);
+            map.Add(cagliari);
 
             rome.name = "Rome";
             rome.abbreviation = "ROM";
@@ -746,7 +942,7 @@ namespace ConsoleHandler
             rome.byTrain.Add(florence);
             rome.byTrain.Add(naples);
             rome.bySea.Add(tyrrheniansea);
-            Map.Add(rome);
+            map.Add(rome);
 
             naples.name = "Naples";
             naples.abbreviation = "NAP";
@@ -757,7 +953,7 @@ namespace ConsoleHandler
             naples.byTrain.Add(rome);
             naples.byTrain.Add(bari);
             naples.bySea.Add(tyrrheniansea);
-            Map.Add(naples);
+            map.Add(naples);
 
             bari.name = "Bari";
             bari.abbreviation = "BAI";
@@ -767,7 +963,7 @@ namespace ConsoleHandler
             bari.byRoad.Add(rome);
             bari.byTrain.Add(naples);
             bari.bySea.Add(adriaticsea);
-            Map.Add(bari);
+            map.Add(bari);
 
             valona.name = "Valona";
             valona.abbreviation = "VAL";
@@ -778,7 +974,7 @@ namespace ConsoleHandler
             valona.byRoad.Add(salonica);
             valona.byRoad.Add(athens);
             valona.bySea.Add(ioniansea);
-            Map.Add(valona);
+            map.Add(valona);
 
             salonica.name = "Salonica";
             salonica.abbreviation = "SAL";
@@ -788,7 +984,7 @@ namespace ConsoleHandler
             salonica.byRoad.Add(sofia);
             salonica.byTrain.Add(sofia);
             salonica.bySea.Add(ioniansea);
-            Map.Add(salonica);
+            map.Add(salonica);
 
             athens.name = "Athens";
             athens.abbreviation = "ATH";
@@ -796,7 +992,7 @@ namespace ConsoleHandler
             athens.isEastern = true;
             athens.byRoad.Add(valona);
             athens.bySea.Add(ioniansea);
-            Map.Add(athens);
+            map.Add(athens);
 
             atlanticocean.name = "Atlantic Ocean";
             atlanticocean.abbreviation = "ATL";
@@ -810,7 +1006,7 @@ namespace ConsoleHandler
             atlanticocean.bySea.Add(galway);
             atlanticocean.bySea.Add(lisbon);
             atlanticocean.bySea.Add(cadiz);
-            Map.Add(atlanticocean);
+            map.Add(atlanticocean);
 
             irishsea.name = "Irish Sea";
             irishsea.abbreviation = "IRI";
@@ -820,7 +1016,7 @@ namespace ConsoleHandler
             irishsea.bySea.Add(dublin);
             irishsea.bySea.Add(liverpool);
             irishsea.bySea.Add(swansea);
-            Map.Add(irishsea);
+            map.Add(irishsea);
 
             englishchannel.name = "English Channel";
             englishchannel.abbreviation = "ENG";
@@ -831,7 +1027,7 @@ namespace ConsoleHandler
             englishchannel.bySea.Add(plymouth);
             englishchannel.bySea.Add(london);
             englishchannel.bySea.Add(lehavre);
-            Map.Add(englishchannel);
+            map.Add(englishchannel);
 
             northsea.name = "North Sea";
             northsea.abbreviation = "NOR";
@@ -842,7 +1038,7 @@ namespace ConsoleHandler
             northsea.bySea.Add(edinburgh);
             northsea.bySea.Add(amsterdam);
             northsea.bySea.Add(hamburg);
-            Map.Add(northsea);
+            map.Add(northsea);
 
             bayofbiscay.name = "Bay of Biscay";
             bayofbiscay.abbreviation = "BAY";
@@ -852,7 +1048,7 @@ namespace ConsoleHandler
             bayofbiscay.bySea.Add(nantes);
             bayofbiscay.bySea.Add(bordeaux);
             bayofbiscay.bySea.Add(santander);
-            Map.Add(bayofbiscay);
+            map.Add(bayofbiscay);
 
             mediterraneansea.name = "Mediterranean Sea";
             mediterraneansea.abbreviation = "MED";
@@ -864,7 +1060,7 @@ namespace ConsoleHandler
             mediterraneansea.bySea.Add(barcelona);
             mediterraneansea.bySea.Add(marseilles);
             mediterraneansea.bySea.Add(cagliari);
-            Map.Add(mediterraneansea);
+            map.Add(mediterraneansea);
 
             tyrrheniansea.name = "Tyrrhenian Sea";
             tyrrheniansea.abbreviation = "TYR";
@@ -876,7 +1072,7 @@ namespace ConsoleHandler
             tyrrheniansea.bySea.Add(genoa);
             tyrrheniansea.bySea.Add(rome);
             tyrrheniansea.bySea.Add(naples);
-            Map.Add(tyrrheniansea);
+            map.Add(tyrrheniansea);
 
             adriaticsea.name = "Adriatic Sea";
             adriaticsea.abbreviation = "ADR";
@@ -885,7 +1081,7 @@ namespace ConsoleHandler
             adriaticsea.bySea.Add(ioniansea);
             adriaticsea.bySea.Add(bari);
             adriaticsea.bySea.Add(venice);
-            Map.Add(adriaticsea);
+            map.Add(adriaticsea);
 
             ioniansea.name = "Ionian Sea";
             ioniansea.abbreviation = "ION";
@@ -897,7 +1093,7 @@ namespace ConsoleHandler
             ioniansea.bySea.Add(valona);
             ioniansea.bySea.Add(athens);
             ioniansea.bySea.Add(salonica);
-            Map.Add(ioniansea);
+            map.Add(ioniansea);
 
             blacksea.name = "Black Sea";
             blacksea.abbreviation = "BLA";
@@ -906,194 +1102,58 @@ namespace ConsoleHandler
             blacksea.bySea.Add(ioniansea);
             blacksea.bySea.Add(varna);
             blacksea.bySea.Add(constanta);
-            Map.Add(blacksea);
-
-            Dracula dracula = new Dracula(Map[new Random().Next(0, Map.Count())]);
-
-            int time = 5;
-            string[] timesOfDay = new string[6] { "Dawn", "Noon", "Dusk", "Twilight", "Midnight", "Small Hours" };
-
-            string line;
-            string command;
-            string argument1;
-            do
-            {
-                drawTrail(dracula.trail, dracula.powers, timesOfDay[time]);
-                line = Console.ReadLine();
-                try
-                {
-                    command = line.Substring(0, line.IndexOf(' '));
-                }
-                catch (ArgumentOutOfRangeException)
-                {
-                    command = line;
-                }
-
-                try
-                {
-                    argument1 = line.Substring(line.IndexOf(' ') + 1);
-                }
-                catch (ArgumentOutOfRangeException)
-                {
-                    argument1 = "no argument";
-                }
-
-                switch (command)
-                {
-                    case "s": LocationHelper.ShowLocationDetails(GetLocationFromName(argument1, Map)); break;
-                    case "d": dracula.ShowLocation(); break;
-                    case "m":
-                        {
-                            time = (time + 1) % 6;
-                            dracula.MoveDracula(time);
-                            break;
-                        }
-                    case "t": dracula.ShowTrail(); break;
-                    case "r":
-                        {
-                            int trailIndex;
-                            if (int.TryParse(argument1, out trailIndex))
-                            {
-                                try
-                                {
-                                    if (dracula.trail[trailIndex - 1].name == "Hide")
-                                    {
-                                        dracula.RevealHide(trailIndex - 1);
-                                    }
-                                    else
-                                    {
-                                        LocationHelper.RevealLocation(dracula.trail, trailIndex - 1);
-                                    }
-                                }
-                                catch (ArgumentOutOfRangeException)
-                                {
-                                    Console.WriteLine("Unable to reveal card " + argument1);
-                                }
-                            }
-                            else
-                            {
-                                Console.WriteLine("Unable to reveal card " + argument1);
-                            }
-                            break;
-                        }
-                    case "c":
-                        {
-                            int trailLength;
-                            if (int.TryParse(argument1, out trailLength))
-                            {
-                                dracula.TrimTrail(Math.Max(1, trailLength));
-                            }
-                            else
-                            {
-                                Console.WriteLine("Unable to clear Dracula's trail to length " + argument1);
-                            }
-                            break;
-                        }
-                    case "exit": break;
-                    default: Console.WriteLine("I don't know what you're talking about"); break;
-                }
-            } while (command != "exit");
+            map.Add(blacksea);
         }
 
-        public static Location GetLocationFromName(string locationName, List<Location> locationList)
+        public static void SetupEncounters(List<Encounter> encounters)
         {
-            for (int i = 0; i < locationList.Count(); i++)
-            {
-                if ((locationList[i].name.ToLower() == locationName.ToLower()) || (locationList[i].abbreviation.ToLower() == locationName.ToLower()))
-                {
-                    return locationList[i];
-                }
-            }
-            Location unknownLocation = new Location();
-            unknownLocation.name = "Unknown location";
-            return unknownLocation;
-        }
-
-        public static void drawTrail(List<Location> trail, List<DraculaPower> powers, string timeOfDay)
-        {
-            Console.WriteLine("6th 5th 4th 3rd 2nd 1st   Time");
-            for (int i = 5; i >= 0; i--)
-            {
-                if (i + 1 > trail.Count())
-                {
-                    Console.Write("    ");
-                }
-                else
-                {
-                    trail[i].DrawLocation();
-                }
-            }
-
-            switch (timeOfDay)
-            {
-                case "Dawn": Console.ForegroundColor = ConsoleColor.DarkYellow; break;
-                case "Noon": Console.ForegroundColor = ConsoleColor.Yellow; break;
-                case "Dusk": Console.ForegroundColor = ConsoleColor.DarkYellow; break;
-                case "Twilight": Console.ForegroundColor = ConsoleColor.Cyan; break;
-                case "Midnight": Console.ForegroundColor = ConsoleColor.Blue; break;
-                case "Small Hours": Console.ForegroundColor = ConsoleColor.Cyan; break;
-            }
-            Console.WriteLine("  " + timeOfDay);
-            Console.ForegroundColor = ConsoleColor.DarkGreen;
-            string powerString;
-            for (int counter = 5; counter > -1; counter--)
-            {
-                powerString = "    ";
-                for (int i = 0; i < powers.Count(); i++)
-                {
-                    if (powers[i].positionInTrail == counter && powers[i].name != "Hide" && powers[i].name != "Dark Call" && powers[i].name != "Feed")
-                    {
-                        powerString = powers[i].name.Substring(0, 3).ToUpper() + " ";
-                    }
-                }
-                Console.Write(powerString);
-            }
-            Console.ResetColor();
-            Console.WriteLine("");
-
-            //string power6 = "    ";
-            //string power5 = "    ";
-            //string power4 = "    ";
-            //string power3 = "    ";
-            //string power2 = "    ";
-            //string power1 = "    ";
-            //for (int i = 0; i < powers.Count(); i++)
-            //{
-            //    switch (powers[i].positionInTrail)
-            //    {
-            //        case 5: if (powers[i].name == "Wolf Form" || powers[i].name == "Double Back")
-            //            {
-            //                power6 = powers[i].name.Substring(0, 3).ToUpper() + " ";
-            //            } break;
-            //        case 4: if (powers[i].name == "Wolf Form" || powers[i].name == "Double Back")
-            //            {
-            //                power5 = powers[i].name.Substring(0, 3).ToUpper() + " ";
-            //            } break;
-            //        case 3: if (powers[i].name == "Wolf Form" || powers[i].name == "Double Back")
-            //            {
-            //                power4 = powers[i].name.Substring(0, 3).ToUpper() + " ";
-            //            } break;
-            //        case 2: if (powers[i].name == "Wolf Form" || powers[i].name == "Double Back")
-            //            {
-            //                power3 = powers[i].name.Substring(0, 3).ToUpper() + " ";
-            //            } break;
-            //        case 1: if (powers[i].name == "Wolf Form" || powers[i].name == "Double Back")
-            //            {
-            //                power2 = powers[i].name.Substring(0, 3).ToUpper() + " ";
-            //            } break;
-            //        case 0: if (powers[i].name == "Wolf Form" || powers[i].name == "Double Back")
-            //            {
-            //                power1 = powers[i].name.Substring(0, 3).ToUpper() + " ";
-            //            } break;
-            //    }
-            //}
-            //Console.Write(power6);
-            //Console.Write(power5);
-            //Console.Write(power4);
-            //Console.Write(power3);
-            //Console.Write(power2);
-            //Console.Write(power1);
+            encounters.Add(new Encounter("Ambush", "AMB"));
+            encounters.Add(new Encounter("Ambush", "AMB"));
+            encounters.Add(new Encounter("Ambush", "AMB"));
+            encounters.Add(new Encounter("Assasin", "ASS"));
+            encounters.Add(new Encounter("Bats", "BAT"));
+            encounters.Add(new Encounter("Bats", "BAT"));
+            encounters.Add(new Encounter("Bats", "BAT"));
+            encounters.Add(new Encounter("Desecrated Soil", "DES"));
+            encounters.Add(new Encounter("Desecrated Soil", "DES"));
+            encounters.Add(new Encounter("Desecrated Soil", "DES"));
+            encounters.Add(new Encounter("Fog", "FOG"));
+            encounters.Add(new Encounter("Fog", "FOG"));
+            encounters.Add(new Encounter("Fog", "FOG"));
+            encounters.Add(new Encounter("Fog", "FOG"));
+            encounters.Add(new Encounter("Minion with Knife", "MIK"));
+            encounters.Add(new Encounter("Minion with Knife", "MIK"));
+            encounters.Add(new Encounter("Minion with Knife", "MIK"));
+            encounters.Add(new Encounter("Minion with Knife and Pistol", "MIP"));
+            encounters.Add(new Encounter("Minion with Knife and Pistol", "MIP"));
+            encounters.Add(new Encounter("Minion with Knife and Rifle", "MIR"));
+            encounters.Add(new Encounter("Minion with Knife and Rifle", "MIR"));
+            encounters.Add(new Encounter("Hoax", "HOA"));
+            encounters.Add(new Encounter("Hoax", "HOA"));
+            encounters.Add(new Encounter("Lightning", "LIG"));
+            encounters.Add(new Encounter("Lightning", "LIG"));
+            encounters.Add(new Encounter("Peasants", "PEA"));
+            encounters.Add(new Encounter("Peasants", "PEA"));
+            encounters.Add(new Encounter("Plague", "PLA"));
+            encounters.Add(new Encounter("Rats", "RAT"));
+            encounters.Add(new Encounter("Rats", "RAT"));
+            encounters.Add(new Encounter("Saboteur", "SAB"));
+            encounters.Add(new Encounter("Saboteur", "SAB"));
+            encounters.Add(new Encounter("Spy", "SPY"));
+            encounters.Add(new Encounter("Spy", "SPY"));
+            encounters.Add(new Encounter("Thief", "THI"));
+            encounters.Add(new Encounter("Thief", "THI"));
+            encounters.Add(new Encounter("New Vampire", "VAM"));
+            encounters.Add(new Encounter("New Vampire", "VAM"));
+            encounters.Add(new Encounter("New Vampire", "VAM"));
+            encounters.Add(new Encounter("New Vampire", "VAM"));
+            encounters.Add(new Encounter("New Vampire", "VAM"));
+            encounters.Add(new Encounter("New Vampire", "VAM"));
+            encounters.Add(new Encounter("Wolves", "WOL"));
+            encounters.Add(new Encounter("Wolves", "WOL"));
+            encounters.Add(new Encounter("Wolves", "WOL"));
         }
 
     }
+
 }
