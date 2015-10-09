@@ -350,6 +350,10 @@ namespace DraculaHandler
                         powers[i].positionInTrail = 6;
                     }
                 }
+                if (trail.Last().name == "Hide")
+                {
+                    locationWhereHideWasUsed = null;
+                }
                 trail.Last().isRevealed = false;
                 if (trail.Last() != currentLocation)
                 {

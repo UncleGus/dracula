@@ -1,4 +1,5 @@
-﻿using EncounterHandler;
+﻿using ConsoleHandler;
+using EncounterHandler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -156,11 +157,11 @@ namespace LocationHandler
             }
         }
 
-        public static void RevealLocation(List<Location> trail, int trailIndex)
+        public static void RevealLocation(GameState g, int trailIndex)
         {
             try
             {
-                trail[trailIndex].isRevealed = true;
+                g.dracula.trail[trailIndex].isRevealed = true;
             }
             catch (ArgumentOutOfRangeException)
             { }
