@@ -46,6 +46,7 @@
     <Compile Include="Dracula.cs" />
     <Compile Include="Encounter.cs" />
     <Compile Include="Event.cs" />
+    <Compile Include="GameState.cs" />
     <Compile Include="Hunter.cs" />
     <Compile Include="Location.cs" />
     <Compile Include="Logger.cs" />
