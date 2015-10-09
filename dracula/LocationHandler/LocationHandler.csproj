@@ -44,10 +44,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EncounterHandler\EncounterHandler.csproj">
-      <Project>{fccdeff8-1459-440a-9f4a-82cafcf18463}</Project>
-      <Name>EncounterHandler</Name>
-    </ProjectReference>
     <ProjectReference Include="..\LogHandler\LogHandler.csproj">
       <Project>{cab6e21a-8a34-4c10-865f-15eb74174bbb}</Project>
       <Name>LogHandler</Name>
