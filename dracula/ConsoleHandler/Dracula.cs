@@ -23,7 +23,7 @@ namespace DraculaHandler
         List<Encounter> encounterPool = new List<Encounter>();
         List<Encounter> encountersToMature = new List<Encounter>();
         List<Encounter> encounterHand = new List<Encounter>();
-        Location locationWhereHideWasUsed;
+        public Location locationWhereHideWasUsed;
         public int vampireTracker;
         public Location[] catacombs = new Location[3];
 
@@ -427,6 +427,11 @@ namespace DraculaHandler
             }
 
             Console.WriteLine("Dracula was hiding");
+        }
+
+        public void RevealHide()
+        {
+            RevealHide(trail.FindIndex(location => location.name == "Hide"));
         }
 
         public void CheckBloodLossAtSea(LocationType locationType)

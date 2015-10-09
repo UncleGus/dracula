@@ -104,7 +104,7 @@ namespace ConsoleHandler
 
                 switch (command)
                 {
-                    case "s": LocationHelper.ShowLocationDetails(GetLocationFromName(argument1, g.map)); break;
+                    case "s": LocationHelper.ShowLocationDetails(GetLocationFromName(g, argument1)); break;
                     case "d": g.dracula.ShowLocation(); break;
                     case "m":
                         {
@@ -264,17 +264,65 @@ namespace ConsoleHandler
 
         private static void PlayHiredScouts(GameState g)
         {
-            throw new NotImplementedException();
+            string line = "";
+            Location locationToReveal;
+            do
+            {
+                Console.WriteLine("Name the first city");
+                line = Console.ReadLine();
+                locationToReveal = GetLocationFromName(g, line);
+                Console.WriteLine(locationToReveal.name);
+            } while (locationToReveal.name == "Unknown location");
+            if (g.dracula.trail.Contains(locationToReveal))
+            {
+                locationToReveal.isRevealed = true;
+                Console.Write("Revealing " + locationToReveal.name);
+                for (int i = 0; i < locationToReveal.encounters.Count(); i++)
+                {
+                    locationToReveal.encounters[i].isRevealed = true;
+                    Console.Write(" and " + locationToReveal.encounters[i].name);
+                }
+                Console.WriteLine("");
+                drawTrail(g);
+            } else
+            {
+                Console.Write(locationToReveal.name + " is not in Dracula's trail");
+            }
+            do
+            {
+                Console.WriteLine("Name the second city");
+                line = Console.ReadLine();
+                locationToReveal = GetLocationFromName(g, line);
+                Console.WriteLine(locationToReveal.name);
+            } while (locationToReveal.name == "Unknown location");
+            if (g.dracula.trail.Contains(locationToReveal))
+            {
+                locationToReveal.isRevealed = true;
+                Console.Write("Revealing " + locationToReveal.name);
+                for (int i = 0; i < locationToReveal.encounters.Count(); i++)
+                {
+                    locationToReveal.encounters[i].isRevealed = true;
+                    Console.Write(" and " + locationToReveal.encounters[i].name);
+                }
+                Console.WriteLine("");
+            }
+            else
+            {
+                Console.WriteLine(locationToReveal.name + " is not in Dracula's trail");
+            }
+            DiscardEventCard(g, "Hired Scouts");
+
         }
 
         private static void PlayEscapeRoute(GameState g)
         {
-            throw new NotImplementedException();
+            Console.WriteLine("Forewarned is supposed to be played at the start of combat");
         }
 
         private static void PlayExcellentWeather(GameState g)
         {
-            throw new NotImplementedException();
+            Console.WriteLine("You may move up to four sea moves this turn");
+            DiscardEventCard(g, "Excellent Weather");
         }
 
         private static void PlayCharteredCarriage(GameState g)
@@ -284,7 +332,7 @@ namespace ConsoleHandler
 
         private static void PlayForewarned(GameState g)
         {
-            throw new NotImplementedException();
+            Console.WriteLine("Forewarned is supposed to be played when Dracula reveals an encounter at your location");
         }
 
         private static void PlaySecretWeapon(GameState g)
@@ -334,12 +382,31 @@ namespace ConsoleHandler
 
         private static void PlayNewspaperReports(GameState g)
         {
-            throw new NotImplementedException();
+            int checkingLocationIndex = g.dracula.trail.Count();
+            do
+            {
+                checkingLocationIndex--;
+            } while ((g.dracula.trail[checkingLocationIndex].type != LocationType.Castle && g.dracula.trail[checkingLocationIndex].type != LocationType.City && g.dracula.trail[checkingLocationIndex].type != LocationType.Sea && g.dracula.trail[checkingLocationIndex].type != LocationType.Town) || g.dracula.trail[checkingLocationIndex].isRevealed);
+            
+            if (g.dracula.trail[checkingLocationIndex] == g.dracula.currentLocation)
+            {
+                Console.WriteLine("The oldest unrevealed location in Dracula's trail is his current location");
+                if (g.dracula.locationWhereHideWasUsed == g.dracula.currentLocation)
+                {
+                    Console.WriteLine("Here's the Hide card to prove it");
+                    g.dracula.RevealHide();
+                }
+            } else
+            {
+                g.dracula.trail[checkingLocationIndex].isRevealed = true;
+                Console.WriteLine("Revealing " + g.dracula.trail[checkingLocationIndex].name);
+            }
+            DiscardEventCard(g, "Newspaper Reports");
         }
 
         private static void PlayAdvancePlanning(GameState g)
         {
-            throw new NotImplementedException();
+            Console.WriteLine("Advance Planning is supposed to be played at the start of a combat");
         }
 
         private static void PlayMysticResearch(GameState g)
@@ -382,12 +449,12 @@ namespace ConsoleHandler
 
         private static void PlayGreatStrength(GameState g)
         {
-            Console.WriteLine("This card is supposed to be played when a Hunter receives damage or a bite");
+            Console.WriteLine("Great Strength is supposed to be played when a Hunter receives damage or a bite");
         }
 
         private static void PlayHeroicLeap(GameState g)
         {
-            Console.WriteLine("This card is supposed to be played at the start of a combat");
+            Console.WriteLine("Heroic Leap is supposed to be played at the start of a combat");
         }
 
         private static void PlaySisterAgatha(GameState g)
@@ -428,13 +495,13 @@ namespace ConsoleHandler
         }
 
 
-        public static Location GetLocationFromName(string locationName, List<Location> locationList)
+        public static Location GetLocationFromName(GameState g, string locationName)
         {
-            for (int i = 0; i < locationList.Count(); i++)
+            for (int i = 0; i < g.map.Count(); i++)
             {
-                if ((locationList[i].name.ToLower() == locationName.ToLower()) || (locationList[i].abbreviation.ToLower() == locationName.ToLower()))
+                if ((g.map[i].name.ToLower().StartsWith(locationName.ToLower())) || (g.map[i].abbreviation.ToLower() == locationName.ToLower()))
                 {
-                    return locationList[i];
+                    return g.map[i];
                 }
             }
             Location unknownLocation = new Location();
