@@ -19,11 +19,13 @@ namespace DraculaHandler
         List<DraculaPower> possiblePowers = new List<DraculaPower>();
         public int blood;
         bool lostBloodAtSeaOnLatestTurn;
-        int encounterHandSize;
+        public int encounterHandSize;
         List<Encounter> encounterPool = new List<Encounter>();
+        List<Encounter> encountersToMature = new List<Encounter>();
         List<Encounter> encounterHand = new List<Encounter>();
         Location locationWhereHideWasUsed;
         public int vampireTracker;
+        public Location[] catacombs = new Location[3];
 
         public Dracula(Location startLocation, List<Encounter> poolOfEncounters)
         {
@@ -44,6 +46,7 @@ namespace DraculaHandler
 
         public bool MoveDracula(int timeOfDay)
         {
+            Logger.WriteToDebugLog("STARTING MOVEMENT PHASE");
 
             // build list of possible locations to move to
             determinePossibleLocations();
@@ -91,7 +94,6 @@ namespace DraculaHandler
                     if (possiblePowers[chosenActionIndex].name == "Hide")
                     {
                         locationWhereHideWasUsed = currentLocation;
-                        PlaceEncounterIfLegal(trail[0]);
                     }
                 }
                 else if (possiblePowers[chosenActionIndex].name == "Double Back")
@@ -101,7 +103,6 @@ namespace DraculaHandler
                 else if (possiblePowers[chosenActionIndex].name == "Wolf Form")
                 {
                     DoWolfFormMove();
-                    PlaceEncounterIfLegal(trail[0]);
                 }
 
                 // put the power used at the head of the trail
@@ -109,33 +110,13 @@ namespace DraculaHandler
                 possiblePowers[chosenActionIndex].positionInTrail = 0;
             }
             else
+            // performing a regular move
             {
                 // choose a location
                 moveByRoadOrSea();
                 Logger.WriteToGameLog("Dracula moved to " + currentLocation.name);
-                PlaceEncounterIfLegal(trail[0]);
             }
             Logger.WriteToDebugLog("Dracula has finished moving");
-            Logger.WriteToDebugLog("Checking if the location where Dracula hid has been removed from the trail");
-            if (locationWhereHideWasUsed != null)
-            {
-                if (!trail.Contains(locationWhereHideWasUsed))
-                {
-                    Logger.WriteToDebugLog("Hide location has left the trail, revealing the Hide card");
-                    RevealHide(trail.FindIndex(location => location.name == "Hide"), false);
-                }
-            }
-            Logger.WriteToDebugLog("Checking if Dracula is in Castle Dracula");
-            if (currentLocation.type == LocationType.Castle)
-            {
-                Logger.WriteToDebugLog("Revealing Castle Dracula");
-                currentLocation.isRevealed = true;
-                if (locationWhereHideWasUsed.type == LocationType.Castle)
-                {
-                    Logger.WriteToDebugLog("Also revealing Hide as it was used at Castle Dracula");
-                    RevealHide(trail.FindIndex(location => location.name == "Hide"), false);
-                }
-            }
             return true;
         }
 
@@ -190,18 +171,29 @@ namespace DraculaHandler
                 possibleMoves.Add(currentLocation.bySea[i]);
             }
 
+            Logger.WriteToDebugLog("Checking trail locations against possible moves");
             for (int i = 0; i < trail.Count(); i++)
             {
                 if (trail[i].name != "Dark Call" && trail[i].name != "Hide" && trail[i].name != "Feed")
                 {
-                    Logger.WriteToDebugLog("Moving location " + trail[i].name + " from possible moves to Double Back locations");
-                    possibleDoubleBackMoves.Add(trail[i]);
+                    if (possibleMoves.Contains(trail[i]))
+                    {
+                        Logger.WriteToDebugLog("Moving location " + trail[i].name + " from possible moves to Double Back locations because it is in Dracula's trail");
+                        possibleDoubleBackMoves.Add(trail[i]);
+                        possibleMoves.Remove(trail[i]);
+                    }
                 }
-                Logger.WriteToDebugLog("Removing " + trail[i].name + " from possible moves as it is in Dracula's trail");
-                possibleMoves.Remove(trail[i]);
             }
-            Logger.WriteToDebugLog("Removing the current location, " + currentLocation.name + " from possible Double Back moves");
-            possibleDoubleBackMoves.Remove(currentLocation);
+            Logger.WriteToDebugLog("Checking Catacombs locations against possible moves");
+            for (int i = 0; i < 3; i++)
+            {
+                if (catacombs[i] != null && possibleMoves.Contains(catacombs[i]))
+                {
+                    Logger.WriteToDebugLog("Moving " + catacombs[i].name + " from possible moves to possible Double Back moves because it is in the Catacombs");
+                    possibleDoubleBackMoves.Add(catacombs[i]);
+                    possibleMoves.Remove(catacombs[i]);
+                }
+            }
         }
 
         public void determinePossibleWolfFormLocations()
@@ -217,7 +209,7 @@ namespace DraculaHandler
             {
                 if (currentLocation.byRoad[i].type != LocationType.Hospital)
                 {
-                    Logger.WriteToDebugLog("Adding location " + currentLocation.byRoad[i]);
+                    Logger.WriteToDebugLog("Adding location " + currentLocation.byRoad[i].name);
                     possibleMoves.Add(currentLocation.byRoad[i]);
                 }
                 else
@@ -327,8 +319,22 @@ namespace DraculaHandler
             Logger.WriteToDebugLog("Adding " + currentLocation.name + " to the head of the trail");
             trail.Insert(0, currentLocation);
             MovePowersAlongTrail();
-            TrimTrail(6);
             CheckBloodLossAtSea(previousLocationType);
+            Logger.WriteToDebugLog("Checking if Dracula is in Castle Dracula");
+            if (currentLocation.type == LocationType.Castle)
+            {
+                Logger.WriteToDebugLog("Revealing Castle Dracula");
+                currentLocation.isRevealed = true;
+                if (locationWhereHideWasUsed != null)
+                {
+                    if (locationWhereHideWasUsed.type == LocationType.Castle)
+                    {
+                        Logger.WriteToDebugLog("Also revealing Hide as it was used at Castle Dracula");
+                        RevealHide(trail.FindIndex(location => location.name == "Hide"));
+                    }
+                }
+            }
+
         }
 
         public void TrimTrail(int length)
@@ -354,7 +360,8 @@ namespace DraculaHandler
                         trail.Last().encounters[0].isRevealed = false;
                         trail.Last().encounters.Remove(trail.Last().encounters[0]);
                     }
-                } else
+                }
+                else
                 {
                     Logger.WriteToDebugLog("Not moving this location's encounters back to the encounter pool because it is Dracula's current location");
                 }
@@ -379,18 +386,19 @@ namespace DraculaHandler
             }
         }
 
-        public void RevealHide(int hideIndex, bool moveEncounterToHideLocation)
+        public void RevealHide(int hideIndex)
         {
             // move Hide's encounter to the actual location card if applicable
-            if (moveEncounterToHideLocation)
-            {
-                Logger.WriteToDebugLog("Moving the encounter on the Hide card to the actual location card");
-                for (int i = 0; i < trail[hideIndex].encounters.Count(); i++)
-                {
-                    Logger.WriteToDebugLog("Moving encounter " + trail[hideIndex].encounters[i].name + " to location " + locationWhereHideWasUsed.name);
-                    locationWhereHideWasUsed.encounters.Add(trail[hideIndex].encounters[i]);
-                }
-            }
+            // ACTUALLY, THIS DOESN'T HAPPEN
+            //if (moveEncounterToHideLocation)
+            //{
+            //    Logger.WriteToDebugLog("Moving the encounter on the Hide card to the actual location card");
+            //    for (int i = 0; i < trail[hideIndex].encounters.Count(); i++)
+            //    {
+            //        Logger.WriteToDebugLog("Moving encounter " + trail[hideIndex].encounters[i].name + " to location " + locationWhereHideWasUsed.name);
+            //        locationWhereHideWasUsed.encounters.Add(trail[hideIndex].encounters[i]);
+            //    }
+            //}
             Logger.WriteToDebugLog("Clearing the encounters from the Hide card");
             trail[hideIndex].encounters.Clear();
 
@@ -459,7 +467,6 @@ namespace DraculaHandler
             Logger.WriteToDebugLog("Adding the power card " + powerCard.name + " to the head of trail");
             trail.Insert(0, powerCard);
             MovePowersAlongTrail();
-            TrimTrail(6);
         }
 
         public void DoDoubleBackMove()
@@ -470,47 +477,71 @@ namespace DraculaHandler
 
             // choose a location from the possible double back moves
             int doubleBackLocation = new Random().Next(0, possibleDoubleBackMoves.Count());
+            bool doublingBackToCatacombs = false;
 
-            int doubleBackPositionInTrail = trail.FindIndex(location => location == possibleDoubleBackMoves[doubleBackLocation]);
-            if (doubleBackPositionInTrail > 0)
+            int doubleBackIndex = trail.FindIndex(location => location == possibleDoubleBackMoves[doubleBackLocation]);
+            if (doubleBackIndex > -1)
             {
-                if (trail[doubleBackPositionInTrail - 1].name == "Hide")
+                Logger.WriteToDebugLog("Doubling back to a location in the trail");
+                if (doubleBackIndex > 0)
                 {
-                    Logger.WriteToDebugLog("Dracula Doubled Back to " + possibleDoubleBackMoves[doubleBackLocation].name + " and Hide is the next card in the trail");
-                    Console.WriteLine("Dracula Doubled Back to a location where he previously used Hide (position " + (doubleBackPositionInTrail - 1) + ")");
-                    RevealHide(doubleBackPositionInTrail - 1, true);
-                }
-                else if (doubleBackPositionInTrail > 1)
-                {
-                    if (trail[doubleBackPositionInTrail - 1].type == LocationType.Power && trail[doubleBackPositionInTrail - 2].name == "Hide")
+                    if (trail[doubleBackIndex - 1].name == "Hide")
                     {
-                        Logger.WriteToDebugLog("Dracula Doubled Back to " + possibleDoubleBackMoves[doubleBackLocation].name + " and Hide is the next card in the trail, after " + trail[doubleBackPositionInTrail - 1].name);
-                        Console.WriteLine("Dracula Doubled Back to a location where he previously used Hide (position " + (doubleBackPositionInTrail - 1) + ")");
-                        RevealHide(doubleBackPositionInTrail - 2, true);
+                        Logger.WriteToDebugLog("Dracula Doubled Back to " + possibleDoubleBackMoves[doubleBackLocation].name + " and Hide is the next card in the trail");
+                        Console.WriteLine("Dracula Doubled Back to a location where he previously used Hide (position " + (doubleBackIndex - 1) + ")");
+                        RevealHide(doubleBackIndex - 1);
                     }
-                    else if (doubleBackPositionInTrail > 2)
+                    else if (doubleBackIndex > 1)
                     {
-                        if (trail[doubleBackPositionInTrail - 1].type == LocationType.Power && trail[doubleBackPositionInTrail - 2].type == LocationType.Power && trail[doubleBackPositionInTrail - 3].name == "Hide")
+                        if (trail[doubleBackIndex - 1].type == LocationType.Power && trail[doubleBackIndex - 2].name == "Hide")
                         {
-                            Logger.WriteToDebugLog("Dracula Doubled Back to " + possibleDoubleBackMoves[doubleBackLocation].name + " and Hide is the next card in the trail, after " + trail[doubleBackPositionInTrail - 1].name + " and " + trail[doubleBackPositionInTrail - 2].name);
-                            Console.WriteLine("Dracula Doubled Back to a location where he previously used Hide (position " + (doubleBackPositionInTrail - 1) + ")");
-                            RevealHide(doubleBackPositionInTrail - 3, true);
+                            Logger.WriteToDebugLog("Dracula Doubled Back to " + possibleDoubleBackMoves[doubleBackLocation].name + " and Hide is the next card in the trail, after " + trail[doubleBackIndex - 1].name);
+                            Console.WriteLine("Dracula Doubled Back to a location where he previously used Hide (position " + (doubleBackIndex - 1) + ")");
+                            RevealHide(doubleBackIndex - 2);
+                        }
+                        else if (doubleBackIndex > 2)
+                        {
+                            if (trail[doubleBackIndex - 1].type == LocationType.Power && trail[doubleBackIndex - 2].type == LocationType.Power && trail[doubleBackIndex - 3].name == "Hide")
+                            {
+                                Logger.WriteToDebugLog("Dracula Doubled Back to " + possibleDoubleBackMoves[doubleBackLocation].name + " and Hide is the next card in the trail, after " + trail[doubleBackIndex - 1].name + " and " + trail[doubleBackIndex - 2].name);
+                                Console.WriteLine("Dracula Doubled Back to a location where he previously used Hide (position " + (doubleBackIndex - 1) + ")");
+                                RevealHide(doubleBackIndex - 3);
+                            }
                         }
                     }
                 }
+                else
+                {
+                    Logger.WriteToDebugLog("TRIED TO DOUBLE BACK TO A LOCATION WHEN THERE ARE NONE IN THE LIST");
+                }
+
             }
+            else
+            {
+                Logger.WriteToDebugLog("Doubling back to a location in the Catacombs");
+                doublingBackToCatacombs = true;
+            }
+
 
             // move location to the front of the trail
             Logger.WriteToDebugLog("Temporarily holding " + possibleDoubleBackMoves[doubleBackLocation].name);
             Location tempLocation = possibleDoubleBackMoves[doubleBackLocation];
-            Logger.WriteToDebugLog("Removing " + tempLocation.name + " from the trail");
-            trail.Remove(tempLocation);
+            if (doublingBackToCatacombs)
+            {
+                Logger.WriteToDebugLog("Removing " + tempLocation.name + " from the Catacombs");
+                catacombs[Array.IndexOf(catacombs, tempLocation)] = null;
+            }
+            else
+            {
+                Logger.WriteToDebugLog("Removing " + tempLocation.name + " from the trail");
+                trail.Remove(tempLocation);
+            }
             Logger.WriteToDebugLog("Putting " + tempLocation.name + " back at the head of the trail");
             trail.Insert(0, tempLocation);
             Logger.WriteToDebugLog("Dracula's current location is now " + currentLocation.name);
             currentLocation = trail[0];
 
-            Logger.WriteToGameLog("Dracula Doubled Back to " + currentLocation.name);
+            Logger.WriteToGameLog("Dracula Doubled Back to " + currentLocation.name + " from " + (doublingBackToCatacombs ? " the Catacombs" : " his trail"));
 
             // move the power cards that are in the trail
             for (int i = 0; i < powers.Count(); i++)
@@ -540,6 +571,7 @@ namespace DraculaHandler
 
         public void DrawEncounters(int totalNumberOfEncounters)
         {
+            Logger.WriteToDebugLog("DRAWING ENCOUNTERS");
             Logger.WriteToDebugLog("Dracula is drawing up to " + totalNumberOfEncounters + " encounters");
             while (encounterHand.Count() < totalNumberOfEncounters)
             {
@@ -563,12 +595,128 @@ namespace DraculaHandler
                 Logger.WriteToDebugLog("Not placing an encounter here as it is a sea location");
                 return;
             }
-            int chosenEncounter = new Random().Next(0, encounterHandSize);
+            Logger.WriteToDebugLog("Checking if Dracula used a power at this location");
+            int locationIndex = trail.FindIndex(loc => loc == location);
+            if (locationIndex > -1)
+            {
+                Logger.WriteToDebugLog("This location is in the trail, checking if a power was used here");
+                if (trail[locationIndex].name == "Dark Call")
+                {
+                    Logger.WriteToDebugLog("Not placing an encounter here as Dracula used Dark Call");
+                    return;
+                }
+                if (trail[locationIndex].name == "Feed")
+                {
+                    Logger.WriteToDebugLog("Not placing an encounter here as Dracula used Feed");
+                    return;
+                }
+                for (int i = 0; i < powers.Count(); i++)
+                {
+                    if (powers[i].name == "Double Back" && powers[i].positionInTrail == locationIndex)
+                    {
+                        Logger.WriteToDebugLog("Not placing an encounter here as Dracula used Double Back");
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                Logger.WriteToDebugLog("This location isn't in the trail, not checking any further");
+            }
+            int chosenEncounter = new Random().Next(0, encounterHand.Count());
             Logger.WriteToDebugLog("Placing encounter " + encounterHand[chosenEncounter].name);
             Logger.WriteToGameLog("Dracula placed encounter " + encounterHand[chosenEncounter].name);
             location.encounters.Add(encounterHand[chosenEncounter]);
             encounterHand.Remove(encounterHand[chosenEncounter]);
-            DrawEncounters(encounterHandSize);
+        }
+
+        public void HandleDroppedOffLocations()
+        {
+            Logger.WriteToDebugLog("DEALING WITH DROPPED OFF LOCATIONS");
+            while (trail.Count > 6)
+            {
+                if (trail.Last() == locationWhereHideWasUsed)
+                {
+                    Logger.WriteToDebugLog("Hide location has left the trail, revealing the Hide card");
+                    RevealHide(trail.FindIndex(location => location.name == "Hide"));
+                }
+                Logger.WriteToDebugLog("Deciding what to do with " + trail.Last().name);
+                if (trail.Last().type == LocationType.Power)
+                {
+                    Logger.WriteToDebugLog(trail.Last().name + " is a power card, so it gets discarded");
+                    TrimTrail(trail.Count() - 1);
+                    return;
+                }
+                if (trail.Last().type == LocationType.Sea)
+                {
+                    Logger.WriteToDebugLog(trail.Last().name + " is a sea location, so it gets discarded");
+                    TrimTrail(trail.Count() - 1);
+                    return;
+                }
+                int emptyIndex = Array.IndexOf(catacombs, null);
+                if (emptyIndex > -1)
+                {
+                    Logger.WriteToDebugLog("There is a space in the Catacombs");
+                    if (new Random().Next(0, 6) > 4)
+                    {
+                        Logger.WriteToDebugLog("Putting " + trail.Last().name + " into the Catacombs");
+                        catacombs[emptyIndex] = trail.Last();
+                        trail.Remove(trail.Last());
+                        PlaceEncounterIfLegal(catacombs[emptyIndex]);
+                        Logger.WriteToGameLog("Dracula put " + catacombs[emptyIndex].name + " into the Catacombs with encounters");
+                    }
+                    else
+                    {
+                        Logger.WriteToDebugLog("Discarding " + trail.Last().name);
+                        TrimTrail(trail.Count() - 1);
+                    }
+                }
+                else
+                {
+                    Logger.WriteToDebugLog("There is no space in the Catacombs, discarding " + trail.Last().name);
+                    TrimTrail(trail.Count() - 1);
+                }
+            }
+        }
+
+        public void TakeStartOfTurnActions()
+        {
+            Logger.WriteToDebugLog("Deciding what to do with Catacombs locations");
+            for (int i = 0; i < 3; i++)
+            {
+                if (catacombs[i] != null)
+                {
+                    Logger.WriteToDebugLog("Deciding what to do with location " + catacombs[i].name);
+                    if (new Random().Next(0, 5) > 3)
+                    {
+                        Logger.WriteToDebugLog("Discarding " + catacombs[i].name);
+                        while (catacombs[i].encounters.Count() > 0)
+                        {
+                            Logger.WriteToDebugLog("Putting encounter " + catacombs[i].encounters.First().name + " back into the encounter pool");
+                            encounterPool.Add(catacombs[i].encounters.First());
+                            catacombs[i].encounters.Remove(catacombs[i].encounters.First());
+                        }
+                        Logger.WriteToDebugLog("Emptying " + catacombs[i].name + " from Catacombs");
+                        catacombs[i] = null;
+                    }
+                }
+            }
+        }
+
+        public void DoActionPhase()
+        {
+            Logger.WriteToDebugLog("PERFORMING ACTION PHASE");
+            Logger.WriteToDebugLog("Placing an encounter");
+            PlaceEncounterIfLegal(trail[0]);
+        }
+
+        public void MatureEncounters()
+        {
+            Logger.WriteToDebugLog("MATURING ENCOUNTERS");
+            while (encountersToMature.Count > 0)
+            {
+                Logger.WriteToDebugLog("Maturing encounter " + encountersToMature.First());
+            }
         }
     }
 

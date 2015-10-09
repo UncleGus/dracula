@@ -52,7 +52,7 @@ namespace ConsoleHandler
             Logger.WriteToDebugLog("Dracula started in " + dracula.currentLocation.name);
             Logger.WriteToGameLog("Dracula started in " + dracula.currentLocation.name);
 
-            int time = 5;
+            int time = -1;
             string[] timesOfDay = new string[6] { "Dawn", "Noon", "Dusk", "Twilight", "Midnight", "Small Hours" };
 
             string line;
@@ -60,7 +60,7 @@ namespace ConsoleHandler
             string argument1;
             do
             {
-                drawTrail(dracula.trail, dracula.powers, timesOfDay[time], dracula.blood, dracula.vampireTracker);
+                drawTrail(dracula, timesOfDay[Math.Max(0, time)]);
                 line = Console.ReadLine();
                 try
                 {
@@ -103,9 +103,14 @@ namespace ConsoleHandler
                             }
                             else
                             {
-                                Logger.WriteToDebugLog("Dracula is at sea, skipping Timekeeping phase so time remains " + timesOfDay[time]);
+                                Logger.WriteToDebugLog("Dracula is at sea, skipping Timekeeping phase so time remains " + timesOfDay[Math.Max(0, time)]);
                             }
+                            dracula.TakeStartOfTurnActions();
                             dracula.MoveDracula(time);
+                            dracula.HandleDroppedOffLocations();
+                            dracula.DoActionPhase();
+                            dracula.MatureEncounters();
+                            dracula.DrawEncounters(dracula.encounterHandSize);
                             break;
                         }
                     case "t": dracula.ShowTrail(); break;
@@ -118,7 +123,7 @@ namespace ConsoleHandler
                                 {
                                     if (dracula.trail[trailIndex - 1].name == "Hide")
                                     {
-                                        dracula.RevealHide(trailIndex - 1, true);
+                                        dracula.RevealHide(trailIndex - 1);
                                     }
                                     else
                                     {
@@ -143,7 +148,7 @@ namespace ConsoleHandler
                             {
                                 try
                                 {
-                                        LocationHelper.RevealEncounter(dracula.trail, trailIndex - 1);
+                                    LocationHelper.RevealEncounter(dracula.trail, trailIndex - 1);
                                 }
                                 catch (ArgumentOutOfRangeException)
                                 {
@@ -189,18 +194,18 @@ namespace ConsoleHandler
             return unknownLocation;
         }
 
-        public static void drawTrail(List<Location> trail, List<DraculaPower> powers, string timeOfDay, int draculaBlood, int vampireCount)
+        public static void drawTrail(Dracula dracula, string timeOfDay)
         {
-            Console.WriteLine("6th 5th 4th 3rd 2nd 1st   Time        Dracula  Vampires");
+            Console.WriteLine("6th 5th 4th 3rd 2nd 1st   Time        Dracula  Vampires  Catacombs");
             for (int i = 5; i >= 0; i--)
             {
-                if (i + 1 > trail.Count())
+                if (i + 1 > dracula.trail.Count())
                 {
                     Console.Write("    ");
                 }
                 else
                 {
-                    trail[i].DrawLocation();
+                    dracula.trail[i].DrawLocation();
                 }
             }
 
@@ -219,52 +224,110 @@ namespace ConsoleHandler
             {
                 Console.Write(" ");
             }
-            Console.Write(draculaBlood);
+            Console.Write(dracula.blood);
             Console.ResetColor();
-            for (int i = 0; i < (9 - draculaBlood.ToString().Length); i++)
+            for (int i = 0; i < (9 - dracula.blood.ToString().Length); i++)
             {
                 Console.Write(" ");
             }
-            Console.WriteLine(Math.Max(0, vampireCount));
+            Console.Write(Math.Max(0, dracula.vampireTracker));
+            for (int i = 0; i < (10 - dracula.vampireTracker.ToString().Length); i++)
+            {
+                Console.Write(" ");
+            }
+            Console.ForegroundColor = ConsoleColor.Red;
+            for (int i = 0; i < 3; i++)
+            {
+                if (dracula.catacombs[i] != null)
+                {
+                    if (dracula.catacombs[i].isRevealed)
+                    {
+                        Console.Write(dracula.catacombs[i].abbreviation + " ");
+                    }
+                    else
+                    {
+                        Console.Write("### ");
+                    }
+                }
+                else
+                {
+                    Console.Write("    ");
+                }
+            }
+            Console.WriteLine("");
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             string tempString;
             for (int counter = 5; counter > -1; counter--)
             {
                 tempString = "    ";
-                for (int i = 0; i < powers.Count(); i++)
+                for (int i = 0; i < dracula.powers.Count(); i++)
                 {
-                    if (powers[i].positionInTrail == counter && powers[i].name != "Hide" && powers[i].name != "Dark Call" && powers[i].name != "Feed")
+                    if (dracula.powers[i].positionInTrail == counter && dracula.powers[i].name != "Hide" && dracula.powers[i].name != "Dark Call" && dracula.powers[i].name != "Feed")
                     {
-                        tempString = powers[i].name.Substring(0, 3).ToUpper() + " ";
+                        tempString = dracula.powers[i].name.Substring(0, 3).ToUpper() + " ";
                     }
                 }
                 Console.Write(tempString);
             }
-            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write("                                 ");
+
+            for (int i = 0; i < 3; i++)
+            {
+                if (dracula.catacombs[i] != null)
+                {
+                    if (dracula.catacombs[i].encounters.Count > 0)
+                    {
+                        dracula.catacombs[i].DrawEncounter();
+                    }
+                }
+                else
+                {
+                    Console.Write("    ");
+                }
+            }
+
             Console.WriteLine("");
             for (int i = 5; i > -1; i--)
             {
-                if (i + 1 > trail.Count())
+                if (i + 1 > dracula.trail.Count())
                 {
                     Console.Write("    ");
                 }
                 else
                 {
-                    trail[i].DrawEncounter();
+                    dracula.trail[i].DrawEncounter();
                 }
             }
             Console.WriteLine("");
             for (int i = 5; i > -1; i--)
             {
-                if (i + 1 > trail.Count())
+                if (i + 1 > dracula.trail.Count())
                 {
                     Console.Write("    ");
                 }
                 else
                 {
-                    trail[i].DrawEncounter(true);
+                    dracula.trail[i].DrawEncounter(true);
                 }
             }
+            Console.Write("                                 ");
+            for (int i = 0; i < 3; i++)
+            {
+                if (dracula.catacombs[i] != null)
+                {
+                    if (dracula.catacombs[i].encounters.Count > 0)
+                    {
+                        dracula.catacombs[i].DrawEncounter(true);
+                    }
+                }
+                else
+                {
+                    Console.Write("    ");
+                }
+            }
+
+
             Console.ResetColor();
             Console.WriteLine("");
         }
