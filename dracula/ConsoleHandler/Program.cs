@@ -7,6 +7,8 @@ using LocationHandler;
 using DraculaHandler;
 using LogHandler;
 using EncounterHandler;
+using EventHandler;
+using HunterHandler;
 
 namespace ConsoleHandler
 {
@@ -20,6 +22,23 @@ namespace ConsoleHandler
 
             List<Encounter> encounterDeck = new List<Encounter>();
             SetupEncounters(encounterDeck);
+
+            List<Event> eventDeck = new List<Event>();
+            SetupEvents(eventDeck);
+
+            Hunter[] hunters = new Hunter[4];
+            hunters[0] = new Hunter();
+            hunters[1] = new Hunter();
+            hunters[2] = new Hunter();
+            hunters[3] = new Hunter();
+
+            hunters[0].name = "Lord Godalming";
+            hunters[1].name = "Van Helsing";
+            hunters[2].name = "Dr. Seward";
+            hunters[3].name = "Mina Harker";
+
+            List<Event> hunterAlly = new List<Event>();
+            List<Event> draculaAlly = new List<Event>();
 
             try
             {
@@ -60,7 +79,7 @@ namespace ConsoleHandler
             string argument1;
             do
             {
-                drawTrail(dracula, timesOfDay[Math.Max(0, time)]);
+                drawTrail(dracula, timesOfDay[Math.Max(0, time)], draculaAlly, hunterAlly);
                 line = Console.ReadLine();
                 try
                 {
@@ -174,10 +193,202 @@ namespace ConsoleHandler
                             }
                             break;
                         }
+                    case "v":
+                        {
+                            switch (PlayEventCard(eventDeck, hunters))
+                            {
+                                case "Rufus Smith": PlayRufusSmith(eventDeck, hunterAlly); break;
+                                case "Jonathan Harker": PlayJonathanHarker(eventDeck); break;
+                                case "Sister Agatha": PlaySisterAgatha(eventDeck); break;
+                                case "Heroic Leap": PlayHeroicLeap(eventDeck); break;
+                                case "Great Strength": PlayGreatStrength(eventDeck); break;
+                                case "Money Trail": PlayMoneyTrail(eventDeck); break;
+                                case "Sense of Emergency": PlaySenseOfEmergency(eventDeck); break;
+                                case "Vampiric Lair": PlayVampiricLair(eventDeck); break;
+                                case "Long Day": PlayLongDay(eventDeck); break;
+                                case "Mystic Research": PlayMysticResearch(eventDeck); break;
+                                case "Advance Planning": PlayAdvancePlanning(eventDeck); break;
+                                case "Newspaper Reports": PlayNewspaperReports(eventDeck); break;
+                                case "Re-Equip": PlayReEquip(eventDeck); break;
+                                case "Consecrated Ground": PlayConsecratedGround(eventDeck); break;
+                                case "Telegraph Ahead": PlayTelegraphAhead(eventDeck); break;
+                                case "Hypnosis": PlayHypnosis(eventDeck); break;
+                                case "Stormy Seas": PlayStormySeas(eventDeck); break;
+                                case "Surprising Return": PlaySurprisingReturn(eventDeck); break;
+                                case "Good Luck": PlayGoodLuck(eventDeck); break;
+                                case "Blood Transfusion": PlayBloodTransfusion(eventDeck); break;
+                                case "Secret Weapon": PlaySecretWeapon(eventDeck); break;
+                                case "Forewarned": PlayForewarned(eventDeck); break;
+                                case "Chartered Carriage": PlayCharteredCarriage(eventDeck); break;
+                                case "Excellent Weather": PlayExcellentWeather(eventDeck); break;
+                                case "Escape Route": PlayEscapeRoute(eventDeck); break;
+                                case "Hired Scouts": PlayHiredScouts(eventDeck); break;
+                            }
+                            break;
+
+                        }
                     case "exit": break;
                     default: Console.WriteLine("I don't know what you're talking about"); break;
                 }
             } while (command != "exit");
+        }
+
+        public static string PlayEventCard(List<Event> events, Hunter[] hunters)
+        {
+            string line = "";
+            int hunterIndex = -1;
+            do {
+                Console.WriteLine("Who is playing the card? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = Console.ReadLine();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+                int eventIndex = -1;
+            do
+            {
+                Console.WriteLine("What is the event card name? (partial name will suffice)");
+                line = Console.ReadLine();
+                eventIndex = events.FindIndex(card => card.name.ToUpper().StartsWith(line.ToUpper()));
+                if (eventIndex == -1) {
+                    Console.WriteLine("I don't recognise a card starting with " + line);
+                } else if (events[eventIndex].isDraculaCard)
+                {
+                    Console.WriteLine(events[eventIndex].name + " is Dracula's card");
+                    eventIndex = -1;
+                }
+            } while (eventIndex == -1);
+            Console.WriteLine(hunters[hunterIndex - 1].name + " is playing event card " + events[eventIndex].name);
+            return events[eventIndex].name;
+        }
+
+        private static void PlayHiredScouts(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayEscapeRoute(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayExcellentWeather(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayCharteredCarriage(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayForewarned(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlaySecretWeapon(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayBloodTransfusion(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayGoodLuck(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlaySurprisingReturn(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayStormySeas(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayHypnosis(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayTelegraphAhead(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayConsecratedGround(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayReEquip(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayNewspaperReports(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayAdvancePlanning(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayMysticResearch(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayLongDay(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayVampiricLair(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlaySenseOfEmergency(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayMoneyTrail(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayGreatStrength(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayHeroicLeap(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlaySisterAgatha(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayJonathanHarker(List<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void PlayRufusSmith(List<Event> events, List<Event> allySlot)
+        {
+            allySlot.Clear();
+            allySlot.Add(events[events.FindIndex(card => card.name == "Rufus Smith")]);
+            events.Remove(allySlot.First());
         }
 
         public static Location GetLocationFromName(string locationName, List<Location> locationList)
@@ -194,7 +405,7 @@ namespace ConsoleHandler
             return unknownLocation;
         }
 
-        public static void drawTrail(Dracula dracula, string timeOfDay)
+        public static void drawTrail(Dracula dracula, string timeOfDay, List<Event> draculaAlly, List<Event> hunterAlly)
         {
             Console.WriteLine("6th 5th 4th 3rd 2nd 1st   Time        Dracula  Vampires  Catacombs");
             for (int i = 5; i >= 0; i--)
@@ -299,6 +510,9 @@ namespace ConsoleHandler
                     dracula.trail[i].DrawEncounter();
                 }
             }
+            Console.ResetColor();
+            Console.Write("  Dracula's Ally    Hunters' Ally");
+
             Console.WriteLine("");
             for (int i = 5; i > -1; i--)
             {
@@ -311,7 +525,26 @@ namespace ConsoleHandler
                     dracula.trail[i].DrawEncounter(true);
                 }
             }
-            Console.Write("                                 ");
+            Console.ResetColor();
+            Console.Write("  ");
+            if (draculaAlly.Count() > 0)
+            {
+                Console.Write(draculaAlly.First().name.Substring(0, 3).ToUpper());
+            } else
+            {
+                Console.Write("   ");
+            }
+            Console.Write("               ");
+            if (hunterAlly.Count > 0)
+            {
+                Console.Write(hunterAlly.First().name.Substring(0, 3).ToUpper());
+            }
+            else
+            {
+                Console.Write("   ");
+            }
+
+            Console.Write("          ");
             for (int i = 0; i < 3; i++)
             {
                 if (dracula.catacombs[i] != null)
@@ -1277,6 +1510,84 @@ namespace ConsoleHandler
             encounters.Add(new Encounter("Wolves", "WOL"));
         }
 
+        public static void SetupEvents(List<Event> events)
+        {
+            events.Add(new Event("Rufus Smith", false));
+            events.Add(new Event("Jonathan Harker", false));
+            events.Add(new Event("Sister Agatha", false));
+            events.Add(new Event("Heroic Leap", false));
+            events.Add(new Event("Great Strength", false));
+            events.Add(new Event("Money Trail", false));
+            events.Add(new Event("Sense of Emergency", false));
+            events.Add(new Event("Sense of Emergency", false));
+            events.Add(new Event("Vampiric Lair", false));
+            events.Add(new Event("Long Day", false));
+            events.Add(new Event("Long Day", false));
+            events.Add(new Event("Mystic Research", false));
+            events.Add(new Event("Mystic Research", false));
+            events.Add(new Event("Advance Planning", false));
+            events.Add(new Event("Advance Planning", false));
+            events.Add(new Event("Advance Planning", false));
+            events.Add(new Event("Newspaper Reports", false));
+            events.Add(new Event("Newspaper Reports", false));
+            events.Add(new Event("Newspaper Reports", false));
+            events.Add(new Event("Newspaper Reports", false));
+            events.Add(new Event("Newspaper Reports", false));
+            events.Add(new Event("Re-Equip", false));
+            events.Add(new Event("Re-Equip", false));
+            events.Add(new Event("Re-Equip", false));
+            events.Add(new Event("Consecrated Ground", false));
+            events.Add(new Event("Telegraph Ahead", false));
+            events.Add(new Event("Telegraph Ahead", false));
+            events.Add(new Event("Hypnosis", false));
+            events.Add(new Event("Hypnosis", false));
+            events.Add(new Event("Stormy Seas", false));
+            events.Add(new Event("Surprising Return", false));
+            events.Add(new Event("Surprising Return", false));
+            events.Add(new Event("Good Luck", false));
+            events.Add(new Event("Good Luck", false));
+            events.Add(new Event("Blood Transfusion", false));
+            events.Add(new Event("Secret Weapon", false));
+            events.Add(new Event("Secret Weapon", false));
+            events.Add(new Event("Forewarned", false));
+            events.Add(new Event("Forewarned", false));
+            events.Add(new Event("Forewarned", false));
+            events.Add(new Event("Chartered Carriage", false));
+            events.Add(new Event("Chartered Carriage", false));
+            events.Add(new Event("Chartered Carriage", false));
+            events.Add(new Event("Excellent Weather", false));
+            events.Add(new Event("Excellent Weather", false));
+            events.Add(new Event("Escape Route", false));
+            events.Add(new Event("Escape Route", false));
+            events.Add(new Event("Hired Scouts", false));
+            events.Add(new Event("Hired Scouts", false));
+            events.Add(new Event("Hired Scouts", false));
+            events.Add(new Event("Dracula's Brides", true));
+            events.Add(new Event("Immanuel Hildesheim", true));
+            events.Add(new Event("Quincey P. Morris", true));
+            events.Add(new Event("Roadblock", true));
+            events.Add(new Event("Unearthly Swiftness", true));
+            events.Add(new Event("Time Runs Short", true));
+            events.Add(new Event("Customs Search", true));
+            events.Add(new Event("Devilish Power", true));
+            events.Add(new Event("Devilish Power", true));
+            events.Add(new Event("Vampiric Influence", true));
+            events.Add(new Event("Vampiric Influence", true));
+            events.Add(new Event("Night Visit", true));
+            events.Add(new Event("Evasion", true));
+            events.Add(new Event("Wild Horses", true));
+            events.Add(new Event("False Tip-off", true));
+            events.Add(new Event("False Tip-off", true));
+            events.Add(new Event("Sensationalist Press", true));
+            events.Add(new Event("Rage", true));
+            events.Add(new Event("Seduction", true));
+            events.Add(new Event("Control Storms", true));
+            events.Add(new Event("Relentless Minion", true));
+            events.Add(new Event("Relentless Minion", true));
+            events.Add(new Event("Trap", true));
+            events.Add(new Event("Trap", true));
+            events.Add(new Event("Trap", true));
+        }
     }
 
 }

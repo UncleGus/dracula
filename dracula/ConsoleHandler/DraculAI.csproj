@@ -45,9 +45,10 @@
   <ItemGroup>
     <Compile Include="Dracula.cs" />
     <Compile Include="Encounter.cs" />
+    <Compile Include="Event.cs" />
+    <Compile Include="Hunter.cs" />
     <Compile Include="Location.cs" />
     <Compile Include="Logger.cs" />
-    <Compile Include="LogHandler.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
