@@ -349,7 +349,14 @@ namespace ConsoleHandler
 
         private static void PlayLongDay(GameState g)
         {
-            throw new NotImplementedException();
+            if (g.time < 1)
+            {
+                Console.WriteLine("You cannot play Long Day during Dawn");
+            } else
+            {
+                g.time--;
+                DiscardEventCard(g, "Long Day");
+            }
         }
 
         private static void PlayVampiricLair(GameState g)
@@ -370,7 +377,7 @@ namespace ConsoleHandler
                     LocationHelper.RevealLocation(g, i);
                 }
             }
-
+            DiscardEventCard(g, "Money Trail");
         }
 
         private static void PlayGreatStrength(GameState g)
@@ -412,6 +419,14 @@ namespace ConsoleHandler
             g.hunterAlly = g.eventDeck[g.eventDeck.FindIndex(card => card.name == "Rufus Smith")];
             g.eventDeck.Remove(g.hunterAlly);
         }
+
+        private static void DiscardEventCard(GameState g, string cardName)
+        {
+            Event playedCard = g.eventDeck[g.eventDeck.FindIndex(card => card.name == cardName)];
+            g.eventDiscard.Add(playedCard);
+            g.eventDeck.Remove(playedCard);
+        }
+
 
         public static Location GetLocationFromName(string locationName, List<Location> locationList)
         {
