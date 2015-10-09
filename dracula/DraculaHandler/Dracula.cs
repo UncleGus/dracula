@@ -668,6 +668,13 @@ namespace DraculaHandler
                     else
                     {
                         Logger.WriteToDebugLog("Discarding " + trail.Last().name);
+                        while (trail.Last().encounters.Count() > 0)
+                        {
+                            Logger.WriteToDebugLog("Hanging on to " + trail.Last().encounters.First().name + " to mature it later");
+                            encountersToMature.Add(trail.Last().encounters.First());
+                            trail.Last().encounters.Remove(trail.Last().encounters.First());
+                        }
+                        Logger.WriteToDebugLog("Discarding " + trail.Last().name);
                         TrimTrail(trail.Count() - 1);
                     }
                 }
@@ -715,7 +722,10 @@ namespace DraculaHandler
             Logger.WriteToDebugLog("MATURING ENCOUNTERS");
             while (encountersToMature.Count > 0)
             {
-                Logger.WriteToDebugLog("Maturing encounter " + encountersToMature.First());
+                Logger.WriteToDebugLog("Maturing encounter " + encountersToMature.First().name);
+                Logger.WriteToGameLog(encountersToMature.First().name + " matured");
+                encounterPool.Add(encountersToMature.First());
+                encountersToMature.Remove(encountersToMature.First());
             }
         }
     }
