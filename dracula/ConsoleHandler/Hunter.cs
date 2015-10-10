@@ -16,6 +16,7 @@ namespace HunterHandler
         public int numberOfItems;
         public int numberOfBites;
         public int bitesRequiredToKill;
+        public bool hasDogsFaceUp;
 
         public Hunter(string newName, int newHealth, int newNumberOfBites, int newBitesRequiredToKill)
         {
@@ -23,6 +24,7 @@ namespace HunterHandler
             health = newHealth;
             numberOfBites = newNumberOfBites;
             bitesRequiredToKill = newBitesRequiredToKill;
+            hasDogsFaceUp = false;
         }
     }
 

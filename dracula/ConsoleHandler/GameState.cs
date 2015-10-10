@@ -1101,7 +1101,8 @@ namespace ConsoleHandler
 
         public void MatureEncounter(string encounterName)
         {
-            switch (encounterName) {
+            switch (encounterName)
+            {
                 case "Ambush": MatureAmbush(); break;
                 case "Assasin": MatureAssassin(); break;
                 case "Bats": MatureBats(); break;
@@ -1215,7 +1216,7 @@ namespace ConsoleHandler
             Logger.WriteToDebugLog("Dracula matured Desecrated Soil");
             Logger.WriteToGameLog("Dracula matured Desecrated Soil");
             Console.WriteLine("Dracula matured Desecrated Soil");
-            for (int i = 0; i<2; i++)
+            for (int i = 0; i < 2; i++)
             {
                 Event cardDrawn = eventDeck[new Random().Next(0, eventDeck.Count())];
                 if (!cardDrawn.isDraculaCard)
@@ -1223,7 +1224,8 @@ namespace ConsoleHandler
                     Console.WriteLine("Dracula drew " + cardDrawn.name + ", discarded");
                     eventDeck.Remove(cardDrawn);
                     eventDiscard.Add(cardDrawn);
-                } else
+                }
+                else
                 {
                     switch (cardDrawn.type)
                     {
@@ -1257,6 +1259,8 @@ namespace ConsoleHandler
 
         public void ResolveAmbush(List<Hunter> huntersEncountered)
         {
+            Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Ambush");
+            Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Ambush");
             Console.Write(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
@@ -1264,8 +1268,7 @@ namespace ConsoleHandler
             }
             Console.WriteLine("encountered an Ambush");
             dracula.DrawEncounters(dracula.encounterHand.Count() + 1);
-            Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Ambush");
-            Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Ambush");
+            dracula.DiscardEncountersDownTo(dracula.encounterHandSize);
         }
 
         public void ResolveAssassin(List<Hunter> huntersEncountered)
@@ -1275,17 +1278,58 @@ namespace ConsoleHandler
 
         public void ResolveBats(List<Hunter> huntersEncountered)
         {
-            throw new NotImplementedException();
+            Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Bats");
+            Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Bats");
+            Console.Write(huntersEncountered.First().name + " ");
+            for (int i = 1; i < huntersEncountered.Count(); i++)
+            {
+                Console.Write("and " + huntersEncountered[i] + " ");
+            }
+            Console.WriteLine("encountered Bats");
+            Console.WriteLine("Tell me at the start of your next turn and I will move you");
         }
 
         public void ResolveDesecratedSoil(List<Hunter> huntersEncountered)
         {
-            throw new NotImplementedException();
+            Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Desecrated Soil");
+            Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Desecrated Soil");
+            Console.Write(huntersEncountered.First().name + " ");
+            for (int i = 1; i < huntersEncountered.Count(); i++)
+            {
+                Console.Write("and " + huntersEncountered[i] + " ");
+            }
+            Console.WriteLine("encountered Desecrated Soil");
+            Event cardDrawn = eventDeck[new Random().Next(0, eventDeck.Count())];
+            if (!cardDrawn.isDraculaCard)
+            {
+                Console.WriteLine("Dracula drew " + cardDrawn.name + ", discarded");
+                eventDeck.Remove(cardDrawn);
+                eventDiscard.Add(cardDrawn);
+            }
+            else
+            {
+                switch (cardDrawn.type)
+                {
+                    case EventType.Ally: dracula.PlayAlly(cardDrawn); break;
+                    case EventType.Keep: dracula.eventCardsInHand.Add(cardDrawn); break;
+                    case EventType.PlayImmediately: dracula.PlayImmediately(cardDrawn); break;
+                }
+            }
+            dracula.DiscardEventsDownTo(dracula.eventHandSize);
+
         }
 
         public void ResolveFog(List<Hunter> huntersEncountered)
         {
-            throw new NotImplementedException();
+            Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Desecrated Fog");
+            Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Desecrated Fog");
+            Console.Write(huntersEncountered.First().name + " ");
+            for (int i = 1; i < huntersEncountered.Count(); i++)
+            {
+                Console.Write("and " + huntersEncountered[i] + " ");
+            }
+            Console.WriteLine("encountered Fog");
+            Console.WriteLine("Place Fog in front of you until the end of your turn");
         }
 
         public void ResolveMinionWithKnife(List<Hunter> huntersEncountered)
@@ -1305,32 +1349,147 @@ namespace ConsoleHandler
 
         public void ResolveHoax(List<Hunter> huntersEncountered)
         {
-            throw new NotImplementedException();
+            Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Hoax");
+            Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Hoax");
+            Console.Write(huntersEncountered.First().name + " ");
+            for (int i = 1; i < huntersEncountered.Count(); i++)
+            {
+                Console.Write("and " + huntersEncountered[i] + " ");
+            }
+            Console.WriteLine("encountered Hoax");
+            Console.WriteLine("Discard " + (huntersEncountered.First().currentLocation.isEastern ? "one" : "all") + " of your event cards (don't forget to tell me what is discarded");
         }
 
         public void ResolveLightning(List<Hunter> huntersEncountered)
         {
-            throw new NotImplementedException();
+            Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Lightning");
+            Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Lightning");
+            Console.Write(huntersEncountered.First().name + " ");
+            for (int i = 1; i < huntersEncountered.Count(); i++)
+            {
+                Console.Write("and " + huntersEncountered[i] + " ");
+            }
+            Console.WriteLine("encountered Lightning");
+            for (int i = 0; i < huntersEncountered.Count(); i++)
+            {
+                string line;
+                int answer;
+                do
+                {
+                    Console.WriteLine(huntersEncountered[i].name + " has 0) Nothing 1) Crucifix 2) Heavenly Host");
+                    line = Console.ReadLine();
+                }
+                while (!int.TryParse(line, out answer) || answer < 0 || answer > 2);
+                if (answer > 0)
+                {
+                    Logger.WriteToDebugLog(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
+                    Logger.WriteToGameLog(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
+                    Console.WriteLine(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
+                    return;
+                }
+            }
+            for (int i = 0; i < huntersEncountered.Count(); i++)
+            {
+                Logger.WriteToDebugLog(huntersEncountered[i].name + " loses 2 health and discards 1 item");
+                Logger.WriteToGameLog(huntersEncountered[i].name + " loses 2 health and discards 1 item");
+                Console.WriteLine(huntersEncountered[i].name + " loses 2 health and discards 1 item");
+                huntersEncountered[i].health -= 2;
+            }
+            Console.WriteLine("Don't forget to tell me what was discarded");
         }
 
         public void ResolvePeasants(List<Hunter> huntersEncountered)
         {
-            throw new NotImplementedException();
+            Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Peasants");
+            Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Peasants");
+            Console.Write(huntersEncountered.First().name + " ");
+            for (int i = 1; i < huntersEncountered.Count(); i++)
+            {
+                Console.Write("and " + huntersEncountered[i] + " ");
+            }
+            Console.WriteLine("encountered Peasants");
+            Console.WriteLine("Discard " + (huntersEncountered.First().currentLocation.isEastern ? "one" : "all") + " of your item cards and redraw randomly (don't forget to tell me what is discarded");
         }
 
         public void ResolvePlague(List<Hunter> huntersEncountered)
         {
-            throw new NotImplementedException();
+            Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Plague");
+            Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Plague");
+            Console.Write(huntersEncountered.First().name + " ");
+            for (int i = 1; i < huntersEncountered.Count(); i++)
+            {
+                Console.Write("and " + huntersEncountered[i] + " ");
+            }
+            Console.WriteLine("encountered Plague");
+            for (int i = 1; i < huntersEncountered.Count(); i++)
+            {
+                Logger.WriteToDebugLog(huntersEncountered[i].name + " loses 2 health");
+                Logger.WriteToGameLog(huntersEncountered[i].name + " loses 2 health");
+                Console.WriteLine(huntersEncountered[i].name + " loses 2 health");
+                huntersEncountered[i].health -= 2;
+            }
         }
 
         public void ResolveRats(List<Hunter> huntersEncountered)
         {
-            throw new NotImplementedException();
+            Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Rats");
+            Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Rats");
+            Console.Write(huntersEncountered.First().name + " ");
+            for (int i = 1; i < huntersEncountered.Count(); i++)
+            {
+                Console.Write("and " + huntersEncountered[i] + " ");
+            }
+            Console.WriteLine("encountered Rats");
+            for (int i = 1; i < huntersEncountered.Count(); i++)
+            {
+                if (huntersEncountered[i].hasDogsFaceUp)
+                {
+                    Console.WriteLine(huntersEncountered[i].name + " has Dogs face up, Rats have no effect");
+                    Logger.WriteToDebugLog(huntersEncountered[i].name + " has Dogs face up, Rats have no effect");
+                    Logger.WriteToGameLog(huntersEncountered[i].name + " has Dogs face up, Rats have no effect");
+                    return;
+                }
+            }
+            for (int i = 1; i < huntersEncountered.Count(); i++)
+            {
+                Console.WriteLine("Roll dice for " + huntersEncountered[i].name);
+                string line;
+                int loss;
+                do
+                {
+                    Console.WriteLine("How much health did " + huntersEncountered[i].name + " lose?");
+                    line = Console.ReadLine();
+                } while (!int.TryParse(line, out loss) || loss < 0);
+                huntersEncountered[i].health -= loss;
+                Logger.WriteToDebugLog(huntersEncountered[i] + " lost " + loss + " health");
+                Logger.WriteToGameLog(huntersEncountered[i] + " lost " + loss + " health");
+            }
         }
 
         public void ResolveSaboteur(List<Hunter> huntersEncountered)
         {
-            throw new NotImplementedException();
+            Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Saboteur");
+            Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Saboteur");
+            Console.Write(huntersEncountered.First().name + " ");
+            for (int i = 1; i < huntersEncountered.Count(); i++)
+            {
+                Console.Write("and " + huntersEncountered[i] + " ");
+            }
+            Console.WriteLine("encountered Saboteur");
+            for (int i = 1; i < huntersEncountered.Count(); i++)
+            {
+                if (huntersEncountered[i].hasDogsFaceUp)
+                {
+                    Console.WriteLine(huntersEncountered[i].name + " has Dogs face up, Saboteur has no effect");
+                    Logger.WriteToDebugLog(huntersEncountered[i].name + " has Dogs face up, Saboteur has no effect");
+                    Logger.WriteToGameLog(huntersEncountered[i].name + " has Dogs face up, Saboteur has no effect");
+                    return;
+                }
+            }
+            for (int i = 1; i < huntersEncountered.Count(); i++)
+            {
+                Console.WriteLine(huntersEncountered[i].name + " must discard 1 item or event (don't forget to tell me what was discarded");
+            }
         }
 
         public void ResolveSpy(List<Hunter> huntersEncountered)
@@ -1340,7 +1499,41 @@ namespace ConsoleHandler
 
         public void ResolveThief(List<Hunter> huntersEncountered)
         {
-            throw new NotImplementedException();
+            Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Thief");
+            Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Thief");
+            Console.Write(huntersEncountered.First().name + " ");
+            for (int i = 1; i < huntersEncountered.Count(); i++)
+            {
+                Console.Write("and " + huntersEncountered[i] + " ");
+            }
+            Console.WriteLine("encountered Thief");
+            for (int i = 1; i < huntersEncountered.Count(); i++)
+            {
+                if (huntersEncountered[i].hasDogsFaceUp)
+                {
+                    Console.WriteLine(huntersEncountered[i].name + " has Dogs face up, Thief has no effect");
+                    Logger.WriteToDebugLog(huntersEncountered[i].name + " has Dogs face up, Thief has no effect");
+                    Logger.WriteToGameLog(huntersEncountered[i].name + " has Dogs face up, Thief has no effect");
+                    return;
+                }
+            }
+            for (int i = 1; i < huntersEncountered.Count(); i++)
+            {
+                if (huntersEncountered[i].numberOfEvents + huntersEncountered[i].numberOfItems > 0)
+                {
+                    int cardToDiscard = new Random().Next(0, huntersEncountered[i].numberOfEvents + huntersEncountered[i].numberOfItems);
+                    if (cardToDiscard + 1 > huntersEncountered[i].numberOfEvents)
+                    {
+                        cardToDiscard -= huntersEncountered[i].numberOfEvents;
+                        Console.WriteLine(huntersEncountered[i].name + " must discard an item");
+                    }
+                    else
+                    {
+                        Console.WriteLine(huntersEncountered[i].name + " must discard an event");
+                    }
+                }
+                Console.WriteLine("Don't forget to tell me what was discarded");
+            }
         }
 
         public void ResolveNewVampire(List<Hunter> huntersEncountered)
@@ -1350,7 +1543,49 @@ namespace ConsoleHandler
 
         public void ResolveWolves(List<Hunter> huntersEncountered)
         {
-            throw new NotImplementedException();
+            Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Wolves");
+            Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Wolves");
+            Console.Write(huntersEncountered.First().name + " ");
+            for (int i = 1; i < huntersEncountered.Count(); i++)
+            {
+                Console.Write("and " + huntersEncountered[i] + " ");
+            }
+            Console.WriteLine("encountered Wolves");
+            bool hasPistol = false;
+            bool hasRifle = false;
+            for (int i = 1; i < huntersEncountered.Count(); i++)
+            {
+                string line;
+                int answer;
+                do
+                {
+                    Console.WriteLine(huntersEncountered[i].name + " has 0) Nothing 1) Pistol 2) Rifle 3) Both");
+                    line = Console.ReadLine();
+                }
+                while (!int.TryParse(line, out answer) || answer < 0 || answer > 3);
+                switch (answer)
+                {
+                    case 1: hasPistol = true; break;
+                    case 2: hasRifle = true; break;
+                    case 3: hasPistol = true; hasRifle = true; break; 
+                }
+            }
+            int numberOfWeaponTypes = (hasPistol ? 1 : 0) + (hasRifle ? 1 : 0);
+            if (numberOfWeaponTypes == 2)
+            {
+                Logger.WriteToDebugLog("Wolves are negated by Pistol and Rifle");
+                Logger.WriteToGameLog("Wolves are negated by Pistol and Rifle");
+                Console.WriteLine("Wolves are negated by Pistol and Rifle");
+            } else
+            {
+                for (int i = 1; i < huntersEncountered.Count(); i++)
+                {
+                    Logger.WriteToDebugLog(huntersEncountered[i].name + " loses " + (numberOfWeaponTypes == 1 ? "1" : "2") + " health");
+                    Logger.WriteToGameLog(huntersEncountered[i].name + " loses " + (numberOfWeaponTypes == 1 ? "1" : "2") + " health");
+                    Console.WriteLine(huntersEncountered[i].name + " loses " + (numberOfWeaponTypes == 1 ? "1" : "2") + " health");
+                    huntersEncountered[i].health -= (2 - numberOfWeaponTypes);
+                }
+            }
         }
     }
 }
