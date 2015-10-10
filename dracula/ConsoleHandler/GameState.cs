@@ -1104,6 +1104,8 @@ namespace ConsoleHandler
 
         private void MatureNewVampire()
         {
+            Logger.WriteToDebugLog("Dracula matured New Vampire");
+            Logger.WriteToGameLog("Dracula matured New Vampire");
             Console.WriteLine("Dracula matured a New Vampire");
             dracula.vampireTracker += 2;
             dracula.TrimTrail(1);
@@ -1185,7 +1187,27 @@ namespace ConsoleHandler
         {
             Logger.WriteToDebugLog("Dracula matured Desecrated Soil");
             Logger.WriteToGameLog("Dracula matured Desecrated Soil");
-            throw new NotImplementedException();
+            Console.WriteLine("Dracula matured Desecrated Soil");
+            for (int i = 0; i<2; i++)
+            {
+                Event cardDrawn = eventDeck[new Random().Next(0, eventDeck.Count())];
+                if (!cardDrawn.isDraculaCard)
+                {
+                    Console.WriteLine("Dracula drew " + cardDrawn.name + ", discarded");
+                    eventDeck.Remove(cardDrawn);
+                    eventDiscard.Add(cardDrawn);
+                } else
+                {
+                    switch (cardDrawn.type)
+                    {
+                        case EventType.Ally: dracula.PlayAlly(cardDrawn); break;
+                        case EventType.Keep: dracula.eventCardsInHand.Add(cardDrawn); break;
+                        case EventType.PlayImmediately: dracula.PlayImmediately(cardDrawn); break;
+                    }
+                }
+            }
+            dracula.DiscardEventsDownTo(dracula.eventHandSize);
+            dracula.TrimTrail(3);
         }
 
         private void MatureBats()
@@ -1203,6 +1225,104 @@ namespace ConsoleHandler
         {
             Logger.WriteToDebugLog("Dracula matured Ambush");
             Logger.WriteToGameLog("Dracula matured Ambush");
+            throw new NotImplementedException();
+        }
+
+        public void ResolveAmbush(List<Hunter> huntersEncountered)
+        {
+            Console.Write(huntersEncountered.First().name + " ");
+            for (int i = 1; i < huntersEncountered.Count(); i++)
+            {
+                Console.Write("and " + huntersEncountered[i] + " ");
+            }
+            Console.WriteLine("encountered an Ambush");
+            dracula.DrawEncounters(dracula.encounterHand.Count() + 1);
+            Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Ambush");
+            Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Ambush");
+        }
+
+        public void ResolveAssassin(List<Hunter> huntersEncountered)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResolveBats(List<Hunter> huntersEncountered)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResolveDesecratedSoil(List<Hunter> huntersEncountered)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResolveFog(List<Hunter> huntersEncountered)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResolveMinionWithKnife(List<Hunter> huntersEncountered)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResolveMinionWithKnifeAndPistol(List<Hunter> huntersEncountered)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResolveMinionWithKnifeAndRifle(List<Hunter> huntersEncountered)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResolveHoax(List<Hunter> huntersEncountered)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResolveLightning(List<Hunter> huntersEncountered)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResolvePeasants(List<Hunter> huntersEncountered)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResolvePlague(List<Hunter> huntersEncountered)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResolveRats(List<Hunter> huntersEncountered)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResolveSaboteur(List<Hunter> huntersEncountered)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResolveSpy(List<Hunter> huntersEncountered)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResolveThief(List<Hunter> huntersEncountered)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResolveNewVampire(List<Hunter> huntersEncountered)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResolveWolves(List<Hunter> huntersEncountered)
+        {
             throw new NotImplementedException();
         }
     }
