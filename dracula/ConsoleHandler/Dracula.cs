@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using LocationHandler;
 using LogHandler;
 using EncounterHandler;
+using ConsoleHandler;
+using EventHandler;
 
 namespace DraculaHandler
 {
@@ -20,15 +22,18 @@ namespace DraculaHandler
         public int blood;
         bool lostBloodAtSeaOnLatestTurn;
         public int encounterHandSize;
-        List<Encounter> encounterPool = new List<Encounter>();
         List<Encounter> encountersToMature = new List<Encounter>();
         List<Encounter> encounterHand = new List<Encounter>();
         public Location locationWhereHideWasUsed;
         public int vampireTracker;
         public Location[] catacombs = new Location[3];
+        public GameState g;
+        public List<Event> eventCardsInHand = new List<Event>();
+        public int eventHandSize;
 
-        public Dracula(Location startLocation, List<Encounter> poolOfEncounters)
+        public Dracula(Location startLocation, GameState gameState)
         {
+            g = gameState;
             currentLocation = startLocation;
             trail.Add(currentLocation);
             powers.Add(new DraculaPower("Dark Call", true));
@@ -39,9 +44,9 @@ namespace DraculaHandler
             blood = 15;
             lostBloodAtSeaOnLatestTurn = false;
             encounterHandSize = 5;
-            encounterPool = poolOfEncounters;
             DrawEncounters(encounterHandSize);
             vampireTracker = -1;
+            eventHandSize = 4;
         }
 
         public bool MoveDracula(int timeOfDay)
@@ -118,6 +123,32 @@ namespace DraculaHandler
             }
             Logger.WriteToDebugLog("Dracula has finished moving");
             return true;
+        }
+
+        public void DrawEventCard()
+        {
+            Event eventCardDrawn;
+            do
+            {
+                eventCardDrawn = g.eventDeck[new Random().Next(0, g.eventDeck.Count())];
+            } while (!eventCardDrawn.isDraculaCard);
+            eventCardsInHand.Add(eventCardDrawn);
+            g.eventDeck.Remove(eventCardDrawn);
+            Logger.WriteToDebugLog("Dracula drew card " + eventCardDrawn.name);
+            Logger.WriteToGameLog("Dracula drew card " + eventCardDrawn.name);
+        }
+
+        public void DiscardEventsDownTo(int numberOfCards)
+        {
+            while (eventCardsInHand.Count() > numberOfCards)
+            {
+                Event cardToDiscard = eventCardsInHand[new Random().Next(0, eventCardsInHand.Count())];
+                eventCardsInHand.Remove(cardToDiscard);
+                g.eventDiscard.Add(cardToDiscard);
+                Logger.WriteToDebugLog("Dracula discarded " + cardToDiscard.name);
+                Logger.WriteToGameLog("Dracula discarded " + cardToDiscard.name);
+                Console.WriteLine("Dracula discarded " + cardToDiscard.name);
+            }
         }
 
         public void ShowLocation()
@@ -360,7 +391,7 @@ namespace DraculaHandler
                     while (trail.Last().encounters.Count() > 0)
                     {
                         Logger.WriteToDebugLog("Moving encounter " + trail.Last().encounters[0].name + " back to the encounter pool");
-                        encounterPool.Add(trail.Last().encounters[0]);
+                        g.encounterPool.Add(trail.Last().encounters[0]);
                         trail.Last().encounters[0].isRevealed = false;
                         trail.Last().encounters.Remove(trail.Last().encounters[0]);
                     }
@@ -584,11 +615,11 @@ namespace DraculaHandler
             Logger.WriteToDebugLog("Dracula is drawing up to " + totalNumberOfEncounters + " encounters");
             while (encounterHand.Count() < totalNumberOfEncounters)
             {
-                Encounter tempEncounter = encounterPool[new Random().Next(0, encounterPool.Count())];
+                Encounter tempEncounter = g.encounterPool[new Random().Next(0, g.encounterPool.Count())];
                 Logger.WriteToDebugLog("Dracula drew encounter " + tempEncounter.name);
                 Logger.WriteToGameLog("Dracula drew encounter " + tempEncounter.name);
                 encounterHand.Add(tempEncounter);
-                encounterPool.Remove(tempEncounter);
+                g.encounterPool.Remove(tempEncounter);
             }
         }
 
@@ -709,7 +740,7 @@ namespace DraculaHandler
                         while (catacombs[i].encounters.Count() > 0)
                         {
                             Logger.WriteToDebugLog("Putting encounter " + catacombs[i].encounters.First().name + " back into the encounter pool");
-                            encounterPool.Add(catacombs[i].encounters.First());
+                            g.encounterPool.Add(catacombs[i].encounters.First());
                             catacombs[i].encounters.Remove(catacombs[i].encounters.First());
                         }
                         Logger.WriteToDebugLog("Emptying " + catacombs[i].name + " from Catacombs");
@@ -733,7 +764,8 @@ namespace DraculaHandler
             {
                 Logger.WriteToDebugLog("Maturing encounter " + encountersToMature.First().name);
                 Logger.WriteToGameLog(encountersToMature.First().name + " matured");
-                encounterPool.Add(encountersToMature.First());
+                g.MatureEncounter(encountersToMature.First().name);
+                g.encounterPool.Add(encountersToMature.First());
                 encountersToMature.Remove(encountersToMature.First());
             }
         }

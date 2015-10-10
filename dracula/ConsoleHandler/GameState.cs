@@ -3,6 +3,7 @@ using EncounterHandler;
 using EventHandler;
 using HunterHandler;
 using LocationHandler;
+using LogHandler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -1067,8 +1068,142 @@ namespace ConsoleHandler
             {
                 startLocation = new Random().Next(0, map.Count());
             } while (map[startLocation].type == LocationType.Hospital);
-            dracula = new Dracula(map[startLocation], encounterPool);
+            dracula = new Dracula(map[startLocation], this);
 
+        }
+
+        public void MatureEncounter(string encounterName)
+        {
+            switch (encounterName) {
+                case "Ambush": MatureAmbush(); break;
+                case "Assasin": MatureAssassin(); break;
+                case "Bats": MatureBats(); break;
+                case "Desecrated Soil": MatureDesecratedSoil(); break;
+                case "Fog": MatureFog(); break;
+                case "Minion with Knife": MatureMinionWithKnife(); break;
+                case "Minion with Knife and Pistol": MatureMinionWithKnifeAndPistol(); break;
+                case "Minion with Knife and Rifle": MatureMinionWithKnifeAndRifle(); break;
+                case "Hoax": MatureHoax(); break;
+                case "Lightning": MatureLightning(); break;
+                case "Peasants": MaturePeasants(); break;
+                case "Plague": MaturePlague(); break;
+                case "Rats": MatureRats(); break;
+                case "Saboteur": MatureSaboteur(); break;
+                case "Spy": MatureSpy(); break;
+                case "Thief": MatureThief(); break;
+                case "New Vampire": MatureNewVampire(); break;
+                case "Wolves": MatureWolves(); break;
+            }
+        }
+
+        private void MatureWolves()
+        {
+            Logger.WriteToDebugLog("Dracula matured Wolves (no effect)");
+            Logger.WriteToGameLog("Dracula matured Wolves (no effect)");
+        }
+
+        private void MatureNewVampire()
+        {
+            Console.WriteLine("Dracula matured a New Vampire");
+            dracula.vampireTracker += 2;
+            dracula.TrimTrail(1);
+        }
+
+        private void MatureThief()
+        {
+            Logger.WriteToDebugLog("Dracula matured Thief (no effect)");
+            Logger.WriteToGameLog("Dracula matured Thief (no effect)");
+        }
+
+        private void MatureSpy()
+        {
+            Logger.WriteToDebugLog("Dracula matured Spy (no effect)");
+            Logger.WriteToGameLog("Dracula matured Spy (no effect)");
+        }
+
+        private void MatureSaboteur()
+        {
+            Logger.WriteToDebugLog("Dracula matured Saboteur (no effect)");
+            Logger.WriteToGameLog("Dracula matured Saboteur (no effect)");
+        }
+
+        private void MatureRats()
+        {
+            Logger.WriteToDebugLog("Dracula matured Rats (no effect)");
+            Logger.WriteToGameLog("Dracula matured Rats (no effect)");
+        }
+
+        private void MaturePlague()
+        {
+            Logger.WriteToDebugLog("Dracula matured Plague (no effect)");
+            Logger.WriteToGameLog("Dracula matured Plague (no effect)");
+        }
+
+        private void MaturePeasants()
+        {
+            Logger.WriteToDebugLog("Dracula matured Peasants (no effect)");
+            Logger.WriteToGameLog("Dracula matured Peasants (no effect)");
+        }
+
+        private void MatureLightning()
+        {
+            Logger.WriteToDebugLog("Dracula matured Lightning (no effect)");
+            Logger.WriteToGameLog("Dracula matured Lightning (no effect)");
+        }
+
+        private void MatureHoax()
+        {
+            Logger.WriteToDebugLog("Dracula matured Hoax (no effect)");
+            Logger.WriteToGameLog("Dracula matured Hoax (no effect)");
+        }
+
+        private void MatureMinionWithKnifeAndRifle()
+        {
+            Logger.WriteToDebugLog("Dracula matured Minion With Knife and Rifle (no effect)");
+            Logger.WriteToGameLog("Dracula matured Minion With Knife and Rifle (no effect)");
+        }
+
+        private void MatureMinionWithKnifeAndPistol()
+        {
+            Logger.WriteToDebugLog("Dracula matured Minion With Knife and Pistol (no effect)");
+            Logger.WriteToGameLog("Dracula matured Minion With Knife and Pistol (no effect)");
+        }
+
+        private void MatureMinionWithKnife()
+        {
+            Logger.WriteToDebugLog("Dracula matured Minion With Knife (no effect)");
+            Logger.WriteToGameLog("Dracula matured Minion With Knife (no effect)");
+        }
+
+        private void MatureFog()
+        {
+            Logger.WriteToDebugLog("Dracula matured Fog (no effect)");
+            Logger.WriteToGameLog("Dracula matured Fog (no effect)");
+        }
+
+        private void MatureDesecratedSoil()
+        {
+            Logger.WriteToDebugLog("Dracula matured Desecrated Soil");
+            Logger.WriteToGameLog("Dracula matured Desecrated Soil");
+            throw new NotImplementedException();
+        }
+
+        private void MatureBats()
+        {
+            Logger.WriteToDebugLog("Dracula matured Bats (no effect)");
+            Logger.WriteToGameLog("Dracula matured Bats (no effect)");
+        }
+        private void MatureAssassin()
+        {
+            Logger.WriteToDebugLog("Dracula matured Assassin (no effect)");
+            Logger.WriteToGameLog("Dracula matured Assassin (no effect)");
+        }
+
+        private void MatureAmbush()
+        {
+            Logger.WriteToDebugLog("Dracula matured Ambush");
+            Logger.WriteToGameLog("Dracula matured Ambush");
+            throw new NotImplementedException();
         }
     }
 }
