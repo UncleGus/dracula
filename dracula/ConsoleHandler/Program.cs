@@ -17,29 +17,6 @@ namespace ConsoleHandler
 
         static void Main(string[] args)
         {
-            //List<Location> map = new List<Location>();
-            //SetupMap(map);
-
-            //List<Encounter> encounterDeck = new List<Encounter>();
-            //SetupEncounters(encounterDeck);
-
-            //List<Event> eventDeck = new List<Event>();
-            //SetupEvents(eventDeck);
-
-            //Hunter[] hunters = new Hunter[4];
-            //hunters[0] = new Hunter();
-            //hunters[1] = new Hunter();
-            //hunters[2] = new Hunter();
-            //hunters[3] = new Hunter();
-
-            //hunters[0].name = "Lord Godalming";
-            //hunters[1].name = "Van Helsing";
-            //hunters[2].name = "Dr. Seward";
-            //hunters[3].name = "Mina Harker";
-
-            //List<Event> hunterAlly = new List<Event>();
-            //List<Event> draculaAlly = new List<Event>();
-
             GameState g = new GameState();
 
             try
@@ -62,26 +39,15 @@ namespace ConsoleHandler
 
             Logger.WriteToDebugLog("Game start");
 
-            //int startLocation;
-            //do
-            //{
-            //    startLocation = new Random().Next(0, map.Count());
-            //} while (map[startLocation].type == LocationType.Hospital);
-
-            //Dracula dracula = new Dracula(map[startLocation], encounterDeck);
-
             Logger.WriteToDebugLog("Dracula started in " + g.dracula.currentLocation.name);
             Logger.WriteToGameLog("Dracula started in " + g.dracula.currentLocation.name);
-
-            //int time = -1;
-            //string[] timesOfDay = new string[6] { "Dawn", "Noon", "Dusk", "Twilight", "Midnight", "Small Hours" };
 
             string line;
             string command;
             string argument1;
+            string argument2 = "no argument";
             do
             {
-                //drawTrail(dracula, timesOfDay[Math.Max(0, time)], draculaAlly, hunterAlly);
                 drawTrail(g);
                 line = Console.ReadLine();
                 try
@@ -96,6 +62,14 @@ namespace ConsoleHandler
                 try
                 {
                     argument1 = line.Substring(line.IndexOf(' ') + 1);
+                    try {
+                        argument2 = argument1.Substring(argument1.IndexOf(' ') + 1);
+                        argument1 = argument1.Substring(0, argument1.IndexOf(' '));
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        argument2 = "no argument";
+                    }
                 }
                 catch (ArgumentOutOfRangeException)
                 {
@@ -104,165 +78,199 @@ namespace ConsoleHandler
 
                 switch (command)
                 {
-                    case "s": LocationHelper.ShowLocationDetails(GetLocationFromName(g, argument1)); break;
+                    case "s": LocationHelper.ShowLocationDetails(g.GetLocationFromName(argument1)); break;
                     case "d": g.dracula.ShowLocation(); break;
-                    case "m":
-                        {
-                            Logger.WriteToDebugLog("STARTING DRACULA'S TURN =====================================================");
-                            if (g.dracula.currentLocation.type != LocationType.Sea)
-                            {
-                                g.time = (g.time + 1) % 6;
-                                Logger.WriteToDebugLog("Time is now " + g.timesOfDay[g.time]);
-                                if (g.time == 0)
-                                {
-                                    g.dracula.vampireTracker++;
-                                    Logger.WriteToDebugLog("Increasing vampire track to " + g.dracula.vampireTracker);
-                                    if (g.dracula.vampireTracker > 0)
-                                    {
-                                        Logger.WriteToGameLog("Dracula earned a point, up to " + g.dracula.vampireTracker);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                Logger.WriteToDebugLog("Dracula is at sea, skipping Timekeeping phase so time remains " + g.timesOfDay[Math.Max(0, g.time)]);
-                            }
-                            g.dracula.TakeStartOfTurnActions();
-                            g.dracula.MoveDracula(g.time);
-                            g.dracula.HandleDroppedOffLocations();
-                            g.dracula.DoActionPhase();
-                            g.dracula.MatureEncounters();
-                            g.dracula.DrawEncounters(g.dracula.encounterHandSize);
-                            break;
-                        }
+                    case "m": PerformDraculaTurn(g); break;
                     case "t": g.dracula.ShowTrail(); break;
-                    case "r":
-                        {
-                            int trailIndex;
-                            if (int.TryParse(argument1, out trailIndex))
-                            {
-                                try
-                                {
-                                    if (g.dracula.trail[trailIndex - 1].name == "Hide")
-                                    {
-                                        g.dracula.RevealHide(trailIndex - 1);
-                                    }
-                                    else
-                                    {
-                                        LocationHelper.RevealLocation(g, trailIndex - 1);
-                                    }
-                                }
-                                catch (ArgumentOutOfRangeException)
-                                {
-                                    Console.WriteLine("Unable to reveal card " + argument1);
-                                }
-                            }
-                            else
-                            {
-                                Console.WriteLine("Unable to reveal card " + argument1);
-                            }
-                            break;
-                        }
-                    case "e":
-                        {
-                            int trailIndex;
-                            if (int.TryParse(argument1, out trailIndex))
-                            {
-                                try
-                                {
-                                    LocationHelper.RevealEncounter(g.dracula.trail, trailIndex - 1);
-                                }
-                                catch (ArgumentOutOfRangeException)
-                                {
-                                    Console.WriteLine("Unable to reveal encounter " + argument1);
-                                }
-                            }
-                            else
-                            {
-                                Console.WriteLine("Unable to reveal encounter " + argument1);
-                            }
-                            break;
-                        }
-                    case "c":
-                        {
-                            int trailLength;
-                            if (int.TryParse(argument1, out trailLength))
-                            {
-                                g.dracula.TrimTrail(Math.Max(1, trailLength));
-                            }
-                            else
-                            {
-                                Console.WriteLine("Unable to clear Dracula's trail to length " + argument1);
-                            }
-                            break;
-                        }
-                    case "v":
-                        {
-                            switch (PlayEventCard(g))
-                            {
-                                case "Rufus Smith": PlayRufusSmith(g); break;
-                                case "Jonathan Harker": PlayJonathanHarker(g); break;
-                                case "Sister Agatha": PlaySisterAgatha(g); break;
-                                case "Heroic Leap": PlayHeroicLeap(g); break;
-                                case "Great Strength": PlayGreatStrength(g); break;
-                                case "Money Trail": PlayMoneyTrail(g); break;
-                                case "Sense of Emergency": PlaySenseOfEmergency(g); break;
-                                case "Vampiric Lair": PlayVampiricLair(g); break;
-                                case "Long Day": PlayLongDay(g); break;
-                                case "Mystic Research": PlayMysticResearch(g); break;
-                                case "Advance Planning": PlayAdvancePlanning(g); break;
-                                case "Newspaper Reports": PlayNewspaperReports(g); break;
-                                case "Re-Equip": PlayReEquip(g); break;
-                                case "Consecrated Ground": PlayConsecratedGround(g); break;
-                                case "Telegraph Ahead": PlayTelegraphAhead(g); break;
-                                case "Hypnosis": PlayHypnosis(g); break;
-                                case "Stormy Seas": PlayStormySeas(g); break;
-                                case "Surprising Return": PlaySurprisingReturn(g); break;
-                                case "Good Luck": PlayGoodLuck(g); break;
-                                case "Blood Transfusion": PlayBloodTransfusion(g); break;
-                                case "Secret Weapon": PlaySecretWeapon(g); break;
-                                case "Forewarned": PlayForewarned(g); break;
-                                case "Chartered Carriage": PlayCharteredCarriage(g); break;
-                                case "Excellent Weather": PlayExcellentWeather(g); break;
-                                case "Escape Route": PlayEscapeRoute(g); break;
-                                case "Hired Scouts": PlayHiredScouts(g); break;
-                            }
-                            break;
-
-                        }
-                    case "h":
-                        {
-                            int numberOfCards;
-                            if (int.TryParse(argument1, out numberOfCards))
-                            {
-                                do {
-                                    g.dracula.DrawEventCard();
-                                    numberOfCards--;
-                                } while (numberOfCards > 0);
-                                g.dracula.DiscardEventsDownTo(g.dracula.eventHandSize);
-                            } else
-                            {
-                                Console.WriteLine("Dracula cannot draw " + argument1 + " cards");
-                            }
-                            break;
-                        }
+                    case "r": PerformRevealLocation(g, argument1); break;
+                    case "e": PerformRevealEncounter(g, argument1); break;
+                    case "c": PerformTrailClear(g, argument1); break;
+                    case "v": PerformPlayEventCard(g, argument1, argument2); break;
+                    case "h": PerformDraculaDrawCards(g, argument1); break;
+                    case "l": PerformHunterMove(g, argument1, argument2); break;
                     case "exit": break;
                     default: Console.WriteLine("I don't know what you're talking about"); break;
                 }
             } while (command != "exit");
         }
 
-        public static string PlayEventCard(GameState g)
+        private static void PerformHunterMove(GameState g, string argument1, string argument2)
         {
             string line = "";
-            int hunterIndex = -1;
-            do
+            int hunterIndex;
+            if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
             {
-                Console.WriteLine("Who is playing the card? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                do
+                {
+                    Console.WriteLine("Who is moving? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                    line = Console.ReadLine();
+                } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            }
+            Location locationToMoveTo = g.GetLocationFromName(argument2);
+            while (locationToMoveTo.name == "Unknown location")
+            {
+                Console.WriteLine("Where is " + g.hunters[hunterIndex].name + " moving? (partial name will suffice)");
                 line = Console.ReadLine();
-            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
-            int eventIndex = -1;
-            do
+                locationToMoveTo = g.GetLocationFromName(line);
+                Console.WriteLine(locationToMoveTo.name);
+            }
+            g.hunters[hunterIndex].currentLocation = locationToMoveTo;
+        }
+
+        private static void PerformDraculaDrawCards(GameState g, string argument)
+        {
+            int numberOfCards;
+            if (int.TryParse(argument, out numberOfCards))
+            {
+                do
+                {
+                    g.dracula.DrawEventCard();
+                    numberOfCards--;
+                } while (numberOfCards > 0);
+                g.dracula.DiscardEventsDownTo(g.dracula.eventHandSize);
+            }
+            else
+            {
+                Console.WriteLine("Dracula cannot draw " + argument + " cards");
+            }
+        }
+
+        private static void PerformPlayEventCard(GameState g, string argument1, string argument2)
+        {
+            switch (PlayEventCard(g, argument1, argument2))
+            {
+                case "Rufus Smith": PlayRufusSmith(g); break;
+                case "Jonathan Harker": PlayJonathanHarker(g); break;
+                case "Sister Agatha": PlaySisterAgatha(g); break;
+                case "Heroic Leap": PlayHeroicLeap(g); break;
+                case "Great Strength": PlayGreatStrength(g); break;
+                case "Money Trail": PlayMoneyTrail(g); break;
+                case "Sense of Emergency": PlaySenseOfEmergency(g); break;
+                case "Vampiric Lair": PlayVampiricLair(g); break;
+                case "Long Day": PlayLongDay(g); break;
+                case "Mystic Research": PlayMysticResearch(g); break;
+                case "Advance Planning": PlayAdvancePlanning(g); break;
+                case "Newspaper Reports": PlayNewspaperReports(g); break;
+                case "Re-Equip": PlayReEquip(g); break;
+                case "Consecrated Ground": PlayConsecratedGround(g); break;
+                case "Telegraph Ahead": PlayTelegraphAhead(g); break;
+                case "Hypnosis": PlayHypnosis(g); break;
+                case "Stormy Seas": PlayStormySeas(g); break;
+                case "Surprising Return": PlaySurprisingReturn(g); break;
+                case "Good Luck": PlayGoodLuck(g); break;
+                case "Blood Transfusion": PlayBloodTransfusion(g); break;
+                case "Secret Weapon": PlaySecretWeapon(g); break;
+                case "Forewarned": PlayForewarned(g); break;
+                case "Chartered Carriage": PlayCharteredCarriage(g); break;
+                case "Excellent Weather": PlayExcellentWeather(g); break;
+                case "Escape Route": PlayEscapeRoute(g); break;
+                case "Hired Scouts": PlayHiredScouts(g); break;
+            }
+        }
+
+        private static void PerformTrailClear(GameState g, string argument)
+        {
+            int trailLength;
+            if (int.TryParse(argument, out trailLength))
+            {
+                g.dracula.TrimTrail(Math.Max(1, trailLength));
+            }
+            else
+            {
+                Console.WriteLine("Unable to clear Dracula's trail to length " + argument);
+            }
+        }
+
+        private static void PerformRevealEncounter(GameState g, string argument)
+        {
+            int trailIndex;
+            if (int.TryParse(argument, out trailIndex))
+            {
+                try
+                {
+                    LocationHelper.RevealEncounter(g.dracula.trail, trailIndex - 1);
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    Console.WriteLine("Unable to reveal encounter " + argument);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Unable to reveal encounter " + argument);
+            }
+        }
+
+        private static void PerformRevealLocation(GameState g, string argument)
+        {
+            int trailIndex;
+            if (int.TryParse(argument, out trailIndex))
+            {
+                try
+                {
+                    if (g.dracula.trail[trailIndex - 1].name == "Hide")
+                    {
+                        g.dracula.RevealHide(trailIndex - 1);
+                    }
+                    else
+                    {
+                        LocationHelper.RevealLocation(g, trailIndex - 1);
+                    }
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    Console.WriteLine("Unable to reveal card " + argument);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Unable to reveal card " + argument);
+            }
+        }
+
+        private static void PerformDraculaTurn(GameState g)
+        {
+            Logger.WriteToDebugLog("STARTING DRACULA'S TURN =====================================================");
+            if (g.dracula.currentLocation.type != LocationType.Sea)
+            {
+                g.time = (g.time + 1) % 6;
+                Logger.WriteToDebugLog("Time is now " + g.timesOfDay[g.time]);
+                if (g.time == 0)
+                {
+                    g.dracula.vampireTracker++;
+                    Logger.WriteToDebugLog("Increasing vampire track to " + g.dracula.vampireTracker);
+                    if (g.dracula.vampireTracker > 0)
+                    {
+                        Logger.WriteToGameLog("Dracula earned a point, up to " + g.dracula.vampireTracker);
+                    }
+                }
+            }
+            else
+            {
+                Logger.WriteToDebugLog("Dracula is at sea, skipping Timekeeping phase so time remains " + g.timesOfDay[Math.Max(0, g.time)]);
+            }
+            g.dracula.TakeStartOfTurnActions();
+            g.dracula.MoveDracula();
+            g.dracula.HandleDroppedOffLocations();
+            g.dracula.DoActionPhase();
+            g.dracula.MatureEncounters();
+            g.dracula.DrawEncounters(g.dracula.encounterHandSize);
+        }
+
+        public static string PlayEventCard(GameState g, string argument1, string argument2)
+        {
+            string line = "";
+            int hunterIndex;
+            if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
+            {
+                do
+                {
+                    Console.WriteLine("Who is playing the card? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                    line = Console.ReadLine();
+                } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            }
+            int eventIndex = g.eventDeck.FindIndex(card => card.name.ToUpper().StartsWith(argument2.ToUpper()));
+            while (eventIndex == -1)
             {
                 Console.WriteLine("What is the event card name? (partial name will suffice)");
                 line = Console.ReadLine();
@@ -276,8 +284,10 @@ namespace ConsoleHandler
                     Console.WriteLine(g.eventDeck[eventIndex].name + " is Dracula's card");
                     eventIndex = -1;
                 }
-            } while (eventIndex == -1);
+            }
             Console.WriteLine(g.hunters[hunterIndex - 1].name + " is playing event card " + g.eventDeck[eventIndex].name);
+            Logger.WriteToDebugLog(g.hunters[hunterIndex - 1].name + " is playing event card " + g.eventDeck[eventIndex].name);
+            Logger.WriteToGameLog(g.hunters[hunterIndex - 1].name + " played " + g.eventDeck[eventIndex].name);
             return g.eventDeck[eventIndex].name;
         }
 
@@ -289,7 +299,7 @@ namespace ConsoleHandler
             {
                 Console.WriteLine("Name the first city");
                 line = Console.ReadLine();
-                locationToReveal = GetLocationFromName(g, line);
+                locationToReveal = g.GetLocationFromName(line);
                 Console.WriteLine(locationToReveal.name);
             } while (locationToReveal.name == "Unknown location");
             if (g.dracula.trail.Contains(locationToReveal))
@@ -312,7 +322,7 @@ namespace ConsoleHandler
             {
                 Console.WriteLine("Name the second city");
                 line = Console.ReadLine();
-                locationToReveal = GetLocationFromName(g, line);
+                locationToReveal = g.GetLocationFromName(line);
                 Console.WriteLine(locationToReveal.name);
             } while (locationToReveal.name == "Unknown location");
             if (g.dracula.trail.Contains(locationToReveal))
@@ -516,20 +526,6 @@ namespace ConsoleHandler
             Event playedCard = g.eventDeck[g.eventDeck.FindIndex(card => card.name == cardName)];
             g.eventDiscard.Add(playedCard);
             g.eventDeck.Remove(playedCard);
-        }
-
-        public static Location GetLocationFromName(GameState g, string locationName)
-        {
-            for (int i = 0; i < g.map.Count(); i++)
-            {
-                if ((g.map[i].name.ToLower().StartsWith(locationName.ToLower())) || (g.map[i].abbreviation.ToLower() == locationName.ToLower()))
-                {
-                    return g.map[i];
-                }
-            }
-            Location unknownLocation = new Location();
-            unknownLocation.name = "Unknown location";
-            return unknownLocation;
         }
 
         public static void drawTrail(GameState g)

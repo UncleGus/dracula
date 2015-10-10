@@ -23,7 +23,7 @@ namespace DraculaHandler
         bool lostBloodAtSeaOnLatestTurn;
         public int encounterHandSize;
         List<Encounter> encountersToMature = new List<Encounter>();
-        public List<Encounter> encounterHand = new List<Encounter>();
+        List<Encounter> encounterHand = new List<Encounter>();
         public Location locationWhereHideWasUsed;
         public int vampireTracker;
         public Location[] catacombs = new Location[3];
@@ -49,15 +49,15 @@ namespace DraculaHandler
             eventHandSize = 4;
         }
 
-        public bool MoveDracula(int timeOfDay)
+        public bool MoveDracula()
         {
             Logger.WriteToDebugLog("STARTING MOVEMENT PHASE");
 
             // build list of possible locations to move to
-            DeterminePossibleLocations();
+            determinePossibleLocations();
 
             // build list of possible powers to play
-            DeterminePossiblePowers(timeOfDay);
+            determinePossiblePowers(g.time);
 
             // check if there are no legal moves
             Logger.WriteToDebugLog("Checking if there are legal moves");
@@ -70,14 +70,14 @@ namespace DraculaHandler
             else if (possibleMoves.Count() == 0 && possiblePowers.Count() == 1 && possiblePowers.Contains(powers[1]))
             {
                 Logger.WriteToDebugLog("Dracula has no regular moves available");
-                DeterminePossibleWolfFormLocations();
+                determinePossibleWolfFormLocations();
                 if (possibleMoves.Count() == 0)
                 {
                     Logger.WriteToDebugLog("Dracula has no moves available by Wolf Form");
                     Console.WriteLine("Dracula is cornered by his own trail");
                     return false;
                 }
-                DeterminePossibleLocations();
+                determinePossibleLocations();
             }
 
             // choose an action from all possible actions
@@ -118,7 +118,7 @@ namespace DraculaHandler
             // performing a regular move
             {
                 // choose a location
-                MoveByRoadOrSea();
+                moveByRoadOrSea();
                 Logger.WriteToGameLog("Dracula moved to " + currentLocation.name);
             }
             Logger.WriteToDebugLog("Dracula has finished moving");
@@ -149,28 +149,92 @@ namespace DraculaHandler
             }
         }
 
-        public void PlayImmediately(Event eventCardDrawn)
+        private void PlayImmediately(Event eventCardDrawn)
         {
             throw new NotImplementedException();
         }
 
-        public void PlayAlly(Event allyDrawn)
+        private void PlayAlly(Event allyDrawn)
         {
+            Event allyKept;
             if (g.draculaAlly == null)
             {
+                Logger.WriteToDebugLog("Dracula has no current Ally, keeping this one");
                 g.draculaAlly = allyDrawn;
                 g.eventDeck.Remove(allyDrawn);
                 Logger.WriteToDebugLog("Dracula put " + allyDrawn.name + " into his empty Ally slot");
                 Logger.WriteToGameLog("Dracula put " + allyDrawn.name + " into his empty Ally slot");
-                switch (allyDrawn.name) {
-                    case "Dracula's Brides": encounterHandSize = 7; break;
-                    case "Immanuel Hildesheim": eventHandSize = 6; break;
-                }
-
+                allyKept = allyDrawn;
             } else
             {
-                throw new NotImplementedException();
+                Logger.WriteToDebugLog("Dracula already has an Ally, deciding which one to keep");
+                Event allyDiscarded;
+                if (new Random().Next(0, 2) > 0)
+                {
+                    Logger.WriteToDebugLog("Keeping the new Ally");
+                    allyDiscarded = g.draculaAlly;
+                    g.eventDiscard.Add(allyDiscarded);
+                    g.draculaAlly = allyDrawn;
+                    allyKept = allyDrawn;
+                    Logger.WriteToDebugLog("Dracula put " + allyDrawn.name + " into his Ally slot, replacing " + allyDiscarded.name);
+                    Logger.WriteToGameLog("Dracula put " + allyDrawn.name + " into his Ally slot, replacing " + allyDiscarded.name);
+                }
+                else
+                {
+                    Logger.WriteToDebugLog("Keeping the existing Ally");
+                    allyDiscarded = allyDrawn;
+                    g.eventDiscard.Add(allyDiscarded);
+                    allyKept = g.draculaAlly;
+                    Logger.WriteToDebugLog("Dracula kept " + g.draculaAlly.name + " in his Ally slot, discarding " + allyDiscarded.name);
+                    Logger.WriteToGameLog("Dracula kept " + g.draculaAlly.name + " in his Ally slot, discarding " + allyDiscarded.name);
+                }
+                switch (allyDiscarded.name)
+                {
+                    case "Immanuel Hildesheim":
+                        {
+                            Logger.WriteToDebugLog("Discarded Immanuel Hildesheim, discarding events down to 4");
+                            eventHandSize = 4;
+                            DiscardEventsDownTo(eventHandSize);
+                            break;
+                        }
+                    case "Dracula's Brides":
+                        {
+                            Logger.WriteToDebugLog("Discarding Dracula's Brides, discarding encounters down to 5");
+                            encounterHandSize = 5;
+                            DiscardEncountersDownTo(encounterHandSize);
+                            break;
+                        }
+                }
             }
+            switch (allyKept.name)
+            {
+                case "Dracula's Brides":
+                    {
+                        Logger.WriteToDebugLog("Dracula's Brides is in play, encounter hand size is 7");
+                        encounterHandSize = 7;
+                        break;
+                    }
+                case "Immanuel Hildesheim":
+                    {
+                        Logger.WriteToDebugLog("Immanueal Hildesheim is in play, event hand size is 6");
+                        eventHandSize = 6;
+                        break;
+                    }
+            }
+
+        }
+
+        private void DiscardEncountersDownTo(int encountersToKeep)
+        {
+            while (encounterHand.Count() > encountersToKeep)
+            {
+                Encounter encounterToDiscard = encounterHand[new Random().Next(0, encounterHand.Count())];
+                encounterHand.Remove(encounterToDiscard);
+                g.encounterPool.Add(encounterToDiscard);
+                Logger.WriteToDebugLog("Dracula discarded " + encounterToDiscard.name);
+                Logger.WriteToGameLog("Dracula discarded " + encounterToDiscard.name);
+            }
+
         }
 
         public void DiscardEventsDownTo(int numberOfCards)
@@ -210,7 +274,7 @@ namespace DraculaHandler
             }
         }
 
-        public void DeterminePossibleLocations()
+        public void determinePossibleLocations()
         {
             Logger.WriteToDebugLog("Dracula is determining possible locations to move to");
             Logger.WriteToDebugLog("Clearing the old list of possible locations");
@@ -262,7 +326,7 @@ namespace DraculaHandler
             }
         }
 
-        public void DeterminePossibleWolfFormLocations()
+        public void determinePossibleWolfFormLocations()
         {
             Logger.WriteToDebugLog("Dracula is determining which locations can be moved to using Wolf Form, starting with locations connected by one road");
             Logger.WriteToDebugLog("Clearing the old list of possible locations");
@@ -310,7 +374,7 @@ namespace DraculaHandler
 
         }
 
-        public void DeterminePossiblePowers(int timeOfDay)
+        public void determinePossiblePowers(int timeOfDay)
         {
             Logger.WriteToDebugLog("Determining possible powers to use");
             Logger.WriteToDebugLog("Clearing the old list of possible powers to use");
@@ -330,7 +394,7 @@ namespace DraculaHandler
                         {
                             if (powers[i].name == "Wolf Form")
                             {
-                                DeterminePossibleWolfFormLocations();
+                                determinePossibleWolfFormLocations();
                                 if (possibleMoves.Count() > 0)
                                 {
                                     Logger.WriteToDebugLog("Adding power " + powers[i].name + " to the list");
@@ -340,7 +404,7 @@ namespace DraculaHandler
                                 {
                                     Logger.WriteToDebugLog("Not adding Wolf Form to the list as it cannot be used validly from this location");
                                 }
-                                DeterminePossibleLocations();
+                                determinePossibleLocations();
                             }
                             else
                             {
@@ -361,7 +425,7 @@ namespace DraculaHandler
             }
         }
 
-        public void MoveByRoadOrSea()
+        public void moveByRoadOrSea()
         {
             Logger.WriteToDebugLog("Moving Dracula to a new location");
             Logger.WriteToDebugLog("Remembering that Dracula is moving from a location of type " + currentLocation.type);
@@ -638,9 +702,9 @@ namespace DraculaHandler
         public void DoWolfFormMove()
         {
             // determine possible locations for wolf form (road only, up to two moves away)
-            DeterminePossibleWolfFormLocations();
+            determinePossibleWolfFormLocations();
             // carry out move
-            MoveByRoadOrSea();
+            moveByRoadOrSea();
             Logger.WriteToGameLog("Dracula used Wolf Form to move to " + currentLocation.name);
         }
 
