@@ -230,6 +230,22 @@ namespace ConsoleHandler
                             break;
 
                         }
+                    case "h":
+                        {
+                            int numberOfCards;
+                            if (int.TryParse(argument1, out numberOfCards))
+                            {
+                                do {
+                                    g.dracula.DrawEventCard();
+                                    numberOfCards--;
+                                } while (numberOfCards > 0);
+                                g.dracula.DiscardEventsDownTo(g.dracula.eventHandSize);
+                            } else
+                            {
+                                Console.WriteLine("Dracula cannot draw " + argument1 + " cards");
+                            }
+                            break;
+                        }
                     case "exit": break;
                     default: Console.WriteLine("I don't know what you're talking about"); break;
                 }
@@ -240,19 +256,22 @@ namespace ConsoleHandler
         {
             string line = "";
             int hunterIndex = -1;
-            do {
+            do
+            {
                 Console.WriteLine("Who is playing the card? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
                 line = Console.ReadLine();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
-                int eventIndex = -1;
+            int eventIndex = -1;
             do
             {
                 Console.WriteLine("What is the event card name? (partial name will suffice)");
                 line = Console.ReadLine();
                 eventIndex = g.eventDeck.FindIndex(card => card.name.ToUpper().StartsWith(line.ToUpper()));
-                if (eventIndex == -1) {
+                if (eventIndex == -1)
+                {
                     Console.WriteLine("I don't recognise a card starting with " + line + ". Is it in the discard pile?");
-                } else if (g.eventDeck[eventIndex].isDraculaCard)
+                }
+                else if (g.eventDeck[eventIndex].isDraculaCard)
                 {
                     Console.WriteLine(g.eventDeck[eventIndex].name + " is Dracula's card");
                     eventIndex = -1;
@@ -284,7 +303,8 @@ namespace ConsoleHandler
                 }
                 Console.WriteLine("");
                 drawTrail(g);
-            } else
+            }
+            else
             {
                 Console.Write(locationToReveal.name + " is not in Dracula's trail");
             }
@@ -387,7 +407,7 @@ namespace ConsoleHandler
             {
                 checkingLocationIndex--;
             } while ((g.dracula.trail[checkingLocationIndex].type != LocationType.Castle && g.dracula.trail[checkingLocationIndex].type != LocationType.City && g.dracula.trail[checkingLocationIndex].type != LocationType.Sea && g.dracula.trail[checkingLocationIndex].type != LocationType.Town) || g.dracula.trail[checkingLocationIndex].isRevealed);
-            
+
             if (g.dracula.trail[checkingLocationIndex] == g.dracula.currentLocation)
             {
                 Console.WriteLine("The oldest unrevealed location in Dracula's trail is his current location");
@@ -396,7 +416,8 @@ namespace ConsoleHandler
                     Console.WriteLine("Here's the Hide card to prove it");
                     g.dracula.RevealHide();
                 }
-            } else
+            }
+            else
             {
                 g.dracula.trail[checkingLocationIndex].isRevealed = true;
                 Console.WriteLine("Revealing " + g.dracula.trail[checkingLocationIndex].name);
@@ -419,7 +440,8 @@ namespace ConsoleHandler
             if (g.time < 1)
             {
                 Console.WriteLine("You cannot play Long Day during Dawn");
-            } else
+            }
+            else
             {
                 g.time--;
                 DiscardEventCard(g, "Long Day");
@@ -439,8 +461,10 @@ namespace ConsoleHandler
         private static void PlayMoneyTrail(GameState g)
         {
             Console.WriteLine("Revealing all sea locations in Dracula's trail");
-            for (int i = 0; i < g.dracula.trail.Count(); i++) {
-                if (g.dracula.trail[i].type == LocationType.Sea) {
+            for (int i = 0; i < g.dracula.trail.Count(); i++)
+            {
+                if (g.dracula.trail[i].type == LocationType.Sea)
+                {
                     LocationHelper.RevealLocation(g, i);
                 }
             }
@@ -494,7 +518,6 @@ namespace ConsoleHandler
             g.eventDeck.Remove(playedCard);
         }
 
-
         public static Location GetLocationFromName(GameState g, string locationName)
         {
             for (int i = 0; i < g.map.Count(); i++)
@@ -511,7 +534,10 @@ namespace ConsoleHandler
 
         public static void drawTrail(GameState g)
         {
-            Console.WriteLine("6th 5th 4th 3rd 2nd 1st   Time        Dracula  Vampires  Catacombs");
+            // top line, trail headers, time header, Dracula blood and Vampire track header, Catacombs header, Dracula cards header
+            Console.WriteLine("6th 5th 4th 3rd 2nd 1st   Time        Blood    Vampires  Catacombs    Events");
+            // second line, trail cards, time, Dracula blood, Vampires, Catacombs cards
+            // trail cards
             for (int i = 5; i >= 0; i--)
             {
                 if (i + 1 > g.dracula.trail.Count())
@@ -534,24 +560,28 @@ namespace ConsoleHandler
                 case "Midnight": Console.ForegroundColor = ConsoleColor.Blue; break;
                 case "Small Hours": Console.ForegroundColor = ConsoleColor.Cyan; break;
             }
+            // time of day
             Console.Write("  " + timeOfDay);
             Console.ForegroundColor = ConsoleColor.Red;
             for (int i = 0; i < (12 - timeOfDay.Length); i++)
             {
                 Console.Write(" ");
             }
+            // Dracula blood
             Console.Write(g.dracula.blood);
             Console.ResetColor();
             for (int i = 0; i < (9 - g.dracula.blood.ToString().Length); i++)
             {
                 Console.Write(" ");
             }
+            // Vampire tracker
             Console.Write(Math.Max(0, g.dracula.vampireTracker));
             for (int i = 0; i < (10 - g.dracula.vampireTracker.ToString().Length); i++)
             {
                 Console.Write(" ");
             }
             Console.ForegroundColor = ConsoleColor.Red;
+            // Catacombs cards
             for (int i = 0; i < 3; i++)
             {
                 if (g.dracula.catacombs[i] != null)
@@ -570,9 +600,12 @@ namespace ConsoleHandler
                     Console.Write("    ");
                 }
             }
-            Console.WriteLine("");
+            Console.ResetColor();
+            Console.WriteLine("  " + g.dracula.eventCardsInHand.Count());
+            // third line power cards, 
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             string tempString;
+            // power cards
             for (int counter = 5; counter > -1; counter--)
             {
                 tempString = "    ";
@@ -587,7 +620,7 @@ namespace ConsoleHandler
             }
             Console.ForegroundColor = ConsoleColor.Red;
             Console.Write("                                 ");
-
+            // first Catacombs encounters
             for (int i = 0; i < 3; i++)
             {
                 if (g.dracula.catacombs[i] != null)
@@ -604,6 +637,8 @@ namespace ConsoleHandler
             }
 
             Console.WriteLine("");
+            // fourth line trail encounters, ally headers, second Catacomb encounters
+            // trail encounters
             for (int i = 5; i > -1; i--)
             {
                 if (i + 1 > g.dracula.trail.Count())
@@ -616,40 +651,10 @@ namespace ConsoleHandler
                 }
             }
             Console.ResetColor();
+            // ally headers
             Console.Write("  Dracula's Ally    Hunters' Ally");
 
-            Console.WriteLine("");
-            for (int i = 5; i > -1; i--)
-            {
-                if (i + 1 > g.dracula.trail.Count())
-                {
-                    Console.Write("    ");
-                }
-                else
-                {
-                    g.dracula.trail[i].DrawEncounter(true);
-                }
-            }
-            Console.ResetColor();
-            Console.Write("  ");
-            if (g.draculaAlly != null)
-            {
-                Console.Write(g.draculaAlly.name.Substring(0, 3).ToUpper());
-            } else
-            {
-                Console.Write("   ");
-            }
-            Console.Write("               ");
-            if (g.hunterAlly != null)
-            {
-                Console.Write(g.hunterAlly.name.Substring(0, 3).ToUpper());
-            }
-            else
-            {
-                Console.Write("   ");
-            }
-
-            Console.Write("          ");
+            // second Catacomb encounters
             for (int i = 0; i < 3; i++)
             {
                 if (g.dracula.catacombs[i] != null)
@@ -664,8 +669,27 @@ namespace ConsoleHandler
                     Console.Write("    ");
                 }
             }
-
-
+            Console.WriteLine("");
+            // fifth line, ally names
+            Console.Write("                          ");
+            Console.ResetColor();
+            if (g.draculaAlly != null)
+            {
+                Console.Write(g.draculaAlly.name.Substring(0, 3).ToUpper());
+            }
+            else
+            {
+                Console.Write("   ");
+            }
+            Console.Write("               ");
+            if (g.hunterAlly != null)
+            {
+                Console.Write(g.hunterAlly.name.Substring(0, 3).ToUpper());
+            }
+            else
+            {
+                Console.Write("   ");
+            }
             Console.ResetColor();
             Console.WriteLine("");
         }

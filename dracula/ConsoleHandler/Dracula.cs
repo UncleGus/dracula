@@ -658,6 +658,12 @@ namespace DraculaHandler
                         return;
                     }
                 }
+                Logger.WriteToDebugLog("Checking if this location already has an encounter");
+                if (trail[locationIndex].encounters.Count() > 0)
+                {
+                    Logger.WriteToDebugLog("THIS LOCATION ALREADY HAS AN ENCOUNTER. THIS SHOULD NOT BE POSSIBLE. INVESTIGATE.");
+                    return;
+                }
             }
             else
             {
