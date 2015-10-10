@@ -24,18 +24,17 @@ namespace ConsoleHandler
         public Event hunterAlly;
         public int time;
         public string[] timesOfDay;
+        public int resolve;
 
         public GameState()
         {
             hunters = new Hunter[4];
-            hunters[0] = new Hunter();
-            hunters[1] = new Hunter();
-            hunters[2] = new Hunter();
-            hunters[3] = new Hunter();
-            hunters[0].name = "Lord Godalming";
-            hunters[1].name = "Van Helsing";
-            hunters[2].name = "Dr. Seward";
-            hunters[3].name = "Mina Harker";
+            hunters[0] = new Hunter("Lord Godalming", 12, 0, 2);
+            hunters[1] = new Hunter("Van Helsing", 8, 0, 3);
+            hunters[2] = new Hunter("Dr. Seward", 10, 0, 2);
+            hunters[3] = new Hunter("Mina Harker", 8, 1, 2);
+
+            resolve = 0;
 
             Location galway = new Location();
             Location dublin = new Location();
@@ -1063,6 +1062,20 @@ namespace ConsoleHandler
             time = -1;
             timesOfDay = new string[6] { "Dawn", "Noon", "Dusk", "Twilight", "Midnight", "Small Hours" };
 
+            string line;
+            Location hunterStartLocation;
+            for (int i = 0; i < 4; i++)
+            {
+                do
+                {
+                    Console.WriteLine("Where is " + hunters[i].name + "?");
+                    line = Console.ReadLine();
+                    hunterStartLocation = GetLocationFromName(line);
+                    Console.WriteLine(hunterStartLocation.name);
+                } while (hunterStartLocation.name == "Unknown location");
+                hunters[i].currentLocation = hunterStartLocation;
+            }
+
             int startLocation;
             do
             {
@@ -1070,6 +1083,20 @@ namespace ConsoleHandler
             } while (map[startLocation].type == LocationType.Hospital);
             dracula = new Dracula(map[startLocation], this);
 
+        }
+
+        public Location GetLocationFromName(string locationName)
+        {
+            for (int i = 0; i < map.Count(); i++)
+            {
+                if ((map[i].name.ToLower().StartsWith(locationName.ToLower())) || (map[i].abbreviation.ToLower() == locationName.ToLower()))
+                {
+                    return map[i];
+                }
+            }
+            Location unknownLocation = new Location();
+            unknownLocation.name = "Unknown location";
+            return unknownLocation;
         }
 
         public void MatureEncounter(string encounterName)

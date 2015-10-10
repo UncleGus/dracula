@@ -49,7 +49,7 @@ namespace DraculaHandler
             eventHandSize = 4;
         }
 
-        public bool MoveDracula(int timeOfDay)
+        public bool MoveDracula()
         {
             Logger.WriteToDebugLog("STARTING MOVEMENT PHASE");
 
@@ -57,7 +57,7 @@ namespace DraculaHandler
             determinePossibleLocations();
 
             // build list of possible powers to play
-            determinePossiblePowers(timeOfDay);
+            determinePossiblePowers(g.time);
 
             // check if there are no legal moves
             Logger.WriteToDebugLog("Checking if there are legal moves");
@@ -156,21 +156,85 @@ namespace DraculaHandler
 
         private void PlayAlly(Event allyDrawn)
         {
+            Event allyKept;
             if (g.draculaAlly == null)
             {
+                Logger.WriteToDebugLog("Dracula has no current Ally, keeping this one");
                 g.draculaAlly = allyDrawn;
                 g.eventDeck.Remove(allyDrawn);
                 Logger.WriteToDebugLog("Dracula put " + allyDrawn.name + " into his empty Ally slot");
                 Logger.WriteToGameLog("Dracula put " + allyDrawn.name + " into his empty Ally slot");
-                switch (allyDrawn.name) {
-                    case "Dracula's Brides": encounterHandSize = 7; break;
-                    case "Immanuel Hildesheim": eventHandSize = 6; break;
-                }
-
+                allyKept = allyDrawn;
             } else
             {
-                throw new NotImplementedException();
+                Logger.WriteToDebugLog("Dracula already has an Ally, deciding which one to keep");
+                Event allyDiscarded;
+                if (new Random().Next(0, 2) > 0)
+                {
+                    Logger.WriteToDebugLog("Keeping the new Ally");
+                    allyDiscarded = g.draculaAlly;
+                    g.eventDiscard.Add(allyDiscarded);
+                    g.draculaAlly = allyDrawn;
+                    allyKept = allyDrawn;
+                    Logger.WriteToDebugLog("Dracula put " + allyDrawn.name + " into his Ally slot, replacing " + allyDiscarded.name);
+                    Logger.WriteToGameLog("Dracula put " + allyDrawn.name + " into his Ally slot, replacing " + allyDiscarded.name);
+                }
+                else
+                {
+                    Logger.WriteToDebugLog("Keeping the existing Ally");
+                    allyDiscarded = allyDrawn;
+                    g.eventDiscard.Add(allyDiscarded);
+                    allyKept = g.draculaAlly;
+                    Logger.WriteToDebugLog("Dracula kept " + g.draculaAlly.name + " in his Ally slot, discarding " + allyDiscarded.name);
+                    Logger.WriteToGameLog("Dracula kept " + g.draculaAlly.name + " in his Ally slot, discarding " + allyDiscarded.name);
+                }
+                switch (allyDiscarded.name)
+                {
+                    case "Immanuel Hildesheim":
+                        {
+                            Logger.WriteToDebugLog("Discarded Immanuel Hildesheim, discarding events down to 4");
+                            eventHandSize = 4;
+                            DiscardEventsDownTo(eventHandSize);
+                            break;
+                        }
+                    case "Dracula's Brides":
+                        {
+                            Logger.WriteToDebugLog("Discarding Dracula's Brides, discarding encounters down to 5");
+                            encounterHandSize = 5;
+                            DiscardEncountersDownTo(encounterHandSize);
+                            break;
+                        }
+                }
             }
+            switch (allyKept.name)
+            {
+                case "Dracula's Brides":
+                    {
+                        Logger.WriteToDebugLog("Dracula's Brides is in play, encounter hand size is 7");
+                        encounterHandSize = 7;
+                        break;
+                    }
+                case "Immanuel Hildesheim":
+                    {
+                        Logger.WriteToDebugLog("Immanueal Hildesheim is in play, event hand size is 6");
+                        eventHandSize = 6;
+                        break;
+                    }
+            }
+
+        }
+
+        private void DiscardEncountersDownTo(int encountersToKeep)
+        {
+            while (encounterHand.Count() > encountersToKeep)
+            {
+                Encounter encounterToDiscard = encounterHand[new Random().Next(0, encounterHand.Count())];
+                encounterHand.Remove(encounterToDiscard);
+                g.encounterPool.Add(encounterToDiscard);
+                Logger.WriteToDebugLog("Dracula discarded " + encounterToDiscard.name);
+                Logger.WriteToGameLog("Dracula discarded " + encounterToDiscard.name);
+            }
+
         }
 
         public void DiscardEventsDownTo(int numberOfCards)
