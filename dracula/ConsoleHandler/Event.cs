@@ -10,13 +10,22 @@ namespace EventHandler
     {
         public string name;
         public bool isDraculaCard;
+        public EventType type;
 
-        public Event(string newName, bool newIsDraculaCard)
+        public Event(string newName, bool newIsDraculaCard, EventType eventType)
         {
             name = newName;
             isDraculaCard = newIsDraculaCard;
+            type = eventType;
         }
 
+    }
+
+    public enum EventType
+    {
+        Ally,
+        Keep,
+        PlayImmediately
     }
 
 }

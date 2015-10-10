@@ -132,10 +132,45 @@ namespace DraculaHandler
             {
                 eventCardDrawn = g.eventDeck[new Random().Next(0, g.eventDeck.Count())];
             } while (!eventCardDrawn.isDraculaCard);
-            eventCardsInHand.Add(eventCardDrawn);
-            g.eventDeck.Remove(eventCardDrawn);
             Logger.WriteToDebugLog("Dracula drew card " + eventCardDrawn.name);
             Logger.WriteToGameLog("Dracula drew card " + eventCardDrawn.name);
+            if (eventCardDrawn.type == EventType.Ally)
+            {
+                PlayAlly(eventCardDrawn);
+            }
+            else if (eventCardDrawn.type == EventType.PlayImmediately)
+            {
+                PlayImmediately(eventCardDrawn);
+            }
+            else
+            {
+                eventCardsInHand.Add(eventCardDrawn);
+                g.eventDeck.Remove(eventCardDrawn);
+            }
+        }
+
+        private void PlayImmediately(Event eventCardDrawn)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PlayAlly(Event allyDrawn)
+        {
+            if (g.draculaAlly == null)
+            {
+                g.draculaAlly = allyDrawn;
+                g.eventDeck.Remove(allyDrawn);
+                Logger.WriteToDebugLog("Dracula put " + allyDrawn.name + " into his empty Ally slot");
+                Logger.WriteToGameLog("Dracula put " + allyDrawn.name + " into his empty Ally slot");
+                switch (allyDrawn.name) {
+                    case "Dracula's Brides": encounterHandSize = 7; break;
+                    case "Immanuel Hildesheim": eventHandSize = 6; break;
+                }
+
+            } else
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public void DiscardEventsDownTo(int numberOfCards)
