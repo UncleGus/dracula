@@ -35,7 +35,7 @@ namespace ConsoleHandler
             hunters[2] = new Hunter("Dr. Seward", 10, 0, 2);
             hunters[3] = new Hunter("Mina Harker", 8, 1, 2);
 
-            resolve = 0;
+            resolve = -1;
             vampireTracker = -1;
             eventDeck = new List<Event>();
             eventDiscard = new List<Event>();
@@ -167,7 +167,7 @@ namespace ConsoleHandler
                     ui.TellUser(" and " + locationToReveal.encounters[i].name);
                 }
                 ui.TellUser("");
-                ui.drawTrail(this);
+                ui.drawGameState(this);
             }
             else
             {
@@ -1326,12 +1326,16 @@ namespace ConsoleHandler
         internal void SetLocationForHunterAt(int v, Location location)
         {
             hunters[v].currentLocation = location;
+            Logger.WriteToDebugLog(hunters[v].name + " started in " + location.name);
+            Logger.WriteToGameLog(hunters[v].name + " started in " + location.name);
         }
 
         internal void PlaceDraculaAtStartLocation()
         {
             dracula.currentLocation = dracula.logic.DecideDraculaStartLocation(this);
             dracula.trail.Add(dracula.currentLocation);
+            Logger.WriteToDebugLog("Dracula started in " + dracula.currentLocation.name);
+            Logger.WriteToGameLog("Dracula started in " + dracula.currentLocation.name);
         }
 
         internal string TimeOfDay()
@@ -1432,6 +1436,8 @@ namespace ConsoleHandler
         internal void MoveHunterToLocationAtHunterIndex(int hunterIndex, Location locationToMoveTo)
         {
             hunters[hunterIndex].currentLocation = locationToMoveTo;
+            Logger.WriteToDebugLog("Moved " + hunters[hunterIndex].name + " to " + locationToMoveTo.name);
+            Logger.WriteToGameLog(hunters[hunterIndex].name + " moved to " + locationToMoveTo.name);
         }
 
         internal string NameOfHunterAtIndex(int hunterIndex)
@@ -1558,10 +1564,13 @@ namespace ConsoleHandler
                 if (time == 0)
                 {
                     vampireTracker++;
+                    resolve++;
                     Logger.WriteToDebugLog("Increasing vampire track to " + vampireTracker);
+                    Logger.WriteToDebugLog("Increasing resolve to " + resolve);
                     if (vampireTracker > 0)
                     {
                         Logger.WriteToGameLog("Dracula earned a point, up to " + vampireTracker);
+                        Logger.WriteToGameLog("Hunters gained a point of resolve, up to " + resolve);
                     }
                 }
             }
@@ -2097,6 +2106,41 @@ namespace ConsoleHandler
         internal void DrawEncountersUpToHandSize()
         {
             dracula.DrawEncounters(this, dracula.encounterHandSize);
+        }
+
+        internal void DraculaCancelTrain(int hunterIndex, UserInterface ui)
+        {
+            Logger.WriteToDebugLog("Dracula is deciding whether to cancel the train");
+
+            if (dracula.WillCancelTrain(this, hunters[hunterIndex]))
+            {
+                PlayFalseTipOff(ui);
+            }
+        }
+
+        private void PlayFalseTipOff(UserInterface ui)
+        {
+            ui.TellUser("I am playing my False Tip-Off card to cancel your train");
+            dracula.DiscardEventFromHand(this, "False Tip-Off");
+        }
+
+        internal void AddEventCardToHunterAtIndex(int hunterIndex)
+        {
+            hunters[hunterIndex].numberOfEvents++;
+            Logger.WriteToDebugLog(hunters[hunterIndex].name + " draw an event card, up to " + hunters[hunterIndex].numberOfEvents);
+            Logger.WriteToGameLog(hunters[hunterIndex].name + " draw an event card, up to " + hunters[hunterIndex].numberOfEvents);
+        }
+
+        internal void AddItemCardToHunterAtIndex(int hunterIndex)
+        {
+            hunters[hunterIndex].numberOfItems++;
+            Logger.WriteToDebugLog(hunters[hunterIndex].name + " draw an item card, up to " + hunters[hunterIndex].numberOfItems);
+            Logger.WriteToGameLog(hunters[hunterIndex].name + " draw an item card, up to " + hunters[hunterIndex].numberOfItems);
+        }
+
+        internal int ResolveTracker()
+        {
+            return resolve;
         }
     }
 }

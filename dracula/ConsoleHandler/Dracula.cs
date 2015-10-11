@@ -860,6 +860,22 @@ namespace DraculaHandler
                 ui.TellUser("Don't forget to tell me what was discarded");
             }
         }
+
+        internal bool WillCancelTrain(GameState g, HunterHandler.Hunter hunter)
+        {
+            return logic.DecideToCancelHunterTrain(g, this, hunter);
+        }
+
+        internal void DiscardEventFromHand(GameState g, string p)
+        {
+            g.DiscardEventCard(p);
+            eventCardsInHand.Remove(GetEventCardFromHand(p));
+        }
+
+        private Event GetEventCardFromHand(string p)
+        {
+            return eventCardsInHand[eventCardsInHand.FindIndex(card => card.name == p)];
+        }
     }
 
     public class DraculaPower

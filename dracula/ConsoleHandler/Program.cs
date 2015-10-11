@@ -13,6 +13,7 @@ namespace ConsoleHandler
         {
             UserInterface ui = new UserInterface();
             GameState g = new GameState();
+            Logger.ClearLogs(ui);
 
             g.SetLocationForHunterAt(0, ui.GetHunterStartLocation(g, 0));
             g.SetLocationForHunterAt(1, ui.GetHunterStartLocation(g, 1));
@@ -21,35 +22,75 @@ namespace ConsoleHandler
 
             g.PlaceDraculaAtStartLocation();
             g.DrawEncountersUpToHandSize();
-
-            Logger.ClearLogs(ui);
-
-            Logger.WriteToDebugLog("Game start");
-
-            Logger.WriteToDebugLog("Dracula started in " + g.DraculaCurrentLocationName());
-            Logger.WriteToGameLog("Dracula started in " + g.DraculaCurrentLocationName());
+            PerformDraculaTurn(g, ui);
 
             CommandSet commandSet = new CommandSet();
 
             do
             {
-                ui.drawTrail(g);
+                ui.drawGameState(g);
                 commandSet = ui.GetCommandSet();
 
                 switch (commandSet.command)
                 {
                     case "s": LocationHelper.ShowLocationDetails(g.GetLocationFromName(commandSet.argument1)); break;
-                    case "m": g.PerformDraculaTurn(ui); break;
+                    case "l": PerformHunterMove(g, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "g": PerformCatchTrain(g, commandSet.argument1, ui); break;
+                    case "n": PerformHunterDrawEvent(g, commandSet.argument1, ui); break;
+                    case "i": PerformHunterDrawItem(g, commandSet.argument1, ui); break;
+                    case "m": PerformDraculaTurn(g, ui); break;
                     case "r": PerformRevealLocation(g, commandSet.argument1, ui); break;
                     case "e": PerformRevealEncounter(g, commandSet.argument1, ui); break;
                     case "c": PerformTrailClear(g, commandSet.argument1, ui); break;
                     case "v": PerformPlayEventCard(g, commandSet.argument1, commandSet.argument2, ui); break;
                     case "h": PerformDraculaDrawCards(g, commandSet.argument1, ui); break;
-                    case "l": PerformHunterMove(g, commandSet.argument1, commandSet.argument2, ui); break;
                     case "exit": break;
                     default: Console.WriteLine("I don't know what you're talking about"); break;
                 }
             } while (commandSet.command != "exit");
+        }
+
+        private static void PerformHunterDrawItem(GameState g, string argument1, UserInterface ui)
+        {
+            int hunterIndex;
+            if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
+            {
+                hunterIndex = ui.GetIndexOfHunterDrawingItem();
+            }
+            else
+            {
+                hunterIndex--;
+            }
+            g.AddItemCardToHunterAtIndex(hunterIndex);
+        }
+
+        private static void PerformHunterDrawEvent(GameState g, string argument1, UserInterface ui)
+        {
+            int hunterIndex;
+            if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
+            {
+                hunterIndex = ui.GetIndexOfHunterDrawingEvent();
+            }
+            else
+            {
+                hunterIndex--;
+            }
+            g.AddEventCardToHunterAtIndex(hunterIndex);
+        }
+
+        private static void PerformCatchTrain(GameState g, string argument1, UserInterface ui)
+        {
+            int hunterIndex;
+            if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
+            {
+                hunterIndex = ui.GetIndexOfMovingHunter();
+            }
+            else
+            {
+                hunterIndex--;
+            }
+            Logger.WriteToDebugLog(g.NameOfHunterAtIndex(hunterIndex) + " is attempting to catch a train");
+            g.DraculaCancelTrain(hunterIndex, ui);
         }
 
         private static void PerformHunterMove(GameState g, string argument1, string argument2, UserInterface ui)
@@ -58,6 +99,10 @@ namespace ConsoleHandler
             if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
             {
                 hunterIndex = ui.GetIndexOfMovingHunter();
+            }
+            else
+            {
+                hunterIndex--;
             }
             Location locationToMoveTo = g.GetLocationFromName(argument2);
             while (locationToMoveTo.name == "Unknown location")

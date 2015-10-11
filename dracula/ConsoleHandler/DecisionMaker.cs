@@ -8,6 +8,7 @@ using DraculaHandler;
 using EncounterHandler;
 using EventHandler;
 using HunterHandler;
+using LogHandler;
 
 namespace ConsoleHandler
 {
@@ -114,6 +115,19 @@ namespace ConsoleHandler
                 }
             }
             return "no cards";
+        }
+
+        internal bool DecideToCancelHunterTrain(GameState g, Dracula dracula, Hunter hunter)
+        {
+            if (dracula.eventCardsInHand.FindIndex(card => card.name == "False Tip-Off") > -1)
+            {
+                if (new Random().Next(0, 2) > 1) {
+                    return true;
+                }
+                Logger.WriteToDebugLog("Dracula decided not to play his False Tip-Off");
+            }
+            Logger.WriteToDebugLog("Dracula does not have a False Tip-Off");
+            return false;
         }
     }
 }

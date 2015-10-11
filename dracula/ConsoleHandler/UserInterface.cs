@@ -28,10 +28,10 @@ namespace ConsoleHandler
             return hunterStartLocation;
         }
 
-        internal void drawTrail(GameState g)
+        internal void drawGameState(GameState g)
         {
             // top line, trail headers, time header, Dracula blood and Vampire track header, Catacombs header, Dracula cards header
-            TellUser("6th 5th 4th 3rd 2nd 1st   Time        Blood    Vampires  Catacombs    Events");
+            Console.WriteLine("6th 5th 4th 3rd 2nd 1st   Time        Blood    Vampires  Catacombs    Events");
             // second line, trail cards, time, Dracula blood, Vampires, Catacombs cards
             // trail cards
             for (int i = 5; i >= 0; i--)
@@ -97,7 +97,7 @@ namespace ConsoleHandler
                 }
             }
             Console.ResetColor();
-            TellUser("  " + g.NumberOfEventCardsInDraculaHand());
+            Console.WriteLine("  " + g.NumberOfEventCardsInDraculaHand());
             // third line power cards, 
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             string tempString;
@@ -132,7 +132,7 @@ namespace ConsoleHandler
                 }
             }
 
-            TellUser("");
+            Console.WriteLine("");
             // fourth line trail encounters, ally headers, second Catacomb encounters
             // trail encounters
             for (int i = 5; i > -1; i--)
@@ -165,7 +165,7 @@ namespace ConsoleHandler
                     Console.Write("    ");
                 }
             }
-            TellUser("");
+            Console.WriteLine("");
             // fifth line, ally names
             Console.Write("                          ");
             Console.ResetColor();
@@ -187,7 +187,13 @@ namespace ConsoleHandler
                 Console.Write("   ");
             }
             Console.ResetColor();
-            TellUser("");
+            Console.WriteLine("");
+            // sixth line, nothing
+            Console.WriteLine("");
+            // seventh line, resolve header
+            Console.WriteLine("                          Resolve");
+            // eighth line, resolve value
+            Console.WriteLine("                          " + g.ResolveTracker());
         }
 
         internal string GetNameOfLocationWhereHunterIsMoving(string v)
@@ -205,7 +211,7 @@ namespace ConsoleHandler
                 TellUser("Who is moving? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
-            return hunterIndex;
+            return hunterIndex - 1;
         }
 
         internal CommandSet GetCommandSet()
@@ -305,6 +311,30 @@ namespace ConsoleHandler
             }
             while (!int.TryParse(line, out answer) || answer < 0 || answer > 3);
             return answer;
+        }
+
+        internal int GetIndexOfHunterDrawingEvent()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who is drawing an event card? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
+
+        internal int GetIndexOfHunterDrawingItem()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who is drawing an item card? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            return hunterIndex - 1;
         }
     }
 }
