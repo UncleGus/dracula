@@ -11,16 +11,16 @@ namespace ConsoleHandler
 
         static void Main(string[] args)
         {
-            GameState g = new GameState();
-            DecisionMaker logic = new DecisionMaker();
             UserInterface ui = new UserInterface();
+            GameState g = new GameState();
 
             g.SetLocationForHunterAt(0, ui.GetHunterStartLocation(g, 0));
             g.SetLocationForHunterAt(1, ui.GetHunterStartLocation(g, 1));
             g.SetLocationForHunterAt(2, ui.GetHunterStartLocation(g, 2));
             g.SetLocationForHunterAt(3, ui.GetHunterStartLocation(g, 3));
 
-            g.PlaceDraculaAtStartLocation(logic.DecideDraculaStartLocation(g));
+            g.PlaceDraculaAtStartLocation();
+            g.DrawEncountersUpToHandSize();
 
             Logger.ClearLogs(ui);
 

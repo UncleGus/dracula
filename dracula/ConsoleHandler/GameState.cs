@@ -48,7 +48,7 @@ namespace ConsoleHandler
             SetUpEncounters();
             SetUpEvents();
 
-            dracula = new Dracula(this);
+            dracula = new Dracula();            
         }
 
         private void SetUpEvents()
@@ -1328,10 +1328,10 @@ namespace ConsoleHandler
             hunters[v].currentLocation = location;
         }
 
-        internal void PlaceDraculaAtStartLocation(Location startLocation)
+        internal void PlaceDraculaAtStartLocation()
         {
-            dracula.currentLocation = startLocation;
-            dracula.trail.Add(startLocation);
+            dracula.currentLocation = dracula.logic.DecideDraculaStartLocation(this);
+            dracula.trail.Add(dracula.currentLocation);
         }
 
         internal string TimeOfDay()
@@ -1569,12 +1569,12 @@ namespace ConsoleHandler
             {
                 Logger.WriteToDebugLog("Dracula is at sea, skipping Timekeeping phase so time remains " + timesOfDay[Math.Max(0, time)]);
             }
-            dracula.TakeStartOfTurnActions(ui);
-            dracula.MoveDracula(ui);
-            dracula.HandleDroppedOffLocations(ui);
-            dracula.DoActionPhase(ui);
-            dracula.MatureEncounters(ui);
-            dracula.DrawEncounters(dracula.encounterHandSize);
+            dracula.TakeStartOfTurnActions(this, ui);
+            dracula.MoveDracula(this, ui);
+            dracula.HandleDroppedOffLocations(this, ui);
+            dracula.DoActionPhase(this, ui);
+            dracula.MatureEncounters(this, ui);
+            dracula.DrawEncounters(this, dracula.encounterHandSize);
 
         }
 
@@ -1593,17 +1593,17 @@ namespace ConsoleHandler
 
         internal void TrimDraculaTrail(int trailLength)
         {
-            dracula.TrimTrail(Math.Max(1, trailLength));
+            dracula.TrimTrail(this, Math.Max(1, trailLength));
         }
 
         internal void DiscardDraculaCardsDownToHandSize(UserInterface ui)
         {
-            dracula.DiscardEventsDownTo(dracula.eventHandSize, ui);
+            dracula.DiscardEventsDownTo(this, dracula.eventHandSize, ui);
         }
 
         internal void DrawEventCardForDracula(UserInterface ui)
         {
-            dracula.DrawEventCard(ui);
+            dracula.DrawEventCard(this, ui);
         }
 
         internal void RevealLocationAtTrailIndex(int trailIndex, UserInterface ui)
@@ -1674,7 +1674,7 @@ namespace ConsoleHandler
             Logger.WriteToGameLog("Dracula matured New Vampire");
             ui.TellUser("Dracula matured a New Vampire");
             vampireTracker += 2;
-            dracula.TrimTrail(1);
+            dracula.TrimTrail(this, 1);
         }
 
         private void MatureThief(UserInterface ui)
@@ -1767,14 +1767,14 @@ namespace ConsoleHandler
                 {
                     switch (cardDrawn.type)
                     {
-                        case EventType.Ally: dracula.PlayAlly(cardDrawn, ui); break;
+                        case EventType.Ally: dracula.PlayAlly(this, cardDrawn, ui); break;
                         case EventType.Keep: dracula.eventCardsInHand.Add(cardDrawn); break;
                         case EventType.PlayImmediately: dracula.PlayImmediately(cardDrawn); break;
                     }
                 }
             }
-            dracula.DiscardEventsDownTo(dracula.eventHandSize, ui);
-            dracula.TrimTrail(3);
+            dracula.DiscardEventsDownTo(this, dracula.eventHandSize, ui);
+            dracula.TrimTrail(this, 3);
         }
 
         private void MatureBats(UserInterface ui)
@@ -1806,8 +1806,8 @@ namespace ConsoleHandler
                 ui.TellUser("and " + huntersEncountered[i] + " ");
             }
             ui.TellUser("encountered an Ambush");
-            dracula.DrawEncounters(dracula.encounterHand.Count() + 1);
-            dracula.DiscardEncountersDownTo(dracula.encounterHandSize);
+            dracula.DrawEncounters(this, dracula.encounterHand.Count() + 1);
+            dracula.DiscardEncountersDownTo(this, dracula.encounterHandSize);
         }
 
         public void ResolveAssassin(List<Hunter> huntersEncountered)
@@ -1849,12 +1849,12 @@ namespace ConsoleHandler
             {
                 switch (cardDrawn.type)
                 {
-                    case EventType.Ally: dracula.PlayAlly(cardDrawn, ui); break;
+                    case EventType.Ally: dracula.PlayAlly(this, cardDrawn, ui); break;
                     case EventType.Keep: dracula.eventCardsInHand.Add(cardDrawn); break;
                     case EventType.PlayImmediately: dracula.PlayImmediately(cardDrawn); break;
                 }
             }
-            dracula.DiscardEventsDownTo(dracula.eventHandSize, ui);
+            dracula.DiscardEventsDownTo(this, dracula.eventHandSize, ui);
 
         }
 
@@ -2045,20 +2045,7 @@ namespace ConsoleHandler
             }
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                if (huntersEncountered[i].numberOfEvents + huntersEncountered[i].numberOfItems > 0)
-                {
-                    int cardToDiscard = new Random().Next(0, huntersEncountered[i].numberOfEvents + huntersEncountered[i].numberOfItems);
-                    if (cardToDiscard + 1 > huntersEncountered[i].numberOfEvents)
-                    {
-                        cardToDiscard -= huntersEncountered[i].numberOfEvents;
-                        ui.TellUser(huntersEncountered[i].name + " must discard an item");
-                    }
-                    else
-                    {
-                        ui.TellUser(huntersEncountered[i].name + " must discard an event");
-                    }
-                }
-                ui.TellUser("Don't forget to tell me what was discarded");
+                dracula.DiscardHunterCard(this, huntersEncountered[i], ui);
             }
         }
 
@@ -2105,6 +2092,11 @@ namespace ConsoleHandler
                     huntersEncountered[i].health -= (2 - numberOfWeaponTypes);
                 }
             }
+        }
+
+        internal void DrawEncountersUpToHandSize()
+        {
+            dracula.DrawEncounters(this, dracula.encounterHandSize);
         }
     }
 }
