@@ -46,7 +46,7 @@ namespace DraculaHandler
             eventHandSize = 4;
         }
 
-        public bool MoveDracula()
+        public bool MoveDracula(UserInterface ui)
         {
             Logger.WriteToDebugLog("STARTING MOVEMENT PHASE");
 
@@ -772,7 +772,7 @@ namespace DraculaHandler
             encounterHand.Remove(encounterHand[chosenEncounter]);
         }
 
-        public void HandleDroppedOffLocations()
+        public void HandleDroppedOffLocations(UserInterface ui)
         {
             Logger.WriteToDebugLog("DEALING WITH DROPPED OFF LOCATIONS");
             while (trail.Count > 6)
@@ -828,7 +828,7 @@ namespace DraculaHandler
             }
         }
 
-        public void TakeStartOfTurnActions()
+        public void TakeStartOfTurnActions(UserInterface ui)
         {
             Logger.WriteToDebugLog("Deciding what to do with Catacombs locations");
             for (int i = 0; i < 3; i++)
@@ -852,21 +852,21 @@ namespace DraculaHandler
             }
         }
 
-        public void DoActionPhase()
+        public void DoActionPhase(UserInterface ui)
         {
             Logger.WriteToDebugLog("PERFORMING ACTION PHASE");
             Logger.WriteToDebugLog("Placing an encounter");
             PlaceEncounterIfLegal(trail[0]);
         }
 
-        public void MatureEncounters()
+        public void MatureEncounters(UserInterface ui)
         {
             Logger.WriteToDebugLog("MATURING ENCOUNTERS");
             while (encountersToMature.Count > 0)
             {
                 Logger.WriteToDebugLog("Maturing encounter " + encountersToMature.First().name);
                 Logger.WriteToGameLog(encountersToMature.First().name + " matured");
-                g.MatureEncounter(encountersToMature.First().name);
+                g.MatureEncounter(encountersToMature.First().name, ui);
                 g.AddEncounterToEncounterPool(encountersToMature.First());
                 encountersToMature.Remove(encountersToMature.First());
             }

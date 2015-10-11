@@ -39,7 +39,7 @@ namespace ConsoleHandler
                 switch (commandSet.command)
                 {
                     case "s": LocationHelper.ShowLocationDetails(g.GetLocationFromName(commandSet.argument1)); break;
-                    case "m": g.PerformDraculaTurn(); break;
+                    case "m": g.PerformDraculaTurn(ui); break;
                     case "r": PerformRevealLocation(g, commandSet.argument1, ui); break;
                     case "e": PerformRevealEncounter(g, commandSet.argument1, ui); break;
                     case "c": PerformTrailClear(g, commandSet.argument1, ui); break;
@@ -92,15 +92,15 @@ namespace ConsoleHandler
                 case "Rufus Smith": g.PlayRufusSmith(); break;
                 case "Jonathan Harker": g.PlayJonathanHarker(); break;
                 case "Sister Agatha": g.PlaySisterAgatha(); break;
-                case "Heroic Leap": g.PlayHeroicLeap(); break;
-                case "Great Strength": g.PlayGreatStrength(); break;
-                case "Money Trail": g.PlayMoneyTrail(); break;
+                case "Heroic Leap": g.PlayHeroicLeap(ui); break;
+                case "Great Strength": g.PlayGreatStrength(ui); break;
+                case "Money Trail": g.PlayMoneyTrail(ui); break;
                 case "Sense of Emergency": g.PlaySenseOfEmergency(); break;
                 case "Vampiric Lair": g.PlayVampiricLair(); break;
-                case "Long Day": g.PlayLongDay(); break;
+                case "Long Day": g.PlayLongDay(ui); break;
                 case "Mystic Research": g.PlayMysticResearch(); break;
-                case "Advance Planning": g.PlayAdvancePlanning(); break;
-                case "Newspaper Reports": g.PlayNewspaperReports(); break;
+                case "Advance Planning": g.PlayAdvancePlanning(ui); break;
+                case "Newspaper Reports": g.PlayNewspaperReports(ui); break;
                 case "Re-Equip": g.PlayReEquip(); break;
                 case "Consecrated Ground": g.PlayConsecratedGround(); break;
                 case "Telegraph Ahead": g.PlayTelegraphAhead(); break;
@@ -110,10 +110,10 @@ namespace ConsoleHandler
                 case "Good Luck": g.PlayGoodLuck(); break;
                 case "Blood Transfusion": g.PlayBloodTransfusion(); break;
                 case "Secret Weapon": g.PlaySecretWeapon(); break;
-                case "Forewarned": g.PlayForewarned(); break;
+                case "Forewarned": g.PlayForewarned(ui); break;
                 case "Chartered Carriage": g.PlayCharteredCarriage(); break;
-                case "Excellent Weather": g.PlayExcellentWeather(); break;
-                case "Escape Route": g.PlayEscapeRoute(); break;
+                case "Excellent Weather": g.PlayExcellentWeather(ui); break;
+                case "Escape Route": g.PlayEscapeRoute(ui); break;
                 case "Hired Scouts": g.PlayHiredScouts(ui); break;
             }
         }
@@ -171,10 +171,10 @@ namespace ConsoleHandler
             }
         }
 
-        private static void PerformDraculaTurn(GameState g)
+        private static void PerformDraculaTurn(GameState g, UserInterface ui)
         {
             Logger.WriteToDebugLog("STARTING DRACULA'S TURN =====================================================");
-            g.PerformDraculaTurn();
+            g.PerformDraculaTurn(ui);
         }
 
         public static string PlayEventCard(GameState g, string argument1, string argument2, UserInterface ui)

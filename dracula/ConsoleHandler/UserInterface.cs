@@ -7,7 +7,7 @@ using LocationHandler;
 
 namespace ConsoleHandler
 {
-    class UserInterface
+    public class UserInterface
     {
         internal void TellUser(string v)
         {
@@ -20,10 +20,10 @@ namespace ConsoleHandler
             Location hunterStartLocation;
             do
             {
-                Console.WriteLine("Where is " + g.NameOfHunterAtIndex(v) + "?");
-                line = Console.ReadLine();
+                TellUser("Where is " + g.NameOfHunterAtIndex(v) + "?");
+                line = AskUser();
                 hunterStartLocation = g.GetLocationFromName(line);
-                Console.WriteLine(hunterStartLocation.name);
+                TellUser(hunterStartLocation.name);
             } while (hunterStartLocation.name == "Unknown location");
             return hunterStartLocation;
         }
@@ -31,7 +31,7 @@ namespace ConsoleHandler
         internal void drawTrail(GameState g)
         {
             // top line, trail headers, time header, Dracula blood and Vampire track header, Catacombs header, Dracula cards header
-            Console.WriteLine("6th 5th 4th 3rd 2nd 1st   Time        Blood    Vampires  Catacombs    Events");
+            TellUser("6th 5th 4th 3rd 2nd 1st   Time        Blood    Vampires  Catacombs    Events");
             // second line, trail cards, time, Dracula blood, Vampires, Catacombs cards
             // trail cards
             for (int i = 5; i >= 0; i--)
@@ -97,7 +97,7 @@ namespace ConsoleHandler
                 }
             }
             Console.ResetColor();
-            Console.WriteLine("  " + g.NumberOfEventCardsInDraculaHand());
+            TellUser("  " + g.NumberOfEventCardsInDraculaHand());
             // third line power cards, 
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             string tempString;
@@ -132,7 +132,7 @@ namespace ConsoleHandler
                 }
             }
 
-            Console.WriteLine("");
+            TellUser("");
             // fourth line trail encounters, ally headers, second Catacomb encounters
             // trail encounters
             for (int i = 5; i > -1; i--)
@@ -165,7 +165,7 @@ namespace ConsoleHandler
                     Console.Write("    ");
                 }
             }
-            Console.WriteLine("");
+            TellUser("");
             // fifth line, ally names
             Console.Write("                          ");
             Console.ResetColor();
@@ -187,13 +187,13 @@ namespace ConsoleHandler
                 Console.Write("   ");
             }
             Console.ResetColor();
-            Console.WriteLine("");
+            TellUser("");
         }
 
         internal string GetNameOfLocationWhereHunterIsMoving(string v)
         {
-            Console.WriteLine("Where is " + v + " moving? (partial name will suffice)");
-            return Console.ReadLine();
+            TellUser("Where is " + v + " moving? (partial name will suffice)");
+            return AskUser();
         }
 
         internal int GetIndexOfMovingHunter()
@@ -202,8 +202,8 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                Console.WriteLine("Who is moving? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
-                line = Console.ReadLine();
+                TellUser("Who is moving? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
             return hunterIndex;
         }
@@ -215,7 +215,7 @@ namespace ConsoleHandler
             string argument1;
             string argument2 = "no argument";
 
-            line = Console.ReadLine();
+            line = AskUser();
             try
             {
                 command = line.Substring(0, line.IndexOf(' '));
@@ -246,10 +246,65 @@ namespace ConsoleHandler
             return new CommandSet(command, argument1, argument2);
         }
 
+        internal string GetFirstLocationNameForHiredScouts()
+        {
+            TellUser("Name the first city");
+            return AskUser();
+        }
+
         internal string GetEventCardName()
         {
-            Console.WriteLine("What is the event card name? (partial name will suffice)");
+            TellUser("What is the event card name? (partial name will suffice)");
+            return AskUser();
+        }
+
+        internal string GetSecondLocationNameForHiredScouts()
+        {
+            TellUser("Name the first city");
+            return AskUser();
+        }
+
+        internal int GetHunterHolyItems(string name)
+        {
+            string line;
+            int answer;
+            do
+            {
+                TellUser(name + " has 0) Nothing 1) Crucifix 2) Heavenly Host");
+                line = AskUser();
+            }
+            while (!int.TryParse(line, out answer) || answer < 0 || answer > 2);
+            return answer;
+        }
+
+        internal int GetHunterHealthLostFromRats(string name)
+        {
+            string line;
+            int loss;
+            do
+            {
+                TellUser("How much health did " + name + " lose?");
+                line = AskUser();
+            } while (!int.TryParse(line, out loss) || loss < 0);
+            return loss;
+        }
+
+        private string AskUser()
+        {
             return Console.ReadLine();
+        }
+
+        internal int GetHunterEquipmentForWolves(string name)
+        {
+            string line;
+            int answer;
+            do
+            {
+                TellUser(name + " has 0) Nothing 1) Pistol 2) Rifle 3) Both");
+                line = AskUser();
+            }
+            while (!int.TryParse(line, out answer) || answer < 0 || answer > 3);
+            return answer;
         }
     }
 }

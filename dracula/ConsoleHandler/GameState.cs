@@ -153,61 +153,59 @@ namespace ConsoleHandler
             Location locationToReveal;
             do
             {
-                Console.WriteLine("Name the first city");
-                line = Console.ReadLine();
+                line = ui.GetFirstLocationNameForHiredScouts();
                 locationToReveal = GetLocationFromName(line);
-                Console.WriteLine(locationToReveal.name);
+                ui.TellUser(locationToReveal.name);
             } while (locationToReveal.name == "Unknown location");
             if (LocationIsInTrail(locationToReveal))
             {
                 locationToReveal.isRevealed = true;
-                Console.Write("Revealing " + locationToReveal.name);
+                ui.TellUser("Revealing " + locationToReveal.name);
                 for (int i = 0; i < locationToReveal.encounters.Count(); i++)
                 {
                     locationToReveal.encounters[i].isRevealed = true;
-                    Console.Write(" and " + locationToReveal.encounters[i].name);
+                    ui.TellUser(" and " + locationToReveal.encounters[i].name);
                 }
-                Console.WriteLine("");
+                ui.TellUser("");
                 ui.drawTrail(this);
             }
             else
             {
-                Console.Write(locationToReveal.name + " is not in Dracula's trail");
+                ui.TellUser(locationToReveal.name + " is not in Dracula's trail");
             }
             do
             {
-                Console.WriteLine("Name the second city");
-                line = Console.ReadLine();
+                line = ui.GetSecondLocationNameForHiredScouts();
                 locationToReveal = GetLocationFromName(line);
-                Console.WriteLine(locationToReveal.name);
+                ui.TellUser(locationToReveal.name);
             } while (locationToReveal.name == "Unknown location");
             if (LocationIsInTrail(locationToReveal))
             {
                 locationToReveal.isRevealed = true;
-                Console.Write("Revealing " + locationToReveal.name);
+                ui.TellUser("Revealing " + locationToReveal.name);
                 for (int i = 0; i < locationToReveal.encounters.Count(); i++)
                 {
                     locationToReveal.encounters[i].isRevealed = true;
-                    Console.Write(" and " + locationToReveal.encounters[i].name);
+                    ui.TellUser(" and " + locationToReveal.encounters[i].name);
                 }
-                Console.WriteLine("");
+                ui.TellUser("");
             }
             else
             {
-                Console.WriteLine(locationToReveal.name + " is not in Dracula's trail");
+                ui.TellUser(locationToReveal.name + " is not in Dracula's trail");
             }
             DiscardEventCard("Hired Scouts");
 
         }
 
-        internal void PlayEscapeRoute()
+        internal void PlayEscapeRoute(UserInterface ui)
         {
-            Console.WriteLine("Forewarned is supposed to be played at the start of combat");
+            ui.TellUser("Forewarned is supposed to be played at the start of combat");
         }
 
-        internal void PlayExcellentWeather()
+        internal void PlayExcellentWeather(UserInterface ui)
         {
-            Console.WriteLine("You may move up to four sea moves this turn");
+            ui.TellUser("You may move up to four sea moves this turn");
             DiscardEventCard("Excellent Weather");
         }
 
@@ -216,9 +214,9 @@ namespace ConsoleHandler
             throw new NotImplementedException();
         }
 
-        internal void PlayForewarned()
+        internal void PlayForewarned(UserInterface ui)
         {
-            Console.WriteLine("Forewarned is supposed to be played when Dracula reveals an encounter at your location");
+            ui.TellUser("Forewarned is supposed to be played when Dracula reveals an encounter at your location");
         }
 
         internal void PlaySecretWeapon()
@@ -266,7 +264,7 @@ namespace ConsoleHandler
             throw new NotImplementedException();
         }
 
-        internal void PlayNewspaperReports()
+        internal void PlayNewspaperReports(UserInterface ui)
         {
             int checkingLocationIndex = TrailLength();
             do
@@ -276,24 +274,24 @@ namespace ConsoleHandler
 
             if (DraculaCurrentLocationIsAtTrailIndex(checkingLocationIndex))
             {
-                Console.WriteLine("The oldest unrevealed location in Dracula's trail is his current location");
+                ui.TellUser("The oldest unrevealed location in Dracula's trail is his current location");
                 if (LocationWhereHideWasUsedIsDraculaCurrentLocation())
                 {
-                    Console.WriteLine("Here's the Hide card to prove it");
+                    ui.TellUser("Here's the Hide card to prove it");
                     RevealHide();
                 }
             }
             else
             {
                 RevealLocationAtTrailIndex(checkingLocationIndex);
-                Console.WriteLine("Revealing " + NameOfLocationAtTrailIndex(checkingLocationIndex));
+                ui.TellUser("Revealing " + NameOfLocationAtTrailIndex(checkingLocationIndex));
             }
             DiscardEventCard("Newspaper Reports");
         }
 
-        internal void PlayAdvancePlanning()
+        internal void PlayAdvancePlanning(UserInterface ui)
         {
-            Console.WriteLine("Advance Planning is supposed to be played at the start of a combat");
+            ui.TellUser("Advance Planning is supposed to be played at the start of a combat");
         }
 
         internal void PlayMysticResearch()
@@ -301,11 +299,11 @@ namespace ConsoleHandler
             throw new NotImplementedException();
         }
 
-        internal void PlayLongDay()
+        internal void PlayLongDay(UserInterface ui)
         {
             if (Time() < 1)
             {
-                Console.WriteLine("You cannot play Long Day during Dawn");
+                ui.TellUser("You cannot play Long Day during Dawn");
             }
             else
             {
@@ -324,9 +322,9 @@ namespace ConsoleHandler
             throw new NotImplementedException();
         }
 
-        internal void PlayMoneyTrail()
+        internal void PlayMoneyTrail(UserInterface ui)
         {
-            Console.WriteLine("Revealing all sea locations in Dracula's trail");
+            ui.TellUser("Revealing all sea locations in Dracula's trail");
             for (int i = 0; i < TrailLength(); i++)
             {
                 if (TypeOfLocationAtTrailIndex(i) == LocationType.Sea)
@@ -338,14 +336,14 @@ namespace ConsoleHandler
             DiscardEventCard("Money Trail");
         }
 
-        internal void PlayGreatStrength()
+        internal void PlayGreatStrength(UserInterface ui)
         {
-            Console.WriteLine("Great Strength is supposed to be played when a Hunter receives damage or a bite");
+            ui.TellUser("Great Strength is supposed to be played when a Hunter receives damage or a bite");
         }
 
-        internal void PlayHeroicLeap()
+        internal void PlayHeroicLeap(UserInterface ui)
         {
-            Console.WriteLine("Heroic Leap is supposed to be played at the start of a combat");
+            ui.TellUser("Heroic Leap is supposed to be played at the start of a combat");
         }
 
         internal void PlaySisterAgatha()
@@ -1551,7 +1549,7 @@ namespace ConsoleHandler
             return dracula.trail.Contains(locationToReveal);
         }
 
-        internal void PerformDraculaTurn()
+        internal void PerformDraculaTurn(UserInterface ui)
         {
             if (dracula.currentLocation.type != LocationType.Sea)
             {
@@ -1571,11 +1569,11 @@ namespace ConsoleHandler
             {
                 Logger.WriteToDebugLog("Dracula is at sea, skipping Timekeeping phase so time remains " + timesOfDay[Math.Max(0, time)]);
             }
-            dracula.TakeStartOfTurnActions();
-            dracula.MoveDracula();
-            dracula.HandleDroppedOffLocations();
-            dracula.DoActionPhase();
-            dracula.MatureEncounters();
+            dracula.TakeStartOfTurnActions(ui);
+            dracula.MoveDracula(ui);
+            dracula.HandleDroppedOffLocations(ui);
+            dracula.DoActionPhase(ui);
+            dracula.MatureEncounters(ui);
             dracula.DrawEncounters(dracula.encounterHandSize);
 
         }
@@ -1639,129 +1637,129 @@ namespace ConsoleHandler
             return unknownLocation;
         }
 
-        public void MatureEncounter(string encounterName)
+        public void MatureEncounter(string encounterName, UserInterface ui)
         {
             switch (encounterName)
             {
-                case "Ambush": MatureAmbush(); break;
-                case "Assasin": MatureAssassin(); break;
-                case "Bats": MatureBats(); break;
-                case "Desecrated Soil": MatureDesecratedSoil(); break;
-                case "Fog": MatureFog(); break;
-                case "Minion with Knife": MatureMinionWithKnife(); break;
-                case "Minion with Knife and Pistol": MatureMinionWithKnifeAndPistol(); break;
-                case "Minion with Knife and Rifle": MatureMinionWithKnifeAndRifle(); break;
-                case "Hoax": MatureHoax(); break;
-                case "Lightning": MatureLightning(); break;
-                case "Peasants": MaturePeasants(); break;
-                case "Plague": MaturePlague(); break;
-                case "Rats": MatureRats(); break;
-                case "Saboteur": MatureSaboteur(); break;
-                case "Spy": MatureSpy(); break;
-                case "Thief": MatureThief(); break;
-                case "New Vampire": MatureNewVampire(); break;
-                case "Wolves": MatureWolves(); break;
+                case "Ambush": MatureAmbush(ui); break;
+                case "Assasin": MatureAssassin(ui); break;
+                case "Bats": MatureBats(ui); break;
+                case "Desecrated Soil": MatureDesecratedSoil(ui); break;
+                case "Fog": MatureFog(ui); break;
+                case "Minion with Knife": MatureMinionWithKnife(ui); break;
+                case "Minion with Knife and Pistol": MatureMinionWithKnifeAndPistol(ui); break;
+                case "Minion with Knife and Rifle": MatureMinionWithKnifeAndRifle(ui); break;
+                case "Hoax": MatureHoax(ui); break;
+                case "Lightning": MatureLightning(ui); break;
+                case "Peasants": MaturePeasants(ui); break;
+                case "Plague": MaturePlague(ui); break;
+                case "Rats": MatureRats(ui); break;
+                case "Saboteur": MatureSaboteur(ui); break;
+                case "Spy": MatureSpy(ui); break;
+                case "Thief": MatureThief(ui); break;
+                case "New Vampire": MatureNewVampire(ui); break;
+                case "Wolves": MatureWolves(ui); break;
             }
         }
 
-        private void MatureWolves()
+        private void MatureWolves(UserInterface ui)
         {
             Logger.WriteToDebugLog("Dracula matured Wolves (no effect)");
             Logger.WriteToGameLog("Dracula matured Wolves (no effect)");
         }
 
-        private void MatureNewVampire()
+        private void MatureNewVampire(UserInterface ui)
         {
             Logger.WriteToDebugLog("Dracula matured New Vampire");
             Logger.WriteToGameLog("Dracula matured New Vampire");
-            Console.WriteLine("Dracula matured a New Vampire");
+            ui.TellUser("Dracula matured a New Vampire");
             vampireTracker += 2;
             dracula.TrimTrail(1);
         }
 
-        private void MatureThief()
+        private void MatureThief(UserInterface ui)
         {
             Logger.WriteToDebugLog("Dracula matured Thief (no effect)");
             Logger.WriteToGameLog("Dracula matured Thief (no effect)");
         }
 
-        private void MatureSpy()
+        private void MatureSpy(UserInterface ui)
         {
             Logger.WriteToDebugLog("Dracula matured Spy (no effect)");
             Logger.WriteToGameLog("Dracula matured Spy (no effect)");
         }
 
-        private void MatureSaboteur()
+        private void MatureSaboteur(UserInterface ui)
         {
             Logger.WriteToDebugLog("Dracula matured Saboteur (no effect)");
             Logger.WriteToGameLog("Dracula matured Saboteur (no effect)");
         }
 
-        private void MatureRats()
+        private void MatureRats(UserInterface ui)
         {
             Logger.WriteToDebugLog("Dracula matured Rats (no effect)");
             Logger.WriteToGameLog("Dracula matured Rats (no effect)");
         }
 
-        private void MaturePlague()
+        private void MaturePlague(UserInterface ui)
         {
             Logger.WriteToDebugLog("Dracula matured Plague (no effect)");
             Logger.WriteToGameLog("Dracula matured Plague (no effect)");
         }
 
-        private void MaturePeasants()
+        private void MaturePeasants(UserInterface ui)
         {
             Logger.WriteToDebugLog("Dracula matured Peasants (no effect)");
             Logger.WriteToGameLog("Dracula matured Peasants (no effect)");
         }
 
-        private void MatureLightning()
+        private void MatureLightning(UserInterface ui)
         {
             Logger.WriteToDebugLog("Dracula matured Lightning (no effect)");
             Logger.WriteToGameLog("Dracula matured Lightning (no effect)");
         }
 
-        private void MatureHoax()
+        private void MatureHoax(UserInterface ui)
         {
             Logger.WriteToDebugLog("Dracula matured Hoax (no effect)");
             Logger.WriteToGameLog("Dracula matured Hoax (no effect)");
         }
 
-        private void MatureMinionWithKnifeAndRifle()
+        private void MatureMinionWithKnifeAndRifle(UserInterface ui)
         {
             Logger.WriteToDebugLog("Dracula matured Minion With Knife and Rifle (no effect)");
             Logger.WriteToGameLog("Dracula matured Minion With Knife and Rifle (no effect)");
         }
 
-        private void MatureMinionWithKnifeAndPistol()
+        private void MatureMinionWithKnifeAndPistol(UserInterface ui)
         {
             Logger.WriteToDebugLog("Dracula matured Minion With Knife and Pistol (no effect)");
             Logger.WriteToGameLog("Dracula matured Minion With Knife and Pistol (no effect)");
         }
 
-        private void MatureMinionWithKnife()
+        private void MatureMinionWithKnife(UserInterface ui)
         {
             Logger.WriteToDebugLog("Dracula matured Minion With Knife (no effect)");
             Logger.WriteToGameLog("Dracula matured Minion With Knife (no effect)");
         }
 
-        private void MatureFog()
+        private void MatureFog(UserInterface ui)
         {
             Logger.WriteToDebugLog("Dracula matured Fog (no effect)");
             Logger.WriteToGameLog("Dracula matured Fog (no effect)");
         }
 
-        private void MatureDesecratedSoil()
+        private void MatureDesecratedSoil(UserInterface ui)
         {
             Logger.WriteToDebugLog("Dracula matured Desecrated Soil");
             Logger.WriteToGameLog("Dracula matured Desecrated Soil");
-            Console.WriteLine("Dracula matured Desecrated Soil");
+            ui.TellUser("Dracula matured Desecrated Soil");
             for (int i = 0; i < 2; i++)
             {
                 Event cardDrawn = eventDeck[new Random().Next(0, eventDeck.Count())];
                 if (!cardDrawn.isDraculaCard)
                 {
-                    Console.WriteLine("Dracula drew " + cardDrawn.name + ", discarded");
+                    ui.TellUser("Dracula drew " + cardDrawn.name + ", discarded");
                     eventDeck.Remove(cardDrawn);
                     eventDiscard.Add(cardDrawn);
                 }
@@ -1779,35 +1777,35 @@ namespace ConsoleHandler
             dracula.TrimTrail(3);
         }
 
-        private void MatureBats()
+        private void MatureBats(UserInterface ui)
         {
             Logger.WriteToDebugLog("Dracula matured Bats (no effect)");
             Logger.WriteToGameLog("Dracula matured Bats (no effect)");
         }
 
-        private void MatureAssassin()
+        private void MatureAssassin(UserInterface ui)
         {
             Logger.WriteToDebugLog("Dracula matured Assassin (no effect)");
             Logger.WriteToGameLog("Dracula matured Assassin (no effect)");
         }
 
-        private void MatureAmbush()
+        private void MatureAmbush(UserInterface ui)
         {
             Logger.WriteToDebugLog("Dracula matured Ambush");
             Logger.WriteToGameLog("Dracula matured Ambush");
             throw new NotImplementedException();
         }
 
-        public void ResolveAmbush(List<Hunter> huntersEncountered)
+        private void ResolveAmbush(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Ambush");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Ambush");
-            Console.Write(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                Console.Write("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i] + " ");
             }
-            Console.WriteLine("encountered an Ambush");
+            ui.TellUser("encountered an Ambush");
             dracula.DrawEncounters(dracula.encounterHand.Count() + 1);
             dracula.DiscardEncountersDownTo(dracula.encounterHandSize);
         }
@@ -1817,33 +1815,33 @@ namespace ConsoleHandler
             throw new NotImplementedException();
         }
 
-        public void ResolveBats(List<Hunter> huntersEncountered)
+        private void ResolveBats(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Bats");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Bats");
-            Console.Write(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                Console.Write("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i] + " ");
             }
-            Console.WriteLine("encountered Bats");
-            Console.WriteLine("Tell me at the start of your next turn and I will move you");
+            ui.TellUser("encountered Bats");
+            ui.TellUser("Tell me at the start of your next turn and I will move you");
         }
 
-        public void ResolveDesecratedSoil(List<Hunter> huntersEncountered)
+        private void ResolveDesecratedSoil(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Desecrated Soil");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Desecrated Soil");
-            Console.Write(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                Console.Write("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i] + " ");
             }
-            Console.WriteLine("encountered Desecrated Soil");
+            ui.TellUser("encountered Desecrated Soil");
             Event cardDrawn = eventDeck[new Random().Next(0, eventDeck.Count())];
             if (!cardDrawn.isDraculaCard)
             {
-                Console.WriteLine("Dracula drew " + cardDrawn.name + ", discarded");
+                ui.TellUser("Dracula drew " + cardDrawn.name + ", discarded");
                 eventDeck.Remove(cardDrawn);
                 eventDiscard.Add(cardDrawn);
             }
@@ -1860,17 +1858,17 @@ namespace ConsoleHandler
 
         }
 
-        public void ResolveFog(List<Hunter> huntersEncountered)
+        public void ResolveFog(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Desecrated Fog");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Desecrated Fog");
-            Console.Write(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                Console.Write("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i] + " ");
             }
-            Console.WriteLine("encountered Fog");
-            Console.WriteLine("Place Fog in front of you until the end of your turn");
+            ui.TellUser("encountered Fog");
+            ui.TellUser("Place Fog in front of you until the end of your turn");
         }
 
         public void ResolveMinionWithKnife(List<Hunter> huntersEncountered)
@@ -1888,44 +1886,37 @@ namespace ConsoleHandler
             throw new NotImplementedException();
         }
 
-        public void ResolveHoax(List<Hunter> huntersEncountered)
+        public void ResolveHoax(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Hoax");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Hoax");
-            Console.Write(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                Console.Write("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i] + " ");
             }
-            Console.WriteLine("encountered Hoax");
-            Console.WriteLine("Discard " + (huntersEncountered.First().currentLocation.isEastern ? "one" : "all") + " of your event cards (don't forget to tell me what is discarded");
+            ui.TellUser("encountered Hoax");
+            ui.TellUser("Discard " + (huntersEncountered.First().currentLocation.isEastern ? "one" : "all") + " of your event cards (don't forget to tell me what is discarded");
         }
 
-        public void ResolveLightning(List<Hunter> huntersEncountered)
+        public void ResolveLightning(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Lightning");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Lightning");
-            Console.Write(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                Console.Write("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i] + " ");
             }
-            Console.WriteLine("encountered Lightning");
+            ui.TellUser("encountered Lightning");
             for (int i = 0; i < huntersEncountered.Count(); i++)
             {
-                string line;
-                int answer;
-                do
-                {
-                    Console.WriteLine(huntersEncountered[i].name + " has 0) Nothing 1) Crucifix 2) Heavenly Host");
-                    line = Console.ReadLine();
-                }
-                while (!int.TryParse(line, out answer) || answer < 0 || answer > 2);
+                int answer = ui.GetHunterHolyItems(huntersEncountered[i].name);
                 if (answer > 0)
                 {
                     Logger.WriteToDebugLog(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
                     Logger.WriteToGameLog(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
-                    Console.WriteLine(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
+                    ui.TellUser(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
                     return;
                 }
             }
@@ -1933,59 +1924,59 @@ namespace ConsoleHandler
             {
                 Logger.WriteToDebugLog(huntersEncountered[i].name + " loses 2 health and discards 1 item");
                 Logger.WriteToGameLog(huntersEncountered[i].name + " loses 2 health and discards 1 item");
-                Console.WriteLine(huntersEncountered[i].name + " loses 2 health and discards 1 item");
+                ui.TellUser(huntersEncountered[i].name + " loses 2 health and discards 1 item");
                 huntersEncountered[i].health -= 2;
             }
-            Console.WriteLine("Don't forget to tell me what was discarded");
+            ui.TellUser("Don't forget to tell me what was discarded");
         }
 
-        public void ResolvePeasants(List<Hunter> huntersEncountered)
+        public void ResolvePeasants(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Peasants");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Peasants");
-            Console.Write(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                Console.Write("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i] + " ");
             }
-            Console.WriteLine("encountered Peasants");
-            Console.WriteLine("Discard " + (huntersEncountered.First().currentLocation.isEastern ? "one" : "all") + " of your item cards and redraw randomly (don't forget to tell me what is discarded");
+            ui.TellUser("encountered Peasants");
+            ui.TellUser("Discard " + (huntersEncountered.First().currentLocation.isEastern ? "one" : "all") + " of your item cards and redraw randomly (don't forget to tell me what is discarded");
         }
 
-        public void ResolvePlague(List<Hunter> huntersEncountered)
+        private void ResolvePlague(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Plague");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Plague");
-            Console.Write(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                Console.Write("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i] + " ");
             }
-            Console.WriteLine("encountered Plague");
+            ui.TellUser("encountered Plague");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
                 Logger.WriteToDebugLog(huntersEncountered[i].name + " loses 2 health");
                 Logger.WriteToGameLog(huntersEncountered[i].name + " loses 2 health");
-                Console.WriteLine(huntersEncountered[i].name + " loses 2 health");
+                ui.TellUser(huntersEncountered[i].name + " loses 2 health");
                 huntersEncountered[i].health -= 2;
             }
         }
 
-        public void ResolveRats(List<Hunter> huntersEncountered)
+        public void ResolveRats(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Rats");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Rats");
-            Console.Write(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                Console.Write("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i] + " ");
             }
-            Console.WriteLine("encountered Rats");
+            ui.TellUser("encountered Rats");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
                 if (huntersEncountered[i].hasDogsFaceUp)
                 {
-                    Console.WriteLine(huntersEncountered[i].name + " has Dogs face up, Rats have no effect");
+                    ui.TellUser(huntersEncountered[i].name + " has Dogs face up, Rats have no effect");
                     Logger.WriteToDebugLog(huntersEncountered[i].name + " has Dogs face up, Rats have no effect");
                     Logger.WriteToGameLog(huntersEncountered[i].name + " has Dogs face up, Rats have no effect");
                     return;
@@ -1993,35 +1984,29 @@ namespace ConsoleHandler
             }
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                Console.WriteLine("Roll dice for " + huntersEncountered[i].name);
-                string line;
-                int loss;
-                do
-                {
-                    Console.WriteLine("How much health did " + huntersEncountered[i].name + " lose?");
-                    line = Console.ReadLine();
-                } while (!int.TryParse(line, out loss) || loss < 0);
+                ui.TellUser("Roll dice for " + huntersEncountered[i].name);
+                int loss = ui.GetHunterHealthLostFromRats(huntersEncountered[i].name);
                 huntersEncountered[i].health -= loss;
                 Logger.WriteToDebugLog(huntersEncountered[i] + " lost " + loss + " health");
                 Logger.WriteToGameLog(huntersEncountered[i] + " lost " + loss + " health");
             }
         }
 
-        public void ResolveSaboteur(List<Hunter> huntersEncountered)
+        public void ResolveSaboteur(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Saboteur");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Saboteur");
-            Console.Write(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                Console.Write("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i] + " ");
             }
-            Console.WriteLine("encountered Saboteur");
+            ui.TellUser("encountered Saboteur");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
                 if (huntersEncountered[i].hasDogsFaceUp)
                 {
-                    Console.WriteLine(huntersEncountered[i].name + " has Dogs face up, Saboteur has no effect");
+                    ui.TellUser(huntersEncountered[i].name + " has Dogs face up, Saboteur has no effect");
                     Logger.WriteToDebugLog(huntersEncountered[i].name + " has Dogs face up, Saboteur has no effect");
                     Logger.WriteToGameLog(huntersEncountered[i].name + " has Dogs face up, Saboteur has no effect");
                     return;
@@ -2029,7 +2014,7 @@ namespace ConsoleHandler
             }
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                Console.WriteLine(huntersEncountered[i].name + " must discard 1 item or event (don't forget to tell me what was discarded");
+                ui.TellUser(huntersEncountered[i].name + " must discard 1 item or event (don't forget to tell me what was discarded");
             }
         }
 
@@ -2038,21 +2023,21 @@ namespace ConsoleHandler
             throw new NotImplementedException();
         }
 
-        public void ResolveThief(List<Hunter> huntersEncountered)
+        public void ResolveThief(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Thief");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Thief");
-            Console.Write(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                Console.Write("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i] + " ");
             }
-            Console.WriteLine("encountered Thief");
+            ui.TellUser("encountered Thief");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
                 if (huntersEncountered[i].hasDogsFaceUp)
                 {
-                    Console.WriteLine(huntersEncountered[i].name + " has Dogs face up, Thief has no effect");
+                    ui.TellUser(huntersEncountered[i].name + " has Dogs face up, Thief has no effect");
                     Logger.WriteToDebugLog(huntersEncountered[i].name + " has Dogs face up, Thief has no effect");
                     Logger.WriteToGameLog(huntersEncountered[i].name + " has Dogs face up, Thief has no effect");
                     return;
@@ -2066,14 +2051,14 @@ namespace ConsoleHandler
                     if (cardToDiscard + 1 > huntersEncountered[i].numberOfEvents)
                     {
                         cardToDiscard -= huntersEncountered[i].numberOfEvents;
-                        Console.WriteLine(huntersEncountered[i].name + " must discard an item");
+                        ui.TellUser(huntersEncountered[i].name + " must discard an item");
                     }
                     else
                     {
-                        Console.WriteLine(huntersEncountered[i].name + " must discard an event");
+                        ui.TellUser(huntersEncountered[i].name + " must discard an event");
                     }
                 }
-                Console.WriteLine("Don't forget to tell me what was discarded");
+                ui.TellUser("Don't forget to tell me what was discarded");
             }
         }
 
@@ -2082,28 +2067,21 @@ namespace ConsoleHandler
             throw new NotImplementedException();
         }
 
-        public void ResolveWolves(List<Hunter> huntersEncountered)
+        public void ResolveWolves(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Wolves");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Wolves");
-            Console.Write(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                Console.Write("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i] + " ");
             }
-            Console.WriteLine("encountered Wolves");
+            ui.TellUser("encountered Wolves");
             bool hasPistol = false;
             bool hasRifle = false;
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                string line;
-                int answer;
-                do
-                {
-                    Console.WriteLine(huntersEncountered[i].name + " has 0) Nothing 1) Pistol 2) Rifle 3) Both");
-                    line = Console.ReadLine();
-                }
-                while (!int.TryParse(line, out answer) || answer < 0 || answer > 3);
+                int answer = ui.GetHunterEquipmentForWolves(huntersEncountered[i].name);
                 switch (answer)
                 {
                     case 1: hasPistol = true; break;
@@ -2116,14 +2094,14 @@ namespace ConsoleHandler
             {
                 Logger.WriteToDebugLog("Wolves are negated by Pistol and Rifle");
                 Logger.WriteToGameLog("Wolves are negated by Pistol and Rifle");
-                Console.WriteLine("Wolves are negated by Pistol and Rifle");
+                ui.TellUser("Wolves are negated by Pistol and Rifle");
             } else
             {
                 for (int i = 1; i < huntersEncountered.Count(); i++)
                 {
                     Logger.WriteToDebugLog(huntersEncountered[i].name + " loses " + (numberOfWeaponTypes == 1 ? "1" : "2") + " health");
                     Logger.WriteToGameLog(huntersEncountered[i].name + " loses " + (numberOfWeaponTypes == 1 ? "1" : "2") + " health");
-                    Console.WriteLine(huntersEncountered[i].name + " loses " + (numberOfWeaponTypes == 1 ? "1" : "2") + " health");
+                    ui.TellUser(huntersEncountered[i].name + " loses " + (numberOfWeaponTypes == 1 ? "1" : "2") + " health");
                     huntersEncountered[i].health -= (2 - numberOfWeaponTypes);
                 }
             }
