@@ -278,12 +278,12 @@ namespace ConsoleHandler
                 if (LocationWhereHideWasUsedIsDraculaCurrentLocation())
                 {
                     ui.TellUser("Here's the Hide card to prove it");
-                    RevealHide();
+                    RevealHide(ui);
                 }
             }
             else
             {
-                RevealLocationAtTrailIndex(checkingLocationIndex);
+                RevealLocationAtTrailIndex(checkingLocationIndex, ui);
                 ui.TellUser("Revealing " + NameOfLocationAtTrailIndex(checkingLocationIndex));
             }
             DiscardEventCard("Newspaper Reports");
@@ -329,8 +329,8 @@ namespace ConsoleHandler
             {
                 if (TypeOfLocationAtTrailIndex(i) == LocationType.Sea)
                 {
-                    RevealLocationAtTrailIndex(i);
-                    LocationHelper.RevealLocation(this, i);
+                    RevealLocationAtTrailIndex(i, ui);
+                    LocationHelper.RevealLocation(this, i, ui);
                 }
             }
             DiscardEventCard("Money Trail");
@@ -1514,9 +1514,9 @@ namespace ConsoleHandler
             return dracula.trail[checkingLocationIndex].name;
         }
 
-        internal void RevealHide()
+        internal void RevealHide(UserInterface ui)
         {
-            dracula.RevealHide();
+            dracula.RevealHide(ui);
         }
 
         internal bool LocationWhereHideWasUsedIsDraculaCurrentLocation()
@@ -1596,21 +1596,21 @@ namespace ConsoleHandler
             dracula.TrimTrail(Math.Max(1, trailLength));
         }
 
-        internal void DiscardDraculaCardsDownToHandSize()
+        internal void DiscardDraculaCardsDownToHandSize(UserInterface ui)
         {
-            dracula.DiscardEventsDownTo(dracula.eventHandSize);
+            dracula.DiscardEventsDownTo(dracula.eventHandSize, ui);
         }
 
-        internal void DrawEventCardForDracula()
+        internal void DrawEventCardForDracula(UserInterface ui)
         {
-            dracula.DrawEventCard();
+            dracula.DrawEventCard(ui);
         }
 
-        internal void RevealLocationAtTrailIndex(int trailIndex)
+        internal void RevealLocationAtTrailIndex(int trailIndex, UserInterface ui)
         {
             if (dracula.trail[trailIndex].name == "Hide")
             {
-                dracula.RevealHide();
+                dracula.RevealHide(ui);
             }
             else
             {
@@ -1767,13 +1767,13 @@ namespace ConsoleHandler
                 {
                     switch (cardDrawn.type)
                     {
-                        case EventType.Ally: dracula.PlayAlly(cardDrawn); break;
+                        case EventType.Ally: dracula.PlayAlly(cardDrawn, ui); break;
                         case EventType.Keep: dracula.eventCardsInHand.Add(cardDrawn); break;
                         case EventType.PlayImmediately: dracula.PlayImmediately(cardDrawn); break;
                     }
                 }
             }
-            dracula.DiscardEventsDownTo(dracula.eventHandSize);
+            dracula.DiscardEventsDownTo(dracula.eventHandSize, ui);
             dracula.TrimTrail(3);
         }
 
@@ -1849,12 +1849,12 @@ namespace ConsoleHandler
             {
                 switch (cardDrawn.type)
                 {
-                    case EventType.Ally: dracula.PlayAlly(cardDrawn); break;
+                    case EventType.Ally: dracula.PlayAlly(cardDrawn, ui); break;
                     case EventType.Keep: dracula.eventCardsInHand.Add(cardDrawn); break;
                     case EventType.PlayImmediately: dracula.PlayImmediately(cardDrawn); break;
                 }
             }
-            dracula.DiscardEventsDownTo(dracula.eventHandSize);
+            dracula.DiscardEventsDownTo(dracula.eventHandSize, ui);
 
         }
 

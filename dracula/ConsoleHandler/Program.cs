@@ -74,10 +74,10 @@ namespace ConsoleHandler
             {
                 do
                 {
-                    g.DrawEventCardForDracula();
+                    g.DrawEventCardForDracula(ui);
                     numberOfCards--;
                 } while (numberOfCards > 0);
-                g.DiscardDraculaCardsDownToHandSize();
+                g.DiscardDraculaCardsDownToHandSize(ui);
             }
             else
             {
@@ -158,7 +158,7 @@ namespace ConsoleHandler
             {
                 try
                 {
-                    g.RevealLocationAtTrailIndex(trailIndex - 1);
+                    g.RevealLocationAtTrailIndex(trailIndex - 1, ui);
                 }
                 catch (ArgumentOutOfRangeException)
                 {

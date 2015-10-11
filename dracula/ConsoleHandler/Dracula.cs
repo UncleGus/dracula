@@ -61,7 +61,7 @@ namespace DraculaHandler
             if (possibleMoves.Count() + possiblePowers.Count() == 0)
             {
                 Logger.WriteToDebugLog("Dracula has no legal moves");
-                Console.WriteLine("Dracula is cornered by his own trail");
+                ui.TellUser("Dracula is cornered by his own trail");
                 return false;
             }
             else if (possibleMoves.Count() == 0 && possiblePowers.Count() == 1 && possiblePowers.Contains(powers[1]))
@@ -71,7 +71,7 @@ namespace DraculaHandler
                 if (possibleMoves.Count() == 0)
                 {
                     Logger.WriteToDebugLog("Dracula has no moves available by Wolf Form");
-                    Console.WriteLine("Dracula is cornered by his own trail");
+                    ui.TellUser("Dracula is cornered by his own trail");
                     return false;
                 }
                 DeterminePossibleLocations();
@@ -100,11 +100,11 @@ namespace DraculaHandler
                 }
                 else if (possiblePowers[chosenActionIndex].name == "Double Back")
                 {
-                    DoDoubleBackMove();
+                    DoDoubleBackMove(ui);
                 }
                 else if (possiblePowers[chosenActionIndex].name == "Wolf Form")
                 {
-                    DoWolfFormMove();
+                    DoWolfFormMove(ui);
                 }
 
                 // put the power used at the head of the trail
@@ -115,14 +115,14 @@ namespace DraculaHandler
             // performing a regular move
             {
                 // choose a location
-                MoveByRoadOrSea();
+                MoveByRoadOrSea(ui);
                 Logger.WriteToGameLog("Dracula moved to " + currentLocation.name);
             }
             Logger.WriteToDebugLog("Dracula has finished moving");
             return true;
         }
 
-        public void DrawEventCard()
+        public void DrawEventCard(UserInterface ui)
         {
             Event eventCardDrawn;
             do
@@ -133,7 +133,7 @@ namespace DraculaHandler
             Logger.WriteToGameLog("Dracula drew card " + eventCardDrawn.name);
             if (eventCardDrawn.type == EventType.Ally)
             {
-                PlayAlly(eventCardDrawn);
+                PlayAlly(eventCardDrawn, ui);
             }
             else if (eventCardDrawn.type == EventType.PlayImmediately)
             {
@@ -151,7 +151,7 @@ namespace DraculaHandler
             throw new NotImplementedException();
         }
 
-        public void PlayAlly(Event allyDrawn)
+        public void PlayAlly(Event allyDrawn, UserInterface ui)
         {
             string allyKept;
             if (!g.DraculaHasAlly())
@@ -191,7 +191,7 @@ namespace DraculaHandler
                         {
                             Logger.WriteToDebugLog("Discarded Immanuel Hildesheim, discarding events down to 4");
                             eventHandSize = 4;
-                            DiscardEventsDownTo(eventHandSize);
+                            DiscardEventsDownTo(eventHandSize, ui);
                             break;
                         }
                     case "Dracula's Brides":
@@ -234,7 +234,7 @@ namespace DraculaHandler
 
         }
 
-        public void DiscardEventsDownTo(int numberOfCards)
+        public void DiscardEventsDownTo(int numberOfCards, UserInterface ui)
         {
             while (eventCardsInHand.Count() > numberOfCards)
             {
@@ -243,16 +243,16 @@ namespace DraculaHandler
                 g.AddEventToEventDiscard(cardToDiscard);
                 Logger.WriteToDebugLog("Dracula discarded " + cardToDiscard.name);
                 Logger.WriteToGameLog("Dracula discarded " + cardToDiscard.name);
-                Console.WriteLine("Dracula discarded " + cardToDiscard.name);
+                ui.TellUser("Dracula discarded " + cardToDiscard.name);
             }
         }
 
-        public void ShowLocation()
+        public void ShowLocation(UserInterface ui)
         {
-            Console.WriteLine("Dracula is currently in: " + currentLocation.name);
+            ui.TellUser("Dracula is currently in: " + currentLocation.name);
         }
 
-        public void ShowTrail()
+        public void ShowTrail(UserInterface ui)
         {
             for (int i = 0; i < trail.Count(); i++)
             {
@@ -267,7 +267,7 @@ namespace DraculaHandler
                         }
                     }
                 }
-                Console.WriteLine(trail[i].name + powerName);
+                ui.TellUser(trail[i].name + powerName);
             }
         }
 
@@ -422,7 +422,7 @@ namespace DraculaHandler
             }
         }
 
-        public void MoveByRoadOrSea()
+        public void MoveByRoadOrSea(UserInterface ui)
         {
             Logger.WriteToDebugLog("Moving Dracula to a new location");
             Logger.WriteToDebugLog("Remembering that Dracula is moving from a location of type " + currentLocation.type);
@@ -439,7 +439,7 @@ namespace DraculaHandler
             }
             catch (ArgumentOutOfRangeException)
             {
-                Console.WriteLine("Dracula tried to do something illegal");
+                ui.TellUser("Dracula tried to do something illegal");
                 Logger.WriteToDebugLog("DRACULA TRIED TO DO SOMETHING ILLEGAL");
             }
 
@@ -457,7 +457,7 @@ namespace DraculaHandler
                     if (locationWhereHideWasUsed.type == LocationType.Castle)
                     {
                         Logger.WriteToDebugLog("Also revealing Hide as it was used at Castle Dracula");
-                        RevealHide(trail.FindIndex(location => location.name == "Hide"));
+                        RevealHide(ui);
                     }
                 }
             }
@@ -517,7 +517,7 @@ namespace DraculaHandler
             }
         }
 
-        public void RevealHide(int hideIndex)
+        public void RevealHide(int hideIndex, UserInterface ui)
         {
             // move Hide's encounter to the actual location card if applicable
             // ACTUALLY, THIS DOESN'T HAPPEN
@@ -553,12 +553,12 @@ namespace DraculaHandler
                 }
             }
 
-            Console.WriteLine("Dracula was hiding");
+            ui.TellUser("Dracula was hiding");
         }
 
-        public void RevealHide()
+        public void RevealHide(UserInterface ui)
         {
-            RevealHide(trail.FindIndex(location => location.name == "Hide"));
+            RevealHide(trail.FindIndex(location => location.name == "Hide"), ui);
         }
 
         public void CheckBloodLossAtSea(LocationType locationType)
@@ -605,7 +605,7 @@ namespace DraculaHandler
             MovePowersAlongTrail();
         }
 
-        public void DoDoubleBackMove()
+        public void DoDoubleBackMove(UserInterface ui)
         {
             Logger.WriteToDebugLog("Remembering that Dracula is moving from a location of type " + currentLocation.type);
             LocationType previousLocationType = currentLocation.type;
@@ -624,24 +624,24 @@ namespace DraculaHandler
                     if (trail[doubleBackIndex - 1].name == "Hide")
                     {
                         Logger.WriteToDebugLog("Dracula Doubled Back to " + possibleDoubleBackMoves[doubleBackLocation].name + " and Hide is the next card in the trail");
-                        Console.WriteLine("Dracula Doubled Back to a location where he previously used Hide (position " + (doubleBackIndex - 1) + ")");
-                        RevealHide(doubleBackIndex - 1);
+                        ui.TellUser("Dracula Doubled Back to a location where he previously used Hide (position " + (doubleBackIndex - 1) + ")");
+                        RevealHide(doubleBackIndex - 1, ui);
                     }
                     else if (doubleBackIndex > 1)
                     {
                         if (trail[doubleBackIndex - 1].type == LocationType.Power && trail[doubleBackIndex - 2].name == "Hide")
                         {
                             Logger.WriteToDebugLog("Dracula Doubled Back to " + possibleDoubleBackMoves[doubleBackLocation].name + " and Hide is the next card in the trail, after " + trail[doubleBackIndex - 1].name);
-                            Console.WriteLine("Dracula Doubled Back to a location where he previously used Hide (position " + (doubleBackIndex - 1) + ")");
-                            RevealHide(doubleBackIndex - 2);
+                            ui.TellUser("Dracula Doubled Back to a location where he previously used Hide (position " + (doubleBackIndex - 1) + ")");
+                            RevealHide(doubleBackIndex - 2, ui);
                         }
                         else if (doubleBackIndex > 2)
                         {
                             if (trail[doubleBackIndex - 1].type == LocationType.Power && trail[doubleBackIndex - 2].type == LocationType.Power && trail[doubleBackIndex - 3].name == "Hide")
                             {
                                 Logger.WriteToDebugLog("Dracula Doubled Back to " + possibleDoubleBackMoves[doubleBackLocation].name + " and Hide is the next card in the trail, after " + trail[doubleBackIndex - 1].name + " and " + trail[doubleBackIndex - 2].name);
-                                Console.WriteLine("Dracula Doubled Back to a location where he previously used Hide (position " + (doubleBackIndex - 1) + ")");
-                                RevealHide(doubleBackIndex - 3);
+                                ui.TellUser("Dracula Doubled Back to a location where he previously used Hide (position " + (doubleBackIndex - 1) + ")");
+                                RevealHide(doubleBackIndex - 3, ui);
                             }
                         }
                     }
@@ -696,12 +696,12 @@ namespace DraculaHandler
             CheckBloodLossAtSea(previousLocationType);
         }
 
-        public void DoWolfFormMove()
+        public void DoWolfFormMove(UserInterface ui)
         {
             // determine possible locations for wolf form (road only, up to two moves away)
             DeterminePossibleWolfFormLocations();
             // carry out move
-            MoveByRoadOrSea();
+            MoveByRoadOrSea(ui);
             Logger.WriteToGameLog("Dracula used Wolf Form to move to " + currentLocation.name);
         }
 
@@ -780,7 +780,7 @@ namespace DraculaHandler
                 if (trail.Last() == locationWhereHideWasUsed)
                 {
                     Logger.WriteToDebugLog("Hide location has left the trail, revealing the Hide card");
-                    RevealHide(trail.FindIndex(location => location.name == "Hide"));
+                    RevealHide(trail.FindIndex(location => location.name == "Hide"), ui);
                 }
                 Logger.WriteToDebugLog("Deciding what to do with " + trail.Last().name);
                 if (trail.Last().type == LocationType.Power)

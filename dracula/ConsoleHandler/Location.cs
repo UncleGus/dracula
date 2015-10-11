@@ -157,11 +157,11 @@ namespace LocationHandler
             }
         }
 
-        public static void RevealLocation(GameState g, int trailIndex)
+        public static void RevealLocation(GameState g, int trailIndex, UserInterface ui)
         {
             try
             {
-                g.RevealLocationAtTrailIndex(trailIndex);
+                g.RevealLocationAtTrailIndex(trailIndex, ui);
             }
             catch (ArgumentOutOfRangeException)
             { }
