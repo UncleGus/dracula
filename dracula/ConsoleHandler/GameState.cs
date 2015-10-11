@@ -130,6 +130,244 @@ namespace ConsoleHandler
             eventDeck.Add(new Event("Trap", true, EventType.Keep));
         }
 
+        internal void PlayRufusSmith()
+        {
+            if (HuntersHaveAlly())
+            {
+                AddEventToEventDiscard(GetEventFromEventDeck(NameOfHunterAlly()));
+            }
+            SetHunterAlly("Rufus Smith");
+            RemoveEventFromEventDeck(GetEventFromEventDeck(NameOfHunterAlly()));
+        }
+
+        internal void DiscardEventCard(string cardName)
+        {
+            Event playedCard = GetEventFromEventDeck(cardName);
+            AddEventToEventDiscard(playedCard);
+            RemoveEventFromEventDeck(playedCard);
+        }
+
+        internal void PlayHiredScouts(UserInterface ui)
+        {
+            string line = "";
+            Location locationToReveal;
+            do
+            {
+                Console.WriteLine("Name the first city");
+                line = Console.ReadLine();
+                locationToReveal = GetLocationFromName(line);
+                Console.WriteLine(locationToReveal.name);
+            } while (locationToReveal.name == "Unknown location");
+            if (LocationIsInTrail(locationToReveal))
+            {
+                locationToReveal.isRevealed = true;
+                Console.Write("Revealing " + locationToReveal.name);
+                for (int i = 0; i < locationToReveal.encounters.Count(); i++)
+                {
+                    locationToReveal.encounters[i].isRevealed = true;
+                    Console.Write(" and " + locationToReveal.encounters[i].name);
+                }
+                Console.WriteLine("");
+                ui.drawTrail(this);
+            }
+            else
+            {
+                Console.Write(locationToReveal.name + " is not in Dracula's trail");
+            }
+            do
+            {
+                Console.WriteLine("Name the second city");
+                line = Console.ReadLine();
+                locationToReveal = GetLocationFromName(line);
+                Console.WriteLine(locationToReveal.name);
+            } while (locationToReveal.name == "Unknown location");
+            if (LocationIsInTrail(locationToReveal))
+            {
+                locationToReveal.isRevealed = true;
+                Console.Write("Revealing " + locationToReveal.name);
+                for (int i = 0; i < locationToReveal.encounters.Count(); i++)
+                {
+                    locationToReveal.encounters[i].isRevealed = true;
+                    Console.Write(" and " + locationToReveal.encounters[i].name);
+                }
+                Console.WriteLine("");
+            }
+            else
+            {
+                Console.WriteLine(locationToReveal.name + " is not in Dracula's trail");
+            }
+            DiscardEventCard("Hired Scouts");
+
+        }
+
+        internal void PlayEscapeRoute()
+        {
+            Console.WriteLine("Forewarned is supposed to be played at the start of combat");
+        }
+
+        internal void PlayExcellentWeather()
+        {
+            Console.WriteLine("You may move up to four sea moves this turn");
+            DiscardEventCard("Excellent Weather");
+        }
+
+        internal void PlayCharteredCarriage()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void PlayForewarned()
+        {
+            Console.WriteLine("Forewarned is supposed to be played when Dracula reveals an encounter at your location");
+        }
+
+        internal void PlaySecretWeapon()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void PlayBloodTransfusion()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void PlayGoodLuck()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void PlaySurprisingReturn()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void PlayStormySeas()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void PlayHypnosis()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void PlayTelegraphAhead()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void PlayConsecratedGround()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void PlayReEquip()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void PlayNewspaperReports()
+        {
+            int checkingLocationIndex = TrailLength();
+            do
+            {
+                checkingLocationIndex--;
+            } while ((TypeOfLocationAtTrailIndex(checkingLocationIndex) != LocationType.Castle && TypeOfLocationAtTrailIndex(checkingLocationIndex) != LocationType.City && TypeOfLocationAtTrailIndex(checkingLocationIndex) != LocationType.Sea && TypeOfLocationAtTrailIndex(checkingLocationIndex) != LocationType.Town) || LocationIsRevealedAtTrailIndex(checkingLocationIndex));
+
+            if (DraculaCurrentLocationIsAtTrailIndex(checkingLocationIndex))
+            {
+                Console.WriteLine("The oldest unrevealed location in Dracula's trail is his current location");
+                if (LocationWhereHideWasUsedIsDraculaCurrentLocation())
+                {
+                    Console.WriteLine("Here's the Hide card to prove it");
+                    RevealHide();
+                }
+            }
+            else
+            {
+                RevealLocationAtTrailIndex(checkingLocationIndex);
+                Console.WriteLine("Revealing " + NameOfLocationAtTrailIndex(checkingLocationIndex));
+            }
+            DiscardEventCard("Newspaper Reports");
+        }
+
+        internal void PlayAdvancePlanning()
+        {
+            Console.WriteLine("Advance Planning is supposed to be played at the start of a combat");
+        }
+
+        internal void PlayMysticResearch()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void PlayLongDay()
+        {
+            if (Time() < 1)
+            {
+                Console.WriteLine("You cannot play Long Day during Dawn");
+            }
+            else
+            {
+                AdjustTime(-1);
+                DiscardEventCard("Long Day");
+            }
+        }
+
+        internal void PlayVampiricLair()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void PlaySenseOfEmergency()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void PlayMoneyTrail()
+        {
+            Console.WriteLine("Revealing all sea locations in Dracula's trail");
+            for (int i = 0; i < TrailLength(); i++)
+            {
+                if (TypeOfLocationAtTrailIndex(i) == LocationType.Sea)
+                {
+                    RevealLocationAtTrailIndex(i);
+                    LocationHelper.RevealLocation(this, i);
+                }
+            }
+            DiscardEventCard("Money Trail");
+        }
+
+        internal void PlayGreatStrength()
+        {
+            Console.WriteLine("Great Strength is supposed to be played when a Hunter receives damage or a bite");
+        }
+
+        internal void PlayHeroicLeap()
+        {
+            Console.WriteLine("Heroic Leap is supposed to be played at the start of a combat");
+        }
+
+        internal void PlaySisterAgatha()
+        {
+            if (HuntersHaveAlly())
+            {
+                AddEventToEventDiscard(GetEventFromEventDeck(NameOfHunterAlly()));
+            }
+            SetHunterAlly("Sister Agatha");
+            RemoveEventFromEventDeck(GetEventFromEventDeck(NameOfHunterAlly()));
+        }
+
+        internal void PlayJonathanHarker()
+        {
+            if (HuntersHaveAlly())
+            {
+                AddEventToEventDiscard(GetEventFromEventDeck(NameOfHunterAlly()));
+            }
+            SetHunterAlly("Jonathan Harker");
+            RemoveEventFromEventDeck(GetEventFromEventDeck(NameOfHunterAlly()));
+        }
+
         private void SetUpEncounters()
         {
             encounterPool.Add(new Encounter("Ambush", "AMB"));
