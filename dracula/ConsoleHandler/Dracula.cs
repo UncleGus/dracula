@@ -25,17 +25,15 @@ namespace DraculaHandler
         List<Encounter> encountersToMature = new List<Encounter>();
         public List<Encounter> encounterHand = new List<Encounter>();
         public Location locationWhereHideWasUsed;
-        public int vampireTracker;
         public Location[] catacombs = new Location[3];
         public GameState g;
         public List<Event> eventCardsInHand = new List<Event>();
         public int eventHandSize;
 
-        public Dracula(Location startLocation, GameState gameState)
+        public Dracula(GameState gameState)
         {
             g = gameState;
-            currentLocation = startLocation;
-            trail.Add(currentLocation);
+            
             powers.Add(new DraculaPower("Dark Call", true));
             powers.Add(new DraculaPower("Double Back", true));
             powers.Add(new DraculaPower("Feed", false));
@@ -45,7 +43,6 @@ namespace DraculaHandler
             lostBloodAtSeaOnLatestTurn = false;
             encounterHandSize = 5;
             DrawEncounters(encounterHandSize);
-            vampireTracker = -1;
             eventHandSize = 4;
         }
 
@@ -57,7 +54,7 @@ namespace DraculaHandler
             DeterminePossibleLocations();
 
             // build list of possible powers to play
-            DeterminePossiblePowers(g.time);
+            DeterminePossiblePowers(g.Time());
 
             // check if there are no legal moves
             Logger.WriteToDebugLog("Checking if there are legal moves");
@@ -130,7 +127,7 @@ namespace DraculaHandler
             Event eventCardDrawn;
             do
             {
-                eventCardDrawn = g.eventDeck[new Random().Next(0, g.eventDeck.Count())];
+                eventCardDrawn = g.DrawEventCard();
             } while (!eventCardDrawn.isDraculaCard);
             Logger.WriteToDebugLog("Dracula drew card " + eventCardDrawn.name);
             Logger.WriteToGameLog("Dracula drew card " + eventCardDrawn.name);
@@ -145,7 +142,7 @@ namespace DraculaHandler
             else
             {
                 eventCardsInHand.Add(eventCardDrawn);
-                g.eventDeck.Remove(eventCardDrawn);
+                g.RemoveEventFromEventDeck(eventCardDrawn);
             }
         }
 
@@ -156,39 +153,39 @@ namespace DraculaHandler
 
         public void PlayAlly(Event allyDrawn)
         {
-            Event allyKept;
-            if (g.draculaAlly == null)
+            string allyKept;
+            if (!g.DraculaHasAlly())
             {
                 Logger.WriteToDebugLog("Dracula has no current Ally, keeping this one");
-                g.draculaAlly = allyDrawn;
-                g.eventDeck.Remove(allyDrawn);
+                g.SetDraculaAlly(allyDrawn);
+                g.RemoveEventFromEventDeck(allyDrawn);
                 Logger.WriteToDebugLog("Dracula put " + allyDrawn.name + " into his empty Ally slot");
                 Logger.WriteToGameLog("Dracula put " + allyDrawn.name + " into his empty Ally slot");
-                allyKept = allyDrawn;
+                allyKept = allyDrawn.name;
             } else
             {
                 Logger.WriteToDebugLog("Dracula already has an Ally, deciding which one to keep");
-                Event allyDiscarded;
+                string allyDiscarded;
                 if (new Random().Next(0, 2) > 0)
                 {
                     Logger.WriteToDebugLog("Keeping the new Ally");
-                    allyDiscarded = g.draculaAlly;
-                    g.eventDiscard.Add(allyDiscarded);
-                    g.draculaAlly = allyDrawn;
-                    allyKept = allyDrawn;
-                    Logger.WriteToDebugLog("Dracula put " + allyDrawn.name + " into his Ally slot, replacing " + allyDiscarded.name);
-                    Logger.WriteToGameLog("Dracula put " + allyDrawn.name + " into his Ally slot, replacing " + allyDiscarded.name);
+                    allyDiscarded = g.NameOfDraculaAlly();
+                    g.AddEventToEventDiscard(g.GetEventFromEventDeck(allyDiscarded));
+                    g.SetDraculaAlly(allyDrawn);
+                    allyKept = allyDrawn.name;
+                    Logger.WriteToDebugLog("Dracula put " + allyDrawn.name + " into his Ally slot, replacing " + allyDiscarded);
+                    Logger.WriteToGameLog("Dracula put " + allyDrawn.name + " into his Ally slot, replacing " + allyDiscarded);
                 }
                 else
                 {
                     Logger.WriteToDebugLog("Keeping the existing Ally");
-                    allyDiscarded = allyDrawn;
-                    g.eventDiscard.Add(allyDiscarded);
-                    allyKept = g.draculaAlly;
-                    Logger.WriteToDebugLog("Dracula kept " + g.draculaAlly.name + " in his Ally slot, discarding " + allyDiscarded.name);
-                    Logger.WriteToGameLog("Dracula kept " + g.draculaAlly.name + " in his Ally slot, discarding " + allyDiscarded.name);
+                    allyDiscarded = allyDrawn.name;
+                    g.AddEventToEventDiscard(g.GetEventFromEventDeck(allyDiscarded));
+                    allyKept = g.NameOfDraculaAlly();
+                    Logger.WriteToDebugLog("Dracula kept " + g.NameOfDraculaAlly() + " in his Ally slot, discarding " + allyDiscarded);
+                    Logger.WriteToGameLog("Dracula kept " + g.NameOfDraculaAlly() + " in his Ally slot, discarding " + allyDiscarded);
                 }
-                switch (allyDiscarded.name)
+                switch (allyDiscarded)
                 {
                     case "Immanuel Hildesheim":
                         {
@@ -206,7 +203,7 @@ namespace DraculaHandler
                         }
                 }
             }
-            switch (allyKept.name)
+            switch (allyKept)
             {
                 case "Dracula's Brides":
                     {
@@ -230,7 +227,7 @@ namespace DraculaHandler
             {
                 Encounter encounterToDiscard = encounterHand[new Random().Next(0, encounterHand.Count())];
                 encounterHand.Remove(encounterToDiscard);
-                g.encounterPool.Add(encounterToDiscard);
+                g.AddEncounterToEncounterPool(encounterToDiscard);
                 Logger.WriteToDebugLog("Dracula discarded " + encounterToDiscard.name);
                 Logger.WriteToGameLog("Dracula discarded " + encounterToDiscard.name);
             }
@@ -243,7 +240,7 @@ namespace DraculaHandler
             {
                 Event cardToDiscard = eventCardsInHand[new Random().Next(0, eventCardsInHand.Count())];
                 eventCardsInHand.Remove(cardToDiscard);
-                g.eventDiscard.Add(cardToDiscard);
+                g.AddEventToEventDiscard(cardToDiscard);
                 Logger.WriteToDebugLog("Dracula discarded " + cardToDiscard.name);
                 Logger.WriteToGameLog("Dracula discarded " + cardToDiscard.name);
                 Console.WriteLine("Dracula discarded " + cardToDiscard.name);
@@ -490,7 +487,7 @@ namespace DraculaHandler
                     while (trail.Last().encounters.Count() > 0)
                     {
                         Logger.WriteToDebugLog("Moving encounter " + trail.Last().encounters[0].name + " back to the encounter pool");
-                        g.encounterPool.Add(trail.Last().encounters[0]);
+                        g.AddEncounterToEncounterPool(trail.Last().encounters[0]);
                         trail.Last().encounters[0].isRevealed = false;
                         trail.Last().encounters.Remove(trail.Last().encounters[0]);
                     }
@@ -714,11 +711,11 @@ namespace DraculaHandler
             Logger.WriteToDebugLog("Dracula is drawing up to " + totalNumberOfEncounters + " encounters");
             while (encounterHand.Count() < totalNumberOfEncounters)
             {
-                Encounter tempEncounter = g.encounterPool[new Random().Next(0, g.encounterPool.Count())];
+                Encounter tempEncounter = g.DrawEncounterFromEncounterPool();
                 Logger.WriteToDebugLog("Dracula drew encounter " + tempEncounter.name);
                 Logger.WriteToGameLog("Dracula drew encounter " + tempEncounter.name);
                 encounterHand.Add(tempEncounter);
-                g.encounterPool.Remove(tempEncounter);
+                g.RemoveEncounterFromEncounterPool(tempEncounter);
             }
         }
 
@@ -845,7 +842,7 @@ namespace DraculaHandler
                         while (catacombs[i].encounters.Count() > 0)
                         {
                             Logger.WriteToDebugLog("Putting encounter " + catacombs[i].encounters.First().name + " back into the encounter pool");
-                            g.encounterPool.Add(catacombs[i].encounters.First());
+                            g.AddEncounterToEncounterPool(catacombs[i].encounters.First());
                             catacombs[i].encounters.Remove(catacombs[i].encounters.First());
                         }
                         Logger.WriteToDebugLog("Emptying " + catacombs[i].name + " from Catacombs");
@@ -870,7 +867,7 @@ namespace DraculaHandler
                 Logger.WriteToDebugLog("Maturing encounter " + encountersToMature.First().name);
                 Logger.WriteToGameLog(encountersToMature.First().name + " matured");
                 g.MatureEncounter(encountersToMature.First().name);
-                g.encounterPool.Add(encountersToMature.First());
+                g.AddEncounterToEncounterPool(encountersToMature.First());
                 encountersToMature.Remove(encountersToMature.First());
             }
         }

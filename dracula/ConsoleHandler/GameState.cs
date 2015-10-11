@@ -14,17 +14,18 @@ namespace ConsoleHandler
 {
     public class GameState
     {
-        public Dracula dracula;
-        public Hunter[] hunters;
-        public List<Location> map;
-        public List<Encounter> encounterPool;
-        public List<Event> eventDeck;
-        public List<Event> eventDiscard;
-        public Event draculaAlly;
-        public Event hunterAlly;
-        public int time;
-        public string[] timesOfDay;
-        public int resolve;
+        private Dracula dracula;
+        private Hunter[] hunters;
+        private List<Location> map;
+        private List<Encounter> encounterPool;
+        private List<Event> eventDeck;
+        private List<Event> eventDiscard;
+        private Event draculaAlly;
+        private Event hunterAlly;
+        private int time;
+        private string[] timesOfDay;
+        private int resolve;
+        private int vampireTracker;
 
         public GameState()
         {
@@ -35,7 +36,151 @@ namespace ConsoleHandler
             hunters[3] = new Hunter("Mina Harker", 8, 1, 2);
 
             resolve = 0;
+            vampireTracker = -1;
+            eventDeck = new List<Event>();
+            eventDiscard = new List<Event>();
+            encounterPool = new List<Encounter>();
 
+            time = -1;
+            timesOfDay = new string[6] { "Dawn", "Noon", "Dusk", "Twilight", "Midnight", "Small Hours" };
+
+            SetUpMap();
+            SetUpEncounters();
+            SetUpEvents();
+
+            dracula = new Dracula(this);
+        }
+
+        private void SetUpEvents()
+        {
+            eventDeck.Add(new Event("Rufus Smith", false, EventType.Ally));
+            eventDeck.Add(new Event("Jonathan Harker", false, EventType.Ally));
+            eventDeck.Add(new Event("Sister Agatha", false, EventType.Ally));
+            eventDeck.Add(new Event("Heroic Leap", false, EventType.Keep));
+            eventDeck.Add(new Event("Great Strength", false, EventType.Keep));
+            eventDeck.Add(new Event("Money Trail", false, EventType.Keep));
+            eventDeck.Add(new Event("Sense of Emergency", false, EventType.Keep));
+            eventDeck.Add(new Event("Sense of Emergency", false, EventType.Keep));
+            eventDeck.Add(new Event("Vampiric Lair", false, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Long Day", false, EventType.Keep));
+            eventDeck.Add(new Event("Long Day", false, EventType.Keep));
+            eventDeck.Add(new Event("Mystic Research", false, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Mystic Research", false, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Advance Planning", false, EventType.Keep));
+            eventDeck.Add(new Event("Advance Planning", false, EventType.Keep));
+            eventDeck.Add(new Event("Advance Planning", false, EventType.Keep));
+            eventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Re-Equip", false, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Re-Equip", false, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Re-Equip", false, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Consecrated Ground", false, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Telegraph Ahead", false, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Telegraph Ahead", false, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Hypnosis", false, EventType.Keep));
+            eventDeck.Add(new Event("Hypnosis", false, EventType.Keep));
+            eventDeck.Add(new Event("Stormy Seas", false, EventType.Keep));
+            eventDeck.Add(new Event("Surprising Return", false, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Surprising Return", false, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Good Luck", false, EventType.Keep));
+            eventDeck.Add(new Event("Good Luck", false, EventType.Keep));
+            eventDeck.Add(new Event("Blood Transfusion", false, EventType.Keep));
+            eventDeck.Add(new Event("Secret Weapon", false, EventType.Keep));
+            eventDeck.Add(new Event("Secret Weapon", false, EventType.Keep));
+            eventDeck.Add(new Event("Forewarned", false, EventType.Keep));
+            eventDeck.Add(new Event("Forewarned", false, EventType.Keep));
+            eventDeck.Add(new Event("Forewarned", false, EventType.Keep));
+            eventDeck.Add(new Event("Chartered Carriage", false, EventType.Keep));
+            eventDeck.Add(new Event("Chartered Carriage", false, EventType.Keep));
+            eventDeck.Add(new Event("Chartered Carriage", false, EventType.Keep));
+            eventDeck.Add(new Event("Excellent Weather", false, EventType.Keep));
+            eventDeck.Add(new Event("Excellent Weather", false, EventType.Keep));
+            eventDeck.Add(new Event("Escape Route", false, EventType.Keep));
+            eventDeck.Add(new Event("Escape Route", false, EventType.Keep));
+            eventDeck.Add(new Event("Hired Scouts", false, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Hired Scouts", false, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Hired Scouts", false, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Dracula's Brides", true, EventType.Ally));
+            eventDeck.Add(new Event("Immanuel Hildesheim", true, EventType.Ally));
+            eventDeck.Add(new Event("Quincey P. Morris", true, EventType.Ally));
+            eventDeck.Add(new Event("Roadblock", true, EventType.Keep));
+            eventDeck.Add(new Event("Unearthly Swiftness", true, EventType.Keep));
+            eventDeck.Add(new Event("Time Runs Short", true, EventType.Keep));
+            eventDeck.Add(new Event("Customs Search", true, EventType.Keep));
+            eventDeck.Add(new Event("Devilish Power", true, EventType.Keep));
+            eventDeck.Add(new Event("Devilish Power", true, EventType.Keep));
+            eventDeck.Add(new Event("Vampiric Influence", true, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Vampiric Influence", true, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Night Visit", true, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Evasion", true, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Wild Horses", true, EventType.Keep));
+            eventDeck.Add(new Event("False Tip-off", true, EventType.Keep));
+            eventDeck.Add(new Event("False Tip-off", true, EventType.Keep));
+            eventDeck.Add(new Event("Sensationalist Press", true, EventType.Keep));
+            eventDeck.Add(new Event("Rage", true, EventType.Keep));
+            eventDeck.Add(new Event("Seduction", true, EventType.Keep));
+            eventDeck.Add(new Event("Control Storms", true, EventType.Keep));
+            eventDeck.Add(new Event("Relentless Minion", true, EventType.Keep));
+            eventDeck.Add(new Event("Relentless Minion", true, EventType.Keep));
+            eventDeck.Add(new Event("Trap", true, EventType.Keep));
+            eventDeck.Add(new Event("Trap", true, EventType.Keep));
+            eventDeck.Add(new Event("Trap", true, EventType.Keep));
+        }
+
+        private void SetUpEncounters()
+        {
+            encounterPool.Add(new Encounter("Ambush", "AMB"));
+            encounterPool.Add(new Encounter("Ambush", "AMB"));
+            encounterPool.Add(new Encounter("Ambush", "AMB"));
+            encounterPool.Add(new Encounter("Assasin", "ASS"));
+            encounterPool.Add(new Encounter("Bats", "BAT"));
+            encounterPool.Add(new Encounter("Bats", "BAT"));
+            encounterPool.Add(new Encounter("Bats", "BAT"));
+            encounterPool.Add(new Encounter("Desecrated Soil", "DES"));
+            encounterPool.Add(new Encounter("Desecrated Soil", "DES"));
+            encounterPool.Add(new Encounter("Desecrated Soil", "DES"));
+            encounterPool.Add(new Encounter("Fog", "FOG"));
+            encounterPool.Add(new Encounter("Fog", "FOG"));
+            encounterPool.Add(new Encounter("Fog", "FOG"));
+            encounterPool.Add(new Encounter("Fog", "FOG"));
+            encounterPool.Add(new Encounter("Minion with Knife", "MIK"));
+            encounterPool.Add(new Encounter("Minion with Knife", "MIK"));
+            encounterPool.Add(new Encounter("Minion with Knife", "MIK"));
+            encounterPool.Add(new Encounter("Minion with Knife and Pistol", "MIP"));
+            encounterPool.Add(new Encounter("Minion with Knife and Pistol", "MIP"));
+            encounterPool.Add(new Encounter("Minion with Knife and Rifle", "MIR"));
+            encounterPool.Add(new Encounter("Minion with Knife and Rifle", "MIR"));
+            encounterPool.Add(new Encounter("Hoax", "HOA"));
+            encounterPool.Add(new Encounter("Hoax", "HOA"));
+            encounterPool.Add(new Encounter("Lightning", "LIG"));
+            encounterPool.Add(new Encounter("Lightning", "LIG"));
+            encounterPool.Add(new Encounter("Peasants", "PEA"));
+            encounterPool.Add(new Encounter("Peasants", "PEA"));
+            encounterPool.Add(new Encounter("Plague", "PLA"));
+            encounterPool.Add(new Encounter("Rats", "RAT"));
+            encounterPool.Add(new Encounter("Rats", "RAT"));
+            encounterPool.Add(new Encounter("Saboteur", "SAB"));
+            encounterPool.Add(new Encounter("Saboteur", "SAB"));
+            encounterPool.Add(new Encounter("Spy", "SPY"));
+            encounterPool.Add(new Encounter("Spy", "SPY"));
+            encounterPool.Add(new Encounter("Thief", "THI"));
+            encounterPool.Add(new Encounter("Thief", "THI"));
+            encounterPool.Add(new Encounter("New Vampire", "VAM"));
+            encounterPool.Add(new Encounter("New Vampire", "VAM"));
+            encounterPool.Add(new Encounter("New Vampire", "VAM"));
+            encounterPool.Add(new Encounter("New Vampire", "VAM"));
+            encounterPool.Add(new Encounter("New Vampire", "VAM"));
+            encounterPool.Add(new Encounter("New Vampire", "VAM"));
+            encounterPool.Add(new Encounter("Wolves", "WOL"));
+            encounterPool.Add(new Encounter("Wolves", "WOL"));
+            encounterPool.Add(new Encounter("Wolves", "WOL"));
+        }
+
+        private void SetUpMap()
+        {
             Location galway = new Location();
             Location dublin = new Location();
             Location liverpool = new Location();
@@ -930,159 +1075,316 @@ namespace ConsoleHandler
             blacksea.bySea.Add(varna);
             blacksea.bySea.Add(constanta);
             map.Add(blacksea);
+        }
 
-            encounterPool = new List<Encounter>();
+        internal Location LocationAtMapIndex(int v)
+        {
+            return map[v];
+        }
+        
+        internal int MapSize()
+        {
+            return map.Count();
+        }
 
-            encounterPool.Add(new Encounter("Ambush", "AMB"));
-            encounterPool.Add(new Encounter("Ambush", "AMB"));
-            encounterPool.Add(new Encounter("Ambush", "AMB"));
-            encounterPool.Add(new Encounter("Assasin", "ASS"));
-            encounterPool.Add(new Encounter("Bats", "BAT"));
-            encounterPool.Add(new Encounter("Bats", "BAT"));
-            encounterPool.Add(new Encounter("Bats", "BAT"));
-            encounterPool.Add(new Encounter("Desecrated Soil", "DES"));
-            encounterPool.Add(new Encounter("Desecrated Soil", "DES"));
-            encounterPool.Add(new Encounter("Desecrated Soil", "DES"));
-            encounterPool.Add(new Encounter("Fog", "FOG"));
-            encounterPool.Add(new Encounter("Fog", "FOG"));
-            encounterPool.Add(new Encounter("Fog", "FOG"));
-            encounterPool.Add(new Encounter("Fog", "FOG"));
-            encounterPool.Add(new Encounter("Minion with Knife", "MIK"));
-            encounterPool.Add(new Encounter("Minion with Knife", "MIK"));
-            encounterPool.Add(new Encounter("Minion with Knife", "MIK"));
-            encounterPool.Add(new Encounter("Minion with Knife and Pistol", "MIP"));
-            encounterPool.Add(new Encounter("Minion with Knife and Pistol", "MIP"));
-            encounterPool.Add(new Encounter("Minion with Knife and Rifle", "MIR"));
-            encounterPool.Add(new Encounter("Minion with Knife and Rifle", "MIR"));
-            encounterPool.Add(new Encounter("Hoax", "HOA"));
-            encounterPool.Add(new Encounter("Hoax", "HOA"));
-            encounterPool.Add(new Encounter("Lightning", "LIG"));
-            encounterPool.Add(new Encounter("Lightning", "LIG"));
-            encounterPool.Add(new Encounter("Peasants", "PEA"));
-            encounterPool.Add(new Encounter("Peasants", "PEA"));
-            encounterPool.Add(new Encounter("Plague", "PLA"));
-            encounterPool.Add(new Encounter("Rats", "RAT"));
-            encounterPool.Add(new Encounter("Rats", "RAT"));
-            encounterPool.Add(new Encounter("Saboteur", "SAB"));
-            encounterPool.Add(new Encounter("Saboteur", "SAB"));
-            encounterPool.Add(new Encounter("Spy", "SPY"));
-            encounterPool.Add(new Encounter("Spy", "SPY"));
-            encounterPool.Add(new Encounter("Thief", "THI"));
-            encounterPool.Add(new Encounter("Thief", "THI"));
-            encounterPool.Add(new Encounter("New Vampire", "VAM"));
-            encounterPool.Add(new Encounter("New Vampire", "VAM"));
-            encounterPool.Add(new Encounter("New Vampire", "VAM"));
-            encounterPool.Add(new Encounter("New Vampire", "VAM"));
-            encounterPool.Add(new Encounter("New Vampire", "VAM"));
-            encounterPool.Add(new Encounter("New Vampire", "VAM"));
-            encounterPool.Add(new Encounter("Wolves", "WOL"));
-            encounterPool.Add(new Encounter("Wolves", "WOL"));
-            encounterPool.Add(new Encounter("Wolves", "WOL"));
+        internal void SetLocationForHunterAt(int v, Location location)
+        {
+            hunters[v].currentLocation = location;
+        }
 
-            eventDeck = new List<Event>();
+        internal void PlaceDraculaAtStartLocation(Location startLocation)
+        {
+            dracula.currentLocation = startLocation;
+            dracula.trail.Add(startLocation);
+        }
 
-            eventDeck.Add(new Event("Rufus Smith", false, EventType.Ally));
-            eventDeck.Add(new Event("Jonathan Harker", false, EventType.Ally));
-            eventDeck.Add(new Event("Sister Agatha", false, EventType.Ally));
-            eventDeck.Add(new Event("Heroic Leap", false, EventType.Keep));
-            eventDeck.Add(new Event("Great Strength", false, EventType.Keep));
-            eventDeck.Add(new Event("Money Trail", false, EventType.Keep));
-            eventDeck.Add(new Event("Sense of Emergency", false, EventType.Keep));
-            eventDeck.Add(new Event("Sense of Emergency", false, EventType.Keep));
-            eventDeck.Add(new Event("Vampiric Lair", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Long Day", false, EventType.Keep));
-            eventDeck.Add(new Event("Long Day", false, EventType.Keep));
-            eventDeck.Add(new Event("Mystic Research", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Mystic Research", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Advance Planning", false, EventType.Keep));
-            eventDeck.Add(new Event("Advance Planning", false, EventType.Keep));
-            eventDeck.Add(new Event("Advance Planning", false, EventType.Keep));
-            eventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Re-Equip", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Re-Equip", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Re-Equip", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Consecrated Ground", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Telegraph Ahead", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Telegraph Ahead", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Hypnosis", false, EventType.Keep));
-            eventDeck.Add(new Event("Hypnosis", false, EventType.Keep));
-            eventDeck.Add(new Event("Stormy Seas", false, EventType.Keep));
-            eventDeck.Add(new Event("Surprising Return", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Surprising Return", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Good Luck", false, EventType.Keep));
-            eventDeck.Add(new Event("Good Luck", false, EventType.Keep));
-            eventDeck.Add(new Event("Blood Transfusion", false, EventType.Keep));
-            eventDeck.Add(new Event("Secret Weapon", false, EventType.Keep));
-            eventDeck.Add(new Event("Secret Weapon", false, EventType.Keep));
-            eventDeck.Add(new Event("Forewarned", false, EventType.Keep));
-            eventDeck.Add(new Event("Forewarned", false, EventType.Keep));
-            eventDeck.Add(new Event("Forewarned", false, EventType.Keep));
-            eventDeck.Add(new Event("Chartered Carriage", false, EventType.Keep));
-            eventDeck.Add(new Event("Chartered Carriage", false, EventType.Keep));
-            eventDeck.Add(new Event("Chartered Carriage", false, EventType.Keep));
-            eventDeck.Add(new Event("Excellent Weather", false, EventType.Keep));
-            eventDeck.Add(new Event("Excellent Weather", false, EventType.Keep));
-            eventDeck.Add(new Event("Escape Route", false, EventType.Keep));
-            eventDeck.Add(new Event("Escape Route", false, EventType.Keep));
-            eventDeck.Add(new Event("Hired Scouts", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Hired Scouts", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Hired Scouts", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Dracula's Brides", true, EventType.Ally));
-            eventDeck.Add(new Event("Immanuel Hildesheim", true, EventType.Ally));
-            eventDeck.Add(new Event("Quincey P. Morris", true, EventType.Ally));
-            eventDeck.Add(new Event("Roadblock", true, EventType.Keep));
-            eventDeck.Add(new Event("Unearthly Swiftness", true, EventType.Keep));
-            eventDeck.Add(new Event("Time Runs Short", true, EventType.Keep));
-            eventDeck.Add(new Event("Customs Search", true, EventType.Keep));
-            eventDeck.Add(new Event("Devilish Power", true, EventType.Keep));
-            eventDeck.Add(new Event("Devilish Power", true, EventType.Keep));
-            eventDeck.Add(new Event("Vampiric Influence", true, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Vampiric Influence", true, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Night Visit", true, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Evasion", true, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Wild Horses", true, EventType.Keep));
-            eventDeck.Add(new Event("False Tip-off", true, EventType.Keep));
-            eventDeck.Add(new Event("False Tip-off", true, EventType.Keep));
-            eventDeck.Add(new Event("Sensationalist Press", true, EventType.Keep));
-            eventDeck.Add(new Event("Rage", true, EventType.Keep));
-            eventDeck.Add(new Event("Seduction", true, EventType.Keep));
-            eventDeck.Add(new Event("Control Storms", true, EventType.Keep));
-            eventDeck.Add(new Event("Relentless Minion", true, EventType.Keep));
-            eventDeck.Add(new Event("Relentless Minion", true, EventType.Keep));
-            eventDeck.Add(new Event("Trap", true, EventType.Keep));
-            eventDeck.Add(new Event("Trap", true, EventType.Keep));
-            eventDeck.Add(new Event("Trap", true, EventType.Keep));
+        internal string TimeOfDay()
+        {
+            return timesOfDay[Math.Max(0, time)];
+        }
 
-            eventDiscard = new List<Event>();
+        internal void AdjustTime(int v)
+        {
+            time += v;
+        }
 
-            time = -1;
-            timesOfDay = new string[6] { "Dawn", "Noon", "Dusk", "Twilight", "Midnight", "Small Hours" };
+        internal int Time()
+        {
+            return time;
+        }
 
-            string line;
-            Location hunterStartLocation;
-            for (int i = 0; i < 4; i++)
+        internal void SetHunterAlly(string v)
+        {
+            hunterAlly = GetEventFromEventDeck(v);
+        }
+
+        internal string NameOfHunterAlly()
+        {
+            return hunterAlly.name;
+        }
+
+        internal bool HuntersHaveAlly()
+        {
+            return hunterAlly != null;
+        }
+
+        internal string NameOfDraculaAlly()
+        {
+            return draculaAlly.name;
+        }
+
+        internal void SetDraculaAlly(Event allyDrawn)
+        {
+            draculaAlly = allyDrawn;
+        }
+
+        internal bool DraculaHasAlly()
+        {
+            return draculaAlly != null;
+        }
+
+        internal void AddEventToEventDiscard(Event allyDiscarded)
+        {
+            eventDiscard.Add(allyDiscarded);
+        }
+
+        internal Event GetEventFromEventDeck(string v)
+        {
+            return eventDeck[eventDeck.FindIndex(card => card.name == v)];
+        }
+
+        internal string NameOfEventCardAtIndex(int eventIndex)
+        {
+            return eventDeck[eventIndex].name;
+        }
+
+        internal bool EventCardIsDraculaCardAtIndex(int eventIndex)
+        {
+            return eventDeck[eventIndex].isDraculaCard;
+        }
+
+        internal int IndexOfEventCardInEventDeck(string argument2)
+        {
+            return eventDeck.FindIndex(card => card.name.ToUpper().StartsWith(argument2.ToUpper()));
+        }
+
+        internal void RemoveEventFromEventDeck(Event eventCardDrawn)
+        {
+            eventDeck.Remove(eventCardDrawn);
+        }
+
+        internal Event DrawEventCard()
+        {
+            return eventDeck[new Random().Next(0, eventDeck.Count())];
+        }
+
+        internal void RemoveEncounterFromEncounterPool(Encounter tempEncounter)
+        {
+            encounterPool.Remove(tempEncounter);
+        }
+
+        internal Encounter DrawEncounterFromEncounterPool()
+        {
+            return encounterPool[new Random().Next(0, encounterPool.Count())];
+        }
+
+        internal void AddEncounterToEncounterPool(Encounter encounterToDiscard)
+        {
+            encounterPool.Add(encounterToDiscard);
+        }
+
+        internal void MoveHunterToLocationAtHunterIndex(int hunterIndex, Location locationToMoveTo)
+        {
+            hunters[hunterIndex].currentLocation = locationToMoveTo;
+        }
+
+        internal string NameOfHunterAtIndex(int hunterIndex)
+        {
+            return hunters[hunterIndex].name;
+        }
+
+        internal void DrawEncounterAtCatacombIndex(int i, bool v)
+        {
+            dracula.catacombs[i].DrawEncounter(true);
+        }
+
+        internal void DrawEncounterAtTrailIndex(int i)
+        {
+            dracula.trail[i].DrawEncounter();
+        }
+
+        internal void DrawEncounterAtCatacombIndex(int i)
+        {
+            dracula.catacombs[i].DrawEncounter();
+        }
+
+        internal int NumberOfEncountersAtLocationAtCatacombIndex(int i)
+        {
+            return dracula.catacombs[i].encounters.Count();
+        }
+
+        internal string DraculaPowerNameAtPowerIndex(int i)
+        {
+            return dracula.powers[i].name;
+        }
+
+        internal bool DraculaPowerAtPowerIndexIsAtLocationIndex(int i, int counter)
+        {
+            return dracula.powers[i].positionInTrail == counter;
+        }
+
+        internal int NumberOfDraculaPowers()
+        {
+            return dracula.powers.Count();
+        }
+
+        internal int NumberOfEventCardsInDraculaHand()
+        {
+            return dracula.eventCardsInHand.Count();
+        }
+
+        internal string LocationAbbreviationAtCatacombIndex(int i)
+        {
+            return dracula.catacombs[i].abbreviation;
+        }
+
+        internal bool LocationIsRevealedAtCatacombIndex(int i)
+        {
+            return dracula.catacombs[i].isRevealed;
+        }
+
+        internal bool LocationIsEmptyAtCatacombIndex(int i)
+        {
+            return dracula.catacombs[i] == null;
+        }
+
+        internal int VampireTracker()
+        {
+            return vampireTracker;
+        }
+
+        internal int DraculaBloodLevel()
+        {
+            return dracula.blood;
+        }
+
+        internal void DrawLocationAtTrailIndex(int i)
+        {
+            dracula.trail[i].DrawLocation();
+        }
+
+        internal string NameOfLocationAtTrailIndex(int checkingLocationIndex)
+        {
+            return dracula.trail[checkingLocationIndex].name;
+        }
+
+        internal void RevealHide()
+        {
+            dracula.RevealHide();
+        }
+
+        internal bool LocationWhereHideWasUsedIsDraculaCurrentLocation()
+        {
+            return dracula.locationWhereHideWasUsed == dracula.currentLocation;
+        }
+
+        internal bool DraculaCurrentLocationIsAtTrailIndex(int checkingLocationIndex)
+        {
+            return dracula.trail[checkingLocationIndex] == dracula.currentLocation;
+        }
+
+        internal bool LocationIsRevealedAtTrailIndex(int checkingLocationIndex)
+        {
+            return dracula.trail[checkingLocationIndex].isRevealed;
+        }
+
+        internal LocationType TypeOfLocationAtTrailIndex(int checkingLocationIndex)
+        {
+            return dracula.trail[checkingLocationIndex].type;
+        }
+
+        internal int TrailLength()
+        {
+            return dracula.trail.Count();
+        }
+
+        internal bool LocationIsInTrail(object locationToReveal)
+        {
+            return dracula.trail.Contains(locationToReveal);
+        }
+
+        internal void PerformDraculaTurn()
+        {
+            if (dracula.currentLocation.type != LocationType.Sea)
             {
-                do
+                time = (time + 1) % 6;
+                Logger.WriteToDebugLog("Time is now " + timesOfDay[time]);
+                if (time == 0)
                 {
-                    Console.WriteLine("Where is " + hunters[i].name + "?");
-                    line = Console.ReadLine();
-                    hunterStartLocation = GetLocationFromName(line);
-                    Console.WriteLine(hunterStartLocation.name);
-                } while (hunterStartLocation.name == "Unknown location");
-                hunters[i].currentLocation = hunterStartLocation;
+                    vampireTracker++;
+                    Logger.WriteToDebugLog("Increasing vampire track to " + vampireTracker);
+                    if (vampireTracker > 0)
+                    {
+                        Logger.WriteToGameLog("Dracula earned a point, up to " + vampireTracker);
+                    }
+                }
             }
-
-            int startLocation;
-            do
+            else
             {
-                startLocation = new Random().Next(0, map.Count());
-            } while (map[startLocation].type == LocationType.Hospital);
-            dracula = new Dracula(map[startLocation], this);
+                Logger.WriteToDebugLog("Dracula is at sea, skipping Timekeeping phase so time remains " + timesOfDay[Math.Max(0, time)]);
+            }
+            dracula.TakeStartOfTurnActions();
+            dracula.MoveDracula();
+            dracula.HandleDroppedOffLocations();
+            dracula.DoActionPhase();
+            dracula.MatureEncounters();
+            dracula.DrawEncounters(dracula.encounterHandSize);
 
+        }
+
+        internal void RevealEncounterInTrail(int v)
+        {
+            try
+            {
+                for (int i = 0; i < dracula.trail[v].encounters.Count(); i++)
+                {
+                    dracula.trail[v].encounters[i].isRevealed = true;
+                }
+            }
+            catch (ArgumentOutOfRangeException)
+            { }
+        }
+
+        internal void TrimDraculaTrail(int trailLength)
+        {
+            dracula.TrimTrail(Math.Max(1, trailLength));
+        }
+
+        internal void DiscardDraculaCardsDownToHandSize()
+        {
+            dracula.DiscardEventsDownTo(dracula.eventHandSize);
+        }
+
+        internal void DrawEventCardForDracula()
+        {
+            dracula.DrawEventCard();
+        }
+
+        internal void RevealLocationAtTrailIndex(int trailIndex)
+        {
+            if (dracula.trail[trailIndex].name == "Hide")
+            {
+                dracula.RevealHide();
+            }
+            else
+            {
+                dracula.trail[trailIndex].isRevealed = true;
+            }
+        }
+
+        internal string DraculaCurrentLocationName()
+        {
+            return dracula.currentLocation.name;
         }
 
         public Location GetLocationFromName(string locationName)
@@ -1135,7 +1437,7 @@ namespace ConsoleHandler
             Logger.WriteToDebugLog("Dracula matured New Vampire");
             Logger.WriteToGameLog("Dracula matured New Vampire");
             Console.WriteLine("Dracula matured a New Vampire");
-            dracula.vampireTracker += 2;
+            vampireTracker += 2;
             dracula.TrimTrail(1);
         }
 
@@ -1244,6 +1546,7 @@ namespace ConsoleHandler
             Logger.WriteToDebugLog("Dracula matured Bats (no effect)");
             Logger.WriteToGameLog("Dracula matured Bats (no effect)");
         }
+
         private void MatureAssassin()
         {
             Logger.WriteToDebugLog("Dracula matured Assassin (no effect)");

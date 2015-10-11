@@ -161,7 +161,7 @@ namespace LocationHandler
         {
             try
             {
-                g.dracula.trail[trailIndex].isRevealed = true;
+                g.RevealLocationAtTrailIndex(trailIndex);
             }
             catch (ArgumentOutOfRangeException)
             { }
@@ -169,16 +169,6 @@ namespace LocationHandler
 
         public static void RevealEncounter(List<Location> trail, int trailIndex)
         {
-            try
-            {
-                for (int i = 0; i < trail[trailIndex].encounters.Count(); i++)
-                {
-                    trail[trailIndex].encounters[i].isRevealed = true;
-                }
-            }
-            catch (ArgumentOutOfRangeException)
-            { }
-
         }
     }
 }
