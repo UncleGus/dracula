@@ -865,7 +865,6 @@ namespace DraculaHandler
             while (encountersToMature.Count > 0)
             {
                 Logger.WriteToDebugLog("Maturing encounter " + encountersToMature.First().name);
-                Logger.WriteToGameLog(encountersToMature.First().name + " matured");
                 g.MatureEncounter(encountersToMature.First().name, ui);
                 g.AddEncounterToEncounterPool(encountersToMature.First());
                 encountersToMature.Remove(encountersToMature.First());
