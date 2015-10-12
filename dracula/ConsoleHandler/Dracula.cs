@@ -166,8 +166,8 @@ namespace DraculaHandler
                 string allyToKeep = logic.DecideWhichAllyToKeep(g.NameOfDraculaAlly(), allyDrawn.name);
                 string allyDiscarded = (allyToKeep == allyDrawn.name ? g.NameOfDraculaAlly() : allyDrawn.name);
                 Logger.WriteToDebugLog("Keeping " + allyToKeep);
-                g.AddEventToEventDiscard(g.GetEventFromEventDeck(allyDiscarded));
-                g.SetDraculaAlly(g.GetEventFromEventDeck(allyToKeep));
+                g.AddEventToEventDiscard(g.GetEventByNameFromEventDeck(allyDiscarded));
+                g.SetDraculaAlly(g.GetEventByNameFromEventDeck(allyToKeep));
                 switch (allyDiscarded)
                 {
                     case "Immanuel Hildesheim":

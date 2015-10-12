@@ -336,5 +336,41 @@ namespace ConsoleHandler
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
             return hunterIndex - 1;
         }
+
+        internal int GetIndexOfHunterDiscardingEvent()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who is discarding an event card? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
+
+        internal string GetNameOfEventDiscardedByHunter(string p)
+        {
+            TellUser("What is the name of the event being discarded?");
+            return AskUser();
+        }
+
+        internal int GetIndexOfHunterDiscardingItem()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who is discarding an item card? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
+
+        internal string GetNameOfItemDiscardedByHunter(string p)
+        {
+            TellUser("What is the name of the item being discarded?");
+            return AskUser();
+        }
     }
 }

@@ -15,11 +15,13 @@ namespace ConsoleHandler
     public class GameState
     {
         private Dracula dracula;
-        private Hunter[] hunters;
-        private List<Location> map;
-        private List<Encounter> encounterPool;
-        private List<Event> eventDeck;
-        private List<Event> eventDiscard;
+        private Hunter[] hunters = new Hunter[4];
+        private List<Location> map = new List<Location>();
+        private List<Encounter> encounterPool = new List<Encounter>();
+        private List<Event> eventDeck = new List<Event>();
+        private List<Event> eventDiscard = new List<Event>();
+        private List<Item> itemDeck = new List<Item>();
+        private List<Item> itemDiscard = new List<Item>();
         private Event draculaAlly;
         private Event hunterAlly;
         private int time;
@@ -29,7 +31,6 @@ namespace ConsoleHandler
 
         public GameState()
         {
-            hunters = new Hunter[4];
             hunters[0] = new Hunter("Lord Godalming", 12, 0, 2);
             hunters[1] = new Hunter("Van Helsing", 8, 0, 3);
             hunters[2] = new Hunter("Dr. Seward", 10, 0, 2);
@@ -37,9 +38,6 @@ namespace ConsoleHandler
 
             resolve = -1;
             vampireTracker = -1;
-            eventDeck = new List<Event>();
-            eventDiscard = new List<Event>();
-            encounterPool = new List<Encounter>();
 
             time = -1;
             timesOfDay = new string[6] { "Dawn", "Noon", "Dusk", "Twilight", "Midnight", "Small Hours" };
@@ -47,8 +45,53 @@ namespace ConsoleHandler
             SetUpMap();
             SetUpEncounters();
             SetUpEvents();
+            SetUpItems();
 
             dracula = new Dracula();            
+        }
+
+        private void SetUpItems()
+        {
+            itemDeck.Add(new Item("Crucifix"));
+            itemDeck.Add(new Item("Crucifix"));
+            itemDeck.Add(new Item("Crucifix"));
+            itemDeck.Add(new Item("Dogs"));
+            itemDeck.Add(new Item("Dogs"));
+            itemDeck.Add(new Item("Fast Horse"));
+            itemDeck.Add(new Item("Fast Horse"));
+            itemDeck.Add(new Item("Fast Horse"));
+            itemDeck.Add(new Item("Garlic"));
+            itemDeck.Add(new Item("Garlic"));
+            itemDeck.Add(new Item("Garlic"));
+            itemDeck.Add(new Item("Garlic"));
+            itemDeck.Add(new Item("Heavenly Host"));
+            itemDeck.Add(new Item("Heavenly Host"));
+            itemDeck.Add(new Item("Holy Water"));
+            itemDeck.Add(new Item("Holy Water"));
+            itemDeck.Add(new Item("Holy Water"));
+            itemDeck.Add(new Item("Knife"));
+            itemDeck.Add(new Item("Knife"));
+            itemDeck.Add(new Item("Knife"));
+            itemDeck.Add(new Item("Knife"));
+            itemDeck.Add(new Item("Knife"));
+            itemDeck.Add(new Item("Local Rumours"));
+            itemDeck.Add(new Item("Local Rumours"));
+            itemDeck.Add(new Item("Pistol"));
+            itemDeck.Add(new Item("Pistol"));
+            itemDeck.Add(new Item("Pistol"));
+            itemDeck.Add(new Item("Pistol"));
+            itemDeck.Add(new Item("Pistol"));
+            itemDeck.Add(new Item("Sacred Bullets"));
+            itemDeck.Add(new Item("Sacred Bullets"));
+            itemDeck.Add(new Item("Sacred Bullets"));
+            itemDeck.Add(new Item("Stake"));
+            itemDeck.Add(new Item("Stake"));
+            itemDeck.Add(new Item("Stake"));
+            itemDeck.Add(new Item("Stake"));
+            itemDeck.Add(new Item("Rifle"));
+            itemDeck.Add(new Item("Rifle"));
+            itemDeck.Add(new Item("Rifle"));
+            itemDeck.Add(new Item("Rifle"));
         }
 
         private void SetUpEvents()
@@ -134,15 +177,15 @@ namespace ConsoleHandler
         {
             if (HuntersHaveAlly())
             {
-                AddEventToEventDiscard(GetEventFromEventDeck(NameOfHunterAlly()));
+                AddEventToEventDiscard(GetEventByNameFromEventDeck(NameOfHunterAlly()));
             }
             SetHunterAlly("Rufus Smith");
-            RemoveEventFromEventDeck(GetEventFromEventDeck(NameOfHunterAlly()));
+            RemoveEventFromEventDeck(GetEventByNameFromEventDeck(NameOfHunterAlly()));
         }
 
         internal void DiscardEventCard(string cardName)
         {
-            Event playedCard = GetEventFromEventDeck(cardName);
+            Event playedCard = GetEventByNameFromEventDeck(cardName);
             AddEventToEventDiscard(playedCard);
             RemoveEventFromEventDeck(playedCard);
         }
@@ -350,20 +393,20 @@ namespace ConsoleHandler
         {
             if (HuntersHaveAlly())
             {
-                AddEventToEventDiscard(GetEventFromEventDeck(NameOfHunterAlly()));
+                AddEventToEventDiscard(GetEventByNameFromEventDeck(NameOfHunterAlly()));
             }
             SetHunterAlly("Sister Agatha");
-            RemoveEventFromEventDeck(GetEventFromEventDeck(NameOfHunterAlly()));
+            RemoveEventFromEventDeck(GetEventByNameFromEventDeck(NameOfHunterAlly()));
         }
 
         internal void PlayJonathanHarker()
         {
             if (HuntersHaveAlly())
             {
-                AddEventToEventDiscard(GetEventFromEventDeck(NameOfHunterAlly()));
+                AddEventToEventDiscard(GetEventByNameFromEventDeck(NameOfHunterAlly()));
             }
             SetHunterAlly("Jonathan Harker");
-            RemoveEventFromEventDeck(GetEventFromEventDeck(NameOfHunterAlly()));
+            RemoveEventFromEventDeck(GetEventByNameFromEventDeck(NameOfHunterAlly()));
         }
 
         private void SetUpEncounters()
@@ -488,8 +531,6 @@ namespace ConsoleHandler
             Location adriaticsea = new Location();
             Location ioniansea = new Location();
             Location blacksea = new Location();
-
-            map = new List<Location>();
 
             galway.name = "Galway";
             galway.abbreviation = "GAW";
@@ -1355,7 +1396,7 @@ namespace ConsoleHandler
 
         internal void SetHunterAlly(string v)
         {
-            hunterAlly = GetEventFromEventDeck(v);
+            hunterAlly = GetEventByNameFromEventDeck(v);
         }
 
         internal string NameOfHunterAlly()
@@ -1388,9 +1429,16 @@ namespace ConsoleHandler
             eventDiscard.Add(allyDiscarded);
         }
 
-        internal Event GetEventFromEventDeck(string v)
+        internal Event GetEventByNameFromEventDeck(string v)
         {
-            return eventDeck[eventDeck.FindIndex(card => card.name == v)];
+            try
+            {
+                return eventDeck[eventDeck.FindIndex(card => card.name.ToLower().StartsWith(v.ToLower()))];
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return new Event("Unknown event", false, EventType.Keep);
+            }
         }
 
         internal string NameOfEventCardAtIndex(int eventIndex)
@@ -2141,6 +2189,80 @@ namespace ConsoleHandler
         internal int ResolveTracker()
         {
             return resolve;
+        }
+
+        internal void DiscardEventFromHunterAtIndex(string eventName, int hunterIndex)
+        {
+            Event eventToDiscard = GetEventByNameFromEventDeck(eventName);
+            eventDeck.Remove(eventToDiscard);
+            eventDiscard.Add(eventToDiscard);
+            hunters[hunterIndex].numberOfEvents--;
+            Logger.WriteToDebugLog(hunters[hunterIndex].name + " discarded " + eventName + " down to " + hunters[hunterIndex].numberOfEvents);
+            Logger.WriteToGameLog(hunters[hunterIndex].name + " discarded " + eventName + " down to " + hunters[hunterIndex].numberOfEvents);
+        }
+
+
+        internal int NumberOfEventCardsAtHunterIndex(int hunterIndex)
+        {
+            return hunters[hunterIndex].numberOfEvents;
+        }
+
+        internal int NumberOfItemCardsAtHunterIndex(int hunterIndex)
+        {
+            return hunters[hunterIndex].numberOfItems;
+        }
+
+        internal string HunterShouldDiscardAtHunterIndex(int hunterIndex)
+        {
+            if (hunterIndex == 2)
+            {
+                if (hunters[2].numberOfEvents == 4 && hunters[2].numberOfItems == 4)
+                {
+                    return "item or event";
+                }
+                else if (hunters[2].numberOfEvents > 4)
+                {
+                    return "event";
+                }
+                else if (hunters[2].numberOfItems > 4)
+                {
+                    return "item";
+                }
+            }
+            else
+            {
+                if (hunters[hunterIndex].numberOfEvents > 3)
+                {
+                    return "event";
+                }
+                if (hunters[hunterIndex].numberOfItems > 3)
+                {
+                    return "item";
+                }
+            }
+            return "I don't know, bro";
+        }
+
+        internal Item GetItemByNameFromItemDeck(string argument2)
+        {
+            try
+            {
+                return itemDeck[itemDeck.FindIndex(card => card.name.ToLower().StartsWith(argument2.ToLower()))];
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return new Item("Unknown item");
+            }
+        }
+
+        internal void DiscardItemFromHunterAtIndex(string itemName, int hunterIndex)
+        {
+            Item itemToDiscard = GetItemByNameFromItemDeck(itemName);
+            itemDeck.Remove(itemToDiscard);
+            itemDiscard.Add(itemToDiscard);
+            hunters[hunterIndex].numberOfItems--;
+            Logger.WriteToDebugLog(hunters[hunterIndex].name + " discarded " + itemName + " down to " + hunters[hunterIndex].numberOfEvents);
+            Logger.WriteToGameLog(hunters[hunterIndex].name + " discarded " + itemName + " down to " + hunters[hunterIndex].numberOfEvents);
         }
     }
 }
