@@ -15,11 +15,13 @@ namespace ConsoleHandler
     public class GameState
     {
         private Dracula dracula;
-        private Hunter[] hunters;
-        private List<Location> map;
-        private List<Encounter> encounterPool;
-        private List<Event> eventDeck;
-        private List<Event> eventDiscard;
+        private Hunter[] hunters = new Hunter[4];
+        private List<Location> map = new List<Location>();
+        private List<Encounter> encounterPool = new List<Encounter>();
+        private List<Event> eventDeck = new List<Event>();
+        private List<Event> eventDiscard = new List<Event>();
+        private List<Item> itemDeck = new List<Item>();
+        private List<Item> itemDiscard = new List<Item>();
         private Event draculaAlly;
         private Event hunterAlly;
         private int time;
@@ -29,17 +31,13 @@ namespace ConsoleHandler
 
         public GameState()
         {
-            hunters = new Hunter[4];
             hunters[0] = new Hunter("Lord Godalming", 12, 0, 2);
             hunters[1] = new Hunter("Van Helsing", 8, 0, 3);
             hunters[2] = new Hunter("Dr. Seward", 10, 0, 2);
             hunters[3] = new Hunter("Mina Harker", 8, 1, 2);
 
-            resolve = 0;
+            resolve = -1;
             vampireTracker = -1;
-            eventDeck = new List<Event>();
-            eventDiscard = new List<Event>();
-            encounterPool = new List<Encounter>();
 
             time = -1;
             timesOfDay = new string[6] { "Dawn", "Noon", "Dusk", "Twilight", "Midnight", "Small Hours" };
@@ -47,8 +45,53 @@ namespace ConsoleHandler
             SetUpMap();
             SetUpEncounters();
             SetUpEvents();
+            SetUpItems();
 
-            dracula = new Dracula(this);
+            dracula = new Dracula();
+        }
+
+        private void SetUpItems()
+        {
+            itemDeck.Add(new Item("Crucifix"));
+            itemDeck.Add(new Item("Crucifix"));
+            itemDeck.Add(new Item("Crucifix"));
+            itemDeck.Add(new Item("Dogs"));
+            itemDeck.Add(new Item("Dogs"));
+            itemDeck.Add(new Item("Fast Horse"));
+            itemDeck.Add(new Item("Fast Horse"));
+            itemDeck.Add(new Item("Fast Horse"));
+            itemDeck.Add(new Item("Garlic"));
+            itemDeck.Add(new Item("Garlic"));
+            itemDeck.Add(new Item("Garlic"));
+            itemDeck.Add(new Item("Garlic"));
+            itemDeck.Add(new Item("Heavenly Host"));
+            itemDeck.Add(new Item("Heavenly Host"));
+            itemDeck.Add(new Item("Holy Water"));
+            itemDeck.Add(new Item("Holy Water"));
+            itemDeck.Add(new Item("Holy Water"));
+            itemDeck.Add(new Item("Knife"));
+            itemDeck.Add(new Item("Knife"));
+            itemDeck.Add(new Item("Knife"));
+            itemDeck.Add(new Item("Knife"));
+            itemDeck.Add(new Item("Knife"));
+            itemDeck.Add(new Item("Local Rumours"));
+            itemDeck.Add(new Item("Local Rumours"));
+            itemDeck.Add(new Item("Pistol"));
+            itemDeck.Add(new Item("Pistol"));
+            itemDeck.Add(new Item("Pistol"));
+            itemDeck.Add(new Item("Pistol"));
+            itemDeck.Add(new Item("Pistol"));
+            itemDeck.Add(new Item("Sacred Bullets"));
+            itemDeck.Add(new Item("Sacred Bullets"));
+            itemDeck.Add(new Item("Sacred Bullets"));
+            itemDeck.Add(new Item("Stake"));
+            itemDeck.Add(new Item("Stake"));
+            itemDeck.Add(new Item("Stake"));
+            itemDeck.Add(new Item("Stake"));
+            itemDeck.Add(new Item("Rifle"));
+            itemDeck.Add(new Item("Rifle"));
+            itemDeck.Add(new Item("Rifle"));
+            itemDeck.Add(new Item("Rifle"));
         }
 
         private void SetUpEvents()
@@ -134,15 +177,15 @@ namespace ConsoleHandler
         {
             if (HuntersHaveAlly())
             {
-                AddEventToEventDiscard(GetEventFromEventDeck(NameOfHunterAlly()));
+                AddEventToEventDiscard(GetEventByNameFromEventDeck(NameOfHunterAlly()));
             }
             SetHunterAlly("Rufus Smith");
-            RemoveEventFromEventDeck(GetEventFromEventDeck(NameOfHunterAlly()));
+            RemoveEventFromEventDeck(GetEventByNameFromEventDeck(NameOfHunterAlly()));
         }
 
         internal void DiscardEventCard(string cardName)
         {
-            Event playedCard = GetEventFromEventDeck(cardName);
+            Event playedCard = GetEventByNameFromEventDeck(cardName);
             AddEventToEventDiscard(playedCard);
             RemoveEventFromEventDeck(playedCard);
         }
@@ -167,7 +210,7 @@ namespace ConsoleHandler
                     ui.TellUser(" and " + locationToReveal.encounters[i].name);
                 }
                 ui.TellUser("");
-                ui.drawTrail(this);
+                ui.drawGameState(this);
             }
             else
             {
@@ -350,20 +393,20 @@ namespace ConsoleHandler
         {
             if (HuntersHaveAlly())
             {
-                AddEventToEventDiscard(GetEventFromEventDeck(NameOfHunterAlly()));
+                AddEventToEventDiscard(GetEventByNameFromEventDeck(NameOfHunterAlly()));
             }
             SetHunterAlly("Sister Agatha");
-            RemoveEventFromEventDeck(GetEventFromEventDeck(NameOfHunterAlly()));
+            RemoveEventFromEventDeck(GetEventByNameFromEventDeck(NameOfHunterAlly()));
         }
 
         internal void PlayJonathanHarker()
         {
             if (HuntersHaveAlly())
             {
-                AddEventToEventDiscard(GetEventFromEventDeck(NameOfHunterAlly()));
+                AddEventToEventDiscard(GetEventByNameFromEventDeck(NameOfHunterAlly()));
             }
             SetHunterAlly("Jonathan Harker");
-            RemoveEventFromEventDeck(GetEventFromEventDeck(NameOfHunterAlly()));
+            RemoveEventFromEventDeck(GetEventByNameFromEventDeck(NameOfHunterAlly()));
         }
 
         private void SetUpEncounters()
@@ -488,8 +531,6 @@ namespace ConsoleHandler
             Location adriaticsea = new Location();
             Location ioniansea = new Location();
             Location blacksea = new Location();
-
-            map = new List<Location>();
 
             galway.name = "Galway";
             galway.abbreviation = "GAW";
@@ -1317,7 +1358,7 @@ namespace ConsoleHandler
         {
             return map[v];
         }
-        
+
         internal int MapSize()
         {
             return map.Count();
@@ -1326,12 +1367,16 @@ namespace ConsoleHandler
         internal void SetLocationForHunterAt(int v, Location location)
         {
             hunters[v].currentLocation = location;
+            Logger.WriteToDebugLog(hunters[v].name + " started in " + location.name);
+            Logger.WriteToGameLog(hunters[v].name + " started in " + location.name);
         }
 
-        internal void PlaceDraculaAtStartLocation(Location startLocation)
+        internal void PlaceDraculaAtStartLocation()
         {
-            dracula.currentLocation = startLocation;
-            dracula.trail.Add(startLocation);
+            dracula.currentLocation = dracula.logic.DecideDraculaStartLocation(this);
+            dracula.trail.Add(dracula.currentLocation);
+            Logger.WriteToDebugLog("Dracula started in " + dracula.currentLocation.name);
+            Logger.WriteToGameLog("Dracula started in " + dracula.currentLocation.name);
         }
 
         internal string TimeOfDay()
@@ -1351,12 +1396,19 @@ namespace ConsoleHandler
 
         internal void SetHunterAlly(string v)
         {
-            hunterAlly = GetEventFromEventDeck(v);
+            hunterAlly = GetEventByNameFromEventDeck(v);
         }
 
         internal string NameOfHunterAlly()
         {
-            return hunterAlly.name;
+            if (HuntersHaveAlly())
+            {
+                return hunterAlly.name;
+            }
+            else
+            {
+                return "No ally";
+            }
         }
 
         internal bool HuntersHaveAlly()
@@ -1384,9 +1436,16 @@ namespace ConsoleHandler
             eventDiscard.Add(allyDiscarded);
         }
 
-        internal Event GetEventFromEventDeck(string v)
+        internal Event GetEventByNameFromEventDeck(string v)
         {
-            return eventDeck[eventDeck.FindIndex(card => card.name == v)];
+            try
+            {
+                return eventDeck[eventDeck.FindIndex(card => card.name.ToLower().StartsWith(v.ToLower()))];
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return new Event("Unknown event", false, EventType.Keep);
+            }
         }
 
         internal string NameOfEventCardAtIndex(int eventIndex)
@@ -1432,6 +1491,8 @@ namespace ConsoleHandler
         internal void MoveHunterToLocationAtHunterIndex(int hunterIndex, Location locationToMoveTo)
         {
             hunters[hunterIndex].currentLocation = locationToMoveTo;
+            Logger.WriteToDebugLog("Moved " + hunters[hunterIndex].name + " to " + locationToMoveTo.name);
+            Logger.WriteToGameLog(hunters[hunterIndex].name + " moved to " + locationToMoveTo.name);
         }
 
         internal string NameOfHunterAtIndex(int hunterIndex)
@@ -1558,10 +1619,13 @@ namespace ConsoleHandler
                 if (time == 0)
                 {
                     vampireTracker++;
+                    resolve++;
                     Logger.WriteToDebugLog("Increasing vampire track to " + vampireTracker);
+                    Logger.WriteToDebugLog("Increasing resolve to " + resolve);
                     if (vampireTracker > 0)
                     {
                         Logger.WriteToGameLog("Dracula earned a point, up to " + vampireTracker);
+                        Logger.WriteToGameLog("Hunters gained a point of resolve, up to " + resolve);
                     }
                 }
             }
@@ -1569,12 +1633,12 @@ namespace ConsoleHandler
             {
                 Logger.WriteToDebugLog("Dracula is at sea, skipping Timekeeping phase so time remains " + timesOfDay[Math.Max(0, time)]);
             }
-            dracula.TakeStartOfTurnActions(ui);
-            dracula.MoveDracula(ui);
-            dracula.HandleDroppedOffLocations(ui);
-            dracula.DoActionPhase(ui);
-            dracula.MatureEncounters(ui);
-            dracula.DrawEncounters(dracula.encounterHandSize);
+            dracula.TakeStartOfTurnActions(this, ui);
+            dracula.MoveDracula(this, ui);
+            dracula.HandleDroppedOffLocations(this, ui);
+            dracula.DoActionPhase(this, ui);
+            dracula.MatureEncounters(this, ui);
+            dracula.DrawEncounters(this, dracula.encounterHandSize);
 
         }
 
@@ -1593,17 +1657,17 @@ namespace ConsoleHandler
 
         internal void TrimDraculaTrail(int trailLength)
         {
-            dracula.TrimTrail(Math.Max(1, trailLength));
+            dracula.TrimTrail(this, Math.Max(1, trailLength));
         }
 
         internal void DiscardDraculaCardsDownToHandSize(UserInterface ui)
         {
-            dracula.DiscardEventsDownTo(dracula.eventHandSize, ui);
+            dracula.DiscardEventsDownTo(this, dracula.eventHandSize, ui);
         }
 
         internal void DrawEventCardForDracula(UserInterface ui)
         {
-            dracula.DrawEventCard(ui);
+            dracula.DrawEventCard(this, ui);
         }
 
         internal void RevealLocationAtTrailIndex(int trailIndex, UserInterface ui)
@@ -1674,7 +1738,7 @@ namespace ConsoleHandler
             Logger.WriteToGameLog("Dracula matured New Vampire");
             ui.TellUser("Dracula matured a New Vampire");
             vampireTracker += 2;
-            dracula.TrimTrail(1);
+            dracula.TrimTrail(this, 1);
         }
 
         private void MatureThief(UserInterface ui)
@@ -1767,14 +1831,14 @@ namespace ConsoleHandler
                 {
                     switch (cardDrawn.type)
                     {
-                        case EventType.Ally: dracula.PlayAlly(cardDrawn, ui); break;
+                        case EventType.Ally: dracula.PlayAlly(this, cardDrawn, ui); break;
                         case EventType.Keep: dracula.eventCardsInHand.Add(cardDrawn); break;
                         case EventType.PlayImmediately: dracula.PlayImmediately(cardDrawn); break;
                     }
                 }
             }
-            dracula.DiscardEventsDownTo(dracula.eventHandSize, ui);
-            dracula.TrimTrail(3);
+            dracula.DiscardEventsDownTo(this, dracula.eventHandSize, ui);
+            dracula.TrimTrail(this, 3);
         }
 
         private void MatureBats(UserInterface ui)
@@ -1806,13 +1870,13 @@ namespace ConsoleHandler
                 ui.TellUser("and " + huntersEncountered[i] + " ");
             }
             ui.TellUser("encountered an Ambush");
-            dracula.DrawEncounters(dracula.encounterHand.Count() + 1);
-            dracula.DiscardEncountersDownTo(dracula.encounterHandSize);
+            dracula.DrawEncounters(this, dracula.encounterHand.Count() + 1);
+            dracula.DiscardEncountersDownTo(this, dracula.encounterHandSize);
         }
 
-        public void ResolveAssassin(List<Hunter> huntersEncountered)
+        public void ResolveAssassin(List<Hunter> huntersEncountered, UserInterface ui)
         {
-            throw new NotImplementedException();
+            ui.TellUser("Conduct a combat with an Assasin");
         }
 
         private void ResolveBats(List<Hunter> huntersEncountered, UserInterface ui)
@@ -1849,12 +1913,12 @@ namespace ConsoleHandler
             {
                 switch (cardDrawn.type)
                 {
-                    case EventType.Ally: dracula.PlayAlly(cardDrawn, ui); break;
+                    case EventType.Ally: dracula.PlayAlly(this, cardDrawn, ui); break;
                     case EventType.Keep: dracula.eventCardsInHand.Add(cardDrawn); break;
                     case EventType.PlayImmediately: dracula.PlayImmediately(cardDrawn); break;
                 }
             }
-            dracula.DiscardEventsDownTo(dracula.eventHandSize, ui);
+            dracula.DiscardEventsDownTo(this, dracula.eventHandSize, ui);
 
         }
 
@@ -1871,19 +1935,19 @@ namespace ConsoleHandler
             ui.TellUser("Place Fog in front of you until the end of your turn");
         }
 
-        public void ResolveMinionWithKnife(List<Hunter> huntersEncountered)
+        public void ResolveMinionWithKnife(List<Hunter> huntersEncountered, UserInterface ui)
         {
-            throw new NotImplementedException();
+            ui.TellUser("Conduct a combat with a Minion with Knife");
         }
 
-        public void ResolveMinionWithKnifeAndPistol(List<Hunter> huntersEncountered)
+        public void ResolveMinionWithKnifeAndPistol(List<Hunter> huntersEncountered, UserInterface ui)
         {
-            throw new NotImplementedException();
+            ui.TellUser("Conduct a combat with a Minion with Knife and Pistol");
         }
 
-        public void ResolveMinionWithKnifeAndRifle(List<Hunter> huntersEncountered)
+        public void ResolveMinionWithKnifeAndRifle(List<Hunter> huntersEncountered, UserInterface ui)
         {
-            throw new NotImplementedException();
+            ui.TellUser("Conduct a combat with a Minion with Knife and Rifle");
         }
 
         public void ResolveHoax(List<Hunter> huntersEncountered, UserInterface ui)
@@ -1985,7 +2049,7 @@ namespace ConsoleHandler
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
                 ui.TellUser("Roll dice for " + huntersEncountered[i].name);
-                int loss = ui.GetHunterHealthLostFromRats(huntersEncountered[i].name);
+                int loss = ui.GetHunterHealthLost(huntersEncountered[i].name);
                 huntersEncountered[i].health -= loss;
                 Logger.WriteToDebugLog(huntersEncountered[i] + " lost " + loss + " health");
                 Logger.WriteToGameLog(huntersEncountered[i] + " lost " + loss + " health");
@@ -2045,26 +2109,57 @@ namespace ConsoleHandler
             }
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                if (huntersEncountered[i].numberOfEvents + huntersEncountered[i].numberOfItems > 0)
-                {
-                    int cardToDiscard = new Random().Next(0, huntersEncountered[i].numberOfEvents + huntersEncountered[i].numberOfItems);
-                    if (cardToDiscard + 1 > huntersEncountered[i].numberOfEvents)
-                    {
-                        cardToDiscard -= huntersEncountered[i].numberOfEvents;
-                        ui.TellUser(huntersEncountered[i].name + " must discard an item");
-                    }
-                    else
-                    {
-                        ui.TellUser(huntersEncountered[i].name + " must discard an event");
-                    }
-                }
-                ui.TellUser("Don't forget to tell me what was discarded");
+                dracula.DiscardHunterCard(this, huntersEncountered[i], ui);
             }
         }
 
-        public void ResolveNewVampire(List<Hunter> huntersEncountered)
+        public void ResolveNewVampire(List<Hunter> huntersEncountered, UserInterface ui)
         {
-            throw new NotImplementedException();
+            if (time < 3)
+            {
+                ui.TellUser(huntersEncountered[0].name + " encountered a New Vampire");
+            }
+            else
+            {
+                if (ui.GetDieRoll() < 4)
+                {
+                    ui.TellUser("The Vampire attempts to bite you");
+                    for (int i = 0; i < huntersEncountered.Count(); i++)
+                    {
+                        int answer = ui.GetHunterHolyItems(huntersEncountered[i].name);
+                        if (answer > 0)
+                        {
+                            Logger.WriteToDebugLog(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
+                            Logger.WriteToGameLog(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
+                            ui.TellUser(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
+                            return;
+                        }
+                    }
+                    for (int i = 0; i < huntersEncountered.Count(); i++)
+                    {
+                        Logger.WriteToDebugLog(huntersEncountered[i].name + " is bitten");
+                        Logger.WriteToGameLog(huntersEncountered[i].name + " is bitten");
+                        ui.TellUser(huntersEncountered[i].name + " is bitten");
+                    }
+                }
+                else
+                {
+                    ui.TellUser("The Vampire attempts to escape");
+                    for (int i = 0; i < huntersEncountered.Count(); i++)
+                    {
+                        int answer = ui.GetHunterSharpItems(huntersEncountered[i].name);
+                        if (answer > 0)
+                        {
+                            Logger.WriteToDebugLog(huntersEncountered[i].name + " prevented the Vampire escaping with " + (answer == 1 ? "a Knife" : "a Stake"));
+                            Logger.WriteToGameLog(huntersEncountered[i].name + " prevented the Vampire escaping with " + (answer == 1 ? "a Knife" : "a Stake"));
+                            ui.TellUser(huntersEncountered[i].name + " prevented the Vampire escaping with " + (answer == 1 ? "a Knife" : "a Stake"));
+                            ui.TellUser("Don't forget to discard the item");
+                            return;
+                        }
+                    }
+                    ui.TellUser("The Vampire escaped");
+                }
+            }
         }
 
         public void ResolveWolves(List<Hunter> huntersEncountered, UserInterface ui)
@@ -2086,7 +2181,7 @@ namespace ConsoleHandler
                 {
                     case 1: hasPistol = true; break;
                     case 2: hasRifle = true; break;
-                    case 3: hasPistol = true; hasRifle = true; break; 
+                    case 3: hasPistol = true; hasRifle = true; break;
                 }
             }
             int numberOfWeaponTypes = (hasPistol ? 1 : 0) + (hasRifle ? 1 : 0);
@@ -2095,7 +2190,8 @@ namespace ConsoleHandler
                 Logger.WriteToDebugLog("Wolves are negated by Pistol and Rifle");
                 Logger.WriteToGameLog("Wolves are negated by Pistol and Rifle");
                 ui.TellUser("Wolves are negated by Pistol and Rifle");
-            } else
+            }
+            else
             {
                 for (int i = 1; i < huntersEncountered.Count(); i++)
                 {
@@ -2104,6 +2200,249 @@ namespace ConsoleHandler
                     ui.TellUser(huntersEncountered[i].name + " loses " + (numberOfWeaponTypes == 1 ? "1" : "2") + " health");
                     huntersEncountered[i].health -= (2 - numberOfWeaponTypes);
                 }
+            }
+        }
+
+        internal void DrawEncountersUpToHandSize()
+        {
+            dracula.DrawEncounters(this, dracula.encounterHandSize);
+        }
+
+        internal void DraculaCancelTrain(int hunterIndex, UserInterface ui)
+        {
+            Logger.WriteToDebugLog("Dracula is deciding whether to cancel the train");
+
+            if (dracula.WillCancelTrain(this, hunters[hunterIndex]))
+            {
+                PlayFalseTipOff(ui);
+            }
+        }
+
+        private void PlayFalseTipOff(UserInterface ui)
+        {
+            ui.TellUser("I am playing my False Tip-Off card to cancel your train");
+            dracula.DiscardEventFromHand(this, "False Tip-Off");
+        }
+
+        internal void AddEventCardToHunterAtIndex(int hunterIndex)
+        {
+            hunters[hunterIndex].numberOfEvents++;
+            Logger.WriteToDebugLog(hunters[hunterIndex].name + " draw an event card, up to " + hunters[hunterIndex].numberOfEvents);
+            Logger.WriteToGameLog(hunters[hunterIndex].name + " draw an event card, up to " + hunters[hunterIndex].numberOfEvents);
+        }
+
+        internal void AddItemCardToHunterAtIndex(int hunterIndex)
+        {
+            hunters[hunterIndex].numberOfItems++;
+            Logger.WriteToDebugLog(hunters[hunterIndex].name + " draw an item card, up to " + hunters[hunterIndex].numberOfItems);
+            Logger.WriteToGameLog(hunters[hunterIndex].name + " draw an item card, up to " + hunters[hunterIndex].numberOfItems);
+        }
+
+        internal int ResolveTracker()
+        {
+            return resolve;
+        }
+
+        internal void DiscardEventFromHunterAtIndex(string eventName, int hunterIndex)
+        {
+            Event eventToDiscard = GetEventByNameFromEventDeck(eventName);
+            eventDeck.Remove(eventToDiscard);
+            eventDiscard.Add(eventToDiscard);
+            hunters[hunterIndex].numberOfEvents--;
+            Logger.WriteToDebugLog(hunters[hunterIndex].name + " discarded " + eventName + " down to " + hunters[hunterIndex].numberOfEvents);
+            Logger.WriteToGameLog(hunters[hunterIndex].name + " discarded " + eventName + " down to " + hunters[hunterIndex].numberOfEvents);
+        }
+
+        internal int NumberOfEventCardsAtHunterIndex(int hunterIndex)
+        {
+            return hunters[hunterIndex].numberOfEvents;
+        }
+
+        internal int NumberOfItemCardsAtHunterIndex(int hunterIndex)
+        {
+            return hunters[hunterIndex].numberOfItems;
+        }
+
+        internal string HunterShouldDiscardAtHunterIndex(int hunterIndex)
+        {
+            if (hunterIndex == 2)
+            {
+                if (hunters[2].numberOfEvents == 4 && hunters[2].numberOfItems == 4)
+                {
+                    return "item or event";
+                }
+                else if (hunters[2].numberOfEvents > 4)
+                {
+                    return "event";
+                }
+                else if (hunters[2].numberOfItems > 4)
+                {
+                    return "item";
+                }
+            }
+            else
+            {
+                if (hunters[hunterIndex].numberOfEvents > 3)
+                {
+                    return "event";
+                }
+                if (hunters[hunterIndex].numberOfItems > 3)
+                {
+                    return "item";
+                }
+            }
+            return "I don't know, bro";
+        }
+
+        internal Item GetItemByNameFromItemDeck(string argument2)
+        {
+            try
+            {
+                return itemDeck[itemDeck.FindIndex(card => card.name.ToLower().StartsWith(argument2.ToLower()))];
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return new Item("Unknown item");
+            }
+        }
+
+        internal void DiscardItemFromHunterAtIndex(string itemName, int hunterIndex)
+        {
+            Item itemToDiscard = GetItemByNameFromItemDeck(itemName);
+            itemDeck.Remove(itemToDiscard);
+            itemDiscard.Add(itemToDiscard);
+            hunters[hunterIndex].numberOfItems--;
+            Logger.WriteToDebugLog(hunters[hunterIndex].name + " discarded " + itemName + " down to " + hunters[hunterIndex].numberOfEvents);
+            Logger.WriteToGameLog(hunters[hunterIndex].name + " discarded " + itemName + " down to " + hunters[hunterIndex].numberOfEvents);
+        }
+
+        internal string ResolveCombat(int hunterIndex, int enemyInCombat, UserInterface ui)
+        {
+            List<Item> enemyCombatCards = new List<Item>();
+            List<Item> hunterBasicCards = new List<Item>();
+            hunterBasicCards.Add(new Item("Punch"));
+            hunterBasicCards.Add(new Item("Escape"));
+            string enemyName = "nobody";
+            switch (enemyInCombat)
+            {
+                case 1:
+                    {
+                        enemyName = "Dracula";
+                        enemyCombatCards.Add(new Item("Claws"));
+                        enemyCombatCards.Add(new Item("Escape (Man)"));
+                        if (time > 2)
+                        {
+                            enemyCombatCards.Add(new Item("Strength"));
+                            enemyCombatCards.Add(new Item("Escape (Bat)"));
+                            enemyCombatCards.Add(new Item("Escape (Mist)"));
+                            enemyCombatCards.Add(new Item("Fangs"));
+                            enemyCombatCards.Add(new Item("Mesmerize"));
+                        }
+                        break;
+                    }
+                case 2:
+                    {
+                        enemyName = "Minion with Knife";
+                        enemyCombatCards.Add(new Item("Punch"));
+                        enemyCombatCards.Add(new Item("Knife"));
+                        break;
+                    }
+                case 3:
+                    {
+                        enemyName = "Minion with Knife and Pistol";
+                        enemyCombatCards.Add(new Item("Punch"));
+                        enemyCombatCards.Add(new Item("Knife"));
+                        enemyCombatCards.Add(new Item("Pistol"));
+                        break;
+                    }
+                case 4:
+                    {
+                        enemyName = "Minion with Knife and Rifle";
+                        enemyCombatCards.Add(new Item("Punch"));
+                        enemyCombatCards.Add(new Item("Knife"));
+                        enemyCombatCards.Add(new Item("Rifle"));
+                        break;
+                    }
+                case 5:
+                    {
+                        enemyName = "Assassin";
+                        enemyCombatCards.Add(new Item("Punch"));
+                        enemyCombatCards.Add(new Item("Knife"));
+                        enemyCombatCards.Add(new Item("Pistol"));
+                        enemyCombatCards.Add(new Item("Rifle"));
+                        break;
+                    }
+                case 6:
+                    {
+                        enemyName = "New Vampire";
+                        enemyCombatCards.Add(new Item("Claws"));
+                        enemyCombatCards.Add(new Item("Escape (Man)"));
+                        if (time > 2)
+                        {
+                            enemyCombatCards.Add(new Item("Strength"));
+                            enemyCombatCards.Add(new Item("Escape (Bat)"));
+                            enemyCombatCards.Add(new Item("Escape (Mist)"));
+                            enemyCombatCards.Add(new Item("Fangs"));
+                            enemyCombatCards.Add(new Item("Mesmerize"));
+                        }
+                        break;
+                    }
+
+            }
+            ui.TellUser(hunters[hunterIndex].name + " is entering combat with " + enemyName);
+            CombatRoundResult roundResult = new CombatRoundResult();
+            roundResult = ResolveRoundOfCombat(hunterIndex, enemyCombatCards, hunterBasicCards, roundResult, ui);
+            enemyCombatCards.Add(new Item("Dodge"));
+            hunterBasicCards.Add(new Item("Dodge"));
+            while (roundResult.outcome != "Bite" && roundResult.outcome != "Enemy killed" && roundResult.outcome != "Hunter killed" && roundResult.outcome != "End")
+            {
+                roundResult = ResolveRoundOfCombat(hunterIndex, enemyCombatCards, hunterBasicCards, roundResult, ui);
+            }
+            hunters[hunterIndex].health -= ui.GetHunterHealthLost(hunters[hunterIndex].name);
+            if (enemyInCombat == 1)
+            {
+                dracula.blood -= ui.GetDraculaBloodLost();
+            }
+            if (roundResult.outcome == "Bite" || roundResult.outcome == "Enemy killed" || roundResult.outcome == "Hunter killed" || roundResult.outcome == "End")
+            {
+                return roundResult.outcome;
+            }
+            return ui.GetCombatRoundOutcome();
+        }
+
+        private CombatRoundResult ResolveRoundOfCombat(int hunterIndex, List<Item> combatCards, List<Item> hunterBasicCards, CombatRoundResult result, UserInterface ui)
+        {
+            string newEnemyCardUsed = dracula.ChooseCombatCard(hunters[hunterIndex], combatCards, result).name;
+            string newHunterCardUsed;            
+            do
+            {
+                newHunterCardUsed = ui.GetCombatCardFromHunter();
+                if (GetItemByNameFromItemDeck(newHunterCardUsed).name == "Unknown item")
+                {
+                    if (GetItemByNameFromList(newHunterCardUsed, hunterBasicCards).name == "Unknown item")
+                    {
+                        ui.TellUser("I didn't recognise that item name");
+                    }
+                }
+            } while (GetItemByNameFromItemDeck(newHunterCardUsed).name == "Unknown item" && GetItemByNameFromList(newHunterCardUsed, hunterBasicCards).name == "Unknown item");
+            ui.TellUser("Enemy chose " + newEnemyCardUsed);
+            string newOutcome = ui.GetCombatRoundOutcome();
+            CombatRoundResult newResult = new CombatRoundResult();
+            newResult.enemyCardUsed = newEnemyCardUsed;
+            newResult.hunterCardUsed = newHunterCardUsed;
+            newResult.outcome = newOutcome;
+            return newResult;
+        }
+
+        private Item GetItemByNameFromList(string itemName, List<Item> itemList)
+        {
+            try
+            {
+                return itemList[itemList.FindIndex(card => card.name.ToLower().StartsWith(itemName.ToLower()))];
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return new Item("Unknown item");
             }
         }
     }

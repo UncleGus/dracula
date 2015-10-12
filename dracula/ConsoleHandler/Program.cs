@@ -11,45 +11,174 @@ namespace ConsoleHandler
 
         static void Main(string[] args)
         {
-            GameState g = new GameState();
-            DecisionMaker logic = new DecisionMaker();
             UserInterface ui = new UserInterface();
+            GameState g = new GameState();
+            Logger.ClearLogs(ui);
 
             g.SetLocationForHunterAt(0, ui.GetHunterStartLocation(g, 0));
             g.SetLocationForHunterAt(1, ui.GetHunterStartLocation(g, 1));
             g.SetLocationForHunterAt(2, ui.GetHunterStartLocation(g, 2));
             g.SetLocationForHunterAt(3, ui.GetHunterStartLocation(g, 3));
 
-            g.PlaceDraculaAtStartLocation(logic.DecideDraculaStartLocation(g));
-
-            Logger.ClearLogs(ui);
-
-            Logger.WriteToDebugLog("Game start");
-
-            Logger.WriteToDebugLog("Dracula started in " + g.DraculaCurrentLocationName());
-            Logger.WriteToGameLog("Dracula started in " + g.DraculaCurrentLocationName());
+            g.PlaceDraculaAtStartLocation();
+            g.DrawEncountersUpToHandSize();
+            PerformDraculaTurn(g, ui);
 
             CommandSet commandSet = new CommandSet();
 
             do
             {
-                ui.drawTrail(g);
+                ui.drawGameState(g);
                 commandSet = ui.GetCommandSet();
 
                 switch (commandSet.command)
                 {
                     case "s": LocationHelper.ShowLocationDetails(g.GetLocationFromName(commandSet.argument1)); break;
-                    case "m": g.PerformDraculaTurn(ui); break;
+                    case "l": PerformHunterMove(g, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "g": PerformCatchTrain(g, commandSet.argument1, ui); break;
                     case "r": PerformRevealLocation(g, commandSet.argument1, ui); break;
                     case "e": PerformRevealEncounter(g, commandSet.argument1, ui); break;
-                    case "c": PerformTrailClear(g, commandSet.argument1, ui); break;
+                    case "k": PerformCombat(g, commandSet.argument1, commandSet.argument2, ui); break;
                     case "v": PerformPlayEventCard(g, commandSet.argument1, commandSet.argument2, ui); break;
                     case "h": PerformDraculaDrawCards(g, commandSet.argument1, ui); break;
-                    case "l": PerformHunterMove(g, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "n": PerformHunterDrawEvent(g, commandSet.argument1, ui); break;
+                    case "i": PerformHunterDrawItem(g, commandSet.argument1, ui); break;
+                    case "a": PerformHunterDiscardEvent(g, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "b": PerformHunterDiscardItem(g, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "m": PerformDraculaTurn(g, ui); break;
+                    case "c": PerformTrailClear(g, commandSet.argument1, ui); break;
                     case "exit": break;
                     default: Console.WriteLine("I don't know what you're talking about"); break;
                 }
             } while (commandSet.command != "exit");
+        }
+
+        private static void PerformCombat(GameState g, string argument1, string argument2, UserInterface ui)
+        {
+            int hunterIndex;
+            if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
+            {
+                hunterIndex = ui.GetIndexOfHunterEnteringCombat();
+            }
+            else
+            {
+                hunterIndex--;
+            }
+            int enemyInCombat;
+            if (!int.TryParse(argument2, out enemyInCombat) || enemyInCombat < 1 || enemyInCombat > 6)
+            {
+                enemyInCombat = ui.GetTypeOfEnemyEnteringCombat();
+            }
+            switch (g.ResolveCombat(hunterIndex, enemyInCombat, ui))
+            {
+                case "Bite": break;
+                case "Enemy killed": break;
+                case "Hunter killed": break;
+                case "End": break;
+            }
+        }
+
+        private static void PerformHunterDiscardEvent(GameState g, string argument1, string argument2, UserInterface ui)
+        {
+            int hunterIndex;
+            if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
+            {
+                hunterIndex = ui.GetIndexOfHunterDiscardingEvent();
+            }
+            else
+            {
+                hunterIndex--;
+            }
+            string eventName = g.GetEventByNameFromEventDeck(argument2).name;
+            while (eventName == "Unknown event")
+            {
+                eventName = g.GetEventByNameFromEventDeck(ui.GetNameOfEventDiscardedByHunter(g.NameOfHunterAtIndex(hunterIndex))).name;
+                if (eventName == "Unknown event")
+                {
+                    ui.TellUser("I can't find that event");
+                }
+            }
+            g.DiscardEventFromHunterAtIndex(eventName, hunterIndex);
+            ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " discarded " + eventName + " and has " + g.NumberOfEventCardsAtHunterIndex(hunterIndex) + " events left");
+        }
+
+        private static void PerformHunterDiscardItem(GameState g, string argument1, string argument2, UserInterface ui)
+        {
+            int hunterIndex;
+            if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
+            {
+                hunterIndex = ui.GetIndexOfHunterDiscardingItem();
+            }
+            else
+            {
+                hunterIndex--;
+            }
+            string itemName = g.GetItemByNameFromItemDeck(argument2).name;
+            while (itemName == "Unknown item")
+            {
+                itemName = g.GetItemByNameFromItemDeck(ui.GetNameOfItemDiscardedByHunter(g.NameOfHunterAtIndex(hunterIndex))).name;
+                if (itemName == "Unknown item")
+                {
+                    ui.TellUser("I can't find that item");
+                }
+            }
+            g.DiscardItemFromHunterAtIndex(itemName, hunterIndex);
+            ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " discarded " + itemName + " and has " + g.NumberOfItemCardsAtHunterIndex(hunterIndex) + " items left");
+        }
+
+        private static void PerformHunterDrawItem(GameState g, string argument1, UserInterface ui)
+        {
+            int hunterIndex;
+            if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
+            {
+                hunterIndex = ui.GetIndexOfHunterDrawingItem();
+            }
+            else
+            {
+                hunterIndex--;
+            }
+            g.AddItemCardToHunterAtIndex(hunterIndex);
+            ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " drew an item and now has " + g.NumberOfItemCardsAtHunterIndex(hunterIndex));
+            switch (g.HunterShouldDiscardAtHunterIndex(hunterIndex))
+            {
+                case "item": ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " needs to discard an item"); break;
+                case "item or event": ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " needs to discard an item or an event"); break;
+            }
+        }
+
+        private static void PerformHunterDrawEvent(GameState g, string argument1, UserInterface ui)
+        {
+            int hunterIndex;
+            if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
+            {
+                hunterIndex = ui.GetIndexOfHunterDrawingEvent();
+            }
+            else
+            {
+                hunterIndex--;
+            }
+            g.AddEventCardToHunterAtIndex(hunterIndex);
+            ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " drew an event and now has " + g.NumberOfEventCardsAtHunterIndex(hunterIndex));
+            switch (g.HunterShouldDiscardAtHunterIndex(hunterIndex))
+            {
+                case "event": ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " needs to discard an event"); break;
+                case "item or event": ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " needs to discard an item or an event"); break;
+            }
+        }
+
+        private static void PerformCatchTrain(GameState g, string argument1, UserInterface ui)
+        {
+            int hunterIndex;
+            if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
+            {
+                hunterIndex = ui.GetIndexOfMovingHunter();
+            }
+            else
+            {
+                hunterIndex--;
+            }
+            Logger.WriteToDebugLog(g.NameOfHunterAtIndex(hunterIndex) + " is attempting to catch a train");
+            g.DraculaCancelTrain(hunterIndex, ui);
         }
 
         private static void PerformHunterMove(GameState g, string argument1, string argument2, UserInterface ui)
@@ -58,6 +187,10 @@ namespace ConsoleHandler
             if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
             {
                 hunterIndex = ui.GetIndexOfMovingHunter();
+            }
+            else
+            {
+                hunterIndex--;
             }
             Location locationToMoveTo = g.GetLocationFromName(argument2);
             while (locationToMoveTo.name == "Unknown location")

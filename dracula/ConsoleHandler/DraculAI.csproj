@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CombatRoundResult.cs" />
     <Compile Include="CommandSet.cs" />
     <Compile Include="DecisionMaker.cs" />
     <Compile Include="Dracula.cs" />
@@ -50,6 +51,7 @@
     <Compile Include="Event.cs" />
     <Compile Include="GameState.cs" />
     <Compile Include="Hunter.cs" />
+    <Compile Include="Item.cs" />
     <Compile Include="Location.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Program.cs" />

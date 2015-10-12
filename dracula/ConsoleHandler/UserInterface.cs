@@ -28,10 +28,10 @@ namespace ConsoleHandler
             return hunterStartLocation;
         }
 
-        internal void drawTrail(GameState g)
+        internal void drawGameState(GameState g)
         {
             // top line, trail headers, time header, Dracula blood and Vampire track header, Catacombs header, Dracula cards header
-            TellUser("6th 5th 4th 3rd 2nd 1st   Time        Blood    Vampires  Catacombs    Events");
+            Console.WriteLine("6th 5th 4th 3rd 2nd 1st   Time        Blood    Vampires  Catacombs    Events");
             // second line, trail cards, time, Dracula blood, Vampires, Catacombs cards
             // trail cards
             for (int i = 5; i >= 0; i--)
@@ -97,7 +97,7 @@ namespace ConsoleHandler
                 }
             }
             Console.ResetColor();
-            TellUser("  " + g.NumberOfEventCardsInDraculaHand());
+            Console.WriteLine("  " + g.NumberOfEventCardsInDraculaHand());
             // third line power cards, 
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             string tempString;
@@ -132,7 +132,7 @@ namespace ConsoleHandler
                 }
             }
 
-            TellUser("");
+            Console.WriteLine("");
             // fourth line trail encounters, ally headers, second Catacomb encounters
             // trail encounters
             for (int i = 5; i > -1; i--)
@@ -165,7 +165,7 @@ namespace ConsoleHandler
                     Console.Write("    ");
                 }
             }
-            TellUser("");
+            Console.WriteLine("");
             // fifth line, ally names
             Console.Write("                          ");
             Console.ResetColor();
@@ -187,7 +187,13 @@ namespace ConsoleHandler
                 Console.Write("   ");
             }
             Console.ResetColor();
-            TellUser("");
+            Console.WriteLine("");
+            // sixth line, nothing
+            Console.WriteLine("");
+            // seventh line, resolve header
+            Console.WriteLine("                          Resolve");
+            // eighth line, resolve value
+            Console.WriteLine("                          " + Math.Max(0, g.ResolveTracker()));
         }
 
         internal string GetNameOfLocationWhereHunterIsMoving(string v)
@@ -205,7 +211,7 @@ namespace ConsoleHandler
                 TellUser("Who is moving? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
-            return hunterIndex;
+            return hunterIndex - 1;
         }
 
         internal CommandSet GetCommandSet()
@@ -277,7 +283,7 @@ namespace ConsoleHandler
             return answer;
         }
 
-        internal int GetHunterHealthLostFromRats(string name)
+        internal int GetHunterHealthLost(string name)
         {
             string line;
             int loss;
@@ -304,6 +310,156 @@ namespace ConsoleHandler
                 line = AskUser();
             }
             while (!int.TryParse(line, out answer) || answer < 0 || answer > 3);
+            return answer;
+        }
+
+        internal int GetIndexOfHunterDrawingEvent()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who is drawing an event card? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
+
+        internal int GetIndexOfHunterDrawingItem()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who is drawing an item card? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
+
+        internal int GetIndexOfHunterDiscardingEvent()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who is discarding an event card? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
+
+        internal string GetNameOfEventDiscardedByHunter(string p)
+        {
+            TellUser("What is the name of the event being discarded?");
+            return AskUser();
+        }
+
+        internal int GetIndexOfHunterDiscardingItem()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who is discarding an item card? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
+
+        internal string GetNameOfItemDiscardedByHunter(string p)
+        {
+            TellUser("What is the name of the item being discarded?");
+            return AskUser();
+        }
+
+        internal int GetIndexOfHunterEnteringCombat()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who is entering combat? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
+
+        internal int GetTypeOfEnemyEnteringCombat()
+        {
+            string line = "";
+            int enemyType;
+            do {
+                TellUser("Who is the enemy? 1) Dracula 2) Minion with Knife 3) Minion with Knife and Pistol 4) Minion with Knife and Rifle 5) Assassin 6) Vampire");
+                line = AskUser();
+            } while (!int.TryParse(line, out enemyType) || enemyType< 1 || enemyType> 6);
+            return enemyType;
+        }
+
+        internal string GetCombatCardFromHunter()
+        {
+            TellUser("What card did you use?");
+            return AskUser();
+        }
+
+        internal string GetCombatRoundOutcome()
+        {
+            string line = "";
+            int userAnswer;
+            do
+            {
+                TellUser("What was the outcome of this round of combat? 1) Enemy wounded 2) Hunter wounded 3) Continue 4) Repel 5) Bite 6) Enemy killed 7) Hunter killed 8) End");
+                line = AskUser();
+            } while (!int.TryParse(line, out userAnswer) || userAnswer < 1 || userAnswer > 8);
+
+            switch (userAnswer)
+            {
+                case 1: line = "Enemy wounded"; break;
+                case 2: line = "Hunter wounded"; break;
+                case 3: line = "Continue"; break;
+                case 4: line = "Repel"; break;
+                case 5: line = "Bite"; break;
+                case 6: line = "Enemy killed"; break;
+                case 7: line = "Hunter killed"; break;
+                case 8: line = "End"; break;
+            }
+            return line;
+        }
+
+        internal int GetDraculaBloodLost()
+        {
+            string line;
+            int loss;
+            do
+            {
+                TellUser("How much health did Dracula lose?");
+                line = AskUser();
+            } while (!int.TryParse(line, out loss) || loss < 0);
+            return loss;
+        }
+
+        internal int GetDieRoll()
+        {
+            string line = "";
+            int userAnswer;
+            do
+            {
+                TellUser("Roll a die and enter the result");
+                line = AskUser();
+            } while (!int.TryParse(line, out userAnswer) || userAnswer < 1 || userAnswer > 6);
+            return userAnswer;
+        }
+
+        internal int GetHunterSharpItems(string name)
+        {
+            string line;
+            int answer;
+            do
+            {
+                TellUser(name + " has 0) Nothing 1) Knife 2) Stake");
+                line = AskUser();
+            }
+            while (!int.TryParse(line, out answer) || answer < 0 || answer > 2);
             return answer;
         }
     }
