@@ -1874,9 +1874,9 @@ namespace ConsoleHandler
             dracula.DiscardEncountersDownTo(this, dracula.encounterHandSize);
         }
 
-        public void ResolveAssassin(List<Hunter> huntersEncountered)
+        public void ResolveAssassin(List<Hunter> huntersEncountered, UserInterface ui)
         {
-            throw new NotImplementedException();
+            ui.TellUser("Conduct a combat with an Assasin");
         }
 
         private void ResolveBats(List<Hunter> huntersEncountered, UserInterface ui)
@@ -1935,19 +1935,19 @@ namespace ConsoleHandler
             ui.TellUser("Place Fog in front of you until the end of your turn");
         }
 
-        public void ResolveMinionWithKnife(List<Hunter> huntersEncountered)
+        public void ResolveMinionWithKnife(List<Hunter> huntersEncountered, UserInterface ui)
         {
-            throw new NotImplementedException();
+            ui.TellUser("Conduct a combat with a Minion with Knife");
         }
 
-        public void ResolveMinionWithKnifeAndPistol(List<Hunter> huntersEncountered)
+        public void ResolveMinionWithKnifeAndPistol(List<Hunter> huntersEncountered, UserInterface ui)
         {
-            throw new NotImplementedException();
+            ui.TellUser("Conduct a combat with a Minion with Knife and Pistol");
         }
 
-        public void ResolveMinionWithKnifeAndRifle(List<Hunter> huntersEncountered)
+        public void ResolveMinionWithKnifeAndRifle(List<Hunter> huntersEncountered, UserInterface ui)
         {
-            throw new NotImplementedException();
+            ui.TellUser("Conduct a combat with a Minion with Knife and Rifle");
         }
 
         public void ResolveHoax(List<Hunter> huntersEncountered, UserInterface ui)
@@ -2113,9 +2113,53 @@ namespace ConsoleHandler
             }
         }
 
-        public void ResolveNewVampire(List<Hunter> huntersEncountered)
+        public void ResolveNewVampire(List<Hunter> huntersEncountered, UserInterface ui)
         {
-            throw new NotImplementedException();
+            if (time < 3)
+            {
+                ui.TellUser(huntersEncountered[0].name + " encountered a New Vampire");
+            }
+            else
+            {
+                if (ui.GetDieRoll() < 4)
+                {
+                    ui.TellUser("The Vampire attempts to bite you");
+                    for (int i = 0; i < huntersEncountered.Count(); i++)
+                    {
+                        int answer = ui.GetHunterHolyItems(huntersEncountered[i].name);
+                        if (answer > 0)
+                        {
+                            Logger.WriteToDebugLog(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
+                            Logger.WriteToGameLog(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
+                            ui.TellUser(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
+                            return;
+                        }
+                    }
+                    for (int i = 0; i < huntersEncountered.Count(); i++)
+                    {
+                        Logger.WriteToDebugLog(huntersEncountered[i].name + " is bitten");
+                        Logger.WriteToGameLog(huntersEncountered[i].name + " is bitten");
+                        ui.TellUser(huntersEncountered[i].name + " is bitten");
+                    }
+                }
+                else
+                {
+                    ui.TellUser("The Vampire attempts to escape");
+                    for (int i = 0; i < huntersEncountered.Count(); i++)
+                    {
+                        int answer = ui.GetHunterSharpItems(huntersEncountered[i].name);
+                        if (answer > 0)
+                        {
+                            Logger.WriteToDebugLog(huntersEncountered[i].name + " prevented the Vampire escaping with " + (answer == 1 ? "a Knife" : "a Stake"));
+                            Logger.WriteToGameLog(huntersEncountered[i].name + " prevented the Vampire escaping with " + (answer == 1 ? "a Knife" : "a Stake"));
+                            ui.TellUser(huntersEncountered[i].name + " prevented the Vampire escaping with " + (answer == 1 ? "a Knife" : "a Stake"));
+                            ui.TellUser("Don't forget to discard the item");
+                            return;
+                        }
+                    }
+                    ui.TellUser("The Vampire escaped");
+                }
+            }
         }
 
         public void ResolveWolves(List<Hunter> huntersEncountered, UserInterface ui)
@@ -2208,7 +2252,6 @@ namespace ConsoleHandler
             Logger.WriteToDebugLog(hunters[hunterIndex].name + " discarded " + eventName + " down to " + hunters[hunterIndex].numberOfEvents);
             Logger.WriteToGameLog(hunters[hunterIndex].name + " discarded " + eventName + " down to " + hunters[hunterIndex].numberOfEvents);
         }
-
 
         internal int NumberOfEventCardsAtHunterIndex(int hunterIndex)
         {
@@ -2351,7 +2394,7 @@ namespace ConsoleHandler
             roundResult = ResolveRoundOfCombat(hunterIndex, enemyCombatCards, hunterBasicCards, roundResult, ui);
             enemyCombatCards.Add(new Item("Dodge"));
             hunterBasicCards.Add(new Item("Dodge"));
-            while (roundResult.outcome != "Bite" || roundResult.outcome != "Enemy killed" || roundResult.outcome != "Hunter killed" || roundResult.outcome != "End")
+            while (roundResult.outcome != "Bite" && roundResult.outcome != "Enemy killed" && roundResult.outcome != "Hunter killed" && roundResult.outcome != "End")
             {
                 roundResult = ResolveRoundOfCombat(hunterIndex, enemyCombatCards, hunterBasicCards, roundResult, ui);
             }

@@ -437,5 +437,30 @@ namespace ConsoleHandler
             } while (!int.TryParse(line, out loss) || loss < 0);
             return loss;
         }
+
+        internal int GetDieRoll()
+        {
+            string line = "";
+            int userAnswer;
+            do
+            {
+                TellUser("Roll a die and enter the result");
+                line = AskUser();
+            } while (!int.TryParse(line, out userAnswer) || userAnswer < 1 || userAnswer > 6);
+            return userAnswer;
+        }
+
+        internal int GetHunterSharpItems(string name)
+        {
+            string line;
+            int answer;
+            do
+            {
+                TellUser(name + " has 0) Nothing 1) Knife 2) Stake");
+                line = AskUser();
+            }
+            while (!int.TryParse(line, out answer) || answer < 0 || answer > 2);
+            return answer;
+        }
     }
 }
