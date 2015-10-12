@@ -20,10 +20,14 @@ namespace ConsoleHandler
             g.SetLocationForHunterAt(2, ui.GetHunterStartLocation(g, 2));
             g.SetLocationForHunterAt(3, ui.GetHunterStartLocation(g, 3));
 
+            g.PlaceDraculaAtStartLocation(logic.DecideDraculaStartLocation(g));
+
             Logger.ClearLogs(ui);
+
             Logger.WriteToDebugLog("Game start");
 
-            g.PlaceDraculaAtStartLocation(logic.DecideDraculaStartLocation(g));
+            Logger.WriteToDebugLog("Dracula started in " + g.DraculaCurrentLocationName());
+            Logger.WriteToGameLog("Dracula started in " + g.DraculaCurrentLocationName());
 
             CommandSet commandSet = new CommandSet();
 
@@ -54,9 +58,6 @@ namespace ConsoleHandler
             if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
             {
                 hunterIndex = ui.GetIndexOfMovingHunter();
-            } else
-            {
-                hunterIndex--;
             }
             Location locationToMoveTo = g.GetLocationFromName(argument2);
             while (locationToMoveTo.name == "Unknown location")
@@ -64,8 +65,6 @@ namespace ConsoleHandler
                 locationToMoveTo = g.GetLocationFromName(ui.GetNameOfLocationWhereHunterIsMoving(g.NameOfHunterAtIndex(hunterIndex)));
             }            
             g.MoveHunterToLocationAtHunterIndex(hunterIndex, locationToMoveTo);
-            ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " moved to " + locationToMoveTo.name);
-            
         }
 
         private static void PerformDraculaDrawCards(GameState g, string argument, UserInterface ui)
@@ -202,7 +201,7 @@ namespace ConsoleHandler
             }
             ui.TellUser(g.NameOfHunterAtIndex(hunterIndex - 1) + " is playing event card " + g.NameOfEventCardAtIndex(eventIndex));
             Logger.WriteToDebugLog(g.NameOfHunterAtIndex(hunterIndex - 1) + " is playing event card " + g.NameOfEventCardAtIndex(eventIndex));
-            Logger.WriteToGameLog(g.NameOfHunterAtIndex(hunterIndex - 1) + " played event card " + g.NameOfEventCardAtIndex(eventIndex));
+            Logger.WriteToGameLog(g.NameOfHunterAtIndex(hunterIndex - 1) + " is playing event card " + g.NameOfEventCardAtIndex(eventIndex));
             return g.NameOfEventCardAtIndex(eventIndex);
         }
         

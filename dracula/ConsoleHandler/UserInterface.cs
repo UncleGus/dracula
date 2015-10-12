@@ -205,7 +205,7 @@ namespace ConsoleHandler
                 TellUser("Who is moving? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
-            return hunterIndex -1;
+            return hunterIndex;
         }
 
         internal CommandSet GetCommandSet()

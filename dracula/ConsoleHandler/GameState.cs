@@ -1326,16 +1326,12 @@ namespace ConsoleHandler
         internal void SetLocationForHunterAt(int v, Location location)
         {
             hunters[v].currentLocation = location;
-            Logger.WriteToDebugLog(hunters[v].name + " started in " + location.name);
-            Logger.WriteToGameLog(hunters[v].name + " started in " + location.name);
         }
 
         internal void PlaceDraculaAtStartLocation(Location startLocation)
         {
             dracula.currentLocation = startLocation;
             dracula.trail.Add(startLocation);
-            Logger.WriteToDebugLog("Dracula started in " + DraculaCurrentLocationName());
-            Logger.WriteToGameLog("Dracula started in " + DraculaCurrentLocationName());
         }
 
         internal string TimeOfDay()
@@ -1436,8 +1432,6 @@ namespace ConsoleHandler
         internal void MoveHunterToLocationAtHunterIndex(int hunterIndex, Location locationToMoveTo)
         {
             hunters[hunterIndex].currentLocation = locationToMoveTo;
-            Logger.WriteToDebugLog(hunters[hunterIndex].name + " moved to " + locationToMoveTo);
-            Logger.WriteToGameLog(hunters[hunterIndex].name + " moved to " + locationToMoveTo);
         }
 
         internal string NameOfHunterAtIndex(int hunterIndex)
