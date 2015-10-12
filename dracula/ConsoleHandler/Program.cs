@@ -48,10 +48,73 @@ namespace ConsoleHandler
                     case "m": PerformDraculaTurn(g, ui); break;
                     case "c": PerformTrailClear(g, commandSet.argument1, ui); break;
                     case "p": SetUpGroups(g, commandSet.argument1, ui); break;
+                    case "j": PerformBatsMove(g, commandSet.argument1, ui); break;
+                    case "q": PerformTrade(g, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "u": PerformUseItem(g, commandSet.argument1, commandSet.argument2, ui); break;
                     case "exit": break;
                     default: Console.WriteLine("I don't know what you're talking about"); break;
                 }
             } while (commandSet.command != "exit");
+        }
+
+        private static void PerformUseItem(GameState g, string argument1, string argument2, UserInterface ui)
+        {
+            int hunterIndex;
+            if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
+            {
+                hunterIndex = ui.GetIndexOfHunterUsingItem();
+            }
+            else
+            {
+                hunterIndex--;
+            }
+            string itemName = g.GetItemByNameFromItemDeck(argument2).name;
+            while (itemName == "Unknown item")
+            {
+                itemName = g.GetItemByNameFromItemDeck(ui.GetNameOfItemUsedByHunter(g.NameOfHunterAtIndex(hunterIndex))).name;
+                if (itemName == "Unknown item")
+                {
+                    ui.TellUser("I can't find that item");
+                }
+            }
+            g.UseItemByHunterAtHunterIndex(itemName, hunterIndex, ui);
+        }
+
+        private static void PerformTrade(GameState g, string argument1, string argument2, UserInterface ui)
+        {
+            int hunterIndexA;
+            if (!int.TryParse(argument1, out hunterIndexA) || hunterIndexA < 1 || hunterIndexA > 4)
+            {
+                hunterIndexA = ui.GetIndexOfHunterEnteringTrade();
+            }
+            else
+            {
+                hunterIndexA--;
+            }
+            int hunterIndexB;
+            if (!int.TryParse(argument2, out hunterIndexB) || hunterIndexB < 1 || hunterIndexB > 4 || hunterIndexA == hunterIndexB)
+            {
+                hunterIndexB = ui.GetIndexOfHunterEnteringTrade();
+            }
+            else
+            {
+                hunterIndexB--;
+            }
+            g.TradeBetweenHunters(hunterIndexA, hunterIndexB, ui);
+        }
+
+        private static void PerformBatsMove(GameState g, string argument1, UserInterface ui)
+        {
+            int hunterIndex;
+            if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
+            {
+                hunterIndex = ui.GetIndexOfHunterBeingMovedByBats();
+            }
+            else
+            {
+                hunterIndex--;
+            }
+            g.PerformBatsMoveForHunter(hunterIndex, ui);
         }
 
         private static void SetUpGroups(GameState g, string argument1, UserInterface ui)

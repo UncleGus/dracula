@@ -311,6 +311,32 @@ namespace DraculaHandler
                     possibleMoves.Remove(catacombs[i]);
                 }
             }
+            Logger.WriteToDebugLog("Checking possible move locations for Heavenly Hosts");
+            List<Location> movesToRemove = new List<Location>();
+            foreach (Location loc in possibleMoves)
+            {
+                if (loc.hasHost)
+                {
+                    movesToRemove.Add(loc);
+                }
+            }
+            foreach (Location mov in movesToRemove)
+            {
+                possibleMoves.Remove(mov);
+            }
+            Logger.WriteToDebugLog("Checking possible double back locations for Heavenly Hosts");
+            movesToRemove.Clear();
+            foreach (Location loc in possibleDoubleBackMoves)
+            {
+                if (loc.hasHost)
+                {
+                    movesToRemove.Add(loc);
+                }
+            }
+            foreach (Location mov in movesToRemove)
+            {
+                possibleDoubleBackMoves.Remove(mov);
+            }
         }
 
         public void DeterminePossibleWolfFormLocations()
@@ -324,7 +350,7 @@ namespace DraculaHandler
             }
             for (int i = 0; i < currentLocation.byRoad.Count(); i++)
             {
-                if (currentLocation.byRoad[i].type != LocationType.Hospital)
+                if (currentLocation.byRoad[i].type != LocationType.Hospital && !currentLocation.byRoad[i].hasHost)
                 {
                     Logger.WriteToDebugLog("Adding location " + currentLocation.byRoad[i].name);
                     possibleMoves.Add(currentLocation.byRoad[i]);
@@ -342,7 +368,7 @@ namespace DraculaHandler
             {
                 for (int j = 0; j < possibleMoves[i].byRoad.Count(); j++)
                 {
-                    if (!possibleMoves.Contains(possibleMoves[i].byRoad[j]) && !extendedLocations.Contains(possibleMoves[i].byRoad[j]))
+                    if (!possibleMoves.Contains(possibleMoves[i].byRoad[j]) && !extendedLocations.Contains(possibleMoves[i].byRoad[j]) && possibleMoves[i].byRoad[j].type != LocationType.Hospital && !possibleMoves[i].byRoad[j].hasHost)
                     {
                         Logger.WriteToDebugLog("Adding location " + possibleMoves[i].byRoad[j].name);
                         extendedLocations.Add(possibleMoves[i].byRoad[j]);
@@ -892,6 +918,16 @@ namespace DraculaHandler
         {
             name = logic.DecideHunterToAttack(hunter, combatCards, result);
             return logic.DecideWhichCombatCardToPlay(hunter, combatCards, result);
+        }
+
+        internal Location DecideWhereToSendHunterWithBats(GameState gameState, Hunter hunter, UserInterface ui)
+        {
+            List<Location> batsMoves = new List<Location>();
+            foreach (Location loc in hunter.currentLocation.byRoad)
+            {
+                batsMoves.Add(loc);
+            }
+            return batsMoves[new Random().Next(0, batsMoves.Count())];
         }
     }
 

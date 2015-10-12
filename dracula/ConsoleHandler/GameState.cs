@@ -2707,5 +2707,104 @@ namespace ConsoleHandler
                 return new Item("Unknown item");
             }
         }
+
+        internal void PerformBatsMoveForHunter(int hunterIndex, UserInterface ui)
+        {
+            Location locationToMoveTo = dracula.DecideWhereToSendHunterWithBats(this, hunters[hunterIndex], ui);
+            MoveHunterToLocationAtHunterIndex(hunterIndex, locationToMoveTo);
+            ui.TellUser(hunters[hunterIndex].name + (hunters[hunterIndex].huntersInGroup.Count() > 0 ? " and group" : "") + " moved to " + locationToMoveTo.name + " by Bats");
+        }
+
+        internal void TradeBetweenHunters(int hunterIndexA, int hunterIndexB, UserInterface ui)
+        {
+            int hunterAGiven = ui.GetNumberOfCardsGivenByHunter(hunters[hunterIndexA].name);
+            int hunterBGiven = ui.GetNumberOfCardsGivenByHunter(hunters[hunterIndexB].name);
+            hunters[hunterIndexA].numberOfItems = hunters[hunterIndexA].numberOfItems + hunterBGiven - hunterAGiven;
+            hunters[hunterIndexB].numberOfItems = hunters[hunterIndexB].numberOfItems + hunterAGiven - hunterBGiven;
+            ui.TellUser(hunters[hunterIndexA].name + " now has " + hunters[hunterIndexA].numberOfItems + " items and " + hunters[hunterIndexB].name + " now has " + hunters[hunterIndexB].numberOfItems + " items");
+        }
+
+        internal void UseItemByHunterAtHunterIndex(string itemName, int hunterIndex, UserInterface ui)
+        {
+            switch (itemName)
+            {
+                case "Local Rumors": PlayLocalRumors(hunterIndex, ui); break;
+                case "Dogs": hunters[hunterIndex].hasDogsFaceUp = true; break;
+                case "Fast Horse": DiscardItemFromHunterAtIndex("Fast Horse", hunterIndex); break;
+                case "Heavenly Host": PlayHeavenlyHost(hunterIndex, ui); break;
+                case "Holy Water": PlayHolyWater(hunterIndex, ui); break;
+                default: break;
+            }
+        }
+
+        private void PlayHolyWater(int hunterIndex, UserInterface ui)
+        {
+            List<Hunter> huntersWithBitesAtThisLocation = new List<Hunter>();
+            for (int i = 0; i < 3; i++)
+            {
+                if (hunters[i].currentLocation == hunters[hunterIndex].currentLocation && hunters[i].numberOfBites > 0)
+                {
+                    huntersWithBitesAtThisLocation.Add(huntersWithBitesAtThisLocation[i]);
+                }
+            }
+            Hunter hunterToHeal = null;
+            if (huntersWithBitesAtThisLocation.Count > 1)
+            {
+                do
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        if (huntersWithBitesAtThisLocation.Contains(hunters[i]))
+                        {
+                            if (ui.GetHunterHeal(hunters[hunterIndex].name))
+                            {
+                                hunterToHeal = hunters[i];
+                            }
+                        }
+                    }
+                } while (hunterToHeal == null);
+            }
+            else
+            {
+                hunterToHeal = huntersWithBitesAtThisLocation.First();
+            }
+            switch (ui.GetHolyWaterResult())
+            {
+                case 1: hunterToHeal.health -= 2; break;
+                case 2: break;
+                case 3: hunterToHeal.numberOfBites--; break;
+            }
+        }
+
+        private void PlayHeavenlyHost(int hunterIndex, UserInterface ui)
+        {
+            hunters[hunterIndex].currentLocation.hasHost = true;
+        }
+
+        private void PlayLocalRumors(int hunterIndex, UserInterface ui)
+        {
+            int locationIndex = 0;
+            do
+            {
+                ui.GetLocationIndexOfEncounterToReveal();
+            }
+            while (dracula.trail[locationIndex] == null && (locationIndex > 5 ? dracula.catacombs[locationIndex - 6] == null : true));
+            Location locationWhereEncounterIsBeingRevealed;
+            if (locationIndex < 6)
+            {
+                locationWhereEncounterIsBeingRevealed = dracula.trail[locationIndex];
+            }
+            else
+            {
+                locationWhereEncounterIsBeingRevealed = dracula.catacombs[locationIndex - 6];
+            }
+            int encounterToReveal = 0;
+            if (locationWhereEncounterIsBeingRevealed.encounters.Count() > 0)
+            {
+                encounterToReveal = ui.GetIndexOfEncounterToReveal();
+            }
+            locationWhereEncounterIsBeingRevealed.encounters[encounterToReveal].isRevealed = true;
+            DiscardItemFromHunterAtIndex("Local Rumors", hunterIndex);
+        }
     }
 }

@@ -19,6 +19,7 @@ namespace LocationHandler
         public List<Location> bySea;
         public bool isRevealed;
         public List<Encounter> encounters;
+        public bool hasHost = false;
 
         public Location()
         {

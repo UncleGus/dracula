@@ -512,5 +512,107 @@ namespace ConsoleHandler
             while (!"yes".Contains(line.ToLower()) && !"no".Contains(line.ToLower()));
             return "yes".Contains(line.ToLower()) ? true : false;
         }
+
+        internal int GetIndexOfHunterBeingMovedByBats()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who is being moved by Bats? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
+
+        internal int GetIndexOfHunterEnteringTrade()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who is entering trade? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
+
+        internal int GetNumberOfCardsGivenByHunter(string name)
+        {
+            string line;
+            int given;
+            do
+            {
+                TellUser("How many items did " + name + " give?");
+                line = AskUser();
+            } while (!int.TryParse(line, out given) || given < 0);
+            return given;
+        }
+
+        internal int GetIndexOfHunterUsingItem()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who is using an item? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
+
+        internal string GetNameOfItemUsedByHunter(string name)
+        {
+            TellUser("What item did " + name + " use?");
+            return AskUser();
+        }
+
+        internal int GetLocationIndexOfEncounterToReveal()
+        {
+            string line;
+            int index;
+            do
+            {
+                TellUser("Which position in the trail would you like to reveal? Trail = 1-6 Catacombs = 7-9");
+                line = AskUser();
+            } while (!int.TryParse(line, out index) || index < 1 || index > 9);
+            return index - 1;
+        }
+
+        internal int GetIndexOfEncounterToReveal()
+        {
+            string line;
+            int index;
+            do
+            {
+                TellUser("Which encounter would you like to reveal? 1 or 2");
+                line = AskUser();
+            } while (!int.TryParse(line, out index) || index < 1 || index > 9);
+            return index - 1;
+        }
+
+        internal bool GetHunterHeal(string name)
+        {
+            string line;
+            do
+            {
+                TellUser("Heal " + name + "?");
+                line = AskUser();
+            }
+            while (!"yes".Contains(line.ToLower()) && !"no".Contains(line.ToLower()));
+            return "yes".Contains(line.ToLower()) ? true : false;
+        }
+
+        internal int GetHolyWaterResult()
+        {
+            string line;
+            int result;
+            do
+            {
+                TellUser("What was the outcome? 1) Lost 2 health 2) Nothing 3) Bite removed");
+                line = AskUser();
+            } while (!int.TryParse(line, out result) || result < 1 || result > 3);
+            return result;
+        }
     }
 }
