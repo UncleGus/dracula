@@ -139,5 +139,15 @@ namespace ConsoleHandler
             } while (combatCards[chosenCardIndex].name == result.enemyCardUsed);
             return combatCards[chosenCardIndex];
         }
+
+        internal void DecideOrderOfEncountersAtLocation(Hunter hunter, Location location)
+        {
+            // do nothing for now
+        }
+
+        internal string DecideHunterToAttack(Hunter hunter, List<Item> combatCards, CombatRoundResult result)
+        {
+            return hunter.huntersInGroup[new Random().Next(0, hunter.huntersInGroup.Count())].name;
+        }
     }
 }

@@ -196,6 +196,44 @@ namespace ConsoleHandler
             Console.WriteLine("                          " + Math.Max(0, g.ResolveTracker()));
         }
 
+        internal int GetHunterToAddToGroup(string name)
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who do you want to add to or remove from " + name + "'s group? 2) Van Helsing 3) Dr. Seward 4) Mina Harker -1) Cancel");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < -1 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
+
+        internal void ShowGroupMembersAtHunterIndex(GameState g, int hunterIndex)
+        {
+            TellUser("Members of " + g.NameOfHunterAtIndex(hunterIndex) + "'s group, other than himself:");
+            string[] names = new string[4];
+            g.GetHunterGroupMemberNamesAtHunterIndex(hunterIndex, names);
+            foreach (string name in names)
+            {
+                if (name != g.NameOfHunterAtIndex(hunterIndex))
+                {
+                    TellUser(name);
+                }
+            }
+        }
+
+        internal int GetIndexOfHunterFormingGroup()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Whose group would you like to set up? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; (Mina Harker can't lead a group)");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 3);
+            return hunterIndex - 1;
+        }
+
         internal string GetNameOfLocationWhereHunterIsMoving(string v)
         {
             TellUser("Where is " + v + " moving? (partial name will suffice)");
@@ -396,9 +434,9 @@ namespace ConsoleHandler
             return enemyType;
         }
 
-        internal string GetCombatCardFromHunter()
+        internal string GetCombatCardFromHunter(string name)
         {
-            TellUser("What card did you use?");
+            TellUser("What card did " + name + " use?");
             return AskUser();
         }
 
@@ -461,6 +499,18 @@ namespace ConsoleHandler
             }
             while (!int.TryParse(line, out answer) || answer < 0 || answer > 2);
             return answer;
+        }
+
+        internal bool GetCombatOutcome()
+        {
+            string line;
+            do
+            {
+                TellUser("Did you defeat the enemy?");
+                line = AskUser();
+            }
+            while (!"yes".Contains(line.ToLower()) && !"no".Contains(line.ToLower()));
+            return "yes".Contains(line.ToLower()) ? true : false;
         }
     }
 }

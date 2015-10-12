@@ -47,10 +47,42 @@ namespace ConsoleHandler
                     case "b": PerformHunterDiscardItem(g, commandSet.argument1, commandSet.argument2, ui); break;
                     case "m": PerformDraculaTurn(g, ui); break;
                     case "c": PerformTrailClear(g, commandSet.argument1, ui); break;
+                    case "p": SetUpGroups(g, commandSet.argument1, ui); break;
                     case "exit": break;
                     default: Console.WriteLine("I don't know what you're talking about"); break;
                 }
             } while (commandSet.command != "exit");
+        }
+
+        private static void SetUpGroups(GameState g, string argument1, UserInterface ui)
+        {
+            int hunterIndex;
+            if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 3)
+            {
+                hunterIndex = ui.GetIndexOfHunterFormingGroup();
+            }
+            else
+            {
+                hunterIndex--;
+            }
+            int hunterToAdd;
+            do
+            {
+                ui.ShowGroupMembersAtHunterIndex(g, hunterIndex);
+                hunterToAdd = g.GetHunterToAddToGroup(g, hunterIndex, ui);
+                if (hunterToAdd != -2 && hunterToAdd != hunterIndex)
+                {
+                    if (g.HunterAIsInHunterBGroup(hunterToAdd, hunterIndex))
+                    {
+                        g.RemoveHunterAFromHunterBGroup(hunterToAdd, hunterIndex);
+                    }
+                    else
+                    {
+                        g.AddHunterAToHunterBGroup(hunterToAdd, hunterIndex);
+                    }
+                }
+            } while (hunterToAdd != -2);
+            
         }
 
         private static void PerformCombat(GameState g, string argument1, string argument2, UserInterface ui)
@@ -198,6 +230,7 @@ namespace ConsoleHandler
                 locationToMoveTo = g.GetLocationFromName(ui.GetNameOfLocationWhereHunterIsMoving(g.NameOfHunterAtIndex(hunterIndex)));
             }            
             g.MoveHunterToLocationAtHunterIndex(hunterIndex, locationToMoveTo);
+            g.SearchWithHunterAtIndex(hunterIndex, locationToMoveTo, ui);
         }
 
         private static void PerformDraculaDrawCards(GameState g, string argument, UserInterface ui)

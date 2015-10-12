@@ -256,6 +256,11 @@ namespace DraculaHandler
             }
         }
 
+        internal void OrderEncounters(Hunter hunter, Location location)
+        {
+            logic.DecideOrderOfEncountersAtLocation(hunter, location);
+        }
+
         public void DeterminePossibleLocations()
         {
             Logger.WriteToDebugLog("Dracula is determining possible locations to move to");
@@ -883,8 +888,9 @@ namespace DraculaHandler
             return eventCardsInHand[eventCardsInHand.FindIndex(card => card.name == p)];
         }
 
-        internal Item ChooseCombatCard(Hunter hunter, List<Item> combatCards, CombatRoundResult result)
+        internal Item ChooseCombatCardAndTarget(Hunter hunter, List<Item> combatCards, CombatRoundResult result, out string name)
         {
+            name = logic.DecideHunterToAttack(hunter, combatCards, result);
             return logic.DecideWhichCombatCardToPlay(hunter, combatCards, result);
         }
     }

@@ -18,6 +18,7 @@ namespace ConsoleHandler
         private Hunter[] hunters = new Hunter[4];
         private List<Location> map = new List<Location>();
         private List<Encounter> encounterPool = new List<Encounter>();
+        private List<Encounter> encounterLimbo = new List<Encounter>();
         private List<Event> eventDeck = new List<Event>();
         private List<Event> eventDiscard = new List<Event>();
         private List<Item> itemDeck = new List<Item>();
@@ -92,6 +93,32 @@ namespace ConsoleHandler
             itemDeck.Add(new Item("Rifle"));
             itemDeck.Add(new Item("Rifle"));
             itemDeck.Add(new Item("Rifle"));
+        }
+
+        internal void AddHunterAToHunterBGroup(int hunterToAdd, int hunterIndex)
+        {
+            hunters[hunterIndex].huntersInGroup.Add(hunters[hunterToAdd]);
+        }
+
+        internal void RemoveHunterAFromHunterBGroup(int hunterToAdd, int hunterIndex)
+        {
+            hunters[hunterIndex].huntersInGroup.Remove(hunters[hunterToAdd]);
+        }
+
+        internal bool HunterAIsInHunterBGroup(int hunterToAdd, int hunterIndex)
+        {
+            return hunters[hunterIndex].huntersInGroup.Contains(hunters[hunterToAdd]);
+        }
+
+        internal int GetHunterToAddToGroup(GameState g, int hunterIndex, UserInterface ui)
+        {
+            int hunterToAdd = ui.GetHunterToAddToGroup(hunters[hunterIndex].name);
+            if (hunterToAdd != -2 && hunterToAdd < hunterIndex)
+            {
+                ui.TellUser(hunters[hunterToAdd].name + " cannot join " + hunters[hunterIndex].name + "'s group, instead " + hunters[hunterIndex].name + " should be added to " + hunters[hunterToAdd].name + "'s group");
+                return -2;
+            }
+            return hunterToAdd;
         }
 
         private void SetUpEvents()
@@ -171,6 +198,154 @@ namespace ConsoleHandler
             eventDeck.Add(new Event("Trap", true, EventType.Keep));
             eventDeck.Add(new Event("Trap", true, EventType.Keep));
             eventDeck.Add(new Event("Trap", true, EventType.Keep));
+        }
+
+        internal void GetHunterGroupMemberNamesAtHunterIndex(int hunterIndex, string[] names)
+        {
+            for (int i = 0; i < hunters[hunterIndex].huntersInGroup.Count(); i++)
+            {
+                names[i] = hunters[hunterIndex].huntersInGroup[i].name;
+            }
+        }
+
+        internal void SearchWithHunterAtIndex(int hunterIndex, Location location, UserInterface ui)
+        {
+            if (LocationIsInTrail(location) || LocationIsInCatacombs(location))
+            {
+                ResolveEncountersAtLocation(hunters[hunterIndex], location, ui);
+                if (location == dracula.currentLocation)
+                {
+                    ResolveCombat(hunterIndex, 1, ui);
+                }
+            }
+            else
+            {
+                ui.TellUser("Search reveals nothing");
+            }
+        }
+
+        private void ResolveEncountersAtLocation(Hunter hunter, Location location, UserInterface ui)
+        {
+            dracula.OrderEncounters(hunter, location);
+            foreach (Encounter enc in location.encounters)
+            {
+                enc.isRevealed = true;
+            }
+            ui.drawGameState(this);
+            bool resolveNextEncounter = true;
+            bool discardEncounter = true;
+            List<Encounter> encountersBeingDiscarded = new List<Encounter>();
+            Encounter firstEncounter = null;
+            Encounter secondEncounter = null;
+
+            if (location.encounters.Count() > 0)
+            {
+                firstEncounter = location.encounters.First();
+            }
+            if (location.encounters.Count() > 1)
+            {
+                secondEncounter = location.encounters[1];
+            }
+            if (firstEncounter != null)
+            {
+                resolveNextEncounter = ResolveEncounter(firstEncounter, hunter, out discardEncounter, ui);
+                if (discardEncounter)
+                {
+                    location.encounters.Remove(firstEncounter);
+                    encounterPool.Remove(firstEncounter);
+                }
+                else if (firstEncounter.name == "Bats" || firstEncounter.name == "Fog")
+                {
+                    encounterLimbo.Add(firstEncounter);
+                }
+            }
+            if (secondEncounter != null)
+            {
+                resolveNextEncounter = ResolveEncounter(secondEncounter, hunter, out discardEncounter, ui);
+                if (discardEncounter)
+                {
+                    location.encounters.Remove(secondEncounter);
+                    encounterPool.Remove(secondEncounter);
+                }
+                else if (secondEncounter.name == "Bats" || secondEncounter.name == "Fog")
+                {
+                    encounterLimbo.Add(secondEncounter);
+                }
+            }
+
+        }
+
+        private bool ResolveEncounter(Encounter enc, Hunter hunter, out bool discard, UserInterface ui)
+        {
+            bool resolveNextEncounter = true;
+            discard = true;
+            switch (enc.name)
+            {
+                case "Ambush":
+                    resolveNextEncounter = ResolveAmbush(hunter.huntersInGroup, ui);
+                    break;
+                case "Assasin":
+                    resolveNextEncounter = ResolveAssassin(hunter.huntersInGroup, ui);
+                    break;
+                case "Bats":
+                    resolveNextEncounter = ResolveBats(hunter.huntersInGroup, ui);
+                    discard = false;
+                    break;
+                case "Desecrated Soil":
+                    resolveNextEncounter = ResolveDesecratedSoil(hunter.huntersInGroup, ui);
+                    break;
+                case "Fog":
+                    resolveNextEncounter = ResolveFog(hunter.huntersInGroup, ui);
+                    discard = false;
+                    break;
+                case "Minion with Knife":
+                    resolveNextEncounter = ResolveMinionWithKnife(hunter.huntersInGroup, ui);
+                    break;
+                case "Minion with Knife and Pistol":
+                    resolveNextEncounter = ResolveMinionWithKnifeAndPistol(hunter.huntersInGroup, ui);
+                    break;
+                case "Minion with Knife and Rifle":
+                    resolveNextEncounter = ResolveMinionWithKnifeAndRifle(hunter.huntersInGroup, ui);
+                    break;
+                case "Hoax":
+                    resolveNextEncounter = ResolveHoax(hunter.huntersInGroup, ui);
+                    break;
+                case "Lightning":
+                    resolveNextEncounter = ResolveLightning(hunter.huntersInGroup, ui);
+                    break;
+                case "Peasants":
+                    resolveNextEncounter = ResolvePeasants(hunter.huntersInGroup, ui);
+                    break;
+                case "Plague":
+                    resolveNextEncounter = ResolvePlague(hunter.huntersInGroup, ui);
+                    break;
+                case "Rats":
+                    resolveNextEncounter = ResolveRats(hunter.huntersInGroup, ui);
+                    break;
+                case "Saboteur":
+                    resolveNextEncounter = ResolveSaboteur(hunter.huntersInGroup, ui);
+                    break;
+                case "Spy":
+                    resolveNextEncounter = ResolveSpy(hunter.huntersInGroup, ui);
+                    break;
+                case "Thief":
+                    resolveNextEncounter = ResolveThief(hunter.huntersInGroup, ui);
+                    break;
+                case "New Vampire":
+                    bool discardVampire = true;
+                    resolveNextEncounter = ResolveNewVampire(hunter.huntersInGroup, out discardVampire, ui);
+                    discard = discardVampire;
+                    break;
+                case "Wolves":
+                    resolveNextEncounter = ResolveWolves(hunter.huntersInGroup, ui);
+                    break;
+            }
+            return resolveNextEncounter;
+        }
+
+        private bool LocationIsInCatacombs(Location location)
+        {
+            return dracula.catacombs.Contains(location);
         }
 
         internal void PlayRufusSmith()
@@ -1490,9 +1665,12 @@ namespace ConsoleHandler
 
         internal void MoveHunterToLocationAtHunterIndex(int hunterIndex, Location locationToMoveTo)
         {
-            hunters[hunterIndex].currentLocation = locationToMoveTo;
-            Logger.WriteToDebugLog("Moved " + hunters[hunterIndex].name + " to " + locationToMoveTo.name);
-            Logger.WriteToGameLog(hunters[hunterIndex].name + " moved to " + locationToMoveTo.name);
+            foreach (Hunter h in hunters[hunterIndex].huntersInGroup)
+            {
+                h.currentLocation = locationToMoveTo;
+                Logger.WriteToDebugLog("Moved " + h.name + " to " + locationToMoveTo.name);
+                Logger.WriteToGameLog(h.name + " moved to " + locationToMoveTo.name);
+            }
         }
 
         internal string NameOfHunterAtIndex(int hunterIndex)
@@ -1639,6 +1817,11 @@ namespace ConsoleHandler
             dracula.DoActionPhase(this, ui);
             dracula.MatureEncounters(this, ui);
             dracula.DrawEncounters(this, dracula.encounterHandSize);
+            foreach (Encounter enc in encounterLimbo)
+            {
+                encounterPool.Add(enc);
+                encounterLimbo.Remove(enc);
+            }
 
         }
 
@@ -1860,46 +2043,61 @@ namespace ConsoleHandler
             throw new NotImplementedException();
         }
 
-        private void ResolveAmbush(List<Hunter> huntersEncountered, UserInterface ui)
+        private bool ResolveAmbush(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Ambush");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Ambush");
             ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i].name + " ");
             }
             ui.TellUser("encountered an Ambush");
             dracula.DrawEncounters(this, dracula.encounterHand.Count() + 1);
             dracula.DiscardEncountersDownTo(this, dracula.encounterHandSize);
+            return true;
         }
 
-        public void ResolveAssassin(List<Hunter> huntersEncountered, UserInterface ui)
+        public bool ResolveAssassin(List<Hunter> huntersEncountered, UserInterface ui)
         {
             ui.TellUser("Conduct a combat with an Assasin");
+            int hunterIndex = 0;
+            switch (huntersEncountered[0].name)
+            {
+                case "Lord Godalming": hunterIndex = 0; break;
+                case "Van Helsing": hunterIndex = 1; break;
+                case "Dr. Seward": hunterIndex = 2; break;
+                case "Mina Harker": hunterIndex = 3; break;
+            }
+            if (ResolveCombat(hunterIndex, 5, ui) == "Enemy killed")
+            {
+                return true;
+            }
+            return false;
         }
 
-        private void ResolveBats(List<Hunter> huntersEncountered, UserInterface ui)
+        private bool ResolveBats(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Bats");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Bats");
             ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i].name + " ");
             }
             ui.TellUser("encountered Bats");
             ui.TellUser("Tell me at the start of your next turn and I will move you");
+            return false;
         }
 
-        private void ResolveDesecratedSoil(List<Hunter> huntersEncountered, UserInterface ui)
+        private bool ResolveDesecratedSoil(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Desecrated Soil");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Desecrated Soil");
             ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i].name + " ");
             }
             ui.TellUser("encountered Desecrated Soil");
             Event cardDrawn = eventDeck[new Random().Next(0, eventDeck.Count())];
@@ -1919,10 +2117,10 @@ namespace ConsoleHandler
                 }
             }
             dracula.DiscardEventsDownTo(this, dracula.eventHandSize, ui);
-
+            return true;
         }
 
-        public void ResolveFog(List<Hunter> huntersEncountered, UserInterface ui)
+        public bool ResolveFog(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Desecrated Fog");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Desecrated Fog");
@@ -1933,44 +2131,85 @@ namespace ConsoleHandler
             }
             ui.TellUser("encountered Fog");
             ui.TellUser("Place Fog in front of you until the end of your turn");
+            return false;
         }
 
-        public void ResolveMinionWithKnife(List<Hunter> huntersEncountered, UserInterface ui)
+        public bool ResolveMinionWithKnife(List<Hunter> huntersEncountered, UserInterface ui)
         {
             ui.TellUser("Conduct a combat with a Minion with Knife");
+            int hunterIndex = 0;
+            switch (huntersEncountered[0].name)
+            {
+                case "Lord Godalming": hunterIndex = 0; break;
+                case "Van Helsing": hunterIndex = 1; break;
+                case "Dr. Seward": hunterIndex = 2; break;
+                case "Mina Harker": hunterIndex = 3; break;
+            }
+            if (ResolveCombat(hunterIndex, 2, ui) == "Enemy killed")
+            {
+                return true;
+            }
+            return false;
         }
 
-        public void ResolveMinionWithKnifeAndPistol(List<Hunter> huntersEncountered, UserInterface ui)
+        public bool ResolveMinionWithKnifeAndPistol(List<Hunter> huntersEncountered, UserInterface ui)
         {
             ui.TellUser("Conduct a combat with a Minion with Knife and Pistol");
+            int hunterIndex = 0;
+            switch (huntersEncountered[0].name)
+            {
+                case "Lord Godalming": hunterIndex = 0; break;
+                case "Van Helsing": hunterIndex = 1; break;
+                case "Dr. Seward": hunterIndex = 2; break;
+                case "Mina Harker": hunterIndex = 3; break;
+            }
+            if (ResolveCombat(hunterIndex, 3, ui) == "Enemy killed")
+            {
+                return true;
+            }
+            return false;
         }
 
-        public void ResolveMinionWithKnifeAndRifle(List<Hunter> huntersEncountered, UserInterface ui)
+        public bool ResolveMinionWithKnifeAndRifle(List<Hunter> huntersEncountered, UserInterface ui)
         {
             ui.TellUser("Conduct a combat with a Minion with Knife and Rifle");
+            int hunterIndex = 0;
+            switch (huntersEncountered[0].name)
+            {
+                case "Lord Godalming": hunterIndex = 0; break;
+                case "Van Helsing": hunterIndex = 1; break;
+                case "Dr. Seward": hunterIndex = 2; break;
+                case "Mina Harker": hunterIndex = 3; break;
+            }
+            if (ResolveCombat(hunterIndex, 4, ui) == "Enemy killed")
+            {
+                return true;
+            }
+            return false;
         }
 
-        public void ResolveHoax(List<Hunter> huntersEncountered, UserInterface ui)
+        public bool ResolveHoax(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Hoax");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Hoax");
             ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i].name + " ");
             }
             ui.TellUser("encountered Hoax");
             ui.TellUser("Discard " + (huntersEncountered.First().currentLocation.isEastern ? "one" : "all") + " of your event cards (don't forget to tell me what is discarded");
+            return true;
         }
 
-        public void ResolveLightning(List<Hunter> huntersEncountered, UserInterface ui)
+        public bool ResolveLightning(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Lightning");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Lightning");
             ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i].name + " ");
             }
             ui.TellUser("encountered Lightning");
             for (int i = 0; i < huntersEncountered.Count(); i++)
@@ -1981,7 +2220,7 @@ namespace ConsoleHandler
                     Logger.WriteToDebugLog(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
                     Logger.WriteToGameLog(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
                     ui.TellUser(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
-                    return;
+                    return true;
                 }
             }
             for (int i = 0; i < huntersEncountered.Count(); i++)
@@ -1992,29 +2231,31 @@ namespace ConsoleHandler
                 huntersEncountered[i].health -= 2;
             }
             ui.TellUser("Don't forget to tell me what was discarded");
+            return true;
         }
 
-        public void ResolvePeasants(List<Hunter> huntersEncountered, UserInterface ui)
+        public bool ResolvePeasants(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Peasants");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Peasants");
             ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i].name + " ");
             }
             ui.TellUser("encountered Peasants");
             ui.TellUser("Discard " + (huntersEncountered.First().currentLocation.isEastern ? "one" : "all") + " of your item cards and redraw randomly (don't forget to tell me what is discarded");
+            return true;
         }
 
-        private void ResolvePlague(List<Hunter> huntersEncountered, UserInterface ui)
+        private bool ResolvePlague(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Plague");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Plague");
             ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i].name + " ");
             }
             ui.TellUser("encountered Plague");
             for (int i = 1; i < huntersEncountered.Count(); i++)
@@ -2024,16 +2265,17 @@ namespace ConsoleHandler
                 ui.TellUser(huntersEncountered[i].name + " loses 2 health");
                 huntersEncountered[i].health -= 2;
             }
+            return true;
         }
 
-        public void ResolveRats(List<Hunter> huntersEncountered, UserInterface ui)
+        public bool ResolveRats(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Rats");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Rats");
             ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i].name + " ");
             }
             ui.TellUser("encountered Rats");
             for (int i = 1; i < huntersEncountered.Count(); i++)
@@ -2043,7 +2285,7 @@ namespace ConsoleHandler
                     ui.TellUser(huntersEncountered[i].name + " has Dogs face up, Rats have no effect");
                     Logger.WriteToDebugLog(huntersEncountered[i].name + " has Dogs face up, Rats have no effect");
                     Logger.WriteToGameLog(huntersEncountered[i].name + " has Dogs face up, Rats have no effect");
-                    return;
+                    return true;
                 }
             }
             for (int i = 1; i < huntersEncountered.Count(); i++)
@@ -2054,16 +2296,17 @@ namespace ConsoleHandler
                 Logger.WriteToDebugLog(huntersEncountered[i] + " lost " + loss + " health");
                 Logger.WriteToGameLog(huntersEncountered[i] + " lost " + loss + " health");
             }
+            return true;
         }
 
-        public void ResolveSaboteur(List<Hunter> huntersEncountered, UserInterface ui)
+        public bool ResolveSaboteur(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Saboteur");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Saboteur");
             ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i].name + " ");
             }
             ui.TellUser("encountered Saboteur");
             for (int i = 1; i < huntersEncountered.Count(); i++)
@@ -2073,28 +2316,29 @@ namespace ConsoleHandler
                     ui.TellUser(huntersEncountered[i].name + " has Dogs face up, Saboteur has no effect");
                     Logger.WriteToDebugLog(huntersEncountered[i].name + " has Dogs face up, Saboteur has no effect");
                     Logger.WriteToGameLog(huntersEncountered[i].name + " has Dogs face up, Saboteur has no effect");
-                    return;
+                    return true;
                 }
             }
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
                 ui.TellUser(huntersEncountered[i].name + " must discard 1 item or event (don't forget to tell me what was discarded");
             }
+            return false;
         }
 
-        public void ResolveSpy(List<Hunter> huntersEncountered)
+        public bool ResolveSpy(List<Hunter> huntersEncountered, UserInterface ui)
         {
             throw new NotImplementedException();
         }
 
-        public void ResolveThief(List<Hunter> huntersEncountered, UserInterface ui)
+        public bool ResolveThief(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Thief");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Thief");
             ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i].name + " ");
             }
             ui.TellUser("encountered Thief");
             for (int i = 1; i < huntersEncountered.Count(); i++)
@@ -2104,20 +2348,23 @@ namespace ConsoleHandler
                     ui.TellUser(huntersEncountered[i].name + " has Dogs face up, Thief has no effect");
                     Logger.WriteToDebugLog(huntersEncountered[i].name + " has Dogs face up, Thief has no effect");
                     Logger.WriteToGameLog(huntersEncountered[i].name + " has Dogs face up, Thief has no effect");
-                    return;
+                    return true;
                 }
             }
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
                 dracula.DiscardHunterCard(this, huntersEncountered[i], ui);
             }
+            return true;
         }
 
-        public void ResolveNewVampire(List<Hunter> huntersEncountered, UserInterface ui)
+        public bool ResolveNewVampire(List<Hunter> huntersEncountered, out bool discard, UserInterface ui)
         {
             if (time < 3)
             {
-                ui.TellUser(huntersEncountered[0].name + " encountered a New Vampire");
+                ui.TellUser(huntersEncountered[0].name + " encountered a New Vampire and disposed of it during the day");
+                discard = true;
+                return true;
             }
             else
             {
@@ -2132,7 +2379,8 @@ namespace ConsoleHandler
                             Logger.WriteToDebugLog(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
                             Logger.WriteToGameLog(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
                             ui.TellUser(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
-                            return;
+                            discard = true;
+                            return true;
                         }
                     }
                     for (int i = 0; i < huntersEncountered.Count(); i++)
@@ -2140,7 +2388,10 @@ namespace ConsoleHandler
                         Logger.WriteToDebugLog(huntersEncountered[i].name + " is bitten");
                         Logger.WriteToGameLog(huntersEncountered[i].name + " is bitten");
                         ui.TellUser(huntersEncountered[i].name + " is bitten");
+                        // check if anyone died and return false
                     }
+                    discard = true;
+                    return true;
                 }
                 else
                 {
@@ -2154,22 +2405,25 @@ namespace ConsoleHandler
                             Logger.WriteToGameLog(huntersEncountered[i].name + " prevented the Vampire escaping with " + (answer == 1 ? "a Knife" : "a Stake"));
                             ui.TellUser(huntersEncountered[i].name + " prevented the Vampire escaping with " + (answer == 1 ? "a Knife" : "a Stake"));
                             ui.TellUser("Don't forget to discard the item");
-                            return;
+                            discard = true;
+                            return true;
                         }
                     }
                     ui.TellUser("The Vampire escaped");
+                    discard = false;
+                    return true;
                 }
             }
         }
 
-        public void ResolveWolves(List<Hunter> huntersEncountered, UserInterface ui)
+        public bool ResolveWolves(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Wolves");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Wolves");
             ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i] + " ");
+                ui.TellUser("and " + huntersEncountered[i].name + " ");
             }
             ui.TellUser("encountered Wolves");
             bool hasPistol = false;
@@ -2201,6 +2455,7 @@ namespace ConsoleHandler
                     huntersEncountered[i].health -= (2 - numberOfWeaponTypes);
                 }
             }
+            return true;
         }
 
         internal void DrawEncountersUpToHandSize()
@@ -2389,7 +2644,7 @@ namespace ConsoleHandler
                     }
 
             }
-            ui.TellUser(hunters[hunterIndex].name + " is entering combat with " + enemyName);
+            ui.TellUser(hunters[hunterIndex].name + " is entering combat against " + enemyName + (hunters[hunterIndex].huntersInGroup.Count() > 0 ? " with his group" : ""));
             CombatRoundResult roundResult = new CombatRoundResult();
             roundResult = ResolveRoundOfCombat(hunterIndex, enemyCombatCards, hunterBasicCards, roundResult, ui);
             enemyCombatCards.Add(new Item("Dodge"));
@@ -2398,7 +2653,10 @@ namespace ConsoleHandler
             {
                 roundResult = ResolveRoundOfCombat(hunterIndex, enemyCombatCards, hunterBasicCards, roundResult, ui);
             }
-            hunters[hunterIndex].health -= ui.GetHunterHealthLost(hunters[hunterIndex].name);
+            foreach (Hunter h in hunters[hunterIndex].huntersInGroup)
+            {
+                h.health -= ui.GetHunterHealthLost(h.name);
+            }
             if (enemyInCombat == 1)
             {
                 dracula.blood -= ui.GetDraculaBloodLost();
@@ -2412,24 +2670,28 @@ namespace ConsoleHandler
 
         private CombatRoundResult ResolveRoundOfCombat(int hunterIndex, List<Item> combatCards, List<Item> hunterBasicCards, CombatRoundResult result, UserInterface ui)
         {
-            string newEnemyCardUsed = dracula.ChooseCombatCard(hunters[hunterIndex], combatCards, result).name;
-            string newHunterCardUsed;            
-            do
+            string targetHunterName;
+            string newEnemyCardUsed = dracula.ChooseCombatCardAndTarget(hunters[hunterIndex], combatCards, result, out targetHunterName).name;
+            string newHunterCardUsed = "nothing";
+            foreach (Hunter h in hunters[hunterIndex].huntersInGroup)
             {
-                newHunterCardUsed = ui.GetCombatCardFromHunter();
-                if (GetItemByNameFromItemDeck(newHunterCardUsed).name == "Unknown item")
+                do
                 {
-                    if (GetItemByNameFromList(newHunterCardUsed, hunterBasicCards).name == "Unknown item")
+                    newHunterCardUsed = ui.GetCombatCardFromHunter(h.name);
+                    if (GetItemByNameFromItemDeck(newHunterCardUsed).name == "Unknown item")
                     {
-                        ui.TellUser("I didn't recognise that item name");
+                        if (GetItemByNameFromList(newHunterCardUsed, hunterBasicCards).name == "Unknown item")
+                        {
+                            ui.TellUser("I didn't recognise that item name");
+                        }
                     }
-                }
-            } while (GetItemByNameFromItemDeck(newHunterCardUsed).name == "Unknown item" && GetItemByNameFromList(newHunterCardUsed, hunterBasicCards).name == "Unknown item");
+                } while (GetItemByNameFromItemDeck(newHunterCardUsed).name == "Unknown item" && GetItemByNameFromList(newHunterCardUsed, hunterBasicCards).name == "Unknown item");
+                h.lastItemUsedInCombat = newHunterCardUsed;
+            }
             ui.TellUser("Enemy chose " + newEnemyCardUsed);
             string newOutcome = ui.GetCombatRoundOutcome();
             CombatRoundResult newResult = new CombatRoundResult();
             newResult.enemyCardUsed = newEnemyCardUsed;
-            newResult.hunterCardUsed = newHunterCardUsed;
             newResult.outcome = newOutcome;
             return newResult;
         }

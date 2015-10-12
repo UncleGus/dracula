@@ -17,6 +17,8 @@ namespace HunterHandler
         public int numberOfBites;
         public int bitesRequiredToKill;
         public bool hasDogsFaceUp;
+        public List<Hunter> huntersInGroup = new List<Hunter>();
+        public string lastItemUsedInCombat;
 
         public Hunter(string newName, int newHealth, int newNumberOfBites, int newBitesRequiredToKill)
         {
@@ -25,6 +27,7 @@ namespace HunterHandler
             numberOfBites = newNumberOfBites;
             bitesRequiredToKill = newBitesRequiredToKill;
             hasDogsFaceUp = false;
+            huntersInGroup.Add(this);
         }
     }
 
