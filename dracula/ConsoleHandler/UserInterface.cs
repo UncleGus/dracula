@@ -193,7 +193,7 @@ namespace ConsoleHandler
             // seventh line, resolve header
             Console.WriteLine("                          Resolve");
             // eighth line, resolve value
-            Console.WriteLine("                          " + g.ResolveTracker());
+            Console.WriteLine("                          " + Math.Max(0, g.ResolveTracker()));
         }
 
         internal string GetNameOfLocationWhereHunterIsMoving(string v)
@@ -283,7 +283,7 @@ namespace ConsoleHandler
             return answer;
         }
 
-        internal int GetHunterHealthLostFromRats(string name)
+        internal int GetHunterHealthLost(string name)
         {
             string line;
             int loss;
@@ -371,6 +371,71 @@ namespace ConsoleHandler
         {
             TellUser("What is the name of the item being discarded?");
             return AskUser();
+        }
+
+        internal int GetIndexOfHunterEnteringCombat()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who is entering combat? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
+
+        internal int GetTypeOfEnemyEnteringCombat()
+        {
+            string line = "";
+            int enemyType;
+            do {
+                TellUser("Who is the enemy? 1) Dracula 2) Minion with Knife 3) Minion with Knife and Pistol 4) Minion with Knife and Rifle 5) Assassin 6) Vampire");
+                line = AskUser();
+            } while (!int.TryParse(line, out enemyType) || enemyType< 1 || enemyType> 6);
+            return enemyType;
+        }
+
+        internal string GetCombatCardFromHunter()
+        {
+            TellUser("What card did you use?");
+            return AskUser();
+        }
+
+        internal string GetCombatRoundOutcome()
+        {
+            string line = "";
+            int userAnswer;
+            do
+            {
+                TellUser("What was the outcome of this round of combat? 1) Enemy wounded 2) Hunter wounded 3) Continue 4) Repel 5) Bite 6) Enemy killed 7) Hunter killed 8) End");
+                line = AskUser();
+            } while (!int.TryParse(line, out userAnswer) || userAnswer < 1 || userAnswer > 8);
+
+            switch (userAnswer)
+            {
+                case 1: line = "Enemy wounded"; break;
+                case 2: line = "Hunter wounded"; break;
+                case 3: line = "Continue"; break;
+                case 4: line = "Repel"; break;
+                case 5: line = "Bite"; break;
+                case 6: line = "Enemy killed"; break;
+                case 7: line = "Hunter killed"; break;
+                case 8: line = "End"; break;
+            }
+            return line;
+        }
+
+        internal int GetDraculaBloodLost()
+        {
+            string line;
+            int loss;
+            do
+            {
+                TellUser("How much health did Dracula lose?");
+                line = AskUser();
+            } while (!int.TryParse(line, out loss) || loss < 0);
+            return loss;
         }
     }
 }

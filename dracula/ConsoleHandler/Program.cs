@@ -36,20 +36,46 @@ namespace ConsoleHandler
                     case "s": LocationHelper.ShowLocationDetails(g.GetLocationFromName(commandSet.argument1)); break;
                     case "l": PerformHunterMove(g, commandSet.argument1, commandSet.argument2, ui); break;
                     case "g": PerformCatchTrain(g, commandSet.argument1, ui); break;
+                    case "r": PerformRevealLocation(g, commandSet.argument1, ui); break;
+                    case "e": PerformRevealEncounter(g, commandSet.argument1, ui); break;
+                    case "k": PerformCombat(g, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "v": PerformPlayEventCard(g, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "h": PerformDraculaDrawCards(g, commandSet.argument1, ui); break;
                     case "n": PerformHunterDrawEvent(g, commandSet.argument1, ui); break;
                     case "i": PerformHunterDrawItem(g, commandSet.argument1, ui); break;
                     case "a": PerformHunterDiscardEvent(g, commandSet.argument1, commandSet.argument2, ui); break;
                     case "b": PerformHunterDiscardItem(g, commandSet.argument1, commandSet.argument2, ui); break;
                     case "m": PerformDraculaTurn(g, ui); break;
-                    case "r": PerformRevealLocation(g, commandSet.argument1, ui); break;
-                    case "e": PerformRevealEncounter(g, commandSet.argument1, ui); break;
                     case "c": PerformTrailClear(g, commandSet.argument1, ui); break;
-                    case "v": PerformPlayEventCard(g, commandSet.argument1, commandSet.argument2, ui); break;
-                    case "h": PerformDraculaDrawCards(g, commandSet.argument1, ui); break;
                     case "exit": break;
                     default: Console.WriteLine("I don't know what you're talking about"); break;
                 }
             } while (commandSet.command != "exit");
+        }
+
+        private static void PerformCombat(GameState g, string argument1, string argument2, UserInterface ui)
+        {
+            int hunterIndex;
+            if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
+            {
+                hunterIndex = ui.GetIndexOfHunterEnteringCombat();
+            }
+            else
+            {
+                hunterIndex--;
+            }
+            int enemyInCombat;
+            if (!int.TryParse(argument2, out enemyInCombat) || enemyInCombat < 1 || enemyInCombat > 6)
+            {
+                enemyInCombat = ui.GetTypeOfEnemyEnteringCombat();
+            }
+            switch (g.ResolveCombat(hunterIndex, enemyInCombat, ui))
+            {
+                case "Bite": break;
+                case "Enemy killed": break;
+                case "Hunter killed": break;
+                case "End": break;
+            }
         }
 
         private static void PerformHunterDiscardEvent(GameState g, string argument1, string argument2, UserInterface ui)

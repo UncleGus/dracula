@@ -47,7 +47,7 @@ namespace ConsoleHandler
             SetUpEvents();
             SetUpItems();
 
-            dracula = new Dracula();            
+            dracula = new Dracula();
         }
 
         private void SetUpItems()
@@ -1358,7 +1358,7 @@ namespace ConsoleHandler
         {
             return map[v];
         }
-        
+
         internal int MapSize()
         {
             return map.Count();
@@ -2049,7 +2049,7 @@ namespace ConsoleHandler
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
                 ui.TellUser("Roll dice for " + huntersEncountered[i].name);
-                int loss = ui.GetHunterHealthLostFromRats(huntersEncountered[i].name);
+                int loss = ui.GetHunterHealthLost(huntersEncountered[i].name);
                 huntersEncountered[i].health -= loss;
                 Logger.WriteToDebugLog(huntersEncountered[i] + " lost " + loss + " health");
                 Logger.WriteToGameLog(huntersEncountered[i] + " lost " + loss + " health");
@@ -2137,7 +2137,7 @@ namespace ConsoleHandler
                 {
                     case 1: hasPistol = true; break;
                     case 2: hasRifle = true; break;
-                    case 3: hasPistol = true; hasRifle = true; break; 
+                    case 3: hasPistol = true; hasRifle = true; break;
                 }
             }
             int numberOfWeaponTypes = (hasPistol ? 1 : 0) + (hasRifle ? 1 : 0);
@@ -2146,7 +2146,8 @@ namespace ConsoleHandler
                 Logger.WriteToDebugLog("Wolves are negated by Pistol and Rifle");
                 Logger.WriteToGameLog("Wolves are negated by Pistol and Rifle");
                 ui.TellUser("Wolves are negated by Pistol and Rifle");
-            } else
+            }
+            else
             {
                 for (int i = 1; i < huntersEncountered.Count(); i++)
                 {
@@ -2270,6 +2271,136 @@ namespace ConsoleHandler
             hunters[hunterIndex].numberOfItems--;
             Logger.WriteToDebugLog(hunters[hunterIndex].name + " discarded " + itemName + " down to " + hunters[hunterIndex].numberOfEvents);
             Logger.WriteToGameLog(hunters[hunterIndex].name + " discarded " + itemName + " down to " + hunters[hunterIndex].numberOfEvents);
+        }
+
+        internal string ResolveCombat(int hunterIndex, int enemyInCombat, UserInterface ui)
+        {
+            List<Item> enemyCombatCards = new List<Item>();
+            List<Item> hunterBasicCards = new List<Item>();
+            hunterBasicCards.Add(new Item("Punch"));
+            hunterBasicCards.Add(new Item("Escape"));
+            string enemyName = "nobody";
+            switch (enemyInCombat)
+            {
+                case 1:
+                    {
+                        enemyName = "Dracula";
+                        enemyCombatCards.Add(new Item("Claws"));
+                        enemyCombatCards.Add(new Item("Escape (Man)"));
+                        if (time > 2)
+                        {
+                            enemyCombatCards.Add(new Item("Strength"));
+                            enemyCombatCards.Add(new Item("Escape (Bat)"));
+                            enemyCombatCards.Add(new Item("Escape (Mist)"));
+                            enemyCombatCards.Add(new Item("Fangs"));
+                            enemyCombatCards.Add(new Item("Mesmerize"));
+                        }
+                        break;
+                    }
+                case 2:
+                    {
+                        enemyName = "Minion with Knife";
+                        enemyCombatCards.Add(new Item("Punch"));
+                        enemyCombatCards.Add(new Item("Knife"));
+                        break;
+                    }
+                case 3:
+                    {
+                        enemyName = "Minion with Knife and Pistol";
+                        enemyCombatCards.Add(new Item("Punch"));
+                        enemyCombatCards.Add(new Item("Knife"));
+                        enemyCombatCards.Add(new Item("Pistol"));
+                        break;
+                    }
+                case 4:
+                    {
+                        enemyName = "Minion with Knife and Rifle";
+                        enemyCombatCards.Add(new Item("Punch"));
+                        enemyCombatCards.Add(new Item("Knife"));
+                        enemyCombatCards.Add(new Item("Rifle"));
+                        break;
+                    }
+                case 5:
+                    {
+                        enemyName = "Assassin";
+                        enemyCombatCards.Add(new Item("Punch"));
+                        enemyCombatCards.Add(new Item("Knife"));
+                        enemyCombatCards.Add(new Item("Pistol"));
+                        enemyCombatCards.Add(new Item("Rifle"));
+                        break;
+                    }
+                case 6:
+                    {
+                        enemyName = "New Vampire";
+                        enemyCombatCards.Add(new Item("Claws"));
+                        enemyCombatCards.Add(new Item("Escape (Man)"));
+                        if (time > 2)
+                        {
+                            enemyCombatCards.Add(new Item("Strength"));
+                            enemyCombatCards.Add(new Item("Escape (Bat)"));
+                            enemyCombatCards.Add(new Item("Escape (Mist)"));
+                            enemyCombatCards.Add(new Item("Fangs"));
+                            enemyCombatCards.Add(new Item("Mesmerize"));
+                        }
+                        break;
+                    }
+
+            }
+            ui.TellUser(hunters[hunterIndex].name + " is entering combat with " + enemyName);
+            CombatRoundResult roundResult = new CombatRoundResult();
+            roundResult = ResolveRoundOfCombat(hunterIndex, enemyCombatCards, hunterBasicCards, roundResult, ui);
+            enemyCombatCards.Add(new Item("Dodge"));
+            hunterBasicCards.Add(new Item("Dodge"));
+            while (roundResult.outcome != "Bite" || roundResult.outcome != "Enemy killed" || roundResult.outcome != "Hunter killed" || roundResult.outcome != "End")
+            {
+                roundResult = ResolveRoundOfCombat(hunterIndex, enemyCombatCards, hunterBasicCards, roundResult, ui);
+            }
+            hunters[hunterIndex].health -= ui.GetHunterHealthLost(hunters[hunterIndex].name);
+            if (enemyInCombat == 1)
+            {
+                dracula.blood -= ui.GetDraculaBloodLost();
+            }
+            if (roundResult.outcome == "Bite" || roundResult.outcome == "Enemy killed" || roundResult.outcome == "Hunter killed" || roundResult.outcome == "End")
+            {
+                return roundResult.outcome;
+            }
+            return ui.GetCombatRoundOutcome();
+        }
+
+        private CombatRoundResult ResolveRoundOfCombat(int hunterIndex, List<Item> combatCards, List<Item> hunterBasicCards, CombatRoundResult result, UserInterface ui)
+        {
+            string newEnemyCardUsed = dracula.ChooseCombatCard(hunters[hunterIndex], combatCards, result).name;
+            string newHunterCardUsed;            
+            do
+            {
+                newHunterCardUsed = ui.GetCombatCardFromHunter();
+                if (GetItemByNameFromItemDeck(newHunterCardUsed).name == "Unknown item")
+                {
+                    if (GetItemByNameFromList(newHunterCardUsed, hunterBasicCards).name == "Unknown item")
+                    {
+                        ui.TellUser("I didn't recognise that item name");
+                    }
+                }
+            } while (GetItemByNameFromItemDeck(newHunterCardUsed).name == "Unknown item" && GetItemByNameFromList(newHunterCardUsed, hunterBasicCards).name == "Unknown item");
+            ui.TellUser("Enemy chose " + newEnemyCardUsed);
+            string newOutcome = ui.GetCombatRoundOutcome();
+            CombatRoundResult newResult = new CombatRoundResult();
+            newResult.enemyCardUsed = newEnemyCardUsed;
+            newResult.hunterCardUsed = newHunterCardUsed;
+            newResult.outcome = newOutcome;
+            return newResult;
+        }
+
+        private Item GetItemByNameFromList(string itemName, List<Item> itemList)
+        {
+            try
+            {
+                return itemList[itemList.FindIndex(card => card.name.ToLower().StartsWith(itemName.ToLower()))];
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return new Item("Unknown item");
+            }
         }
     }
 }

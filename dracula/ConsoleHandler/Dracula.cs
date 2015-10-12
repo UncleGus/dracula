@@ -8,6 +8,7 @@ using LogHandler;
 using EncounterHandler;
 using ConsoleHandler;
 using EventHandler;
+using HunterHandler;
 
 namespace DraculaHandler
 {
@@ -880,6 +881,11 @@ namespace DraculaHandler
         private Event GetEventCardFromHand(string p)
         {
             return eventCardsInHand[eventCardsInHand.FindIndex(card => card.name == p)];
+        }
+
+        internal Item ChooseCombatCard(Hunter hunter, List<Item> combatCards, CombatRoundResult result)
+        {
+            return logic.DecideWhichCombatCardToPlay(hunter, combatCards, result);
         }
     }
 

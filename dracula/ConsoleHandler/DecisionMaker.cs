@@ -129,5 +129,15 @@ namespace ConsoleHandler
             Logger.WriteToDebugLog("Dracula does not have a False Tip-Off");
             return false;
         }
+
+        internal Item DecideWhichCombatCardToPlay(Hunter hunter, List<Item> combatCards, CombatRoundResult result)
+        {
+            int chosenCardIndex;
+            do
+            {
+                chosenCardIndex = new Random().Next(0, combatCards.Count());
+            } while (combatCards[chosenCardIndex].name == result.enemyCardUsed);
+            return combatCards[chosenCardIndex];
+        }
     }
 }

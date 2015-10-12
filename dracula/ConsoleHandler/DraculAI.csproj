@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CombatRoundResult.cs" />
     <Compile Include="CommandSet.cs" />
     <Compile Include="DecisionMaker.cs" />
     <Compile Include="Dracula.cs" />
