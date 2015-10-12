@@ -2231,7 +2231,7 @@ namespace ConsoleHandler
                 huntersEncountered[i].health -= 2;
             }
             ui.TellUser("Don't forget to tell me what was discarded");
-            return true;
+            return !HandlePossibleHunterDeath(ui);
         }
 
         public bool ResolvePeasants(List<Hunter> huntersEncountered, UserInterface ui)
@@ -2265,7 +2265,7 @@ namespace ConsoleHandler
                 ui.TellUser(huntersEncountered[i].name + " loses 2 health");
                 huntersEncountered[i].health -= 2;
             }
-            return true;
+            return !HandlePossibleHunterDeath(ui);
         }
 
         public bool ResolveRats(List<Hunter> huntersEncountered, UserInterface ui)
@@ -2296,7 +2296,7 @@ namespace ConsoleHandler
                 Logger.WriteToDebugLog(huntersEncountered[i] + " lost " + loss + " health");
                 Logger.WriteToGameLog(huntersEncountered[i] + " lost " + loss + " health");
             }
-            return true;
+            return !HandlePossibleHunterDeath(ui);            
         }
 
         public bool ResolveSaboteur(List<Hunter> huntersEncountered, UserInterface ui)
@@ -2388,7 +2388,8 @@ namespace ConsoleHandler
                         Logger.WriteToDebugLog(huntersEncountered[i].name + " is bitten");
                         Logger.WriteToGameLog(huntersEncountered[i].name + " is bitten");
                         ui.TellUser(huntersEncountered[i].name + " is bitten");
-                        // check if anyone died and return false
+                        discard = true;
+                        return (!HandlePossibleHunterDeath(ui));
                     }
                     discard = true;
                     return true;
@@ -2454,8 +2455,9 @@ namespace ConsoleHandler
                     ui.TellUser(huntersEncountered[i].name + " loses " + (numberOfWeaponTypes == 1 ? "1" : "2") + " health");
                     huntersEncountered[i].health -= (2 - numberOfWeaponTypes);
                 }
+                
             }
-            return true;
+            return !HandlePossibleHunterDeath(ui);
         }
 
         internal void DrawEncountersUpToHandSize()
@@ -2688,7 +2690,7 @@ namespace ConsoleHandler
                 } while (GetItemByNameFromItemDeck(newHunterCardUsed).name == "Unknown item" && GetItemByNameFromList(newHunterCardUsed, hunterBasicCards).name == "Unknown item");
                 h.lastItemUsedInCombat = newHunterCardUsed;
             }
-            ui.TellUser("Enemy chose " + newEnemyCardUsed);
+            ui.TellUser("Enemy chose " + newEnemyCardUsed + " against " + targetHunterName);
             string newOutcome = ui.GetCombatRoundOutcome();
             CombatRoundResult newResult = new CombatRoundResult();
             newResult.enemyCardUsed = newEnemyCardUsed;
@@ -2805,6 +2807,126 @@ namespace ConsoleHandler
             }
             locationWhereEncounterIsBeingRevealed.encounters[encounterToReveal].isRevealed = true;
             DiscardItemFromHunterAtIndex("Local Rumors", hunterIndex);
+        }
+
+        internal bool HunterHasGroupAtHunterIndex(int hunterIndex)
+        {
+            return hunters[hunterIndex].huntersInGroup.Count() > 1;
+        }
+
+        internal void ApplyBiteToHunter(int hunterIndex, UserInterface ui)
+        {
+            hunters[hunterIndex].numberOfBites++;
+            ui.TellUser(hunters[hunterIndex].name + " was bitten");
+        }
+
+        internal void ApplyBiteToOneOfMultipleHunters(int hunterIndex, UserInterface ui)
+        {
+            int hunterIndexBitten;
+            do
+            {
+                hunterIndexBitten = ui.GetIndexOfHunterBitten();
+                if (hunters[hunterIndexBitten].currentLocation != hunters[hunterIndex].currentLocation)
+                {
+                    ui.TellUser(hunters[hunterIndexBitten].name + " is not at the same location as " + hunters[hunterIndex].name);
+                }
+            } while (hunters[hunterIndexBitten].currentLocation != hunters[hunterIndex].currentLocation);
+            ApplyBiteToHunter(hunterIndexBitten, ui);
+        }
+
+        internal string LocationOfHunterAtHunterIndex(int hunterIndex)
+        {
+            return hunters[hunterIndex].currentLocation.name;
+        }
+
+        internal int NumberOfHuntersAtLocation(string locationName)
+        {
+            Location location = GetLocationFromName(locationName);
+            int total = 0;
+            foreach (Hunter h in hunters)
+            {
+                if (h.currentLocation == location)
+                {
+                    total++;
+                }
+            }
+            return total;
+        }
+
+        internal void HandleDraculaEscape(UserInterface ui)
+        {
+            if (ui.GetDidDraculaEscape())
+            {
+                if (ui.GetDraculaEscapeForm() == 3)
+                {
+                    dracula.DoEscapeAsBatsMove(this, ui);
+                }
+            }
+        }
+
+        internal bool HandlePossibleHunterDeath(UserInterface ui)
+        {
+            bool hunterDied = false;
+            foreach (Hunter h in hunters)
+            {
+                if (h.health < 1)
+                {
+                    hunterDied = true;
+                    ui.TellUser(h.name + " is defeated");
+                    h.currentLocation = GetLocationFromName("St. Joseph & St. Mary");
+                    int hunterIndex = 0;
+                    switch (h.name)
+                    {
+                        case "Lord Godalming":
+                            h.health = 12;
+                            h.numberOfBites = 0;
+                            hunterIndex = 0;
+                            break;
+                        case "Van Helsing":
+                            h.health = 8;
+                            h.numberOfBites = 0;
+                            hunterIndex = 1;
+                            break;
+                        case "Dr. Seward":
+                            h.health = 10;
+                            h.numberOfBites = 0;
+                            hunterIndex = 2;
+                            break;
+                        case "Mina Harker":
+                            h.health = 8;
+                            h.numberOfBites = 1;
+                            hunterIndex = 3;
+                            break;
+                    }
+                    while (h.numberOfEvents > 0)
+                    {
+                        string eventName = "Unknown event";
+                        while (eventName == "Unknown event")
+                        {
+                            eventName = GetEventByNameFromEventDeck(ui.GetNameOfEventDiscardedByHunter(h.name)).name;
+                            if (eventName == "Unknown event")
+                            {
+                                ui.TellUser("I can't find that event");
+                            }
+                        }
+                        DiscardEventFromHunterAtIndex(eventName, hunterIndex);                        
+                    }
+                    while (h.numberOfItems > 0)
+                    {
+                        string itemName = "Unknown item";
+                        while (itemName == "Unknown item")
+                        {
+                            itemName = GetItemByNameFromItemDeck(ui.GetNameOfItemDiscardedByHunter(h.name)).name;
+                            if (itemName == "Unknown item")
+                            {
+                                ui.TellUser("I can't find that item");
+                            }
+                        }
+                        DiscardItemFromHunterAtIndex(itemName, hunterIndex);
+                    }
+                }
+            }
+            return hunterDied;
         }
     }
 }

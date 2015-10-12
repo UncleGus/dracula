@@ -614,5 +614,41 @@ namespace ConsoleHandler
             } while (!int.TryParse(line, out result) || result < 1 || result > 3);
             return result;
         }
+
+        internal int GetIndexOfHunterBitten()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who was bitten?");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
+
+        internal bool GetDidDraculaEscape()
+        {
+            string line;
+            do
+            {
+                TellUser("Did Dracula escape?");
+                line = AskUser();
+            }
+            while (!"yes".Contains(line.ToLower()) && !"no".Contains(line.ToLower()));
+            return "yes".Contains(line.ToLower()) ? true : false;
+        }
+
+        public int GetDraculaEscapeForm()
+        {
+            string line;
+            int result;
+            do
+            {
+                TellUser("In what form? 1) Man 2) Mist 3) Bats");
+                line = AskUser();
+            } while (!int.TryParse(line, out result) || result < 1 || result > 3);
+            return result;
+        }
     }
 }

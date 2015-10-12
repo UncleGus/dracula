@@ -149,5 +149,19 @@ namespace ConsoleHandler
         {
             return hunter.huntersInGroup[new Random().Next(0, hunter.huntersInGroup.Count())].name;
         }
+
+        internal Encounter DecideWhichCatacombsEncounterToDiscard(GameState g, Location goingTo, UserInterface ui)
+        {
+            if (goingTo.encounters.Count() > 1)
+            {
+                int random = new Random().Next(0, 2);
+                ui.TellUser("Dracula discarded the encounter in slot " + random);
+                return goingTo.encounters[random];
+            }
+            else
+            {
+                return goingTo.encounters.First();
+            }
+        }
     }
 }

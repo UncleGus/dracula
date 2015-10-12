@@ -166,10 +166,29 @@ namespace ConsoleHandler
             }
             switch (g.ResolveCombat(hunterIndex, enemyInCombat, ui))
             {
-                case "Bite": break;
+                case "Bite":
+                    if (g.NumberOfHuntersAtLocation(g.LocationOfHunterAtHunterIndex(hunterIndex)) > 1)
+                    {
+                        g.ApplyBiteToOneOfMultipleHunters(hunterIndex, ui);
+                    }
+                    else
+                    {
+                        g.ApplyBiteToHunter(hunterIndex, ui);
+                    }
+                    if (g.Time() > 2 && enemyInCombat == 1)
+                    {
+                        g.HandleDraculaEscape(ui);
+                    }
+                    break;
                 case "Enemy killed": break;
-                case "Hunter killed": break;
-                case "End": break;
+                case "Hunter killed": g.HandlePossibleHunterDeath(ui);
+                    break;
+                case "End":
+                    if (g.Time() > 2 && enemyInCombat == 1)
+                    {
+                        g.HandleDraculaEscape(ui);
+                    }
+                    break;
             }
         }
 

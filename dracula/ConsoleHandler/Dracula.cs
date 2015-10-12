@@ -682,6 +682,9 @@ namespace DraculaHandler
             {
                 Logger.WriteToDebugLog("Removing " + goingTo.name + " from the Catacombs");
                 catacombs[Array.IndexOf(catacombs, goingTo)] = null;
+                Encounter encounterToDiscard = logic.DecideWhichCatacombsEncounterToDiscard(g, goingTo, ui);
+                goingTo.encounters.Remove(encounterToDiscard);
+                g.AddEncounterToEncounterPool(encounterToDiscard);
             }
             else
             {
@@ -928,6 +931,23 @@ namespace DraculaHandler
                 batsMoves.Add(loc);
             }
             return batsMoves[new Random().Next(0, batsMoves.Count())];
+        }
+
+        internal void DoEscapeAsBatsMove(GameState g, UserInterface ui)
+        {
+            DeterminePossibleWolfFormLocations();
+            foreach (Location loc in possibleMoves)
+            {
+                if (g.NumberOfHuntersAtLocation(loc.name) > 0)
+                {
+                    possibleMoves.Remove(loc);
+                }
+            }
+            possiblePowers.Clear();
+            string throwAway;
+            Location locationToMoveTo;
+            logic.DecideMove(g, this, out throwAway, out locationToMoveTo);
+            MoveByRoadOrSea(g, locationToMoveTo, ui);
         }
     }
 
