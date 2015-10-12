@@ -621,7 +621,7 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                TellUser("Who was bitten?");
+                TellUser("Who was bitten? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
             return hunterIndex - 1;
@@ -649,6 +649,42 @@ namespace ConsoleHandler
                 line = AskUser();
             } while (!int.TryParse(line, out result) || result < 1 || result > 3);
             return result;
+        }
+
+        internal int GetIndexOfHunterResting()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who is resting? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
+
+        internal int GetEventDrawnFor()
+        {
+            string line;
+            int result;
+            do
+            {
+                TellUser("Who is the drawn event for? 1) Hunters 2) Dracula");
+                line = AskUser();
+            } while (!int.TryParse(line, out result) || result < 1 || result > 2);
+            return result;
+        }
+
+        internal int GetIndexOfHunterUsingHospital()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who is using the Holy Water font? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward (Mina Harker's bite cannot be healed)");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 3);
+            return hunterIndex - 1;
         }
     }
 }

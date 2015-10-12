@@ -2772,7 +2772,9 @@ namespace ConsoleHandler
             }
             switch (ui.GetHolyWaterResult())
             {
-                case 1: hunterToHeal.health -= 2; break;
+                case 1: 
+                    hunterToHeal.health -= 2; 
+                    HandlePossibleHunterDeath(ui);break;
                 case 2: break;
                 case 3: hunterToHeal.numberOfBites--; break;
             }
@@ -2927,6 +2929,54 @@ namespace ConsoleHandler
                 }
             }
             return hunterDied;
+        }
+
+        internal void RestHunterAtHunterIndex(int hunterIndex, UserInterface ui)
+        {
+            int numberOfEvents = 2;
+            if (hunters[hunterIndex].currentLocation == hunters[2].currentLocation)
+            {
+                numberOfEvents = 1;
+            }
+
+            for (int i = 0; i < numberOfEvents; i++ )
+            {
+                int eventDrawnFor = ui.GetEventDrawnFor();
+                if (eventDrawnFor == 2)
+                {
+                    DrawEventCardForDracula(ui);
+                }
+                else
+                {
+                    DiscardEventCard(ui.GetEventCardName());
+                }
+            }
+            int maxHealth = 8;
+            switch (hunterIndex)
+            {
+                case 0:
+                    maxHealth = 12;
+                    break;
+                case 2:
+                    maxHealth = 10;
+                    break;
+            }
+            hunters[hunterIndex].health = Math.Min(maxHealth, hunters[hunterIndex].health + 2);
+            ui.TellUser(hunters[hunterIndex].name + " now has " + hunters[hunterIndex].health + " health");
+        }
+
+        internal void BlessHunterAtHunterIndex(int hunterIndex, UserInterface ui)
+        {
+            switch (ui.GetHolyWaterResult())
+            {
+                case 1: 
+                    hunters[hunterIndex].health -= 2;
+                    HandlePossibleHunterDeath(ui);
+                    break;
+                case 2: break;
+                case 3: hunters[hunterIndex].numberOfBites--; break;
+            }
+
         }
     }
 }

@@ -51,10 +51,40 @@ namespace ConsoleHandler
                     case "j": PerformBatsMove(g, commandSet.argument1, ui); break;
                     case "q": PerformTrade(g, commandSet.argument1, commandSet.argument2, ui); break;
                     case "u": PerformUseItem(g, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "o": PerformRest(g, commandSet.argument1, ui); break;
+                    case "w": PerformHospital(g, commandSet.argument1, ui); break;
                     case "exit": break;
                     default: Console.WriteLine("I don't know what you're talking about"); break;
                 }
             } while (commandSet.command != "exit");
+        }
+
+        private static void PerformHospital(GameState g, string argument1, UserInterface ui)
+        {
+            int hunterIndex;
+            if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
+            {
+                hunterIndex = ui.GetIndexOfHunterUsingHospital();
+            }
+            else
+            {
+                hunterIndex--;
+            }
+            g.BlessHunterAtHunterIndex(hunterIndex, ui);
+        }
+
+        private static void PerformRest(GameState g, string argument1, UserInterface ui)
+        {
+            int hunterIndex;
+            if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
+            {
+                hunterIndex = ui.GetIndexOfHunterResting();
+            }
+            else
+            {
+                hunterIndex--;
+            }
+            g.RestHunterAtHunterIndex(hunterIndex, ui);           
         }
 
         private static void PerformUseItem(GameState g, string argument1, string argument2, UserInterface ui)
