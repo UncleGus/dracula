@@ -98,11 +98,11 @@ namespace DraculaHandler
                 }
                 else if (powerUsed == "Double Back")
                 {
-                    DoDoubleBackMove(destination, ui);
+                    DoDoubleBackMove(g, destination, ui);
                 }
                 else if (powerUsed == "Wolf Form")
                 {
-                    DoWolfFormMove(destination, ui);
+                    DoWolfFormMove(g, destination, ui);
                 }
 
                 // put the power used at the head of the trail
@@ -113,7 +113,7 @@ namespace DraculaHandler
             // performing a regular move
             {
                 // choose a location
-                MoveByRoadOrSea(destination, ui);
+                MoveByRoadOrSea(g, destination, ui);
                 Logger.WriteToGameLog("Dracula moved to " + currentLocation.name);
             }
             Logger.WriteToDebugLog("Dracula has finished moving");
@@ -406,7 +406,7 @@ namespace DraculaHandler
             }
         }
 
-        public void MoveByRoadOrSea(Location goingTo, UserInterface ui)
+        public void MoveByRoadOrSea(GameState g, Location goingTo, UserInterface ui)
         {
             Logger.WriteToDebugLog("Moving Dracula to a new location");
             Logger.WriteToDebugLog("Remembering that Dracula is moving from a location of type " + currentLocation.type);
@@ -429,7 +429,7 @@ namespace DraculaHandler
             Logger.WriteToDebugLog("Adding " + currentLocation.name + " to the head of the trail");
             trail.Insert(0, currentLocation);
             MovePowersAlongTrail();
-            CheckBloodLossAtSea(previousLocationType);
+            CheckBloodLossAtSea(previousLocationType, g.NameOfHunterAlly());
             Logger.WriteToDebugLog("Checking if Dracula is in Castle Dracula");
             if (currentLocation.type == LocationType.Castle)
             {
@@ -544,12 +544,17 @@ namespace DraculaHandler
             RevealHide(trail.FindIndex(location => location.name == "Hide"), ui);
         }
 
-        public void CheckBloodLossAtSea(LocationType locationType)
+        public void CheckBloodLossAtSea(LocationType locationType, string hunterAllyName)
         {
             Logger.WriteToDebugLog("Checking if Dracula should lose blood due to moving at sea");
             if (currentLocation.type == LocationType.Sea && locationType != LocationType.Sea)
             {
                 Logger.WriteToDebugLog("Dracula has embarked this turn, losing one blood");
+                blood--;
+                lostBloodAtSeaOnLatestTurn = true;
+            }
+            else if (currentLocation.type == LocationType.Sea && hunterAllyName == "Rufus Smith") {
+                Logger.WriteToDebugLog("Dracula is at sea and Rufus Smith is in play, losing one blood");
                 blood--;
                 lostBloodAtSeaOnLatestTurn = true;
             }
@@ -588,7 +593,7 @@ namespace DraculaHandler
             MovePowersAlongTrail();
         }
 
-        public void DoDoubleBackMove(Location goingTo, UserInterface ui)
+        public void DoDoubleBackMove(GameState g, Location goingTo, UserInterface ui)
         {
             Logger.WriteToDebugLog("Remembering that Dracula is moving from a location of type " + currentLocation.type);
             LocationType previousLocationType = currentLocation.type;
@@ -672,15 +677,15 @@ namespace DraculaHandler
                     powers[i].positionInTrail++;
                 }
             }
-            CheckBloodLossAtSea(previousLocationType);
+            CheckBloodLossAtSea(previousLocationType, g.NameOfHunterAlly());
         }
 
-        public void DoWolfFormMove(Location destination, UserInterface ui)
+        public void DoWolfFormMove(GameState g, Location destination, UserInterface ui)
         {
             // determine possible locations for wolf form (road only, up to two moves away)
             DeterminePossibleWolfFormLocations();
             // carry out move
-            MoveByRoadOrSea(destination, ui);
+            MoveByRoadOrSea(g, destination, ui);
             Logger.WriteToGameLog("Dracula used Wolf Form to move to " + currentLocation.name);
         }
 

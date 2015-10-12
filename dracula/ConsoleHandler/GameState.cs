@@ -1401,7 +1401,14 @@ namespace ConsoleHandler
 
         internal string NameOfHunterAlly()
         {
-            return hunterAlly.name;
+            if (HuntersHaveAlly())
+            {
+                return hunterAlly.name;
+            }
+            else
+            {
+                return "No ally";
+            }
         }
 
         internal bool HuntersHaveAlly()
