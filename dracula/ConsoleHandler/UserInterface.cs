@@ -686,5 +686,47 @@ namespace ConsoleHandler
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 3);
             return hunterIndex - 1;
         }
+
+        internal int GetIndexOfHunterUsingResolve()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who is using Resolve? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
+
+        internal int GetTypeOfResolveUsed()
+        {
+            string line = "";
+            int type;
+            do
+            {
+                TellUser("How are you using the Resolve? 1) Newspaper Reports 2) Sense of Emergency 3) Inner Strength");
+                line = AskUser();
+            } while (!int.TryParse(line, out type) || type < 1 || type > 3);
+            return type;
+        }
+
+        internal bool GetHunterPlayingCard(string name)
+        {
+            string line;
+            do
+            {
+                TellUser("Is " + name + " using a card?");
+                line = AskUser();
+            }
+            while (!"yes".Contains(line.ToLower()) && !"no".Contains(line.ToLower()));
+            return "yes".Contains(line.ToLower()) ? true : false;
+        }
+
+        internal string GetNameOfHunterCardPlayedAtStartOfCombat(string name)
+        {
+            TellUser("What card is " + name + " playing? (type cancel to cancel playing a card)");
+            return AskUser();
+        }
     }
 }

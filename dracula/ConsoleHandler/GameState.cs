@@ -1665,12 +1665,37 @@ namespace ConsoleHandler
 
         internal void MoveHunterToLocationAtHunterIndex(int hunterIndex, Location locationToMoveTo)
         {
+            Event draculaEventCard = dracula.PlayEventCardAtStartOfHunterMovement(this);
+            if (draculaEventCard != null)
+            {
+                PlayEventCard(draculaEventCard.name);
+            }
+
             foreach (Hunter h in hunters[hunterIndex].huntersInGroup)
             {
                 h.currentLocation = locationToMoveTo;
                 Logger.WriteToDebugLog("Moved " + h.name + " to " + locationToMoveTo.name);
                 Logger.WriteToGameLog(h.name + " moved to " + locationToMoveTo.name);
             }
+
+            draculaEventCard = dracula.PlayEventCardAtEndOfHunterMovement(this);
+            if (draculaEventCard != null)
+            {
+                PlayEventCard(draculaEventCard.name);
+            }
+        }
+
+        private void PlayEventCard(string cardName)
+        {
+            switch (cardName)
+            {
+                case "Control Storms": PlayControlStorms(); break;
+            }
+        }
+
+        private void PlayControlStorms()
+        {
+            throw new NotImplementedException();
         }
 
         internal string NameOfHunterAtIndex(int hunterIndex)
@@ -1811,6 +1836,11 @@ namespace ConsoleHandler
             {
                 Logger.WriteToDebugLog("Dracula is at sea, skipping Timekeeping phase so time remains " + timesOfDay[Math.Max(0, time)]);
             }
+            Event draculaEventCard = null;
+            do
+            {
+                draculaEventCard = dracula.PlayEventCardAtStartOfDraculaTurn(this);
+            } while (draculaEventCard == null);
             dracula.TakeStartOfTurnActions(this, ui);
             dracula.MoveDracula(this, ui);
             dracula.HandleDroppedOffLocations(this, ui);
@@ -2368,12 +2398,31 @@ namespace ConsoleHandler
             }
             else
             {
-                if (ui.GetDieRoll() < 4)
+                Event draculaEventCard = dracula.PlaySeductionCard(this);
+                PlaySeduction();
+                int dieRoll;
+                if (draculaEventCard != null)
+                {
+                    dieRoll = 4;
+                }
+                else
+                {
+                    dieRoll = ui.GetDieRoll();
+                }
+                if (dieRoll < 4)
                 {
                     ui.TellUser("The Vampire attempts to bite you");
                     for (int i = 0; i < huntersEncountered.Count(); i++)
                     {
-                        int answer = ui.GetHunterHolyItems(huntersEncountered[i].name);
+                        int answer;
+                        if (draculaEventCard != null)
+                        {
+                            answer = 0;
+                        }
+                        else
+                        {
+                            answer = ui.GetHunterHolyItems(huntersEncountered[i].name);
+                        }
                         if (answer > 0)
                         {
                             Logger.WriteToDebugLog(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
@@ -2415,6 +2464,11 @@ namespace ConsoleHandler
                     return true;
                 }
             }
+        }
+
+        private void PlaySeduction()
+        {
+            throw new NotImplementedException();
         }
 
         public bool ResolveWolves(List<Hunter> huntersEncountered, UserInterface ui)
@@ -2647,6 +2701,46 @@ namespace ConsoleHandler
 
             }
             ui.TellUser(hunters[hunterIndex].name + " is entering combat against " + enemyName + (hunters[hunterIndex].huntersInGroup.Count() > 0 ? " with his group" : ""));
+            Event draculaEventCard = null;
+            do
+            {
+                draculaEventCard = dracula.PlayEventCardAtStartOfCombat(this);
+                if (draculaEventCard != null)
+                {
+                    switch (draculaEventCard.name)
+                    {
+                        case "Trap": PlayTrap(); break;
+                        case "Rage": PlayRage(); break;
+                        case "Wild Horses": PlayWildHorses(); break;
+                    }
+                }
+            } while (draculaEventCard == null);
+            bool hunterPlayedCard = false;
+            do
+            {
+                hunterPlayedCard = false;
+                for (int i = 0; i < 4; i++ )
+                {
+                    if (ui.GetHunterPlayingCard(hunters[i].name))
+                    {
+                        string cardName = "";
+                        do
+                        {
+                            cardName = ui.GetNameOfHunterCardPlayedAtStartOfCombat(hunters[i].name);
+                        } while (GetEventByNameFromEventDeck(cardName).name == "Unknown event" && GetItemByNameFromItemDeck(cardName).name == "Unknown item" && cardName.ToLower() != "cancel");
+                        if (cardName != "cancel")
+                        {
+                            hunterPlayedCard = true;
+                            switch (cardName)
+                            {
+                                case "Advance Planning": PlayAdvancePlanningInCombat(i); break;
+                                case "Escape Route": PlayEscapeRouteInCombat(i); break;
+                                case "Heroic Leap": PlayHeroicLeapInCombat(i); break;
+                            }
+                        }
+                    }
+                }
+            } while (hunterPlayedCard);
             CombatRoundResult roundResult = new CombatRoundResult();
             roundResult = ResolveRoundOfCombat(hunterIndex, enemyCombatCards, hunterBasicCards, roundResult, ui);
             enemyCombatCards.Add(new Item("Dodge"));
@@ -2668,6 +2762,36 @@ namespace ConsoleHandler
                 return roundResult.outcome;
             }
             return ui.GetCombatRoundOutcome();
+        }
+
+        private void PlayHeroicLeapInCombat(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PlayEscapeRouteInCombat(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PlayAdvancePlanningInCombat(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PlayWildHorses()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PlayRage()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PlayTrap()
+        {
+            throw new NotImplementedException();
         }
 
         private CombatRoundResult ResolveRoundOfCombat(int hunterIndex, List<Item> combatCards, List<Item> hunterBasicCards, CombatRoundResult result, UserInterface ui)
@@ -2977,6 +3101,53 @@ namespace ConsoleHandler
                 case 3: hunters[hunterIndex].numberOfBites--; break;
             }
 
+        }
+
+        internal void PerformNewspaperReportsFromResolve(UserInterface ui)
+        {
+            resolve--;
+            int checkingLocationIndex = TrailLength();
+            do
+            {
+                checkingLocationIndex--;
+            } while ((TypeOfLocationAtTrailIndex(checkingLocationIndex) != LocationType.Castle && TypeOfLocationAtTrailIndex(checkingLocationIndex) != LocationType.City && TypeOfLocationAtTrailIndex(checkingLocationIndex) != LocationType.Sea && TypeOfLocationAtTrailIndex(checkingLocationIndex) != LocationType.Town) || LocationIsRevealedAtTrailIndex(checkingLocationIndex));
+
+            if (DraculaCurrentLocationIsAtTrailIndex(checkingLocationIndex))
+            {
+                ui.TellUser("The oldest unrevealed location in Dracula's trail is his current location");
+                if (LocationWhereHideWasUsedIsDraculaCurrentLocation())
+                {
+                    ui.TellUser("Here's the Hide card to prove it");
+                    RevealHide(ui);
+                }
+            }
+            else
+            {
+                RevealLocationAtTrailIndex(checkingLocationIndex, ui);
+                ui.TellUser("Revealing " + NameOfLocationAtTrailIndex(checkingLocationIndex));
+            }
+        }
+
+        internal void PerformSenseOfEmergencyFromResolve(int hunterIndex, UserInterface ui)
+        {
+            resolve--;
+            hunters[hunterIndex].health -= 6;
+            hunters[hunterIndex].health += vampireTracker;
+            ui.TellUser("Adjust " + hunters[hunterIndex].name + "'s health and then perform a move to any location");
+        }
+
+        internal void PerformInnerStrengthFromResolve(int hunterIndex, UserInterface ui)
+        {
+            resolve--;
+            switch (hunterIndex)
+            {
+                case 0: hunters[hunterIndex].health = Math.Min(hunters[hunterIndex].health + 4, 12); break;
+                case 1: hunters[hunterIndex].health = Math.Min(hunters[hunterIndex].health + 4, 8); break;
+                case 2: hunters[hunterIndex].health = Math.Min(hunters[hunterIndex].health + 4, 10); break;
+                case 3: hunters[hunterIndex].health = Math.Min(hunters[hunterIndex].health + 4, 8); break;
+            }
+            hunters[hunterIndex].health += 4;
+            ui.TellUser("Adjust " + hunters[hunterIndex].name + "'s health");
         }
     }
 }

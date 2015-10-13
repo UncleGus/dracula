@@ -53,10 +53,41 @@ namespace ConsoleHandler
                     case "u": PerformUseItem(g, commandSet.argument1, commandSet.argument2, ui); break;
                     case "o": PerformRest(g, commandSet.argument1, ui); break;
                     case "w": PerformHospital(g, commandSet.argument1, ui); break;
+                    case "t": PerformResolve(g, commandSet.argument1, commandSet.argument2, ui); break;
                     case "exit": break;
                     default: Console.WriteLine("I don't know what you're talking about"); break;
                 }
             } while (commandSet.command != "exit");
+        }
+
+        private static void PerformResolve(GameState g, string argument1, string argument2, UserInterface ui)
+        {
+            int hunterIndex;
+            if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
+            {
+                hunterIndex = ui.GetIndexOfHunterUsingResolve();
+            }
+            else
+            {
+                hunterIndex--;
+            }
+            int resolveType;
+            if (!int.TryParse(argument2, out resolveType) || resolveType < 1 || resolveType > 3)
+            {
+                resolveType= ui.GetTypeOfResolveUsed();
+            }
+            switch (resolveType)
+            {
+                case 1:
+                    g.PerformNewspaperReportsFromResolve(ui);
+                    break;
+                case 2:
+                    g.PerformSenseOfEmergencyFromResolve(hunterIndex, ui);
+                    break;
+                case 3:
+                    g.PerformInnerStrengthFromResolve(hunterIndex, ui);
+                    break;
+            }
         }
 
         private static void PerformHospital(GameState g, string argument1, UserInterface ui)

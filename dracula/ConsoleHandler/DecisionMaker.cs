@@ -163,5 +163,30 @@ namespace ConsoleHandler
                 return goingTo.encounters.First();
             }
         }
+
+        internal Event DecideEventCardToPlayAtStartOfHunterMovement(GameState g)
+        {
+            return null;
+        }
+
+        internal Event DecideEventCardToPlayAtEndOfHunterMovement(GameState g)
+        {
+            return null;
+        }
+
+        internal Event DecideEventCardToPlayAtStartOfDraculaTurn(GameState g)
+        {
+            return null;
+        }
+
+        internal Event DecideToPlaySeductionDuringVampireEncounter(GameState g)
+        {
+            return null;
+        }
+
+        internal Event DecideToPlayCardAtStartOfCombat(GameState g)
+        {
+            return null;
+        }
     }
 }

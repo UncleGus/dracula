@@ -949,6 +949,31 @@ namespace DraculaHandler
             logic.DecideMove(g, this, out throwAway, out locationToMoveTo);
             MoveByRoadOrSea(g, locationToMoveTo, ui);
         }
+
+        internal Event PlayEventCardAtStartOfHunterMovement(GameState g)
+        {
+            return logic.DecideEventCardToPlayAtStartOfHunterMovement(g);
+        }
+
+        internal Event PlayEventCardAtEndOfHunterMovement(GameState g)
+        {
+            return logic.DecideEventCardToPlayAtEndOfHunterMovement(g);
+        }
+
+        internal Event PlayEventCardAtStartOfDraculaTurn(GameState g)
+        {
+            return logic.DecideEventCardToPlayAtStartOfDraculaTurn(g);
+        }
+
+        internal Event PlaySeductionCard(GameState g)
+        {
+            return logic.DecideToPlaySeductionDuringVampireEncounter(g);
+        }
+
+        internal Event PlayEventCardAtStartOfCombat(GameState g)
+        {
+            return logic.DecideToPlayCardAtStartOfCombat(g);
+        }
     }
 
     public class DraculaPower
