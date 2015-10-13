@@ -728,5 +728,41 @@ namespace ConsoleHandler
             TellUser("What card is " + name + " playing? (type cancel to cancel playing a card)");
             return AskUser();
         }
+
+        internal bool GetUserCancelEncounter(string name)
+        {
+            string line;
+            do
+            {
+                TellUser("The encounter is " + name + ", do you want to cancel it?");
+                line = AskUser();
+            }
+            while (!"yes".Contains(line.ToLower()) && !"no".Contains(line.ToLower()));
+            return "yes".Contains(line.ToLower()) ? true : false;
+        }
+
+        internal int GetHunterPlayingForewarned(string name)
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("The encounter is " + name + ", is anyone playing Forewarned? 0 = Nobody; 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 0 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
+
+        internal int GetHunterPlayingSecretWeapon(string name)
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("The encounter is " + name + ", is anyone playing Secret Weapon? 0 = Nobody; 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 0 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
     }
 }

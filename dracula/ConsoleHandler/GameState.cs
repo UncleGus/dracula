@@ -248,6 +248,12 @@ namespace ConsoleHandler
             }
             if (firstEncounter != null)
             {
+                int hunterIndex = ui.GetHunterPlayingSecretWeapon(firstEncounter.name);
+                if (hunterIndex > 0)
+                {
+                    PlaySecretWeaponBeforeEncounter(hunterIndex, ui);
+                }
+
                 resolveNextEncounter = ResolveEncounter(firstEncounter, hunter, out discardEncounter, ui);
                 if (discardEncounter)
                 {
@@ -275,72 +281,90 @@ namespace ConsoleHandler
 
         }
 
+        private void PlaySecretWeaponBeforeEncounter(int hunterIndex, UserInterface ui)
+        {
+            throw new NotImplementedException();
+        }
+
         private bool ResolveEncounter(Encounter enc, Hunter hunter, out bool discard, UserInterface ui)
         {
             bool resolveNextEncounter = true;
             discard = true;
-            switch (enc.name)
+            int hunterIndex = ui.GetHunterPlayingForewarned(enc.name);
+            if (hunterIndex > 0)
             {
-                case "Ambush":
-                    resolveNextEncounter = ResolveAmbush(hunter.huntersInGroup, ui);
-                    break;
-                case "Assasin":
-                    resolveNextEncounter = ResolveAssassin(hunter.huntersInGroup, ui);
-                    break;
-                case "Bats":
-                    resolveNextEncounter = ResolveBats(hunter.huntersInGroup, ui);
-                    discard = false;
-                    break;
-                case "Desecrated Soil":
-                    resolveNextEncounter = ResolveDesecratedSoil(hunter.huntersInGroup, ui);
-                    break;
-                case "Fog":
-                    resolveNextEncounter = ResolveFog(hunter.huntersInGroup, ui);
-                    discard = false;
-                    break;
-                case "Minion with Knife":
-                    resolveNextEncounter = ResolveMinionWithKnife(hunter.huntersInGroup, ui);
-                    break;
-                case "Minion with Knife and Pistol":
-                    resolveNextEncounter = ResolveMinionWithKnifeAndPistol(hunter.huntersInGroup, ui);
-                    break;
-                case "Minion with Knife and Rifle":
-                    resolveNextEncounter = ResolveMinionWithKnifeAndRifle(hunter.huntersInGroup, ui);
-                    break;
-                case "Hoax":
-                    resolveNextEncounter = ResolveHoax(hunter.huntersInGroup, ui);
-                    break;
-                case "Lightning":
-                    resolveNextEncounter = ResolveLightning(hunter.huntersInGroup, ui);
-                    break;
-                case "Peasants":
-                    resolveNextEncounter = ResolvePeasants(hunter.huntersInGroup, ui);
-                    break;
-                case "Plague":
-                    resolveNextEncounter = ResolvePlague(hunter.huntersInGroup, ui);
-                    break;
-                case "Rats":
-                    resolveNextEncounter = ResolveRats(hunter.huntersInGroup, ui);
-                    break;
-                case "Saboteur":
-                    resolveNextEncounter = ResolveSaboteur(hunter.huntersInGroup, ui);
-                    break;
-                case "Spy":
-                    resolveNextEncounter = ResolveSpy(hunter.huntersInGroup, ui);
-                    break;
-                case "Thief":
-                    resolveNextEncounter = ResolveThief(hunter.huntersInGroup, ui);
-                    break;
-                case "New Vampire":
-                    bool discardVampire = true;
-                    resolveNextEncounter = ResolveNewVampire(hunter.huntersInGroup, out discardVampire, ui);
-                    discard = discardVampire;
-                    break;
-                case "Wolves":
-                    resolveNextEncounter = ResolveWolves(hunter.huntersInGroup, ui);
-                    break;
+                PlayForewarnedBeforeEncounter(hunterIndex, ui);
+            }
+            else
+            {
+                switch (enc.name)
+                {
+                    case "Ambush":
+                        resolveNextEncounter = ResolveAmbush(hunter.huntersInGroup, ui);
+                        break;
+                    case "Assasin":
+                        resolveNextEncounter = ResolveAssassin(hunter.huntersInGroup, ui);
+                        break;
+                    case "Bats":
+                        resolveNextEncounter = ResolveBats(hunter.huntersInGroup, ui);
+                        discard = false;
+                        break;
+                    case "Desecrated Soil":
+                        resolveNextEncounter = ResolveDesecratedSoil(hunter.huntersInGroup, ui);
+                        break;
+                    case "Fog":
+                        resolveNextEncounter = ResolveFog(hunter.huntersInGroup, ui);
+                        discard = false;
+                        break;
+                    case "Minion with Knife":
+                        resolveNextEncounter = ResolveMinionWithKnife(hunter.huntersInGroup, ui);
+                        break;
+                    case "Minion with Knife and Pistol":
+                        resolveNextEncounter = ResolveMinionWithKnifeAndPistol(hunter.huntersInGroup, ui);
+                        break;
+                    case "Minion with Knife and Rifle":
+                        resolveNextEncounter = ResolveMinionWithKnifeAndRifle(hunter.huntersInGroup, ui);
+                        break;
+                    case "Hoax":
+                        resolveNextEncounter = ResolveHoax(hunter.huntersInGroup, ui);
+                        break;
+                    case "Lightning":
+                        resolveNextEncounter = ResolveLightning(hunter.huntersInGroup, ui);
+                        break;
+                    case "Peasants":
+                        resolveNextEncounter = ResolvePeasants(hunter.huntersInGroup, ui);
+                        break;
+                    case "Plague":
+                        resolveNextEncounter = ResolvePlague(hunter.huntersInGroup, ui);
+                        break;
+                    case "Rats":
+                        resolveNextEncounter = ResolveRats(hunter.huntersInGroup, ui);
+                        break;
+                    case "Saboteur":
+                        resolveNextEncounter = ResolveSaboteur(hunter.huntersInGroup, ui);
+                        break;
+                    case "Spy":
+                        resolveNextEncounter = ResolveSpy(hunter.huntersInGroup, ui);
+                        break;
+                    case "Thief":
+                        resolveNextEncounter = ResolveThief(hunter.huntersInGroup, ui);
+                        break;
+                    case "New Vampire":
+                        bool discardVampire = true;
+                        resolveNextEncounter = ResolveNewVampire(hunter.huntersInGroup, out discardVampire, ui);
+                        discard = discardVampire;
+                        break;
+                    case "Wolves":
+                        resolveNextEncounter = ResolveWolves(hunter.huntersInGroup, ui);
+                        break;
+                }
             }
             return resolveNextEncounter;
+        }
+
+        private void PlayForewarnedBeforeEncounter(int hunterIndex, UserInterface ui)
+        {
+            throw new NotImplementedException();
         }
 
         private bool LocationIsInCatacombs(Location location)
@@ -1840,7 +1864,7 @@ namespace ConsoleHandler
             do
             {
                 draculaEventCard = dracula.PlayEventCardAtStartOfDraculaTurn(this);
-            } while (draculaEventCard == null);
+            } while (draculaEventCard != null);
             dracula.TakeStartOfTurnActions(this, ui);
             dracula.MoveDracula(this, ui);
             dracula.HandleDroppedOffLocations(this, ui);
