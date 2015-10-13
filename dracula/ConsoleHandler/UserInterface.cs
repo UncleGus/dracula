@@ -764,5 +764,10 @@ namespace ConsoleHandler
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 0 || hunterIndex > 4);
             return hunterIndex - 1;
         }
+
+        internal void ShowHelp()
+        {
+            TellUser("(M)ove hunter, Catch (T)rain, Play (E)vent, Give (D)racula event card, Give Hunter e(V)ent card, Give Hunter (I)tem, Disc(A)rd Hunter event, Dis(C)ard Hunter item, Setup (G)roups, Perform (B)ats move, T(R)ade items, (U)se item, Get s(O)me rest, Use (H)ospital font, (S)pend resolve, Sleep (Z)zzzz and let Dracula have his turn, (EXIT)");
+        }
     }
 }

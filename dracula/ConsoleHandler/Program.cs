@@ -31,31 +31,32 @@ namespace ConsoleHandler
                 ui.drawGameState(g);
                 commandSet = ui.GetCommandSet();
 
-                switch (commandSet.command)
+                switch (commandSet.command.ToLower())
                 {
-                    case "s": LocationHelper.ShowLocationDetails(g.GetLocationFromName(commandSet.argument1)); break;
-                    case "l": PerformHunterMove(g, commandSet.argument1, commandSet.argument2, ui); break;
-                    case "g": PerformCatchTrain(g, commandSet.argument1, ui); break;
-                    case "r": PerformRevealLocation(g, commandSet.argument1, ui); break;
-                    case "e": PerformRevealEncounter(g, commandSet.argument1, ui); break;
-                    case "k": PerformCombat(g, commandSet.argument1, commandSet.argument2, ui); break;
-                    case "v": PerformPlayEventCard(g, commandSet.argument1, commandSet.argument2, ui); break;
-                    case "h": PerformDraculaDrawCards(g, commandSet.argument1, ui); break;
-                    case "n": PerformHunterDrawEvent(g, commandSet.argument1, ui); break;
+                    //case "s": LocationHelper.ShowLocationDetails(g.GetLocationFromName(commandSet.argument1)); break;
+                    //case "r": PerformRevealLocation(g, commandSet.argument1, ui); break;
+                    //case "e": PerformRevealEncounter(g, commandSet.argument1, ui); break;
+                    //case "f": PerformCombat(g, commandSet.argument1, commandSet.argument2, ui); break;
+                    //case "c": PerformTrailClear(g, commandSet.argument1, ui); break;
+                    case "m": PerformHunterMove(g, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "t": PerformCatchTrain(g, commandSet.argument1, ui); break;
+                    case "e": PerformPlayEventCard(g, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "d": PerformDraculaDrawCards(g, commandSet.argument1, ui); break;
+                    case "v": PerformHunterDrawEvent(g, commandSet.argument1, ui); break;
                     case "i": PerformHunterDrawItem(g, commandSet.argument1, ui); break;
                     case "a": PerformHunterDiscardEvent(g, commandSet.argument1, commandSet.argument2, ui); break;
-                    case "b": PerformHunterDiscardItem(g, commandSet.argument1, commandSet.argument2, ui); break;
-                    case "m": PerformDraculaTurn(g, ui); break;
-                    case "c": PerformTrailClear(g, commandSet.argument1, ui); break;
-                    case "p": SetUpGroups(g, commandSet.argument1, ui); break;
-                    case "j": PerformBatsMove(g, commandSet.argument1, ui); break;
-                    case "q": PerformTrade(g, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "c": PerformHunterDiscardItem(g, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "z": PerformDraculaTurn(g, ui); break;
+                    case "g": SetUpGroups(g, commandSet.argument1, ui); break;
+                    case "b": PerformBatsMove(g, commandSet.argument1, ui); break;
+                    case "r": PerformTrade(g, commandSet.argument1, commandSet.argument2, ui); break;
                     case "u": PerformUseItem(g, commandSet.argument1, commandSet.argument2, ui); break;
                     case "o": PerformRest(g, commandSet.argument1, ui); break;
-                    case "w": PerformHospital(g, commandSet.argument1, ui); break;
-                    case "t": PerformResolve(g, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "h": PerformHospital(g, commandSet.argument1, ui); break;
+                    case "s": PerformResolve(g, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "help": ui.ShowHelp(); break;
                     case "exit": break;
-                    default: Console.WriteLine("I don't know what you're talking about"); break;
+                    default: Console.WriteLine("I don't know what you're talking about, 'help' for help"); break;
                 }
             } while (commandSet.command != "exit");
         }
