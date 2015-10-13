@@ -53,7 +53,7 @@ namespace ConsoleHandler
             }
             else
             {
-                powerName = "No power";
+                powerName = "no power";
                 goingTo = dracula.possibleMoves[chosenActionIndex];
             }
         }
@@ -187,6 +187,11 @@ namespace ConsoleHandler
         internal Event DecideToPlayCardAtStartOfCombat(GameState g)
         {
             return null;
+        }
+
+        internal Location DecideLocationToSendHunterWithControlStorms(int hunterIndex, List<Location> possiblePorts, GameState g)
+        {
+            return possiblePorts[new Random().Next(0, possiblePorts.Count())];
         }
     }
 }

@@ -603,6 +603,18 @@ namespace ConsoleHandler
             return "yes".Contains(line.ToLower()) ? true : false;
         }
 
+        internal int GetIndexOfHunterPlayingEventCard()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who is playing the event card? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
+
         internal int GetHolyWaterResult()
         {
             string line;
@@ -613,6 +625,36 @@ namespace ConsoleHandler
                 line = AskUser();
             } while (!int.TryParse(line, out result) || result < 1 || result > 3);
             return result;
+        }
+
+        internal int GetIndexOfHunterReceivingBloodTransfusion()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who is donating blood? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward (Mina Harker cannot have her bite healed)");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 3);
+            return hunterIndex - 1;
+        }
+
+        internal int GetIndexOfHunterGivingBloodTransfusion()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who is donating blood? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
+
+        internal string GetNameOfLocationWhereStormySeasIsBeingPlayed()
+        {
+            TellUser("Where is Stormy Seas being played?");
+            return AskUser();
         }
 
         internal int GetIndexOfHunterBitten()

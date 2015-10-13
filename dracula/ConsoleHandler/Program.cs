@@ -368,6 +368,10 @@ namespace ConsoleHandler
             {
                 hunterIndex--;
             }
+            if (g.DraculaWillPlayControlStorms(hunterIndex, ui))
+            {
+                return;
+            }
             Location locationToMoveTo = g.GetLocationFromName(argument2);
             while (locationToMoveTo.name == "Unknown location")
             {
@@ -397,7 +401,8 @@ namespace ConsoleHandler
 
         private static void PerformPlayEventCard(GameState g, string argument1, string argument2, UserInterface ui)
         {
-            switch (PlayEventCard(g, argument1, argument2, ui))
+            int hunterIndex = 0;
+            switch (PlayEventCard(g, argument1, argument2, out hunterIndex, ui))
             {
                 case "Rufus Smith": g.PlayRufusSmith(); break;
                 case "Jonathan Harker": g.PlayJonathanHarker(); break;
@@ -405,7 +410,7 @@ namespace ConsoleHandler
                 case "Heroic Leap": g.PlayHeroicLeap(ui); break;
                 case "Great Strength": g.PlayGreatStrength(ui); break;
                 case "Money Trail": g.PlayMoneyTrail(ui); break;
-                case "Sense of Emergency": g.PlaySenseOfEmergency(); break;
+                case "Sense of Emergency": g.PlaySenseOfEmergency(hunterIndex, ui); break;
                 case "Vampiric Lair": g.PlayVampiricLair(); break;
                 case "Long Day": g.PlayLongDay(ui); break;
                 case "Mystic Research": g.PlayMysticResearch(); break;
@@ -414,14 +419,14 @@ namespace ConsoleHandler
                 case "Re-Equip": g.PlayReEquip(); break;
                 case "Consecrated Ground": g.PlayConsecratedGround(); break;
                 case "Telegraph Ahead": g.PlayTelegraphAhead(); break;
-                case "Hypnosis": g.PlayHypnosis(); break;
-                case "Stormy Seas": g.PlayStormySeas(); break;
+                case "Hypnosis": g.PlayHypnosis(ui); break;
+                case "Stormy Seas": g.PlayStormySeas(ui); break;
                 case "Surprising Return": g.PlaySurprisingReturn(); break;
                 case "Good Luck": g.PlayGoodLuck(); break;
-                case "Blood Transfusion": g.PlayBloodTransfusion(); break;
+                case "Blood Transfusion": g.PlayBloodTransfusion(ui); break;
                 case "Secret Weapon": g.PlaySecretWeapon(); break;
                 case "Forewarned": g.PlayForewarned(ui); break;
-                case "Chartered Carriage": g.PlayCharteredCarriage(); break;
+                case "Chartered Carriage": g.PlayCharteredCarriage(ui); break;
                 case "Excellent Weather": g.PlayExcellentWeather(ui); break;
                 case "Escape Route": g.PlayEscapeRoute(ui); break;
                 case "Hired Scouts": g.PlayHiredScouts(ui); break;
@@ -487,13 +492,17 @@ namespace ConsoleHandler
             g.PerformDraculaTurn(ui);
         }
 
-        public static string PlayEventCard(GameState g, string argument1, string argument2, UserInterface ui)
+        public static string PlayEventCard(GameState g, string argument1, string argument2, out int index, UserInterface ui)
         {
             int hunterIndex;
             if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
             {
-                hunterIndex = ui.GetIndexOfMovingHunter();
+                hunterIndex = ui.GetIndexOfHunterPlayingEventCard();
+            } else
+            {
+                hunterIndex--;
             }
+            index = hunterIndex;
             int eventIndex = g.IndexOfEventCardInEventDeck(argument2);
             while (eventIndex == -1)
             {
@@ -501,7 +510,7 @@ namespace ConsoleHandler
                 eventIndex = g.IndexOfEventCardInEventDeck(line);
                 if (eventIndex == -1)
                 {
-                    ui.TellUser("I don't recognise a card starting with " + line + ". Is it in the discard pile?");
+                    ui.TellUser("I don't recognise a card starting with " + line);
                 }
                 else if (g.EventCardIsDraculaCardAtIndex(eventIndex))
                 {
@@ -509,9 +518,10 @@ namespace ConsoleHandler
                     eventIndex = -1;
                 }
             }
-            ui.TellUser(g.NameOfHunterAtIndex(hunterIndex - 1) + " is playing event card " + g.NameOfEventCardAtIndex(eventIndex));
-            Logger.WriteToDebugLog(g.NameOfHunterAtIndex(hunterIndex - 1) + " is playing event card " + g.NameOfEventCardAtIndex(eventIndex));
-            Logger.WriteToGameLog(g.NameOfHunterAtIndex(hunterIndex - 1) + " is playing event card " + g.NameOfEventCardAtIndex(eventIndex));
+            ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " is playing event card " + g.NameOfEventCardAtIndex(eventIndex));
+            Logger.WriteToDebugLog(g.NameOfHunterAtIndex(hunterIndex) + " is playing event card " + g.NameOfEventCardAtIndex(eventIndex));
+            Logger.WriteToGameLog(g.NameOfHunterAtIndex(hunterIndex) + " is playing event card " + g.NameOfEventCardAtIndex(eventIndex));
+            g.DiscardEventFromHunterAtIndex(g.NameOfEventCardAtIndex(eventIndex), hunterIndex);
             return g.NameOfEventCardAtIndex(eventIndex);
         }
         

@@ -362,6 +362,19 @@ namespace ConsoleHandler
             return resolveNextEncounter;
         }
 
+        internal bool DraculaWillPlayControlStorms(int hunterIndex, UserInterface ui)
+        {
+            Event draculaEventCard = dracula.PlayEventCardAtStartOfHunterMovement(this);
+            if (draculaEventCard != null)
+            {
+                switch(draculaEventCard.name)
+                {
+                    case "Control Storms": PlayControlStorms(hunterIndex, ui); return true;
+                }
+            }
+            return false;
+        }
+
         private void PlayForewarnedBeforeEncounter(int hunterIndex, UserInterface ui)
         {
             throw new NotImplementedException();
@@ -448,12 +461,11 @@ namespace ConsoleHandler
         internal void PlayExcellentWeather(UserInterface ui)
         {
             ui.TellUser("You may move up to four sea moves this turn");
-            DiscardEventCard("Excellent Weather");
         }
 
-        internal void PlayCharteredCarriage()
+        internal void PlayCharteredCarriage(UserInterface ui)
         {
-            throw new NotImplementedException();
+            ui.TellUser("You may catch a fast train this turn");
         }
 
         internal void PlayForewarned(UserInterface ui)
@@ -466,9 +478,15 @@ namespace ConsoleHandler
             throw new NotImplementedException();
         }
 
-        internal void PlayBloodTransfusion()
+        internal void PlayBloodTransfusion(UserInterface ui)
         {
-            throw new NotImplementedException();
+            int hunterIndexA = ui.GetIndexOfHunterGivingBloodTransfusion();
+            int hunterIndexB = ui.GetIndexOfHunterReceivingBloodTransfusion();
+            hunters[hunterIndexA].health--;
+            hunters[hunterIndexB].numberOfBites--;
+            ui.TellUser(hunters[hunterIndexA].name + " donated blood (1 health) to " + hunters[hunterIndexB].name + " who was cured of a Bite");
+            Logger.WriteToDebugLog(hunters[hunterIndexA].name + " donated blood (1 health) to " + hunters[hunterIndexB].name + " who was cured of a Bite");
+            Logger.WriteToGameLog(hunters[hunterIndexA].name + " donated blood (1 health) to " + hunters[hunterIndexB].name + " who was cured of a Bite");
         }
 
         internal void PlayGoodLuck()
@@ -481,14 +499,81 @@ namespace ConsoleHandler
             throw new NotImplementedException();
         }
 
-        internal void PlayStormySeas()
+        internal void PlayStormySeas(UserInterface ui)
         {
-            throw new NotImplementedException();
+            Location locationToStorm;
+            do
+            {
+                locationToStorm = GetLocationFromName(ui.GetNameOfLocationWhereStormySeasIsBeingPlayed());
+            } while (locationToStorm.name == "Unknown location" || locationToStorm.type != LocationType.Sea);
+            Logger.WriteToDebugLog("Stormy Seas was played in " + locationToStorm.name);
+            Logger.WriteToGameLog("Stormy Seas was played in " + locationToStorm.name);
+            locationToStorm.turnsUntilStormSubsides = 2;
         }
 
-        internal void PlayHypnosis()
+        internal void PlayHypnosis(UserInterface ui)
         {
-            throw new NotImplementedException();
+            if(ui.GetDieRoll() < 3)
+            {
+                ui.TellUser("Nothing happened");
+                Logger.WriteToDebugLog("Hypnosis was unsuccessful");
+            } else
+            {
+                ui.TellUser("The hypnosis was successful");
+                Logger.WriteToDebugLog("The hypnosis was successful");
+                Logger.WriteToGameLog("The hypnosis was successful");
+                ui.TellUser("Dracula's current location is " + dracula.currentLocation.name);
+                dracula.currentLocation.isRevealed = true;
+                foreach (Location l in dracula.trail)
+                {
+                    foreach (Encounter e in l.encounters)
+                    {
+                        if (e.name == "New Vampire")
+                        {
+                            e.isRevealed = true;
+                            Logger.WriteToDebugLog("Vampire revealed at " + l.name);
+                            Logger.WriteToGameLog("Vampire revealed at " + l.name);
+                        }
+                    }
+                }
+                foreach (Location l in dracula.catacombs)
+                {
+                    foreach (Encounter e in l.encounters)
+                    {
+                        if (e.name == "New Vampire")
+                        {
+                            e.isRevealed = true;
+                            Logger.WriteToDebugLog("Vampire revealed at " + l.name);
+                            Logger.WriteToGameLog("Vampire revealed at " + l.name);
+                        }
+                    }
+                }
+                dracula.DeterminePossibleLocations();
+                dracula.DeterminePossiblePowers(dracula.currentLocation.type == LocationType.Sea ? time : time + 1);
+
+                Logger.WriteToDebugLog("Checking if there are legal moves");
+                if (dracula.possibleMoves.Count() + dracula.possiblePowers.Count() == 0)
+                {
+                    Logger.WriteToDebugLog("Dracula has no legal moves");
+                    ui.TellUser("Dracula is cornered by his own trail");
+                }
+                else if (dracula.possibleMoves.Count() == 0 && dracula.possiblePowers.Count() == 1 && dracula.possiblePowers.Contains(dracula.powers[1]))
+                {
+                    Logger.WriteToDebugLog("Dracula has no regular moves available");
+                    dracula.DeterminePossibleWolfFormLocations();
+                    if (dracula.possibleMoves.Count() == 0)
+                    {
+                        Logger.WriteToDebugLog("Dracula has no moves available by Wolf Form");
+                        ui.TellUser("Dracula is cornered by his own trail");
+                    }
+                    dracula.DeterminePossibleLocations();
+                }
+
+                string powerUsed;
+                Location destination;
+                dracula.logic.DecideMove(this, dracula, out powerUsed, out destination);
+                ui.TellUser("Dracula will use " + powerUsed + " and move to " + destination);
+            }
         }
 
         internal void PlayTelegraphAhead()
@@ -550,7 +635,6 @@ namespace ConsoleHandler
             else
             {
                 AdjustTime(-1);
-                DiscardEventCard("Long Day");
             }
         }
 
@@ -559,9 +643,11 @@ namespace ConsoleHandler
             throw new NotImplementedException();
         }
 
-        internal void PlaySenseOfEmergency()
+        internal void PlaySenseOfEmergency(int hunterIndex, UserInterface ui)
         {
-            throw new NotImplementedException();
+            hunters[hunterIndex].health -= 6;
+            hunters[hunterIndex].health += vampireTracker;
+            ui.TellUser("Adjust " + hunters[hunterIndex].name + "'s health and then perform a move to any location");
         }
 
         internal void PlayMoneyTrail(UserInterface ui)
@@ -571,11 +657,9 @@ namespace ConsoleHandler
             {
                 if (TypeOfLocationAtTrailIndex(i) == LocationType.Sea)
                 {
-                    RevealLocationAtTrailIndex(i, ui);
-                    LocationHelper.RevealLocation(this, i, ui);
+                    RevealLocationAtTrailIndex(i, ui);                    
                 }
-            }
-            DiscardEventCard("Money Trail");
+            }            
         }
 
         internal void PlayGreatStrength(UserInterface ui)
@@ -1689,12 +1773,6 @@ namespace ConsoleHandler
 
         internal void MoveHunterToLocationAtHunterIndex(int hunterIndex, Location locationToMoveTo)
         {
-            Event draculaEventCard = dracula.PlayEventCardAtStartOfHunterMovement(this);
-            if (draculaEventCard != null)
-            {
-                PlayEventCard(draculaEventCard.name);
-            }
-
             foreach (Hunter h in hunters[hunterIndex].huntersInGroup)
             {
                 h.currentLocation = locationToMoveTo;
@@ -1702,24 +1780,62 @@ namespace ConsoleHandler
                 Logger.WriteToGameLog(h.name + " moved to " + locationToMoveTo.name);
             }
 
-            draculaEventCard = dracula.PlayEventCardAtEndOfHunterMovement(this);
+            Event draculaEventCard = dracula.PlayEventCardAtEndOfHunterMovement(this);
             if (draculaEventCard != null)
             {
-                PlayEventCard(draculaEventCard.name);
             }
         }
 
-        private void PlayEventCard(string cardName)
+        private void PlayControlStorms(int hunterIndex, UserInterface ui)
         {
-            switch (cardName)
+            List<Location> possiblePorts = new List<Location>();
+            List<Location> extensionLocations = new List<Location>();
+            foreach (Location loc in hunters[hunterIndex].currentLocation.bySea)
             {
-                case "Control Storms": PlayControlStorms(); break;
+                possiblePorts.Add(loc);
             }
-        }
-
-        private void PlayControlStorms()
-        {
-            throw new NotImplementedException();
+            foreach (Location loc in possiblePorts)
+            {
+                foreach (Location ext in loc.bySea)
+                {
+                    extensionLocations.Add(ext);
+                }
+            }
+            foreach (Location loc in extensionLocations)
+            {
+                if (!possiblePorts.Contains(loc))
+                {
+                    possiblePorts.Add(loc);
+                }
+            }
+            extensionLocations.Clear();
+            foreach (Location loc in possiblePorts)
+            {
+                foreach (Location ext in loc.bySea)
+                {
+                    extensionLocations.Add(ext);
+                }
+            }
+            foreach (Location loc in extensionLocations)
+            {
+                if (!possiblePorts.Contains(loc))
+                {
+                    possiblePorts.Add(loc);
+                }
+            }
+            extensionLocations.Clear();
+            foreach (Location loc in possiblePorts)
+            {
+                if (loc.type != LocationType.City && loc.type != LocationType.Town)
+                {
+                    extensionLocations.Add(loc);
+                }
+            }
+            foreach (Location ext in extensionLocations)
+            {
+                possiblePorts.Remove(ext);
+            }
+            MoveHunterToLocationAtHunterIndex(hunterIndex, dracula.DecideWhereToSendHunterWithControlStorms(hunterIndex, possiblePorts, this));
         }
 
         internal string NameOfHunterAtIndex(int hunterIndex)
@@ -1832,7 +1948,7 @@ namespace ConsoleHandler
             return dracula.trail.Count();
         }
 
-        internal bool LocationIsInTrail(object locationToReveal)
+        internal bool LocationIsInTrail(Location locationToReveal)
         {
             return dracula.trail.Contains(locationToReveal);
         }
@@ -2456,11 +2572,11 @@ namespace ConsoleHandler
                             return true;
                         }
                     }
-                    for (int i = 0; i < huntersEncountered.Count(); i++)
+                    foreach (Hunter h in huntersEncountered)
                     {
-                        Logger.WriteToDebugLog(huntersEncountered[i].name + " is bitten");
-                        Logger.WriteToGameLog(huntersEncountered[i].name + " is bitten");
-                        ui.TellUser(huntersEncountered[i].name + " is bitten");
+                        Logger.WriteToDebugLog(h.name + " is bitten");
+                        Logger.WriteToGameLog(h.name + " is bitten");
+                        ui.TellUser(h.name + " is bitten");
                         discard = true;
                         return (!HandlePossibleHunterDeath(ui));
                     }
@@ -2926,6 +3042,7 @@ namespace ConsoleHandler
                 case 2: break;
                 case 3: hunterToHeal.numberOfBites--; break;
             }
+            DiscardItemFromHunterAtIndex("Holy Water", hunterIndex);
         }
 
         private void PlayHeavenlyHost(int hunterIndex, UserInterface ui)

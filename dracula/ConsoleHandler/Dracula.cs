@@ -284,8 +284,11 @@ namespace DraculaHandler
 
             for (int i = 0; i < currentLocation.bySea.Count(); i++)
             {
-                Logger.WriteToDebugLog("Adding location " + currentLocation.bySea[i].name);
-                possibleMoves.Add(currentLocation.bySea[i]);
+                if (currentLocation.bySea[i].turnsUntilStormSubsides < 1)
+                {
+                    Logger.WriteToDebugLog("Adding location " + currentLocation.bySea[i].name);
+                    possibleMoves.Add(currentLocation.bySea[i]);
+                }
             }
 
             Logger.WriteToDebugLog("Checking trail locations against possible moves");
@@ -973,6 +976,11 @@ namespace DraculaHandler
         internal Event PlayEventCardAtStartOfCombat(GameState g)
         {
             return logic.DecideToPlayCardAtStartOfCombat(g);
+        }
+
+        internal Location DecideWhereToSendHunterWithControlStorms(int hunterIndex, List<Location> possiblePorts, GameState g)
+        {
+            return logic.DecideLocationToSendHunterWithControlStorms(hunterIndex, possiblePorts, g);
         }
     }
 

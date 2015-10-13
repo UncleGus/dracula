@@ -20,6 +20,7 @@ namespace LocationHandler
         public bool isRevealed;
         public List<Encounter> encounters;
         public bool hasHost = false;
+        public int turnsUntilStormSubsides;
 
         public Location()
         {
@@ -28,6 +29,7 @@ namespace LocationHandler
             bySea = new List<Location>();
             encounters = new List<Encounter>();
             isRevealed = false;
+            turnsUntilStormSubsides = 0;
         }
 
         public bool IsPort()
@@ -112,64 +114,64 @@ namespace LocationHandler
         Power
     }
 
-    public static class LocationHelper
-    {
-        public static void ShowLocationDetails(Location location)
-        {
-            Console.WriteLine("Name: " + location.name + " (" + location.abbreviation + ")");
-            Console.WriteLine("Type: " + location.type);
-            if (location.type != LocationType.Sea)
-            {
-                Console.WriteLine("Realm: " + (location.isEastern ? "East" : "West"));
-            }
-            if (location.byRoad.Count() > 0)
-            {
-                Console.WriteLine("Connected by road to:");
-                for (int i = 0; i < location.byRoad.Count(); i++)
-                {
-                    Console.WriteLine("    " + location.byRoad[i].name);
-                }
-            }
-            if (location.byTrain.Count() > 0)
-            {
+    //public static class LocationHelper
+    //{
+    //    public static void ShowLocationDetails(Location location)
+    //    {
+    //        Console.WriteLine("Name: " + location.name + " (" + location.abbreviation + ")");
+    //        Console.WriteLine("Type: " + location.type);
+    //        if (location.type != LocationType.Sea)
+    //        {
+    //            Console.WriteLine("Realm: " + (location.isEastern ? "East" : "West"));
+    //        }
+    //        if (location.byRoad.Count() > 0)
+    //        {
+    //            Console.WriteLine("Connected by road to:");
+    //            for (int i = 0; i < location.byRoad.Count(); i++)
+    //            {
+    //                Console.WriteLine("    " + location.byRoad[i].name);
+    //            }
+    //        }
+    //        if (location.byTrain.Count() > 0)
+    //        {
 
-                Console.WriteLine("Connected by train to:");
-                for (int i = 0; i < location.byTrain.Count(); i++)
-                {
-                    Console.WriteLine("    " + location.byTrain[i].name);
-                }
-            }
-            if (location.bySea.Count() > 0)
-            {
+    //            Console.WriteLine("Connected by train to:");
+    //            for (int i = 0; i < location.byTrain.Count(); i++)
+    //            {
+    //                Console.WriteLine("    " + location.byTrain[i].name);
+    //            }
+    //        }
+    //        if (location.bySea.Count() > 0)
+    //        {
 
-                Console.WriteLine("Connected by sea to:");
-                for (int i = 0; i < location.bySea.Count(); i++)
-                {
-                    Console.WriteLine("    " + location.bySea[i].name);
-                }
-            }
-            if (location.encounters.Count() > 0)
-            {
-                Console.WriteLine("Encounters here:");
-                for (int i = 0; i < location.encounters.Count(); i++)
-                {
-                    Console.WriteLine("    " + location.encounters[i].name);
-                }
-            }
-        }
+    //            Console.WriteLine("Connected by sea to:");
+    //            for (int i = 0; i < location.bySea.Count(); i++)
+    //            {
+    //                Console.WriteLine("    " + location.bySea[i].name);
+    //            }
+    //        }
+    //        if (location.encounters.Count() > 0)
+    //        {
+    //            Console.WriteLine("Encounters here:");
+    //            for (int i = 0; i < location.encounters.Count(); i++)
+    //            {
+    //                Console.WriteLine("    " + location.encounters[i].name);
+    //            }
+    //        }
+    //    }
 
-        public static void RevealLocation(GameState g, int trailIndex, UserInterface ui)
-        {
-            try
-            {
-                g.RevealLocationAtTrailIndex(trailIndex, ui);
-            }
-            catch (ArgumentOutOfRangeException)
-            { }
-        }
+    //    public static void RevealLocation(GameState g, int trailIndex, UserInterface ui)
+    //    {
+    //        try
+    //        {
+    //            g.RevealLocationAtTrailIndex(trailIndex, ui);
+    //        }
+    //        catch (ArgumentOutOfRangeException)
+    //        { }
+    //    }
 
-        public static void RevealEncounter(List<Location> trail, int trailIndex)
-        {
-        }
-    }
+    //    public static void RevealEncounter(List<Location> trail, int trailIndex)
+    //    {
+    //    }
+    //}
 }
