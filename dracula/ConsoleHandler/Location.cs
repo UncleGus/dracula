@@ -20,6 +20,7 @@ namespace LocationHandler
         public bool isRevealed;
         public List<Encounter> encounters;
         public bool hasHost = false;
+        public bool isConsecrated = false;
         public int turnsUntilStormSubsides;
 
         public Location()

@@ -427,10 +427,11 @@ namespace ConsoleHandler
         {
             string line = "";
             int enemyType;
-            do {
+            do
+            {
                 TellUser("Who is the enemy? 1) Dracula 2) Minion with Knife 3) Minion with Knife and Pistol 4) Minion with Knife and Rifle 5) Assassin 6) Vampire");
                 line = AskUser();
-            } while (!int.TryParse(line, out enemyType) || enemyType< 1 || enemyType> 6);
+            } while (!int.TryParse(line, out enemyType) || enemyType < 1 || enemyType > 6);
             return enemyType;
         }
 
@@ -810,6 +811,36 @@ namespace ConsoleHandler
         internal void ShowHelp()
         {
             TellUser("(M)ove hunter, Catch (T)rain, Play (E)vent, Give (D)racula event card, Give Hunter e(V)ent card, Give Hunter (I)tem, Disc(A)rd Hunter event, Dis(C)ard Hunter item, Setup (G)roups, Perform (B)ats move, T(R)ade items, (U)se item, Get s(O)me rest, Use (H)ospital font, (S)pend resolve, Sleep (Z)zzzz and let Dracula have his turn, (EXIT)");
+        }
+
+        internal string GetNameOfLocationToConsecrate()
+        {
+            TellUser("What location do you want to consecrate?");
+            return AskUser();
+        }
+
+        internal string GetEventCardNameBeingReturned()
+        {
+            TellUser("What is the name of the card you are retrieving? (none) if not taking one");
+            return AskUser();
+        }
+
+        internal int GetNameOfHunterKilled()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Who was killed? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+            return hunterIndex - 1;
+        }
+
+        internal string GetNameOfCardInRagedHunterHand()
+        {
+            TellUser("What is the name of the item card you have? (none) if have no more");
+            return AskUser();
         }
     }
 }

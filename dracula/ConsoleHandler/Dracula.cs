@@ -44,7 +44,7 @@ namespace DraculaHandler
             eventHandSize = 4;
         }
 
-        public bool MoveDracula(GameState g, UserInterface ui)
+        public bool DraculaMovementPhase(GameState g, UserInterface ui)
         {
             Logger.WriteToDebugLog("STARTING MOVEMENT PHASE");
 
@@ -136,7 +136,8 @@ namespace DraculaHandler
             }
             else if (eventCardDrawn.type == EventType.PlayImmediately)
             {
-                PlayImmediately(eventCardDrawn);
+                PlayImmediately(g, eventCardDrawn, ui);
+                g.RemoveEventFromEventDeck(eventCardDrawn);
             }
             else
             {
@@ -145,9 +146,37 @@ namespace DraculaHandler
             }
         }
 
-        public void PlayImmediately(Event eventCardDrawn)
+        public void PlayImmediately(GameState g, Event eventCardDrawn, UserInterface ui)
         {
-            throw new NotImplementedException();
+            switch (eventCardDrawn.name)
+            {
+                case "Evasion": PlayEvasion(g, ui); break;
+                case "Night Visit": PlayNightVisit(g, ui); break;
+                case "Vampiric Influence": PlayVampiricInfluence(g, ui); break;
+            }
+        }
+
+        private void PlayVampiricInfluence(GameState g, UserInterface ui)
+        {
+            Hunter hunterToInfluence = logic.DecideWhoToInfluence(g);
+            ui.TellUser(hunterToInfluence.name + " was affected by Dracula's Vampiric Influence and must reveal all cards and tell Dracula their next move");
+            ui.TellUser("Of course, none of this means anything right now because I don't have a brain, so don't bother doing anything");
+        }
+
+        private void PlayNightVisit(GameState g, UserInterface ui)
+        {
+            Hunter hunterToVisit = logic.DecideWhoToNightVisit(g);
+            ui.TellUser(hunterToVisit.name + " was visited by Dracula in the night and loses 2 health");
+            hunterToVisit.health -= 2;
+            g.HandlePossibleHunterDeath(ui);
+        }
+
+        private void PlayEvasion(GameState g, UserInterface ui)
+        {
+            ui.TellUser("Dracula drew Evasion");
+            Location locationToMoveTo = logic.DecideWhereToEvadeTo(g);
+            MoveByRoadOrSea(g, locationToMoveTo, ui);
+            PlaceEncounterIfLegal(g, locationToMoveTo);
         }
 
         public void PlayAlly(GameState g, Event allyDrawn, UserInterface ui)
@@ -314,11 +343,11 @@ namespace DraculaHandler
                     possibleMoves.Remove(catacombs[i]);
                 }
             }
-            Logger.WriteToDebugLog("Checking possible move locations for Heavenly Hosts");
+            Logger.WriteToDebugLog("Checking possible move locations for Heavenly Hosts and Consecrated Ground");
             List<Location> movesToRemove = new List<Location>();
             foreach (Location loc in possibleMoves)
             {
-                if (loc.hasHost)
+                if (loc.hasHost || loc.isConsecrated)
                 {
                     movesToRemove.Add(loc);
                 }
@@ -327,11 +356,11 @@ namespace DraculaHandler
             {
                 possibleMoves.Remove(mov);
             }
-            Logger.WriteToDebugLog("Checking possible double back locations for Heavenly Hosts");
+            Logger.WriteToDebugLog("Checking possible double back locations for Heavenly Hosts and Consecrated Ground");
             movesToRemove.Clear();
             foreach (Location loc in possibleDoubleBackMoves)
             {
-                if (loc.hasHost)
+                if (loc.hasHost || loc.isConsecrated)
                 {
                     movesToRemove.Add(loc);
                 }
@@ -353,7 +382,7 @@ namespace DraculaHandler
             }
             for (int i = 0; i < currentLocation.byRoad.Count(); i++)
             {
-                if (currentLocation.byRoad[i].type != LocationType.Hospital && !currentLocation.byRoad[i].hasHost)
+                if (currentLocation.byRoad[i].type != LocationType.Hospital && !currentLocation.byRoad[i].hasHost && !currentLocation.byRoad[i].isConsecrated)
                 {
                     Logger.WriteToDebugLog("Adding location " + currentLocation.byRoad[i].name);
                     possibleMoves.Add(currentLocation.byRoad[i]);
@@ -371,7 +400,7 @@ namespace DraculaHandler
             {
                 for (int j = 0; j < possibleMoves[i].byRoad.Count(); j++)
                 {
-                    if (!possibleMoves.Contains(possibleMoves[i].byRoad[j]) && !extendedLocations.Contains(possibleMoves[i].byRoad[j]) && possibleMoves[i].byRoad[j].type != LocationType.Hospital && !possibleMoves[i].byRoad[j].hasHost)
+                    if (!possibleMoves.Contains(possibleMoves[i].byRoad[j]) && !extendedLocations.Contains(possibleMoves[i].byRoad[j]) && possibleMoves[i].byRoad[j].type != LocationType.Hospital && !possibleMoves[i].byRoad[j].hasHost && !possibleMoves[i].byRoad[j].isConsecrated)
                     {
                         Logger.WriteToDebugLog("Adding location " + possibleMoves[i].byRoad[j].name);
                         extendedLocations.Add(possibleMoves[i].byRoad[j]);
@@ -410,10 +439,11 @@ namespace DraculaHandler
                         {
                             if (powers[i].name == "Wolf Form")
                             {
+                                // Wolf Form
                                 DeterminePossibleWolfFormLocations();
                                 if (possibleMoves.Count() > 0)
                                 {
-                                    Logger.WriteToDebugLog("Adding power " + powers[i].name + " to the list");
+                                    Logger.WriteToDebugLog("Adding Wolf Form to the list");
                                     possiblePowers.Add(powers[i]);
                                 }
                                 else
@@ -424,8 +454,16 @@ namespace DraculaHandler
                             }
                             else
                             {
-                                Logger.WriteToDebugLog("Adding power " + powers[i].name + " to the list");
-                                possiblePowers.Add(powers[i]);
+                                // Hide, Feed, Dark Call, Double Back
+                                if (currentLocation.isConsecrated || currentLocation.hasHost)
+                                {
+                                    Logger.WriteToDebugLog("Not adding power " + powers[i].name + " to the list as it would cause Dracula to stay in the same location as a Host/Consecrated Ground");
+                                }
+                                else
+                                {
+                                    Logger.WriteToDebugLog("Adding power " + powers[i].name + " to the list");
+                                    possiblePowers.Add(powers[i]);
+                                }
                             }
                         }
                         else
@@ -973,14 +1011,54 @@ namespace DraculaHandler
             return logic.DecideToPlaySeductionDuringVampireEncounter(g);
         }
 
-        internal Event PlayEventCardAtStartOfCombat(GameState g)
+        internal Event PlayEventCardAtStartOfCombat(GameState g, bool trapPlayed)
         {
-            return logic.DecideToPlayCardAtStartOfCombat(g);
+            return logic.DecideToPlayCardAtStartOfCombat(g, trapPlayed);
         }
 
         internal Location DecideWhereToSendHunterWithControlStorms(int hunterIndex, List<Location> possiblePorts, GameState g)
         {
-            return logic.DecideLocationToSendHunterWithControlStorms(hunterIndex, possiblePorts, g);
+            return logic.DecideLocationToSendHunterWithControlStorms(g, hunterIndex, possiblePorts);
+        }
+
+        internal Event WillPlayCustomsSearch(GameState g, Hunter hunter)
+        {
+            return logic.DecideToPlayCustomsSearch(g, hunter);
+        }
+
+        internal Hunter ChooseHunterToRage(List<Hunter> huntersInCombat)
+        {
+            return logic.DecideWhichHunterToRage(huntersInCombat);
+        }
+
+        internal Item ChooseItemCardToDiscard(List<Item> items)
+        {
+            return logic.DecideWhichItemToDiscard(items);
+        }
+
+        internal Location ChooseLocationToSendHuntersToWithWildHorses(GameState g, List<Hunter> hunters)
+        {
+            return logic.DecideWhereToSendHuntersWithWildHorses(g, hunters);
+        }
+
+        internal Event WillPlayRelentlessMinion(GameState g, List<Hunter> huntersEncountered, string enemyType)
+        {
+            return logic.DecideWhetherToPlayRelentlessMinion(g, huntersEncountered, enemyType);
+        }
+
+        internal void PlaceRoadBlockCounter(GameState g, Roadblock roadblockCounter)
+        {
+            logic.DecideWhereToPutRoadblock(g, roadblockCounter);
+        }
+
+        internal Event WillPlaySensationalistPress(GameState g, int trailIndex)
+        {
+            return logic.DecideWhetherToPlaySensationalistPress(g, trailIndex);
+        }
+
+        internal Location DecideWhichPortToGoToAfterStormySeas(GameState g, Location locationStormed)
+        {
+            return logic.DecideWhichPortToGoToAfterStormySeas(g, locationStormed);
         }
     }
 

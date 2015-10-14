@@ -184,14 +184,120 @@ namespace ConsoleHandler
             return null;
         }
 
-        internal Event DecideToPlayCardAtStartOfCombat(GameState g)
+        internal Event DecideToPlayCardAtStartOfCombat(GameState g, bool trapPlayed)
         {
             return null;
         }
 
-        internal Location DecideLocationToSendHunterWithControlStorms(int hunterIndex, List<Location> possiblePorts, GameState g)
+        internal Location DecideLocationToSendHunterWithControlStorms(GameState g, int hunterIndex, List<Location> possiblePorts)
         {
             return possiblePorts[new Random().Next(0, possiblePorts.Count())];
+        }
+
+        internal Event DecideToPlayCustomsSearch(GameState g, Hunter hunter)
+        {
+            return null;
+        }
+
+        internal Location DecideWhereToEvadeTo(GameState g)
+        {
+            List<Location> map = g.GetMap();
+            Location locationToReturn;
+            do {
+            locationToReturn = map[new Random().Next(0, map.Count())];
+            } while (g.LocationIsInTrail(locationToReturn) || g.LocationIsInCatacombs(locationToReturn));
+            return locationToReturn;
+        }
+
+        internal Hunter DecideWhoToNightVisit(GameState g)
+        {
+            List <Hunter> bittenHunters = g.GetBittenHunters();
+            return bittenHunters[new Random().Next(0, bittenHunters.Count())];
+        }
+
+        internal Hunter DecideWhoToInfluence(GameState g)
+        {
+            List<Hunter> bittenHunters = g.GetBittenHunters();
+            return bittenHunters[new Random().Next(0, bittenHunters.Count())];
+        }
+
+        internal Hunter DecideWhichHunterToRage(List<Hunter> huntersInCombat)
+        {
+            return huntersInCombat[new Random().Next(0, huntersInCombat.Count())];
+        }
+
+        internal Item DecideWhichItemToDiscard(List<Item> items)
+        {
+            return items[new Random().Next(0, items.Count())];
+        }
+
+        internal Location DecideWhereToSendHuntersWithWildHorses(GameState g, List<Hunter> hunters)
+        {
+            return hunters.First().currentLocation.byRoad[new Random().Next(0, hunters.First().currentLocation.byRoad.Count())];
+        }
+
+        internal Event DecideWhetherToPlayRelentlessMinion(GameState g, List<Hunter> huntersEncountered, string enemyType)
+        {
+            return null;
+        }
+
+        internal void DecideWhereToPutRoadblock(GameState g, Roadblock roadblockCounter)
+        {
+            List<Location> map = g.GetMap();
+            Location firstLocationToBlock;
+            do
+            {
+                firstLocationToBlock = map[new Random().Next(0, map.Count())];
+            } while (firstLocationToBlock.type != LocationType.City && firstLocationToBlock.type != LocationType.Town);
+            List<Location> secondLocationToBlockCandidates = new List<Location>();
+            foreach (Location loc in firstLocationToBlock.byRoad)
+            {
+                secondLocationToBlockCandidates.Add(loc);
+            }
+            foreach (Location loc in firstLocationToBlock.byTrain)
+            {
+                secondLocationToBlockCandidates.Add(loc);
+            }
+            Location secondLocationToBlock = secondLocationToBlockCandidates[new Random().Next(0, secondLocationToBlockCandidates.Count())];
+            if (firstLocationToBlock.byRoad.Contains(secondLocationToBlock))
+            {
+                if (firstLocationToBlock.byTrain.Contains(secondLocationToBlock))
+                {
+                    if (new Random().Next(0, 2) > 0)
+                    {
+                        roadblockCounter.connectionType = "road";
+                    }
+                    else
+                    {
+                        roadblockCounter.connectionType = "rail";
+                    }
+                }
+                else
+                {
+                    roadblockCounter.connectionType = "road";
+                }
+            }
+            else
+            {
+                roadblockCounter.connectionType = "rail";
+            }
+            roadblockCounter.firstLocation = firstLocationToBlock;
+            roadblockCounter.secondLocation = secondLocationToBlock;
+        }
+
+        internal Event DecideWhetherToPlaySensationalistPress(GameState g, int trailIndex)
+        {
+            return null;
+        }
+
+        internal Location DecideWhichPortToGoToAfterStormySeas(GameState g, Location locationStormed)
+        {
+            Location port;
+            do
+            {
+                port = locationStormed.bySea[new Random().Next(0, locationStormed.bySea.Count())];
+            } while (port.type != LocationType.City && port.type != LocationType.Town);
+            return port;
         }
     }
 }

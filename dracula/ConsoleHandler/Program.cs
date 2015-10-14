@@ -378,7 +378,10 @@ namespace ConsoleHandler
                 locationToMoveTo = g.GetLocationFromName(ui.GetNameOfLocationWhereHunterIsMoving(g.NameOfHunterAtIndex(hunterIndex)));
             }            
             g.MoveHunterToLocationAtHunterIndex(hunterIndex, locationToMoveTo);
-            g.SearchWithHunterAtIndex(hunterIndex, locationToMoveTo, ui);
+            if (!g.DraculaWillPlayCustomsSearch(hunterIndex, ui))
+            {
+                g.SearchWithHunterAtIndex(hunterIndex, locationToMoveTo, ui);
+            }
         }
 
         private static void PerformDraculaDrawCards(GameState g, string argument, UserInterface ui)
@@ -411,17 +414,17 @@ namespace ConsoleHandler
                 case "Great Strength": g.PlayGreatStrength(ui); break;
                 case "Money Trail": g.PlayMoneyTrail(ui); break;
                 case "Sense of Emergency": g.PlaySenseOfEmergency(hunterIndex, ui); break;
-                case "Vampiric Lair": g.PlayVampiricLair(); break;
+                case "Vampire Lair": g.PlayVampireLair(hunterIndex, ui); break;
                 case "Long Day": g.PlayLongDay(ui); break;
-                case "Mystic Research": g.PlayMysticResearch(); break;
+                case "Mystic Research": g.PlayMysticResearch(ui); break;
                 case "Advance Planning": g.PlayAdvancePlanning(ui); break;
                 case "Newspaper Reports": g.PlayNewspaperReports(ui); break;
-                case "Re-Equip": g.PlayReEquip(); break;
-                case "Consecrated Ground": g.PlayConsecratedGround(); break;
-                case "Telegraph Ahead": g.PlayTelegraphAhead(); break;
+                case "Re-Equip": g.PlayReEquip(ui); break;
+                case "Consecrated Ground": g.PlayConsecratedGround(hunterIndex, ui); break;
+                case "Telegraph Ahead": g.PlayTelegraphAhead(hunterIndex, ui); break;
                 case "Hypnosis": g.PlayHypnosis(ui); break;
                 case "Stormy Seas": g.PlayStormySeas(ui); break;
-                case "Surprising Return": g.PlaySurprisingReturn(); break;
+                case "Surprising Return": g.PlaySurprisingReturn(hunterIndex, ui); break;
                 case "Good Luck": g.PlayGoodLuck(); break;
                 case "Blood Transfusion": g.PlayBloodTransfusion(ui); break;
                 case "Secret Weapon": g.PlaySecretWeapon(); break;
