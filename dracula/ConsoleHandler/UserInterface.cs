@@ -32,7 +32,7 @@ namespace ConsoleHandler
         {
             // top line, trail headers, time header, Dracula blood and Vampire track header, Catacombs header, Dracula cards header
             Console.WriteLine("6th 5th 4th 3rd 2nd 1st   Time        Blood    Vampires  Catacombs    Events");
-            // second line, trail cards, time, Dracula blood, Vampires, Catacombs cards
+            // second line, trail cards, time, Dracula blood, Vampires, Catacombs cards, Events
             // trail cards
             for (int i = 5; i >= 0; i--)
             {
@@ -97,7 +97,8 @@ namespace ConsoleHandler
                 }
             }
             Console.ResetColor();
-            Console.WriteLine("  " + g.NumberOfEventCardsInDraculaHand());
+            // Events
+            Console.WriteLine(" " + g.NumberOfEventCardsInDraculaHand());
             // third line power cards, 
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             string tempString;
@@ -765,7 +766,7 @@ namespace ConsoleHandler
             string line;
             do
             {
-                TellUser("Is " + name + " using a card?");
+                TellUser("Is " + name + " using an item or event at the start of this combat?");
                 line = AskUser();
             }
             while (!"yes".Contains(line.ToLower()) && !"no".Contains(line.ToLower()));

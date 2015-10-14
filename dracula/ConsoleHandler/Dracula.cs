@@ -83,7 +83,7 @@ namespace DraculaHandler
             logic.DecideMove(g, this, out powerUsed, out destination);
 
             // choose a power
-            if (powerUsed != "No power")
+            if (powerUsed != "no power")
             {
                 Logger.WriteToDebugLog("Dracula has chosen power " + powerUsed);
                 if (powerUsed != "Double Back" && powerUsed != "Wolf Form")
@@ -975,8 +975,15 @@ namespace DraculaHandler
         public void DoActionPhase(GameState g, UserInterface ui)
         {
             Logger.WriteToDebugLog("PERFORMING ACTION PHASE");
-            Logger.WriteToDebugLog("Placing an encounter");
-            PlaceEncounterIfLegal(g, trail[0]);
+            if (g.IndexOfHunterAtLocation(currentLocation) > -1)
+            {
+                g.ResolveCombat(g.IndexOfHunterAtLocation(currentLocation), 1, ui);
+            }
+            else
+            {
+                Logger.WriteToDebugLog("Placing an encounter");
+                PlaceEncounterIfLegal(g, trail[0]);
+            }
         }
 
         public void MatureEncounters(GameState g, UserInterface ui)

@@ -29,7 +29,7 @@ namespace ConsoleHandler
         private string[] timesOfDay;
         private int resolve;
         private int vampireTracker;
-        private Roadblock roadblockCounter;
+        private Roadblock roadblockCounter = new Roadblock();
 
         public GameState()
         {
@@ -213,6 +213,7 @@ namespace ConsoleHandler
         {
             if (LocationIsInTrail(location) || LocationIsInCatacombs(location))
             {
+                ui.TellUser("Search reveals evidence of Dracula's visit");
                 ResolveEncountersAtLocation(hunters[hunterIndex], location, ui);
                 if (location == dracula.currentLocation)
                 {
@@ -778,6 +779,7 @@ namespace ConsoleHandler
                 do
                 {
                     locationToStorm = GetLocationFromName(ui.GetNameOfLocationWhereStormySeasIsBeingPlayed());
+                    ui.TellUser(locationToStorm.name);
                 } while (locationToStorm.name == "Unknown location" || locationToStorm.type != LocationType.Sea);
                 Logger.WriteToDebugLog("Stormy Seas was played in " + locationToStorm.name);
                 Logger.WriteToGameLog("Stormy Seas was played in " + locationToStorm.name);
@@ -3682,7 +3684,7 @@ namespace ConsoleHandler
                     }
 
             }
-            ui.TellUser(hunters[hunterIndex].name + " is entering combat against " + enemyName + (hunters[hunterIndex].huntersInGroup.Count() > 0 ? " with his group" : ""));
+            ui.TellUser(hunters[hunterIndex].name + " is entering combat against " + enemyName + (hunters[hunterIndex].huntersInGroup.Count() > 1 ? " with his group" : ""));
             Event draculaEventCard = null;
             do
             {
@@ -4424,6 +4426,62 @@ namespace ConsoleHandler
                 }
             }
             return huntersToReturn;
+        }
+
+        internal int IndexOfHunterAtLocation(Location location)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if (hunters[i].currentLocation == location) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        internal void SetupForTesting()
+        {
+            dracula.currentLocation = map.Find(l => l.name == "Paris");
+            hunters[0].currentLocation = map.Find(l => l.name == "Nantes");
+            hunters[1].currentLocation = map.Find(l => l.name == "Nantes");
+            hunters[2].currentLocation = map.Find(l => l.name == "Nantes");
+            hunters[3].currentLocation = map.Find(l => l.name == "Nantes");
+            dracula.trail.Add(dracula.currentLocation);
+            dracula.DrawEncounters(this, dracula.encounterHandSize);
+            hunters[0].numberOfItems = 1;
+            roadblockCounter.connectionType = "rail";
+            roadblockCounter.firstLocation = map.Find(l => l.name == "Paris");
+            roadblockCounter.secondLocation = map.Find(l => l.name == "Nantes");
+            map.Find(l => l.name == "Le Havre").hasHost = true;
+            map.Find(l => l.name == "Plymouth").isConsecrated = true;
+        }
+
+        internal void ShowStateOfGame(UserInterface ui)
+        {
+            ui.TellUser("This is how I see things");
+            foreach (Hunter h in hunters)
+            {
+                ui.TellUser(h.name + " is in " + h.currentLocation.name + " with " + h.health + " health, " + h.numberOfBites + " bites, " + h.numberOfItems + " item card(s), " + h.numberOfEvents + " event card(s)" + (h.hasDogsFaceUp ? " and has Dogs face up" : ""));
+            }
+            foreach (Location loc in map)
+            {
+                if (loc.hasHost)
+                {
+                    ui.TellUser("There is a Heavenly Host at " + loc.name);
+                }
+                if (loc.isConsecrated)
+                {
+                    ui.TellUser(loc.name + " is consecrated");
+                }
+                if (loc.turnsUntilStormSubsides > 0)
+                {
+                    ui.TellUser("There will be a storm in " + loc.name + " for " + loc.turnsUntilStormSubsides + " more turn(s)");
+                }
+            }
+            if (roadblockCounter.connectionType != null)
+            {
+                ui.TellUser("There is a roadblock on the " + roadblockCounter.connectionType + " between " + roadblockCounter.firstLocation.name + " and " + roadblockCounter.secondLocation.name);
+            }
         }
     }
 }

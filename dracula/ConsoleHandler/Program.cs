@@ -15,6 +15,11 @@ namespace ConsoleHandler
             GameState g = new GameState();
             Logger.ClearLogs(ui);
 
+
+#if DEBUG
+            g.SetupForTesting();
+#elif RELEASE
+
             g.SetLocationForHunterAt(0, ui.GetHunterStartLocation(g, 0));
             g.SetLocationForHunterAt(1, ui.GetHunterStartLocation(g, 1));
             g.SetLocationForHunterAt(2, ui.GetHunterStartLocation(g, 2));
@@ -24,6 +29,7 @@ namespace ConsoleHandler
             g.DrawEncountersUpToHandSize();
             PerformDraculaTurn(g, ui);
 
+#endif
             CommandSet commandSet = new CommandSet();
 
             do
@@ -33,11 +39,13 @@ namespace ConsoleHandler
 
                 switch (commandSet.command.ToLower())
                 {
-                    //case "s": LocationHelper.ShowLocationDetails(g.GetLocationFromName(commandSet.argument1)); break;
-                    //case "r": PerformRevealLocation(g, commandSet.argument1, ui); break;
-                    //case "e": PerformRevealEncounter(g, commandSet.argument1, ui); break;
-                    //case "f": PerformCombat(g, commandSet.argument1, commandSet.argument2, ui); break;
-                    //case "c": PerformTrailClear(g, commandSet.argument1, ui); break;
+#if DEBUG                    
+                    case "rl": PerformRevealLocation(g, commandSet.argument1, ui); break;
+                    case "re": PerformRevealEncounter(g, commandSet.argument1, ui); break;
+                    case "fight": PerformCombat(g, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "clear": PerformTrailClear(g, commandSet.argument1, ui); break;
+#endif
+
                     case "m": PerformHunterMove(g, commandSet.argument1, commandSet.argument2, ui); break;
                     case "t": PerformCatchTrain(g, commandSet.argument1, ui); break;
                     case "e": PerformPlayEventCard(g, commandSet.argument1, commandSet.argument2, ui); break;
@@ -55,10 +63,16 @@ namespace ConsoleHandler
                     case "h": PerformHospital(g, commandSet.argument1, ui); break;
                     case "s": PerformResolve(g, commandSet.argument1, commandSet.argument2, ui); break;
                     case "help": ui.ShowHelp(); break;
+                    case "state": ShowKnownState(g, ui); break;
                     case "exit": break;
                     default: Console.WriteLine("I don't know what you're talking about, 'help' for help"); break;
                 }
             } while (commandSet.command != "exit");
+        }
+
+        private static void ShowKnownState(GameState g, UserInterface ui)
+        {
+            g.ShowStateOfGame(ui);
         }
 
         private static void PerformResolve(GameState g, string argument1, string argument2, UserInterface ui)

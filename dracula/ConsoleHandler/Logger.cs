@@ -46,6 +46,8 @@ namespace LogHandler
             {
                 ui.TellUser("Couldn't delete the old game log file");
             }
+            WriteToDebugLog("Start of game");
+            WriteToGameLog("Start of game");
         }
     }
 }
