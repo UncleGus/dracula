@@ -9,6 +9,7 @@ namespace ConsoleHandler
     public class CombatRoundResult
     {
         public string enemyCardUsed;
+        public string hunterTargeted;
         public string outcome;
     }
 }

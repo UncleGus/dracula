@@ -190,7 +190,8 @@ namespace DraculaHandler
                 Logger.WriteToDebugLog("Dracula put " + allyDrawn.name + " into his empty Ally slot");
                 Logger.WriteToGameLog("Dracula put " + allyDrawn.name + " into his empty Ally slot");
                 allyKept = allyDrawn.name;
-            } else
+            }
+            else
             {
                 Logger.WriteToDebugLog("Dracula already has an Ally, deciding which one to keep");
                 string allyToKeep = logic.DecideWhichAllyToKeep(g.NameOfDraculaAlly(), allyDrawn.name);
@@ -520,6 +521,11 @@ namespace DraculaHandler
 
         }
 
+        internal Event WillPlayCardToCancelCharteredCarriage(GameState g)
+        {
+            return logic.DecideWhetherToCancelCharteredCarriage(g);
+        }
+
         public void TrimTrail(GameState g, int length)
         {
             Logger.WriteToDebugLog("Trimming Dracula's trail to length " + length);
@@ -626,7 +632,8 @@ namespace DraculaHandler
                 blood--;
                 lostBloodAtSeaOnLatestTurn = true;
             }
-            else if (currentLocation.type == LocationType.Sea && hunterAllyName == "Rufus Smith") {
+            else if (currentLocation.type == LocationType.Sea && hunterAllyName == "Rufus Smith")
+            {
                 Logger.WriteToDebugLog("Dracula is at sea and Rufus Smith is in play, losing one blood");
                 blood--;
                 lostBloodAtSeaOnLatestTurn = true;
@@ -830,6 +837,22 @@ namespace DraculaHandler
             Logger.WriteToGameLog("Dracula placed encounter " + chosenEncounter.name);
             location.encounters.Add(chosenEncounter);
             encounterHand.Remove(chosenEncounter);
+        }
+
+        internal Event WillPlayDevilishPower(GameState g, UserInterface ui)
+        {
+            Event eventToReturn = logic.DecideWhetherToPlayDevilishPower(g);
+            if (eventToReturn != null)
+            {
+                int hunterIndex = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                if (hunterIndex > 0)
+                {
+                    g.DiscardEventFromHunterAtIndex("Good Luck", hunterIndex);
+                    eventCardsInHand.Remove(eventCardsInHand.Find(c => c.name == "Devilish Power"));
+                    eventToReturn = null;
+                }
+            }
+            return eventToReturn;
         }
 
         public void HandleDroppedOffLocations(GameState g, UserInterface ui)
@@ -1059,6 +1082,55 @@ namespace DraculaHandler
         internal Location DecideWhichPortToGoToAfterStormySeas(GameState g, Location locationStormed)
         {
             return logic.DecideWhichPortToGoToAfterStormySeas(g, locationStormed);
+        }
+
+        internal void PlayDevilishPowerToRemoveHeavenlyHostOrHunterAlly(GameState g, UserInterface ui)
+        {
+            List<Location> map = g.GetMap();
+            if (map.FindIndex(l => l.hasHost == true) > -1)
+            {
+                if (g.HuntersHaveAlly())
+                {
+                }
+                else
+                {
+                    Location locationToRemoveHost = logic.DecideWhichLocationToRemoveHeavenlyHostFrom(g);
+                    ui.TellUser("Dracula played Devilish Power to discard a Heavenly Host from " + locationToRemoveHost.name);
+                    int hunterIndex = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                    if (hunterIndex > 0)
+                    {
+                        g.DiscardEventFromHunterAtIndex("Good Luck", hunterIndex);
+                    }
+                    else
+                    {
+                        locationToRemoveHost.hasHost = false;
+                    }
+                }
+
+            }
+            else
+            {
+                ui.TellUser("Dracula played Devilish Power to discard the Hunters' Ally from play");
+                int hunterIndex = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                if (hunterIndex > 0)
+                {
+                    g.DiscardEventFromHunterAtIndex("Good Luck", hunterIndex);
+                }
+                else
+                {
+                    g.RemoveHunterAlly();
+                }
+            }
+        }
+
+        internal Hunter ChooseHunterToAmbush(Hunter[] hunters)
+        {
+            return logic.DecideWhichHunterToAmbush(hunters);
+        }
+
+        internal Encounter ChooseEncounterToAmbushHunter()
+        {
+            return logic.DecideWhichEncounterToAmbushHunterWith(encounterHand);
         }
     }
 

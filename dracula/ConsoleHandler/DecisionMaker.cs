@@ -299,5 +299,39 @@ namespace ConsoleHandler
             } while (port.type != LocationType.City && port.type != LocationType.Town);
             return port;
         }
+
+        internal Event DecideWhetherToCancelCharteredCarriage(GameState g)
+        {
+            return null;
+        }
+
+        internal Event DecideWhetherToPlayDevilishPower(GameState g)
+        {
+            return null;
+        }
+
+        internal Location DecideWhichLocationToRemoveHeavenlyHostFrom(GameState g)
+        {
+            List<Location> map = g.GetMap();
+            List<Location> locationsWithHost = new List<Location>();
+            foreach (Location loc in map)
+            {
+                if (loc.hasHost)
+                {
+                    locationsWithHost.Add(loc);
+                }
+            }
+            return locationsWithHost[new Random().Next(0, locationsWithHost.Count())];
+        }
+
+        internal Hunter DecideWhichHunterToAmbush(Hunter[] hunters)
+        {
+            return hunters[new Random().Next(0, 4)];
+        }
+
+        internal Encounter DecideWhichEncounterToAmbushHunterWith(List<Encounter> encounterHand)
+        {
+            return encounterHand[new Random().Next(0, encounterHand.Count())];
+        }
     }
 }

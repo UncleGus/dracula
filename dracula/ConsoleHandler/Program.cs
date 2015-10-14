@@ -405,34 +405,112 @@ namespace ConsoleHandler
         private static void PerformPlayEventCard(GameState g, string argument1, string argument2, UserInterface ui)
         {
             int hunterIndex = 0;
-            switch (PlayEventCard(g, argument1, argument2, out hunterIndex, ui))
+            string cardName = PlayEventCard(g, argument1, argument2, out hunterIndex, ui);
+            switch (cardName)
             {
-                case "Rufus Smith": g.PlayRufusSmith(); break;
-                case "Jonathan Harker": g.PlayJonathanHarker(); break;
-                case "Sister Agatha": g.PlaySisterAgatha(); break;
-                case "Heroic Leap": g.PlayHeroicLeap(ui); break;
-                case "Great Strength": g.PlayGreatStrength(ui); break;
-                case "Money Trail": g.PlayMoneyTrail(ui); break;
-                case "Sense of Emergency": g.PlaySenseOfEmergency(hunterIndex, ui); break;
-                case "Vampire Lair": g.PlayVampireLair(hunterIndex, ui); break;
-                case "Long Day": g.PlayLongDay(ui); break;
-                case "Mystic Research": g.PlayMysticResearch(ui); break;
-                case "Advance Planning": g.PlayAdvancePlanning(ui); break;
-                case "Newspaper Reports": g.PlayNewspaperReports(ui); break;
-                case "Re-Equip": g.PlayReEquip(ui); break;
-                case "Consecrated Ground": g.PlayConsecratedGround(hunterIndex, ui); break;
-                case "Telegraph Ahead": g.PlayTelegraphAhead(hunterIndex, ui); break;
-                case "Hypnosis": g.PlayHypnosis(ui); break;
-                case "Stormy Seas": g.PlayStormySeas(ui); break;
-                case "Surprising Return": g.PlaySurprisingReturn(hunterIndex, ui); break;
-                case "Good Luck": g.PlayGoodLuck(); break;
-                case "Blood Transfusion": g.PlayBloodTransfusion(ui); break;
-                case "Secret Weapon": g.PlaySecretWeapon(); break;
-                case "Forewarned": g.PlayForewarned(ui); break;
-                case "Chartered Carriage": g.PlayCharteredCarriage(ui); break;
-                case "Excellent Weather": g.PlayExcellentWeather(ui); break;
-                case "Escape Route": g.PlayEscapeRoute(ui); break;
-                case "Hired Scouts": g.PlayHiredScouts(ui); break;
+                case "Rufus Smith":
+                    g.PlayRufusSmith();
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    break;
+                case "Jonathan Harker":
+                    g.PlayJonathanHarker();
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    break;
+                case "Sister Agatha":
+                    g.PlaySisterAgatha();
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    break;
+                case "Heroic Leap":
+                    g.PlayHeroicLeap(ui);
+                    break;
+                case "Great Strength":
+                    g.PlayGreatStrength(ui);
+                    break;
+                case "Money Trail":
+                    g.PlayMoneyTrail(ui);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    break;
+                case "Sense of Emergency":
+                    g.PlaySenseOfEmergency(hunterIndex, ui);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    break;
+                case "Vampire Lair":
+                    g.PlayVampireLair(hunterIndex, ui);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    break;
+                case "Long Day":
+                    if (g.Time() < 1)
+                    {
+                        ui.TellUser("You cannot play Long Day during Dawn");
+                    }
+                    else
+                    {
+                        g.PlayLongDay(ui);
+                        g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    }
+                    break;
+                case "Mystic Research":
+                    g.PlayMysticResearch(ui);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    break;
+                case "Advance Planning":
+                    g.PlayAdvancePlanning(ui);
+                    break;
+                case "Newspaper Reports":
+                    g.PlayNewspaperReports(ui);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    break;
+                case "Re-Equip":
+                    g.PlayReEquip(ui);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    break;
+                case "Consecrated Ground":
+                    g.PlayConsecratedGround(hunterIndex, ui);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    break;
+                case "Telegraph Ahead":
+                    g.PlayTelegraphAhead(hunterIndex, ui);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    break;
+                case "Hypnosis":
+                    g.PlayHypnosis(ui);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    break;
+                case "Stormy Seas":
+                    g.PlayStormySeas(ui);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    break;
+                case "Surprising Return":
+                    g.PlaySurprisingReturn(hunterIndex, ui);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    break;
+                case "Good Luck":
+                    g.PlayGoodLuck(ui);
+                    break;
+                case "Blood Transfusion":
+                    g.PlayBloodTransfusion(ui);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    break;
+                case "Secret Weapon":
+                    g.PlaySecretWeapon(ui);
+                    break;
+                case "Forewarned":
+                    g.PlayForewarned(ui);
+                    break;
+                case "Chartered Carriage":
+                    g.PlayCharteredCarriage(ui);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    break;
+                case "Excellent Weather":
+                    g.PlayExcellentWeather(ui);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    break;
+                case "Escape Route":
+                    g.PlayEscapeRoute(ui);
+                    break;
+                case "Hired Scouts":
+                    g.PlayHiredScouts(ui);
+                    break;
             }
         }
 
@@ -524,7 +602,6 @@ namespace ConsoleHandler
             ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " is playing event card " + g.NameOfEventCardAtIndex(eventIndex));
             Logger.WriteToDebugLog(g.NameOfHunterAtIndex(hunterIndex) + " is playing event card " + g.NameOfEventCardAtIndex(eventIndex));
             Logger.WriteToGameLog(g.NameOfHunterAtIndex(hunterIndex) + " is playing event card " + g.NameOfEventCardAtIndex(eventIndex));
-            g.DiscardEventFromHunterAtIndex(g.NameOfEventCardAtIndex(eventIndex), hunterIndex);
             return g.NameOfEventCardAtIndex(eventIndex);
         }
         

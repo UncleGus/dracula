@@ -435,6 +435,12 @@ namespace ConsoleHandler
             return enemyType;
         }
 
+        internal string GetNameOfItemRetrievedFromDiscardByHunter(string name)
+        {
+            TellUser("What is the name of the item being retrieved from the discard pile?");
+            return AskUser();
+        }
+
         internal string GetCombatCardFromHunter(string name)
         {
             TellUser("What card did " + name + " use?");
@@ -841,6 +847,42 @@ namespace ConsoleHandler
         {
             TellUser("What is the name of the item card you have? (none) if have no more");
             return AskUser();
+        }
+
+        internal bool AskIfHunterIsUsingGreatStrengthToCancelBite(string name)
+        {
+            string line;
+            do
+            {
+                TellUser("Will " + name + " cancel the bite with a Great Strength?");
+                line = AskUser();
+            }
+            while (!"yes".Contains(line.ToLower()) && !"no".Contains(line.ToLower()));
+            return "yes".Contains(line.ToLower()) ? true : false;
+        }
+
+        internal bool AskIfHunterIsUsingGreatStrengthToCancelDamage(string name)
+        {
+            string line;
+            do
+            {
+                TellUser("Will " + name + " cancel the damage with a Great Strength?");
+                line = AskUser();
+            }
+            while (!"yes".Contains(line.ToLower()) && !"no".Contains(line.ToLower()));
+            return "yes".Contains(line.ToLower()) ? true : false;
+        }
+
+        internal int AskWhichHunterIsUsingGoodLuckToCancelEvent()
+        {
+            string line = "";
+            int hunterIndex;
+            do
+            {
+                TellUser("Will anyone play Good Luck to cancel this event card? 0 = Nobody; 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                line = AskUser();
+            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 0 || hunterIndex > 4);
+            return hunterIndex - 1;
         }
     }
 }

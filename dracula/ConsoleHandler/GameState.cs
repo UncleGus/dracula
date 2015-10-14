@@ -250,9 +250,24 @@ namespace ConsoleHandler
             if (firstEncounter != null)
             {
                 int hunterIndex = ui.GetHunterPlayingSecretWeapon(firstEncounter.name);
+                DiscardEventFromHunterAtIndex("Secret Weapon", hunterIndex);
                 if (hunterIndex > 0)
                 {
-                    PlaySecretWeaponBeforeEncounter(hunterIndex, ui);
+                    Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                    if (draculaEventCard != null)
+                    {
+                        switch (draculaEventCard.name)
+                        {
+                            case "DevilishPower":
+                                ui.TellUser("Dracula played Devilish power to cancel this event");
+                                DiscardEventFromDracula("Devilish Power");
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        PlaySecretWeaponBeforeEncounter(hunterIndex, ui);
+                    }
                 }
 
                 resolveNextEncounter = ResolveEncounter(firstEncounter, hunter, out discardEncounter, ui);
@@ -284,81 +299,127 @@ namespace ConsoleHandler
 
         private void PlaySecretWeaponBeforeEncounter(int hunterIndex, UserInterface ui)
         {
-            throw new NotImplementedException();
+            string line = "";
+            do
+            {
+                line = ui.GetNameOfItemDiscardedByHunter(hunters[hunterIndex].name);
+            } while (GetItemByNameFromItemDeck(line).name == "Unknown item");
+            DiscardItemFromHunterAtIndex(line, hunterIndex);
+            do
+            {
+                line = ui.GetNameOfItemRetrievedFromDiscardByHunter(hunters[hunterIndex].name);
+            } while (GetItemByNameFromItemDiscard(line).name == "Unknown item");
+            hunters[hunterIndex].numberOfItems++;
+
+        }
+
+        private Item GetItemByNameFromItemDiscard(string line)
+        {
+            try
+            {
+                return itemDiscard[itemDiscard.FindIndex(card => card.name.ToLower().StartsWith(line.ToLower()))];
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return new Item("Unknown item");
+            }
         }
 
         private bool ResolveEncounter(Encounter enc, Hunter hunter, out bool discard, UserInterface ui)
         {
             bool resolveNextEncounter = true;
             discard = true;
-            int hunterIndex = ui.GetHunterPlayingForewarned(enc.name);
-            if (hunterIndex > 0)
+            bool resolvingEventCards = true;
+            int hunterIndex;
+            Event draculaEventCard;
+            while (resolvingEventCards)
             {
-                PlayForewarnedBeforeEncounter(hunterIndex, ui);
-            }
-            else
-            {
-                switch (enc.name)
+                hunterIndex = ui.GetHunterPlayingForewarned(enc.name);
+                if (hunterIndex > 0)
                 {
-                    case "Ambush":
-                        resolveNextEncounter = ResolveAmbush(hunter.huntersInGroup, ui);
-                        break;
-                    case "Assasin":
-                        resolveNextEncounter = ResolveAssassin(hunter.huntersInGroup, ui);
-                        break;
-                    case "Bats":
-                        resolveNextEncounter = ResolveBats(hunter.huntersInGroup, ui);
-                        discard = false;
-                        break;
-                    case "Desecrated Soil":
-                        resolveNextEncounter = ResolveDesecratedSoil(hunter.huntersInGroup, ui);
-                        break;
-                    case "Fog":
-                        resolveNextEncounter = ResolveFog(hunter.huntersInGroup, ui);
-                        discard = false;
-                        break;
-                    case "Minion with Knife":
-                        resolveNextEncounter = ResolveMinionWithKnife(hunter.huntersInGroup, ui);
-                        break;
-                    case "Minion with Knife and Pistol":
-                        resolveNextEncounter = ResolveMinionWithKnifeAndPistol(hunter.huntersInGroup, ui);
-                        break;
-                    case "Minion with Knife and Rifle":
-                        resolveNextEncounter = ResolveMinionWithKnifeAndRifle(hunter.huntersInGroup, ui);
-                        break;
-                    case "Hoax":
-                        resolveNextEncounter = ResolveHoax(hunter.huntersInGroup, ui);
-                        break;
-                    case "Lightning":
-                        resolveNextEncounter = ResolveLightning(hunter.huntersInGroup, ui);
-                        break;
-                    case "Peasants":
-                        resolveNextEncounter = ResolvePeasants(hunter.huntersInGroup, ui);
-                        break;
-                    case "Plague":
-                        resolveNextEncounter = ResolvePlague(hunter.huntersInGroup, ui);
-                        break;
-                    case "Rats":
-                        resolveNextEncounter = ResolveRats(hunter.huntersInGroup, ui);
-                        break;
-                    case "Saboteur":
-                        resolveNextEncounter = ResolveSaboteur(hunter.huntersInGroup, ui);
-                        break;
-                    case "Spy":
-                        resolveNextEncounter = ResolveSpy(hunter.huntersInGroup, ui);
-                        break;
-                    case "Thief":
-                        resolveNextEncounter = ResolveThief(hunter.huntersInGroup, ui);
-                        break;
-                    case "New Vampire":
-                        bool discardVampire = true;
-                        resolveNextEncounter = ResolveNewVampire(hunter.huntersInGroup, out discardVampire, ui);
-                        discard = discardVampire;
-                        break;
-                    case "Wolves":
-                        resolveNextEncounter = ResolveWolves(hunter.huntersInGroup, ui);
-                        break;
+                    draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                    if (draculaEventCard != null)
+                    {
+                        switch (draculaEventCard.name)
+                        {
+                            case "DevilishPower":
+                                ui.TellUser("Dracula played Devilish power to cancel this event");
+                                DiscardEventFromDracula("Devilish Power");
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        PlayForewarnedBeforeEncounter(hunterIndex, ui);
+                        return true;
+                    }
                 }
+                else
+                {
+                    resolvingEventCards = false;
+                }
+            }
+            switch (enc.name)
+            {
+                case "Ambush":
+                    resolveNextEncounter = ResolveAmbush(hunter.huntersInGroup, ui);
+                    break;
+                case "Assasin":
+                    resolveNextEncounter = ResolveAssassin(hunter.huntersInGroup, ui);
+                    break;
+                case "Bats":
+                    resolveNextEncounter = ResolveBats(hunter.huntersInGroup, ui);
+                    discard = false;
+                    break;
+                case "Desecrated Soil":
+                    resolveNextEncounter = ResolveDesecratedSoil(hunter.huntersInGroup, ui);
+                    break;
+                case "Fog":
+                    resolveNextEncounter = ResolveFog(hunter.huntersInGroup, ui);
+                    discard = false;
+                    break;
+                case "Minion with Knife":
+                    resolveNextEncounter = ResolveMinionWithKnife(hunter.huntersInGroup, ui);
+                    break;
+                case "Minion with Knife and Pistol":
+                    resolveNextEncounter = ResolveMinionWithKnifeAndPistol(hunter.huntersInGroup, ui);
+                    break;
+                case "Minion with Knife and Rifle":
+                    resolveNextEncounter = ResolveMinionWithKnifeAndRifle(hunter.huntersInGroup, ui);
+                    break;
+                case "Hoax":
+                    resolveNextEncounter = ResolveHoax(hunter.huntersInGroup, ui);
+                    break;
+                case "Lightning":
+                    resolveNextEncounter = ResolveLightning(hunter.huntersInGroup, ui);
+                    break;
+                case "Peasants":
+                    resolveNextEncounter = ResolvePeasants(hunter.huntersInGroup, ui);
+                    break;
+                case "Plague":
+                    resolveNextEncounter = ResolvePlague(hunter.huntersInGroup, ui);
+                    break;
+                case "Rats":
+                    resolveNextEncounter = ResolveRats(hunter.huntersInGroup, ui);
+                    break;
+                case "Saboteur":
+                    resolveNextEncounter = ResolveSaboteur(hunter.huntersInGroup, ui);
+                    break;
+                case "Spy":
+                    resolveNextEncounter = ResolveSpy(hunter.huntersInGroup, ui);
+                    break;
+                case "Thief":
+                    resolveNextEncounter = ResolveThief(hunter.huntersInGroup, ui);
+                    break;
+                case "New Vampire":
+                    bool discardVampire = true;
+                    resolveNextEncounter = ResolveNewVampire(hunter.huntersInGroup, out discardVampire, ui);
+                    discard = discardVampire;
+                    break;
+                case "Wolves":
+                    resolveNextEncounter = ResolveWolves(hunter.huntersInGroup, ui);
+                    break;
+
             }
             return resolveNextEncounter;
         }
@@ -406,30 +467,66 @@ namespace ConsoleHandler
 
         internal void PlayHiredScouts(UserInterface ui)
         {
-            string line = "";
-            Location locationToReveal;
-            do
+            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            if (draculaEventCard != null)
             {
-                line = ui.GetFirstLocationNameForHiredScouts();
-                locationToReveal = GetLocationFromName(line);
-                ui.TellUser(locationToReveal.name);
-            } while (locationToReveal.name == "Unknown location");
-            if (LocationIsInTrail(locationToReveal))
-            {
-                Event draculaEventCard = dracula.WillPlaySensationalistPress(this, 0);
-                if (draculaEventCard != null)
+                switch (draculaEventCard.name)
                 {
-                    switch (draculaEventCard.name)
+                    case "DevilishPower":
+                        ui.TellUser("Dracula played Devilish power to cancel this event");
+                        DiscardEventFromDracula("Devilish Power");
+                        break;
+                }
+            }
+            else
+            {
+                string line = "";
+                Location locationToReveal;
+                do
+                {
+                    line = ui.GetFirstLocationNameForHiredScouts();
+                    locationToReveal = GetLocationFromName(line);
+                    ui.TellUser(locationToReveal.name);
+                } while (locationToReveal.name == "Unknown location");
+                if (LocationIsInTrail(locationToReveal))
+                {
+                    draculaEventCard = dracula.WillPlaySensationalistPress(this, 0);
+                    if (draculaEventCard != null)
                     {
-                        case "Sensationalist Press":
-                            ui.TellUser("Dracula played Sensationalist Press to cancel revealing" + locationToReveal.name);
-                            DiscardEventFromDracula("Sensationalist Press");
-                            break;
+                        switch (draculaEventCard.name)
+                        {
+                            case "Sensationalist Press":
+                                ui.TellUser("Dracula played Sensationalist Press to cancel revealing" + locationToReveal.name);
+                                DiscardEventFromDracula("Sensationalist Press");
+                                break;
+                        }
+                    }
+                    else
+                    {
+
+                        locationToReveal.isRevealed = true;
+                        ui.TellUser("Revealing " + locationToReveal.name);
+                        for (int i = 0; i < locationToReveal.encounters.Count(); i++)
+                        {
+                            locationToReveal.encounters[i].isRevealed = true;
+                            ui.TellUser(" and " + locationToReveal.encounters[i].name);
+                        }
+                        ui.TellUser("");
+                        ui.drawGameState(this);
                     }
                 }
                 else
                 {
-
+                    ui.TellUser(locationToReveal.name + " is not in Dracula's trail");
+                }
+                do
+                {
+                    line = ui.GetSecondLocationNameForHiredScouts();
+                    locationToReveal = GetLocationFromName(line);
+                    ui.TellUser(locationToReveal.name);
+                } while (locationToReveal.name == "Unknown location");
+                if (LocationIsInTrail(locationToReveal))
+                {
                     locationToReveal.isRevealed = true;
                     ui.TellUser("Revealing " + locationToReveal.name);
                     for (int i = 0; i < locationToReveal.encounters.Count(); i++)
@@ -438,36 +535,13 @@ namespace ConsoleHandler
                         ui.TellUser(" and " + locationToReveal.encounters[i].name);
                     }
                     ui.TellUser("");
-                    ui.drawGameState(this);
                 }
-            }
-            else
-            {
-                ui.TellUser(locationToReveal.name + " is not in Dracula's trail");
-            }
-            do
-            {
-                line = ui.GetSecondLocationNameForHiredScouts();
-                locationToReveal = GetLocationFromName(line);
-                ui.TellUser(locationToReveal.name);
-            } while (locationToReveal.name == "Unknown location");
-            if (LocationIsInTrail(locationToReveal))
-            {
-                locationToReveal.isRevealed = true;
-                ui.TellUser("Revealing " + locationToReveal.name);
-                for (int i = 0; i < locationToReveal.encounters.Count(); i++)
+                else
                 {
-                    locationToReveal.encounters[i].isRevealed = true;
-                    ui.TellUser(" and " + locationToReveal.encounters[i].name);
+                    ui.TellUser(locationToReveal.name + " is not in Dracula's trail");
                 }
-                ui.TellUser("");
+                DiscardEventCard("Hired Scouts");
             }
-            else
-            {
-                ui.TellUser(locationToReveal.name + " is not in Dracula's trail");
-            }
-            DiscardEventCard("Hired Scouts");
-
         }
 
         internal void PlayEscapeRoute(UserInterface ui)
@@ -477,12 +551,39 @@ namespace ConsoleHandler
 
         internal void PlayExcellentWeather(UserInterface ui)
         {
-            ui.TellUser("You may move up to four sea moves this turn");
+            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            if (draculaEventCard != null)
+            {
+                switch (draculaEventCard.name)
+                {
+                    case "DevilishPower":
+                        ui.TellUser("Dracula played Devilish power to cancel this event");
+                        DiscardEventFromDracula("Devilish Power");
+                        break;
+                }
+            }
+            else
+            {
+                ui.TellUser("You may move up to four sea moves this turn");
+            }
         }
 
         internal void PlayCharteredCarriage(UserInterface ui)
         {
-            ui.TellUser("You may catch a fast train this turn");
+            Event draculaEventCard = dracula.WillPlayCardToCancelCharteredCarriage(this);
+            if (draculaEventCard != null)
+            {
+                switch (draculaEventCard.name)
+                {
+                    case "False Tip-off":
+                        ui.TellUser("Dracula played False Tip-off to cancel your Chartered Carriage");
+                        DiscardEventFromDracula("False Tip-off");
+                        break;
+                }
+            }
+            else
+
+                ui.TellUser("You may catch a fast train this turn");
         }
 
         internal void PlayForewarned(UserInterface ui)
@@ -490,38 +591,66 @@ namespace ConsoleHandler
             ui.TellUser("Forewarned is supposed to be played when Dracula reveals an encounter at your location");
         }
 
-        internal void PlaySecretWeapon()
+        internal void PlaySecretWeapon(UserInterface ui)
         {
-            throw new NotImplementedException();
+            ui.TellUser("Secret Weapon is supposed to be played when Dracula reveals an encounter at your location");
         }
 
         internal void PlayBloodTransfusion(UserInterface ui)
         {
-            int hunterIndexA = ui.GetIndexOfHunterGivingBloodTransfusion();
-            int hunterIndexB = ui.GetIndexOfHunterReceivingBloodTransfusion();
-            hunters[hunterIndexA].health--;
-            hunters[hunterIndexB].numberOfBites--;
-            ui.TellUser(hunters[hunterIndexA].name + " donated blood (1 health) to " + hunters[hunterIndexB].name + " who was cured of a Bite");
-            Logger.WriteToDebugLog(hunters[hunterIndexA].name + " donated blood (1 health) to " + hunters[hunterIndexB].name + " who was cured of a Bite");
-            Logger.WriteToGameLog(hunters[hunterIndexA].name + " donated blood (1 health) to " + hunters[hunterIndexB].name + " who was cured of a Bite");
+            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            if (draculaEventCard != null)
+            {
+                switch (draculaEventCard.name)
+                {
+                    case "DevilishPower":
+                        ui.TellUser("Dracula played Devilish power to cancel this event");
+                        DiscardEventFromDracula("Devilish Power");
+                        break;
+                }
+            }
+            else
+            {
+                int hunterIndexA = ui.GetIndexOfHunterGivingBloodTransfusion();
+                int hunterIndexB = ui.GetIndexOfHunterReceivingBloodTransfusion();
+                hunters[hunterIndexA].health--;
+                hunters[hunterIndexB].numberOfBites--;
+                ui.TellUser(hunters[hunterIndexA].name + " donated blood (1 health) to " + hunters[hunterIndexB].name + " who was cured of a Bite");
+                Logger.WriteToDebugLog(hunters[hunterIndexA].name + " donated blood (1 health) to " + hunters[hunterIndexB].name + " who was cured of a Bite");
+                Logger.WriteToGameLog(hunters[hunterIndexA].name + " donated blood (1 health) to " + hunters[hunterIndexB].name + " who was cured of a Bite");
+            }
         }
 
-        internal void PlayGoodLuck()
+        internal void PlayGoodLuck(UserInterface ui)
         {
-            throw new NotImplementedException();
+            ui.TellUser("You are supposed to use Good Luck to cancel Dracula's events, I will ask you whenever he plays one");
         }
 
         internal void PlaySurprisingReturn(int hunterIndex, UserInterface ui)
         {
-            string cardToReclaim;
-            do
+            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            if (draculaEventCard != null)
             {
-                cardToReclaim = ui.GetEventCardNameBeingReturned();
-            } while (cardToReclaim.ToLower() != "none" && GetEventByNameFromEventDiscard(cardToReclaim).name == "Unknown event");
-            if (cardToReclaim.ToLower() != "none")
+                switch (draculaEventCard.name)
+                {
+                    case "DevilishPower":
+                        ui.TellUser("Dracula played Devilish power to cancel this event");
+                        DiscardEventFromDracula("Devilish Power");
+                        break;
+                }
+            }
+            else
             {
-                AddEventCardToHunterAtIndex(hunterIndex);
-                ui.TellUser("Don't forget to tell me what you discarded");
+                string cardToReclaim;
+                do
+                {
+                    cardToReclaim = ui.GetEventCardNameBeingReturned();
+                } while (cardToReclaim.ToLower() != "none" && GetEventByNameFromEventDiscard(cardToReclaim).name == "Unknown event");
+                if (cardToReclaim.ToLower() != "none")
+                {
+                    AddEventCardToHunterAtIndex(hunterIndex);
+                    ui.TellUser("Don't forget to tell me what you discarded");
+                }
             }
         }
 
@@ -539,218 +668,302 @@ namespace ConsoleHandler
 
         internal void PlayStormySeas(UserInterface ui)
         {
-            Location locationToStorm;
-            do
+            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            if (draculaEventCard != null)
             {
-                locationToStorm = GetLocationFromName(ui.GetNameOfLocationWhereStormySeasIsBeingPlayed());
-            } while (locationToStorm.name == "Unknown location" || locationToStorm.type != LocationType.Sea);
-            Logger.WriteToDebugLog("Stormy Seas was played in " + locationToStorm.name);
-            Logger.WriteToGameLog("Stormy Seas was played in " + locationToStorm.name);
-            locationToStorm.turnsUntilStormSubsides = 2;
-            if (locationToStorm == dracula.currentLocation)
-            {
-                locationToStorm.isRevealed = true;
-                ui.TellUser("That is where Dracula was");
-                Location locationToMoveTo = dracula.DecideWhichPortToGoToAfterStormySeas(this, locationToStorm);
-                dracula.MoveByRoadOrSea(this, locationToMoveTo, ui);
-                Event draculaEventCard = dracula.WillPlaySensationalistPress(this, 0);
-                if (draculaEventCard != null)
+                switch (draculaEventCard.name)
                 {
-                    switch (draculaEventCard.name)
+                    case "DevilishPower":
+                        ui.TellUser("Dracula played Devilish power to cancel this event");
+                        DiscardEventFromDracula("Devilish Power");
+                        break;
+                }
+            }
+            else
+            {
+                Location locationToStorm;
+                do
+                {
+                    locationToStorm = GetLocationFromName(ui.GetNameOfLocationWhereStormySeasIsBeingPlayed());
+                } while (locationToStorm.name == "Unknown location" || locationToStorm.type != LocationType.Sea);
+                Logger.WriteToDebugLog("Stormy Seas was played in " + locationToStorm.name);
+                Logger.WriteToGameLog("Stormy Seas was played in " + locationToStorm.name);
+                locationToStorm.turnsUntilStormSubsides = 2;
+                if (locationToStorm == dracula.currentLocation)
+                {
+                    locationToStorm.isRevealed = true;
+                    ui.TellUser("That is where Dracula was");
+                    Location locationToMoveTo = dracula.DecideWhichPortToGoToAfterStormySeas(this, locationToStorm);
+                    dracula.MoveByRoadOrSea(this, locationToMoveTo, ui);
+                    draculaEventCard = dracula.WillPlaySensationalistPress(this, 0);
+                    if (draculaEventCard != null)
                     {
-                        case "Sensationalist Press":
-                            ui.TellUser("Dracula played Sensationalist Press to cancel revealing the port he went to");
-                            DiscardEventFromDracula("Sensationalist Press");
-                            break;
+                        switch (draculaEventCard.name)
+                        {
+                            case "Sensationalist Press":
+                                ui.TellUser("Dracula played Sensationalist Press to cancel revealing the port he went to");
+                                DiscardEventFromDracula("Sensationalist Press");
+                                break;
+                        }
                     }
+                    else
+                    {
+                        dracula.trail[0].isRevealed = true;
+                    }
+                    dracula.HandleDroppedOffLocations(this, ui);
+                    dracula.MatureEncounters(this, ui);
                 }
-                else
-                {
-                    dracula.trail[0].isRevealed = true;
-                }
-                dracula.HandleDroppedOffLocations(this, ui);
-                dracula.MatureEncounters(this, ui);
             }
         }
 
         internal void PlayHypnosis(UserInterface ui)
         {
-            if (ui.GetDieRoll() < 3)
+            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            if (draculaEventCard != null)
             {
-                ui.TellUser("Nothing happened");
-                Logger.WriteToDebugLog("Hypnosis was unsuccessful");
+                switch (draculaEventCard.name)
+                {
+                    case "DevilishPower":
+                        ui.TellUser("Dracula played Devilish power to cancel this event");
+                        DiscardEventFromDracula("Devilish Power");
+                        break;
+                }
             }
             else
             {
-                ui.TellUser("The hypnosis was successful");
-                Logger.WriteToDebugLog("The hypnosis was successful");
-                Logger.WriteToGameLog("The hypnosis was successful");
-                Event draculaEventCard = dracula.WillPlaySensationalistPress(this, 0);
-                if (draculaEventCard != null)
+                if (ui.GetDieRoll() < 3)
                 {
-                    switch (draculaEventCard.name)
-                    {
-                        case "Sensationalist Press":
-                            ui.TellUser("Dracula played Sensationalist Press to cancel revealing his current location");
-                            DiscardEventFromDracula("Sensationalist Press");
-                            break;
-                    }
+                    ui.TellUser("Nothing happened");
+                    Logger.WriteToDebugLog("Hypnosis was unsuccessful");
                 }
                 else
                 {
-                    ui.TellUser("Dracula's current location is " + dracula.currentLocation.name);
-                    dracula.currentLocation.isRevealed = true;
-                }
-                foreach (Location l in dracula.trail)
-                {
-                    foreach (Encounter e in l.encounters)
+                    ui.TellUser("The hypnosis was successful");
+                    Logger.WriteToDebugLog("The hypnosis was successful");
+                    Logger.WriteToGameLog("The hypnosis was successful");
+                    draculaEventCard = dracula.WillPlaySensationalistPress(this, 0);
+                    if (draculaEventCard != null)
                     {
-                        if (e.name == "New Vampire")
+                        switch (draculaEventCard.name)
                         {
-                            e.isRevealed = true;
-                            Logger.WriteToDebugLog("Vampire revealed at " + l.name);
-                            Logger.WriteToGameLog("Vampire revealed at " + l.name);
+                            case "Sensationalist Press":
+                                ui.TellUser("Dracula played Sensationalist Press to cancel revealing his current location");
+                                DiscardEventFromDracula("Sensationalist Press");
+                                break;
                         }
                     }
-                }
-                foreach (Location l in dracula.catacombs)
-                {
-                    foreach (Encounter e in l.encounters)
+                    else
                     {
-                        if (e.name == "New Vampire")
+                        ui.TellUser("Dracula's current location is " + dracula.currentLocation.name);
+                        dracula.currentLocation.isRevealed = true;
+                    }
+                    foreach (Location l in dracula.trail)
+                    {
+                        foreach (Encounter e in l.encounters)
                         {
-                            e.isRevealed = true;
-                            Logger.WriteToDebugLog("Vampire revealed at " + l.name);
-                            Logger.WriteToGameLog("Vampire revealed at " + l.name);
+                            if (e.name == "New Vampire")
+                            {
+                                e.isRevealed = true;
+                                Logger.WriteToDebugLog("Vampire revealed at " + l.name);
+                                Logger.WriteToGameLog("Vampire revealed at " + l.name);
+                            }
                         }
                     }
-                }
-                dracula.DeterminePossibleLocations();
-                dracula.DeterminePossiblePowers(dracula.currentLocation.type == LocationType.Sea ? time : time + 1);
-
-                Logger.WriteToDebugLog("Checking if there are legal moves");
-                if (dracula.possibleMoves.Count() + dracula.possiblePowers.Count() == 0)
-                {
-                    Logger.WriteToDebugLog("Dracula has no legal moves");
-                    ui.TellUser("Dracula is cornered by his own trail");
-                }
-                else if (dracula.possibleMoves.Count() == 0 && dracula.possiblePowers.Count() == 1 && dracula.possiblePowers.Contains(dracula.powers[1]))
-                {
-                    Logger.WriteToDebugLog("Dracula has no regular moves available");
-                    dracula.DeterminePossibleWolfFormLocations();
-                    if (dracula.possibleMoves.Count() == 0)
+                    foreach (Location l in dracula.catacombs)
                     {
-                        Logger.WriteToDebugLog("Dracula has no moves available by Wolf Form");
-                        ui.TellUser("Dracula is cornered by his own trail");
+                        foreach (Encounter e in l.encounters)
+                        {
+                            if (e.name == "New Vampire")
+                            {
+                                e.isRevealed = true;
+                                Logger.WriteToDebugLog("Vampire revealed at " + l.name);
+                                Logger.WriteToGameLog("Vampire revealed at " + l.name);
+                            }
+                        }
                     }
                     dracula.DeterminePossibleLocations();
-                }
+                    dracula.DeterminePossiblePowers(dracula.currentLocation.type == LocationType.Sea ? time : time + 1);
 
-                string powerUsed;
-                Location destination;
-                dracula.logic.DecideMove(this, dracula, out powerUsed, out destination);
-                ui.TellUser("Dracula will use " + powerUsed + " and move to " + destination);
-                throw new NotImplementedException();
-                // need to enforce Dracula's move
+                    Logger.WriteToDebugLog("Checking if there are legal moves");
+                    if (dracula.possibleMoves.Count() + dracula.possiblePowers.Count() == 0)
+                    {
+                        Logger.WriteToDebugLog("Dracula has no legal moves");
+                        ui.TellUser("Dracula is cornered by his own trail");
+                    }
+                    else if (dracula.possibleMoves.Count() == 0 && dracula.possiblePowers.Count() == 1 && dracula.possiblePowers.Contains(dracula.powers[1]))
+                    {
+                        Logger.WriteToDebugLog("Dracula has no regular moves available");
+                        dracula.DeterminePossibleWolfFormLocations();
+                        if (dracula.possibleMoves.Count() == 0)
+                        {
+                            Logger.WriteToDebugLog("Dracula has no moves available by Wolf Form");
+                            ui.TellUser("Dracula is cornered by his own trail");
+                        }
+                        dracula.DeterminePossibleLocations();
+                    }
+
+                    string powerUsed;
+                    Location destination;
+                    dracula.logic.DecideMove(this, dracula, out powerUsed, out destination);
+                    ui.TellUser("Dracula will use " + powerUsed + " and move to " + destination);
+                    throw new NotImplementedException();
+                    // need to enforce Dracula's move
+                }
             }
         }
 
         internal void PlayTelegraphAhead(int hunterIndex, UserInterface ui)
         {
-            foreach (Location loc in hunters[hunterIndex].currentLocation.byRoad)
+            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            if (draculaEventCard != null)
             {
-                Event draculaEventCard = dracula.WillPlaySensationalistPress(this, 0);
-                if (draculaEventCard != null)
+                switch (draculaEventCard.name)
                 {
-                    switch (draculaEventCard.name)
-                    {
-                        case "Sensationalist Press":
-                            ui.TellUser("Dracula played Sensationalist Press to cancel revealing a location");
-                            DiscardEventFromDracula("Sensationalist Press");
-                            break;
-                    }
+                    case "DevilishPower":
+                        ui.TellUser("Dracula played Devilish power to cancel this event");
+                        DiscardEventFromDracula("Devilish Power");
+                        break;
                 }
-                else
+            }
+            else
+            {
+                foreach (Location loc in hunters[hunterIndex].currentLocation.byRoad)
                 {
-                    loc.isRevealed = true;
+                    draculaEventCard = dracula.WillPlaySensationalistPress(this, 0);
+                    if (draculaEventCard != null)
+                    {
+                        switch (draculaEventCard.name)
+                        {
+                            case "Sensationalist Press":
+                                ui.TellUser("Dracula played Sensationalist Press to cancel revealing a location");
+                                DiscardEventFromDracula("Sensationalist Press");
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        loc.isRevealed = true;
+                    }
                 }
             }
         }
 
         internal void PlayConsecratedGround(int hunterIndex, UserInterface ui)
         {
-            Location locationToConsecrate;
-            do
+            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            if (draculaEventCard != null)
             {
-                locationToConsecrate = GetLocationFromName(ui.GetNameOfLocationToConsecrate());
-            } while (locationToConsecrate.name == "Unknown location" || locationToConsecrate.type != LocationType.City || locationToConsecrate.name == "Galatz" || locationToConsecrate.name == "Klausenburg");
-            Logger.WriteToDebugLog("Consecrate Ground was played in " + locationToConsecrate.name);
-            Logger.WriteToGameLog("Consecrate Ground was played in " + locationToConsecrate.name);
-
-            foreach (Location loc in map)
-            {
-                loc.isConsecrated = false;
-            }
-            locationToConsecrate.isConsecrated = true;
-
-            DiscardItemFromHunterAtIndex("Heavenly Host", hunterIndex);
-            if (locationToConsecrate == dracula.currentLocation)
-            {
-                locationToConsecrate.isRevealed = true;
-                List<Encounter> encountersToDiscard = new List<Encounter>();
-                foreach (Encounter e in locationToConsecrate.encounters)
+                switch (draculaEventCard.name)
                 {
-                    ui.TellUser(e.name + " was discarded");
-                    encountersToDiscard.Add(e);
-                    e.isRevealed = false;
-                    encounterPool.Add(e);
+                    case "DevilishPower":
+                        ui.TellUser("Dracula played Devilish power to cancel this event");
+                        DiscardEventFromDracula("Devilish Power");
+                        break;
                 }
-                foreach (Encounter e in encountersToDiscard)
+            }
+            else
+            {
+                Location locationToConsecrate;
+                do
                 {
-                    locationToConsecrate.encounters.Remove(e);
+                    locationToConsecrate = GetLocationFromName(ui.GetNameOfLocationToConsecrate());
+                } while (locationToConsecrate.name == "Unknown location" || locationToConsecrate.type != LocationType.City || locationToConsecrate.name == "Galatz" || locationToConsecrate.name == "Klausenburg");
+                Logger.WriteToDebugLog("Consecrate Ground was played in " + locationToConsecrate.name);
+                Logger.WriteToGameLog("Consecrate Ground was played in " + locationToConsecrate.name);
+
+                foreach (Location loc in map)
+                {
+                    loc.isConsecrated = false;
+                }
+                locationToConsecrate.isConsecrated = true;
+
+                DiscardItemFromHunterAtIndex("Heavenly Host", hunterIndex);
+                if (locationToConsecrate == dracula.currentLocation)
+                {
+                    locationToConsecrate.isRevealed = true;
+                    List<Encounter> encountersToDiscard = new List<Encounter>();
+                    foreach (Encounter e in locationToConsecrate.encounters)
+                    {
+                        ui.TellUser(e.name + " was discarded");
+                        encountersToDiscard.Add(e);
+                        e.isRevealed = false;
+                        encounterPool.Add(e);
+                    }
+                    foreach (Encounter e in encountersToDiscard)
+                    {
+                        locationToConsecrate.encounters.Remove(e);
+                    }
                 }
             }
         }
 
         internal void PlayReEquip(UserInterface ui)
         {
-            ui.TellUser("If you choose to discard an item, please tell me what it is and tell me that you have drawn another item");
-        }
-
-        internal void PlayNewspaperReports(UserInterface ui)
-        {
-            int checkingLocationIndex = TrailLength();
-            do
+            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            if (draculaEventCard != null)
             {
-                checkingLocationIndex--;
-            } while ((TypeOfLocationAtTrailIndex(checkingLocationIndex) != LocationType.Castle && TypeOfLocationAtTrailIndex(checkingLocationIndex) != LocationType.City && TypeOfLocationAtTrailIndex(checkingLocationIndex) != LocationType.Sea && TypeOfLocationAtTrailIndex(checkingLocationIndex) != LocationType.Town) || LocationIsRevealedAtTrailIndex(checkingLocationIndex));
-
-            if (DraculaCurrentLocationIsAtTrailIndex(checkingLocationIndex))
-            {
-                ui.TellUser("The oldest unrevealed location in Dracula's trail is his current location");
-                if (LocationWhereHideWasUsedIsDraculaCurrentLocation())
+                switch (draculaEventCard.name)
                 {
-                    ui.TellUser("Here's the Hide card to prove it");
-                    RevealHide(ui);
+                    case "DevilishPower":
+                        ui.TellUser("Dracula played Devilish power to cancel this event");
+                        DiscardEventFromDracula("Devilish Power");
+                        break;
                 }
             }
             else
             {
-                Event draculaEventCard = dracula.WillPlaySensationalistPress(this, 0);
-                if (draculaEventCard != null)
+                ui.TellUser("If you choose to discard an item, please tell me what it is and tell me that you have drawn another item");
+            }
+        }
+
+        internal void PlayNewspaperReports(UserInterface ui)
+        {
+            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            if (draculaEventCard != null)
+            {
+                switch (draculaEventCard.name)
                 {
-                    switch (draculaEventCard.name)
+                    case "DevilishPower":
+                        ui.TellUser("Dracula played Devilish power to cancel this event");
+                        DiscardEventFromDracula("Devilish Power");
+                        break;
+                }
+            }
+            else
+            {
+                int checkingLocationIndex = TrailLength();
+                do
+                {
+                    checkingLocationIndex--;
+                } while ((TypeOfLocationAtTrailIndex(checkingLocationIndex) != LocationType.Castle && TypeOfLocationAtTrailIndex(checkingLocationIndex) != LocationType.City && TypeOfLocationAtTrailIndex(checkingLocationIndex) != LocationType.Sea && TypeOfLocationAtTrailIndex(checkingLocationIndex) != LocationType.Town) || LocationIsRevealedAtTrailIndex(checkingLocationIndex));
+
+                if (DraculaCurrentLocationIsAtTrailIndex(checkingLocationIndex))
+                {
+                    ui.TellUser("The oldest unrevealed location in Dracula's trail is his current location");
+                    if (LocationWhereHideWasUsedIsDraculaCurrentLocation())
                     {
-                        case "Sensationalist Press":
-                            ui.TellUser("Dracula played Sensationalist Press to cancel revealing the location");
-                            DiscardEventFromDracula("Sensationalist Press");
-                            break;
+                        ui.TellUser("Here's the Hide card to prove it");
+                        RevealHide(ui);
                     }
                 }
                 else
                 {
-                    RevealLocationAtTrailIndex(checkingLocationIndex, ui);
-                    ui.TellUser("Revealing " + NameOfLocationAtTrailIndex(checkingLocationIndex));
+                    draculaEventCard = dracula.WillPlaySensationalistPress(this, 0);
+                    if (draculaEventCard != null)
+                    {
+                        switch (draculaEventCard.name)
+                        {
+                            case "Sensationalist Press":
+                                ui.TellUser("Dracula played Sensationalist Press to cancel revealing the location");
+                                DiscardEventFromDracula("Sensationalist Press");
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        RevealLocationAtTrailIndex(checkingLocationIndex, ui);
+                        ui.TellUser("Revealing " + NameOfLocationAtTrailIndex(checkingLocationIndex));
+                    }
                 }
             }
         }
@@ -762,78 +975,143 @@ namespace ConsoleHandler
 
         internal void PlayMysticResearch(UserInterface ui)
         {
-            ui.TellUser("These are Draculas cards:");
-            foreach (Event card in dracula.eventCardsInHand)
+            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            if (draculaEventCard != null)
             {
-                ui.TellUser(card.name);
+                switch (draculaEventCard.name)
+                {
+                    case "DevilishPower":
+                        ui.TellUser("Dracula played Devilish power to cancel this event");
+                        DiscardEventFromDracula("Devilish Power");
+                        break;
+                }
+            }
+            else
+            {
+                ui.TellUser("These are Draculas cards:");
+                foreach (Event card in dracula.eventCardsInHand)
+                {
+                    ui.TellUser(card.name);
+                }
             }
         }
 
         internal void PlayLongDay(UserInterface ui)
         {
-            if (Time() < 1)
             {
-                ui.TellUser("You cannot play Long Day during Dawn");
-            }
-            else
-            {
-                AdjustTime(-1);
+                Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                if (draculaEventCard != null)
+                {
+                    switch (draculaEventCard.name)
+                    {
+                        case "DevilishPower":
+                            ui.TellUser("Dracula played Devilish power to cancel this event");
+                            DiscardEventFromDracula("Devilish Power");
+                            break;
+                    }
+                }
+                else
+                {
+                    AdjustTime(-1);
+                }
             }
         }
 
         internal void PlayVampireLair(int hunterIndex, UserInterface ui)
         {
-            switch (ResolveCombat(hunterIndex, 6, ui))
+            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            if (draculaEventCard != null)
             {
-                case "Bite":
-                    if (NumberOfHuntersAtLocation(LocationOfHunterAtHunterIndex(hunterIndex)) > 1)
-                    {
-                        ApplyBiteToOneOfMultipleHunters(hunterIndex, ui);
-                    }
-                    else
-                    {
-                        ApplyBiteToHunter(hunterIndex, ui);
-                    }
-                    break;
-                case "Enemy wounded":
-                    vampireTracker--;
-                    break;
-                case "Enemy killed":
-                    vampireTracker--;
-                    break;
-                case "Hunter killed":
-                    hunters[ui.GetNameOfHunterKilled()].health = 0;
-                    HandlePossibleHunterDeath(ui);
-                    break;
+                switch (draculaEventCard.name)
+                {
+                    case "DevilishPower":
+                        ui.TellUser("Dracula played Devilish power to cancel this event");
+                        DiscardEventFromDracula("Devilish Power");
+                        break;
+                }
+            }
+            else
+            {
+                switch (ResolveCombat(hunterIndex, 6, ui))
+                {
+                    case "Bite":
+                        if (NumberOfHuntersAtLocation(LocationOfHunterAtHunterIndex(hunterIndex)) > 1)
+                        {
+                            ApplyBiteToOneOfMultipleHunters(hunterIndex, ui);
+                        }
+                        else
+                        {
+                            ApplyBiteToHunter(hunterIndex, ui);
+                        }
+                        break;
+                    case "Enemy wounded":
+                        vampireTracker--;
+                        break;
+                    case "Enemy killed":
+                        vampireTracker--;
+                        break;
+                    case "Hunter killed":
+                        hunters[ui.GetNameOfHunterKilled()].health = 0;
+                        HandlePossibleHunterDeath(ui);
+                        break;
+                }
             }
         }
 
         internal void PlaySenseOfEmergency(int hunterIndex, UserInterface ui)
         {
-            hunters[hunterIndex].health -= 6;
-            hunters[hunterIndex].health += vampireTracker;
-            ui.TellUser("Adjust " + hunters[hunterIndex].name + "'s health and then perform a move to any location");
+            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            if (draculaEventCard != null)
+            {
+                switch (draculaEventCard.name)
+                {
+                    case "DevilishPower":
+                        ui.TellUser("Dracula played Devilish power to cancel this event");
+                        DiscardEventFromDracula("Devilish Power");
+                        break;
+                }
+            }
+            else
+            {
+                hunters[hunterIndex].health -= 6;
+                hunters[hunterIndex].health += vampireTracker;
+                ui.TellUser("Adjust " + hunters[hunterIndex].name + "'s health and then perform a move to any location");
+            }
         }
 
         internal void PlayMoneyTrail(UserInterface ui)
         {
-            ui.TellUser("Revealing all sea locations in Dracula's trail");
-            for (int i = 0; i < TrailLength(); i++)
+            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            if (draculaEventCard != null)
             {
-                if (TypeOfLocationAtTrailIndex(i) == LocationType.Sea)
+                switch (draculaEventCard.name)
                 {
-                    Event draculaEventCard = dracula.WillPlaySensationalistPress(this, i);
-                    if (draculaEventCard != null)
+                    case "DevilishPower":
+                        ui.TellUser("Dracula played Devilish power to cancel this event");
+                        DiscardEventFromDracula("Devilish Power");
+                        break;
+                }
+            }
+            else
+            {
+                ui.TellUser("Revealing all sea locations in Dracula's trail");
+                for (int i = 0; i < TrailLength(); i++)
+                {
+                    if (TypeOfLocationAtTrailIndex(i) == LocationType.Sea)
                     {
-                        switch (draculaEventCard.name)
+                        draculaEventCard = dracula.WillPlaySensationalistPress(this, i);
+                        if (draculaEventCard != null)
                         {
-                            case "Sensationalist Press":
-                                ui.TellUser("Dracula played Sensationalist Press to cancel revealing location at position " + i);
-                                DiscardEventFromDracula("Sensationalist Press");
-                                break;
+                            switch (draculaEventCard.name)
+                            {
+                                case "Sensationalist Press":
+                                    ui.TellUser("Dracula played Sensationalist Press to cancel revealing location at position " + i);
+                                    DiscardEventFromDracula("Sensationalist Press");
+                                    break;
+                            }
                         }
+                        RevealLocationAtTrailIndex(i, ui);
                     }
-                    RevealLocationAtTrailIndex(i, ui);
                 }
             }
         }
@@ -915,6 +1193,12 @@ namespace ConsoleHandler
             encounterPool.Add(new Encounter("Wolves", "WOL"));
             encounterPool.Add(new Encounter("Wolves", "WOL"));
             encounterPool.Add(new Encounter("Wolves", "WOL"));
+        }
+
+        internal void RemoveHunterAlly()
+        {
+            eventDiscard.Add(hunterAlly);
+            hunterAlly = null;
         }
 
         private void SetUpMap()
@@ -2178,6 +2462,10 @@ namespace ConsoleHandler
                             dracula.PlaceRoadBlockCounter(this, roadblockCounter);
                             ui.TellUser("Dracula played Roadblock and placed the Roadblock counter on the " + roadblockCounter.connectionType + " between " + roadblockCounter.firstLocation + " and " + roadblockCounter.secondLocation);
                             break;
+                        case "Devilish Power":
+                            dracula.PlayDevilishPowerToRemoveHeavenlyHostOrHunterAlly(this, ui);
+                            DiscardEventFromDracula("Devilish Power");
+                            break;
                     }
                 }
             } while (draculaEventCard != null);
@@ -2410,7 +2698,9 @@ namespace ConsoleHandler
         {
             Logger.WriteToDebugLog("Dracula matured Ambush");
             Logger.WriteToGameLog("Dracula matured Ambush");
-            throw new NotImplementedException();
+            ui.TellUser("Dracula matured Ambush");
+            bool discard;
+            ResolveEncounter(dracula.ChooseEncounterToAmbushHunter(), dracula.ChooseHunterToAmbush(hunters), out discard, ui);
         }
 
         private bool ResolveAmbush(List<Hunter> huntersEncountered, UserInterface ui)
@@ -2746,7 +3036,8 @@ namespace ConsoleHandler
 
         public bool ResolveSpy(List<Hunter> huntersEncountered, UserInterface ui)
         {
-            throw new NotImplementedException();
+            ui.TellUser("Hunter(s) encounter a spy, but Dracula has no brain, so it doesn't matter");
+            return true;
         }
 
         public bool ResolveThief(List<Hunter> huntersEncountered, UserInterface ui)
@@ -2787,7 +3078,8 @@ namespace ConsoleHandler
             else
             {
                 Event draculaEventCard = dracula.PlaySeductionCard(this);
-                PlaySeduction();
+                DiscardEventFromDracula("Seduction");
+                ui.TellUser("Dracula played Seduction");
                 int dieRoll;
                 if (draculaEventCard != null)
                 {
@@ -2852,11 +3144,6 @@ namespace ConsoleHandler
                     return true;
                 }
             }
-        }
-
-        private void PlaySeduction()
-        {
-            throw new NotImplementedException();
         }
 
         public bool ResolveWolves(List<Hunter> huntersEncountered, UserInterface ui)
@@ -3099,7 +3386,8 @@ namespace ConsoleHandler
                 {
                     switch (draculaEventCard.name)
                     {
-                        case "Trap": PlayTrap(ui);
+                        case "Trap":
+                            PlayTrap(ui);
                             trapPlayed = true;
                             break;
                         case "Rage":
@@ -3144,14 +3432,60 @@ namespace ConsoleHandler
                             hunterPlayedCard = true;
                             switch (cardName)
                             {
-                                case "Advance Planning": PlayAdvancePlanningInCombat(ui);
+                                case "Advance Planning":
                                     DiscardEventFromHunterAtIndex(cardName, i);
+                                    draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                                    if (draculaEventCard != null)
+                                    {
+                                        switch (draculaEventCard.name)
+                                        {
+                                            case "DevilishPower":
+                                                ui.TellUser("Dracula played Devilish power to cancel this event");
+                                                DiscardEventFromDracula("Devilish Power");
+                                                break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        PlayAdvancePlanningInCombat(ui);
+                                    }
                                     break;
-                                case "Escape Route": PlayEscapeRouteInCombat(i, ui);
+                                case "Escape Route":
                                     DiscardEventFromHunterAtIndex(cardName, i);
-                                    return "Escape Route";
-                                case "Heroic Leap": PlayHeroicLeapInCombat(i, ui);
+                                    draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                                    if (draculaEventCard != null)
+                                    {
+                                        switch (draculaEventCard.name)
+                                        {
+                                            case "DevilishPower":
+                                                ui.TellUser("Dracula played Devilish power to cancel this event");
+                                                DiscardEventFromDracula("Devilish Power");
+                                                break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        PlayEscapeRouteInCombat(i, ui);
+                                        return "Escape Route";
+                                    }
+                                    break;
+                                case "Heroic Leap":
                                     DiscardEventFromHunterAtIndex(cardName, i);
+                                    draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                                    if (draculaEventCard != null)
+                                    {
+                                        switch (draculaEventCard.name)
+                                        {
+                                            case "DevilishPower":
+                                                ui.TellUser("Dracula played Devilish power to cancel this event");
+                                                DiscardEventFromDracula("Devilish Power");
+                                                break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        PlayHeroicLeapInCombat(i, ui);
+                                    }
                                     break;
                                 case "Garlic":
                                     rageRounds = 3;
@@ -3194,6 +3528,21 @@ namespace ConsoleHandler
             hunterBasicCards.Add(new Item("Dodge"));
             while (roundResult.outcome != "Bite" && roundResult.outcome != "Enemy killed" && roundResult.outcome != "Hunter killed" && roundResult.outcome != "End")
             {
+                if (ui.AskIfHunterIsUsingGreatStrengthToCancelDamage(roundResult.hunterTargeted))
+                {
+                    DiscardEventFromHunterAtIndex("Great Strength", Array.FindIndex(hunters, h => h.name == roundResult.hunterTargeted));
+                    draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                    if (draculaEventCard != null)
+                    {
+                        switch (draculaEventCard.name)
+                        {
+                            case "DevilishPower":
+                                ui.TellUser("Dracula played Devilish power to cancel this event");
+                                DiscardEventFromDracula("Devilish Power");
+                                break;
+                        }
+                    }
+                }
                 roundResult = ResolveRoundOfCombat(hunterIndex, enemyCombatCards, hunterBasicCards, roundResult, ui);
             }
             foreach (Hunter h in hunters[hunterIndex].huntersInGroup)
@@ -3286,6 +3635,7 @@ namespace ConsoleHandler
             CombatRoundResult newResult = new CombatRoundResult();
             newResult.enemyCardUsed = newEnemyCardUsed;
             newResult.outcome = newOutcome;
+            newResult.hunterTargeted = targetHunterName;
             return newResult;
         }
 
@@ -3411,6 +3761,25 @@ namespace ConsoleHandler
 
         internal void ApplyBiteToHunter(int hunterIndex, UserInterface ui)
         {
+            if (ui.AskIfHunterIsUsingGreatStrengthToCancelBite(hunters[hunterIndex].name))
+            {
+                DiscardEventFromHunterAtIndex("Great Strength", hunterIndex);
+                Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                if (draculaEventCard != null)
+                {
+                    switch (draculaEventCard.name)
+                    {
+                        case "DevilishPower":
+                            ui.TellUser("Dracula played Devilish power to cancel this event");
+                            DiscardEventFromDracula("Devilish Power");
+                            break;
+                    }
+                }
+                else
+                {
+                    return;
+                }
+            }
             hunters[hunterIndex].numberOfBites++;
             ui.TellUser(hunters[hunterIndex].name + " was bitten");
         }
@@ -3628,7 +3997,8 @@ namespace ConsoleHandler
             {
                 switch (draculaEventCard.name)
                 {
-                    case "False Tip-off": PlayCustomsSearch(hunterIndex, ui);
+                    case "False Tip-off":
+                        PlayCustomsSearch(hunterIndex, ui);
                         return true;
                 }
             }
