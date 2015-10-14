@@ -26,6 +26,13 @@ namespace ConsoleHandler
 
         internal void DecideMove(GameState g, Dracula dracula, out string powerName, out Location goingTo)
         {
+            if (dracula.advanceMovePower != null || dracula.advanceMoveDestination != null)
+            {
+                powerName = dracula.advanceMovePower;
+                goingTo = dracula.advanceMoveDestination;
+                dracula.advanceMovePower = null;
+                dracula.advanceMoveDestination = null;
+            }
             int chosenActionIndex = new Random().Next(0, dracula.possibleMoves.Count() + dracula.possiblePowers.Count());
             if (chosenActionIndex > dracula.possibleMoves.Count() - 1)
             {

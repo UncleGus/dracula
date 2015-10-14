@@ -132,7 +132,7 @@ namespace ConsoleHandler
             eventDeck.Add(new Event("Money Trail", false, EventType.Keep));
             eventDeck.Add(new Event("Sense of Emergency", false, EventType.Keep));
             eventDeck.Add(new Event("Sense of Emergency", false, EventType.Keep));
-            eventDeck.Add(new Event("Vampiric Lair", false, EventType.PlayImmediately));
+            eventDeck.Add(new Event("Vampire Lair", false, EventType.PlayImmediately));
             eventDeck.Add(new Event("Long Day", false, EventType.Keep));
             eventDeck.Add(new Event("Long Day", false, EventType.Keep));
             eventDeck.Add(new Event("Mystic Research", false, EventType.PlayImmediately));
@@ -254,6 +254,7 @@ namespace ConsoleHandler
                 if (hunterIndex > 0)
                 {
                     Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                    bool eventIsCancelled = false;
                     if (draculaEventCard != null)
                     {
                         switch (draculaEventCard.name)
@@ -261,10 +262,19 @@ namespace ConsoleHandler
                             case "DevilishPower":
                                 ui.TellUser("Dracula played Devilish power to cancel this event");
                                 DiscardEventFromDracula("Devilish Power");
+                                int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                                if (hunterPlayingGoodluck > 0)
+                                {
+                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                }
+                                else
+                                {
+                                    eventIsCancelled = true;
+                                }
                                 break;
                         }
                     }
-                    else
+                    if (!eventIsCancelled)
                     {
                         PlaySecretWeaponBeforeEncounter(hunterIndex, ui);
                     }
@@ -338,6 +348,7 @@ namespace ConsoleHandler
                 if (hunterIndex > 0)
                 {
                     draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                    bool eventIsCancelled = false;
                     if (draculaEventCard != null)
                     {
                         switch (draculaEventCard.name)
@@ -345,10 +356,20 @@ namespace ConsoleHandler
                             case "DevilishPower":
                                 ui.TellUser("Dracula played Devilish power to cancel this event");
                                 DiscardEventFromDracula("Devilish Power");
+                                int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                                if (hunterPlayingGoodluck > 0)
+                                {
+                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                }
+                                else
+                                {
+                                    eventIsCancelled = true;
+                                }
+
                                 break;
                         }
                     }
-                    else
+                    if (!eventIsCancelled)
                     {
                         PlayForewarnedBeforeEncounter(hunterIndex, ui);
                         return true;
@@ -431,7 +452,18 @@ namespace ConsoleHandler
             {
                 switch (draculaEventCard.name)
                 {
-                    case "Control Storms": PlayControlStorms(hunterIndex, ui); return true;
+                    case "Control Storms":
+                        int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                        if (hunterPlayingGoodluck > 0)
+                        {
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            DiscardEventFromDracula("Control Storms");
+                        }
+                        else
+                        {
+                            PlayControlStorms(hunterIndex, ui); return true;
+                        }
+                        break;
                 }
             }
             return false;
@@ -468,6 +500,7 @@ namespace ConsoleHandler
         internal void PlayHiredScouts(UserInterface ui)
         {
             Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
                 switch (draculaEventCard.name)
@@ -475,10 +508,20 @@ namespace ConsoleHandler
                     case "DevilishPower":
                         ui.TellUser("Dracula played Devilish power to cancel this event");
                         DiscardEventFromDracula("Devilish Power");
+                        int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                        if (hunterPlayingGoodluck > 0)
+                        {
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                        }
+                        else
+                        {
+                            eventIsCancelled = true;
+                        }
+
                         break;
                 }
             }
-            else
+            if (!eventIsCancelled)
             {
                 string line = "";
                 Location locationToReveal;
@@ -490,6 +533,7 @@ namespace ConsoleHandler
                 } while (locationToReveal.name == "Unknown location");
                 if (LocationIsInTrail(locationToReveal))
                 {
+                    bool revealingThis = true;
                     draculaEventCard = dracula.WillPlaySensationalistPress(this, 0);
                     if (draculaEventCard != null)
                     {
@@ -498,12 +542,20 @@ namespace ConsoleHandler
                             case "Sensationalist Press":
                                 ui.TellUser("Dracula played Sensationalist Press to cancel revealing" + locationToReveal.name);
                                 DiscardEventFromDracula("Sensationalist Press");
+                                int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                                if (hunterPlayingGoodluck > 0)
+                                {
+                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                }
+                                else
+                                {
+                                    revealingThis = false;
+                                }
                                 break;
                         }
                     }
-                    else
+                    if (revealingThis)
                     {
-
                         locationToReveal.isRevealed = true;
                         ui.TellUser("Revealing " + locationToReveal.name);
                         for (int i = 0; i < locationToReveal.encounters.Count(); i++)
@@ -552,6 +604,7 @@ namespace ConsoleHandler
         internal void PlayExcellentWeather(UserInterface ui)
         {
             Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
                 switch (draculaEventCard.name)
@@ -559,10 +612,20 @@ namespace ConsoleHandler
                     case "DevilishPower":
                         ui.TellUser("Dracula played Devilish power to cancel this event");
                         DiscardEventFromDracula("Devilish Power");
+                        int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                        if (hunterPlayingGoodluck > 0)
+                        {
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                        }
+                        else
+                        {
+                            eventIsCancelled = true;
+                        }
+
                         break;
                 }
             }
-            else
+            if (!eventIsCancelled)
             {
                 ui.TellUser("You may move up to four sea moves this turn");
             }
@@ -599,6 +662,7 @@ namespace ConsoleHandler
         internal void PlayBloodTransfusion(UserInterface ui)
         {
             Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
                 switch (draculaEventCard.name)
@@ -606,10 +670,19 @@ namespace ConsoleHandler
                     case "DevilishPower":
                         ui.TellUser("Dracula played Devilish power to cancel this event");
                         DiscardEventFromDracula("Devilish Power");
+                        int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                        if (hunterPlayingGoodluck > 0)
+                        {
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                        }
+                        else
+                        {
+                            eventIsCancelled = true;
+                        }
                         break;
                 }
             }
-            else
+            if (!eventIsCancelled)
             {
                 int hunterIndexA = ui.GetIndexOfHunterGivingBloodTransfusion();
                 int hunterIndexB = ui.GetIndexOfHunterReceivingBloodTransfusion();
@@ -629,6 +702,7 @@ namespace ConsoleHandler
         internal void PlaySurprisingReturn(int hunterIndex, UserInterface ui)
         {
             Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
                 switch (draculaEventCard.name)
@@ -636,10 +710,19 @@ namespace ConsoleHandler
                     case "DevilishPower":
                         ui.TellUser("Dracula played Devilish power to cancel this event");
                         DiscardEventFromDracula("Devilish Power");
+                        int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                        if (hunterPlayingGoodluck > 0)
+                        {
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                        }
+                        else
+                        {
+                            eventIsCancelled = true;
+                        }
                         break;
                 }
             }
-            else
+            if (!eventIsCancelled)
             {
                 string cardToReclaim;
                 do
@@ -669,6 +752,7 @@ namespace ConsoleHandler
         internal void PlayStormySeas(UserInterface ui)
         {
             Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
                 switch (draculaEventCard.name)
@@ -676,10 +760,19 @@ namespace ConsoleHandler
                     case "DevilishPower":
                         ui.TellUser("Dracula played Devilish power to cancel this event");
                         DiscardEventFromDracula("Devilish Power");
+                        int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                        if (hunterPlayingGoodluck > 0)
+                        {
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                        }
+                        else
+                        {
+                            eventIsCancelled = true;
+                        }
                         break;
                 }
             }
-            else
+            if (!eventIsCancelled)
             {
                 Location locationToStorm;
                 do
@@ -696,6 +789,7 @@ namespace ConsoleHandler
                     Location locationToMoveTo = dracula.DecideWhichPortToGoToAfterStormySeas(this, locationToStorm);
                     dracula.MoveByRoadOrSea(this, locationToMoveTo, ui);
                     draculaEventCard = dracula.WillPlaySensationalistPress(this, 0);
+                    bool revealing = true;
                     if (draculaEventCard != null)
                     {
                         switch (draculaEventCard.name)
@@ -703,10 +797,19 @@ namespace ConsoleHandler
                             case "Sensationalist Press":
                                 ui.TellUser("Dracula played Sensationalist Press to cancel revealing the port he went to");
                                 DiscardEventFromDracula("Sensationalist Press");
+                                int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                                if (hunterPlayingGoodluck > 0)
+                                {
+                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                }
+                                else
+                                {
+                                    revealing = false;
+                                }
                                 break;
                         }
                     }
-                    else
+                    if (revealing)
                     {
                         dracula.trail[0].isRevealed = true;
                     }
@@ -719,6 +822,7 @@ namespace ConsoleHandler
         internal void PlayHypnosis(UserInterface ui)
         {
             Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
                 switch (draculaEventCard.name)
@@ -726,10 +830,19 @@ namespace ConsoleHandler
                     case "DevilishPower":
                         ui.TellUser("Dracula played Devilish power to cancel this event");
                         DiscardEventFromDracula("Devilish Power");
+                        int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                        if (hunterPlayingGoodluck > 0)
+                        {
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                        }
+                        else
+                        {
+                            eventIsCancelled = true;
+                        }
                         break;
                 }
             }
-            else
+            if (!eventIsCancelled)
             {
                 if (ui.GetDieRoll() < 3)
                 {
@@ -742,6 +855,7 @@ namespace ConsoleHandler
                     Logger.WriteToDebugLog("The hypnosis was successful");
                     Logger.WriteToGameLog("The hypnosis was successful");
                     draculaEventCard = dracula.WillPlaySensationalistPress(this, 0);
+                    bool revealing = true;
                     if (draculaEventCard != null)
                     {
                         switch (draculaEventCard.name)
@@ -749,10 +863,19 @@ namespace ConsoleHandler
                             case "Sensationalist Press":
                                 ui.TellUser("Dracula played Sensationalist Press to cancel revealing his current location");
                                 DiscardEventFromDracula("Sensationalist Press");
+                                int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                                if (hunterPlayingGoodluck > 0)
+                                {
+                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                }
+                                else
+                                {
+                                    revealing = false;
+                                }
                                 break;
                         }
                     }
-                    else
+                    if (revealing)
                     {
                         ui.TellUser("Dracula's current location is " + dracula.currentLocation.name);
                         dracula.currentLocation.isRevealed = true;
@@ -805,9 +928,9 @@ namespace ConsoleHandler
                     string powerUsed;
                     Location destination;
                     dracula.logic.DecideMove(this, dracula, out powerUsed, out destination);
-                    ui.TellUser("Dracula will use " + powerUsed + " and move to " + destination);
-                    throw new NotImplementedException();
-                    // need to enforce Dracula's move
+                    ui.TellUser("Dracula will use " + powerUsed + " and move to " + destination.name);
+                    dracula.advanceMovePower = powerUsed;
+                    dracula.advanceMoveDestination = destination;
                 }
             }
         }
@@ -815,6 +938,7 @@ namespace ConsoleHandler
         internal void PlayTelegraphAhead(int hunterIndex, UserInterface ui)
         {
             Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
                 switch (draculaEventCard.name)
@@ -822,14 +946,24 @@ namespace ConsoleHandler
                     case "DevilishPower":
                         ui.TellUser("Dracula played Devilish power to cancel this event");
                         DiscardEventFromDracula("Devilish Power");
+                        int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                        if (hunterPlayingGoodluck > 0)
+                        {
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                        }
+                        else
+                        {
+                            eventIsCancelled = true;
+                        }
                         break;
                 }
             }
-            else
+            if (!eventIsCancelled)
             {
                 foreach (Location loc in hunters[hunterIndex].currentLocation.byRoad)
                 {
                     draculaEventCard = dracula.WillPlaySensationalistPress(this, 0);
+                    bool revealing = true;
                     if (draculaEventCard != null)
                     {
                         switch (draculaEventCard.name)
@@ -837,10 +971,20 @@ namespace ConsoleHandler
                             case "Sensationalist Press":
                                 ui.TellUser("Dracula played Sensationalist Press to cancel revealing a location");
                                 DiscardEventFromDracula("Sensationalist Press");
+                                int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                                if (hunterPlayingGoodluck > 0)
+                                {
+                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                    DiscardEventFromDracula("Control Storms");
+                                }
+                                else
+                                {
+                                    revealing = false;
+                                }
                                 break;
                         }
                     }
-                    else
+                    if (revealing)
                     {
                         loc.isRevealed = true;
                     }
@@ -851,6 +995,7 @@ namespace ConsoleHandler
         internal void PlayConsecratedGround(int hunterIndex, UserInterface ui)
         {
             Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
                 switch (draculaEventCard.name)
@@ -858,10 +1003,20 @@ namespace ConsoleHandler
                     case "DevilishPower":
                         ui.TellUser("Dracula played Devilish power to cancel this event");
                         DiscardEventFromDracula("Devilish Power");
+                        int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                        if (hunterPlayingGoodluck > 0)
+                        {
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                        }
+                        else
+                        {
+                            eventIsCancelled = true;
+                        }
+
                         break;
                 }
             }
-            else
+            if (!eventIsCancelled)
             {
                 Location locationToConsecrate;
                 do
@@ -900,6 +1055,7 @@ namespace ConsoleHandler
         internal void PlayReEquip(UserInterface ui)
         {
             Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
                 switch (draculaEventCard.name)
@@ -907,10 +1063,20 @@ namespace ConsoleHandler
                     case "DevilishPower":
                         ui.TellUser("Dracula played Devilish power to cancel this event");
                         DiscardEventFromDracula("Devilish Power");
+                        int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                        if (hunterPlayingGoodluck > 0)
+                        {
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                        }
+                        else
+                        {
+                            eventIsCancelled = true;
+                        }
+
                         break;
                 }
             }
-            else
+            if (!eventIsCancelled)
             {
                 ui.TellUser("If you choose to discard an item, please tell me what it is and tell me that you have drawn another item");
             }
@@ -919,6 +1085,7 @@ namespace ConsoleHandler
         internal void PlayNewspaperReports(UserInterface ui)
         {
             Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
                 switch (draculaEventCard.name)
@@ -926,10 +1093,20 @@ namespace ConsoleHandler
                     case "DevilishPower":
                         ui.TellUser("Dracula played Devilish power to cancel this event");
                         DiscardEventFromDracula("Devilish Power");
+                        int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                        if (hunterPlayingGoodluck > 0)
+                        {
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                        }
+                        else
+                        {
+                            eventIsCancelled = true;
+                        }
+
                         break;
                 }
             }
-            else
+            if (!eventIsCancelled)
             {
                 int checkingLocationIndex = TrailLength();
                 do
@@ -949,6 +1126,7 @@ namespace ConsoleHandler
                 else
                 {
                     draculaEventCard = dracula.WillPlaySensationalistPress(this, 0);
+                    bool revealing = true;
                     if (draculaEventCard != null)
                     {
                         switch (draculaEventCard.name)
@@ -956,10 +1134,19 @@ namespace ConsoleHandler
                             case "Sensationalist Press":
                                 ui.TellUser("Dracula played Sensationalist Press to cancel revealing the location");
                                 DiscardEventFromDracula("Sensationalist Press");
+                                int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                                if (hunterPlayingGoodluck > 0)
+                                {
+                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                }
+                                else
+                                {
+                                    revealing = false;
+                                }
                                 break;
                         }
                     }
-                    else
+                    if (revealing)
                     {
                         RevealLocationAtTrailIndex(checkingLocationIndex, ui);
                         ui.TellUser("Revealing " + NameOfLocationAtTrailIndex(checkingLocationIndex));
@@ -976,6 +1163,7 @@ namespace ConsoleHandler
         internal void PlayMysticResearch(UserInterface ui)
         {
             Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
                 switch (draculaEventCard.name)
@@ -983,10 +1171,20 @@ namespace ConsoleHandler
                     case "DevilishPower":
                         ui.TellUser("Dracula played Devilish power to cancel this event");
                         DiscardEventFromDracula("Devilish Power");
+                        int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                        if (hunterPlayingGoodluck > 0)
+                        {
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                        }
+                        else
+                        {
+                            eventIsCancelled = true;
+                        }
+
                         break;
                 }
             }
-            else
+            if (!eventIsCancelled)
             {
                 ui.TellUser("These are Draculas cards:");
                 foreach (Event card in dracula.eventCardsInHand)
@@ -1000,6 +1198,7 @@ namespace ConsoleHandler
         {
             {
                 Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                bool eventIsCancelled = false;
                 if (draculaEventCard != null)
                 {
                     switch (draculaEventCard.name)
@@ -1007,10 +1206,20 @@ namespace ConsoleHandler
                         case "DevilishPower":
                             ui.TellUser("Dracula played Devilish power to cancel this event");
                             DiscardEventFromDracula("Devilish Power");
+                            int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                            if (hunterPlayingGoodluck > 0)
+                            {
+                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            }
+                            else
+                            {
+                                eventIsCancelled = true;
+                            }
+
                             break;
                     }
                 }
-                else
+                if (!eventIsCancelled)
                 {
                     AdjustTime(-1);
                 }
@@ -1020,6 +1229,7 @@ namespace ConsoleHandler
         internal void PlayVampireLair(int hunterIndex, UserInterface ui)
         {
             Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
                 switch (draculaEventCard.name)
@@ -1027,10 +1237,20 @@ namespace ConsoleHandler
                     case "DevilishPower":
                         ui.TellUser("Dracula played Devilish power to cancel this event");
                         DiscardEventFromDracula("Devilish Power");
+                        int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                        if (hunterPlayingGoodluck > 0)
+                        {
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                        }
+                        else
+                        {
+                            eventIsCancelled = true;
+                        }
+
                         break;
                 }
             }
-            else
+            if (!eventIsCancelled)
             {
                 switch (ResolveCombat(hunterIndex, 6, ui))
                 {
@@ -1061,6 +1281,7 @@ namespace ConsoleHandler
         internal void PlaySenseOfEmergency(int hunterIndex, UserInterface ui)
         {
             Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
                 switch (draculaEventCard.name)
@@ -1068,10 +1289,20 @@ namespace ConsoleHandler
                     case "DevilishPower":
                         ui.TellUser("Dracula played Devilish power to cancel this event");
                         DiscardEventFromDracula("Devilish Power");
+                        int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                        if (hunterPlayingGoodluck > 0)
+                        {
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                        }
+                        else
+                        {
+                            eventIsCancelled = true;
+                        }
+
                         break;
                 }
             }
-            else
+            if (!eventIsCancelled)
             {
                 hunters[hunterIndex].health -= 6;
                 hunters[hunterIndex].health += vampireTracker;
@@ -1082,6 +1313,7 @@ namespace ConsoleHandler
         internal void PlayMoneyTrail(UserInterface ui)
         {
             Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
                 switch (draculaEventCard.name)
@@ -1089,10 +1321,20 @@ namespace ConsoleHandler
                     case "DevilishPower":
                         ui.TellUser("Dracula played Devilish power to cancel this event");
                         DiscardEventFromDracula("Devilish Power");
+                        int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                        if (hunterPlayingGoodluck > 0)
+                        {
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                        }
+                        else
+                        {
+                            eventIsCancelled = true;
+                        }
+
                         break;
                 }
             }
-            else
+            if (!eventIsCancelled)
             {
                 ui.TellUser("Revealing all sea locations in Dracula's trail");
                 for (int i = 0; i < TrailLength(); i++)
@@ -1100,6 +1342,7 @@ namespace ConsoleHandler
                     if (TypeOfLocationAtTrailIndex(i) == LocationType.Sea)
                     {
                         draculaEventCard = dracula.WillPlaySensationalistPress(this, i);
+                        bool revealing = true;
                         if (draculaEventCard != null)
                         {
                             switch (draculaEventCard.name)
@@ -1107,10 +1350,22 @@ namespace ConsoleHandler
                                 case "Sensationalist Press":
                                     ui.TellUser("Dracula played Sensationalist Press to cancel revealing location at position " + i);
                                     DiscardEventFromDracula("Sensationalist Press");
+                                    int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                                    if (hunterPlayingGoodluck > 0)
+                                    {
+                                        DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                    }
+                                    else
+                                    {
+                                        revealing = false;
+                                    }
                                     break;
                             }
                         }
-                        RevealLocationAtTrailIndex(i, ui);
+                        if (revealing)
+                        {
+                            RevealLocationAtTrailIndex(i, ui);
+                        }
                     }
                 }
             }
@@ -2290,11 +2545,12 @@ namespace ConsoleHandler
             {
                 possiblePorts.Remove(ext);
             }
-            MoveHunterToLocationAtHunterIndex(hunterIndex, dracula.DecideWhereToSendHunterWithControlStorms(hunterIndex, possiblePorts, this));
+            Location locationToSendHunterTo = dracula.DecideWhereToSendHunterWithControlStorms(hunterIndex, possiblePorts, this);
+            MoveHunterToLocationAtHunterIndex(hunterIndex, locationToSendHunterTo);
             DiscardEventFromDracula("Control Storms");
         }
 
-        private void DiscardEventFromDracula(string cardName)
+        public void DiscardEventFromDracula(string cardName)
         {
             Event cardToDiscard = dracula.eventCardsInHand.Find(card => card.name == cardName);
             eventDiscard.Add(cardToDiscard);
@@ -2450,20 +2706,46 @@ namespace ConsoleHandler
                         case "Time Runs Short":
                             ui.TellUser("Dracula played Time Runs Short");
                             DiscardEventFromDracula(draculaEventCard.name);
-                            time++;
+                            int hunterPlayingGoodluckC = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                            if (hunterPlayingGoodluckC > 0)
+                            {
+                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluckC);
+                            }
+                            else
+                            {
+                                time++;
+                            }
                             break;
                         case "Unearthly Swiftness":
                             ui.TellUser("Dracula played Unearthly Swiftness");
-                            DiscardEventFromDracula(draculaEventCard.name);
-                            dracula.DraculaMovementPhase(this, ui);
-                            dracula.DoActionPhase(this, ui);
+                            int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                            if (hunterPlayingGoodluck > 0)
+                            {
+                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            }
+                            else
+                            {
+                                DiscardEventFromDracula(draculaEventCard.name);
+                                dracula.DraculaMovementPhase(this, ui);
+                                dracula.DoActionPhase(this, ui);
+                            }
                             break;
                         case "Roadblock":
-                            dracula.PlaceRoadBlockCounter(this, roadblockCounter);
-                            ui.TellUser("Dracula played Roadblock and placed the Roadblock counter on the " + roadblockCounter.connectionType + " between " + roadblockCounter.firstLocation + " and " + roadblockCounter.secondLocation);
+                            ui.TellUser("Dracula played Roadblock ");
+                            DiscardEventFromDracula("Roadblock");
+                            int hunterPlayingGoodluckB = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                            if (hunterPlayingGoodluckB > 0)
+                            {
+                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluckB);
+                            }
+                            else
+                            {
+                                dracula.PlaceRoadBlockCounter(this, roadblockCounter);
+                                ui.TellUser("Dracula played Roadblock and placed the Roadblock counter on the " + roadblockCounter.connectionType + " between " + roadblockCounter.firstLocation + " and " + roadblockCounter.secondLocation);
+                            }
                             break;
                         case "Devilish Power":
-                            dracula.PlayDevilishPowerToRemoveHeavenlyHostOrHunterAlly(this, ui);
+                            dracula.PlayDevilishPowerToRemoveHeavenlyHostOrHunterAlly(this, ui); // Good luck is handled within this function
                             DiscardEventFromDracula("Devilish Power");
                             break;
                     }
@@ -2816,7 +3098,16 @@ namespace ConsoleHandler
                         case "Relentless Minion":
                             ui.TellUser("Dracula played Relentless Minion");
                             DiscardEventFromDracula("Relentless Minion");
-                            combatResult = ResolveCombat(hunterIndex, 2, ui);
+                            int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                            if (hunterPlayingGoodluck > 0)
+                            {
+                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            }
+                            else
+                            {
+
+                                combatResult = ResolveCombat(hunterIndex, 2, ui);
+                            }
                             break;
                     }
                 }
@@ -3083,7 +3374,16 @@ namespace ConsoleHandler
                 int dieRoll;
                 if (draculaEventCard != null)
                 {
-                    dieRoll = 4;
+                    int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                    if (hunterPlayingGoodluck > 0)
+                    {
+                        DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                        dieRoll = ui.GetDieRoll();
+                    }
+                    else
+                    {
+                        dieRoll = 4;
+                    }
                 }
                 else
                 {
@@ -3208,6 +3508,11 @@ namespace ConsoleHandler
         {
             ui.TellUser("I am playing my False Tip-Off card to cancel your train");
             dracula.DiscardEventFromHand(this, "False Tip-Off");
+            int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+            if (hunterPlayingGoodluck > 0)
+            {
+                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+            }
         }
 
         internal void AddEventCardToHunterAtIndex(int hunterIndex)
@@ -3388,27 +3693,45 @@ namespace ConsoleHandler
                     {
                         case "Trap":
                             PlayTrap(ui);
-                            trapPlayed = true;
+                            int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                            if (hunterPlayingGoodluck > 0)
+                            {
+                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            }
+                            else
+                            {
+                                trapPlayed = true;
+                                break;
+                            }
                             break;
                         case "Rage":
                             PlayRage(hunters[hunterIndex].huntersInGroup, ui);
-                            rageRounds = 3;
-                            try
+                            int hunterPlayingGoodluckB = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                            if (hunterPlayingGoodluckB > 0)
                             {
-                                enemyCombatCards.Remove(enemyCombatCards.Find(card => card.name == "Escape (Man)"));
+                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluckB);
                             }
-                            catch (Exception e) { }
-                            try
+                            else
                             {
-                                enemyCombatCards.Remove(enemyCombatCards.Find(card => card.name == "Escape (Bat)"));
+                                rageRounds = 3;
+                                try
+                                {
+                                    enemyCombatCards.Remove(enemyCombatCards.Find(card => card.name == "Escape (Man)"));
+                                }
+                                catch (Exception e) { }
+                                try
+                                {
+                                    enemyCombatCards.Remove(enemyCombatCards.Find(card => card.name == "Escape (Bat)"));
+                                }
+                                catch (Exception e) { }
+                                try
+                                {
+                                    enemyCombatCards.Remove(enemyCombatCards.Find(card => card.name == "Escape (Mist)"));
+                                }
+                                catch (Exception e) { }
                             }
-                            catch (Exception e) { }
-                            try
-                            {
-                                enemyCombatCards.Remove(enemyCombatCards.Find(card => card.name == "Escape (Mist)"));
-                            }
-                            catch (Exception e) { }
                             break;
+
                         case "Wild Horses": PlayWildHorses(hunters[hunterIndex].huntersInGroup, ui); break;
                     }
                     DiscardEventFromDracula(draculaEventCard.name);
@@ -3435,6 +3758,7 @@ namespace ConsoleHandler
                                 case "Advance Planning":
                                     DiscardEventFromHunterAtIndex(cardName, i);
                                     draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                                    bool eventIsCancelled = false;
                                     if (draculaEventCard != null)
                                     {
                                         switch (draculaEventCard.name)
@@ -3442,10 +3766,20 @@ namespace ConsoleHandler
                                             case "DevilishPower":
                                                 ui.TellUser("Dracula played Devilish power to cancel this event");
                                                 DiscardEventFromDracula("Devilish Power");
+                                                int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                                                if (hunterPlayingGoodluck > 0)
+                                                {
+                                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                                }
+                                                else
+                                                {
+                                                    eventIsCancelled = true;
+                                                }
+
                                                 break;
                                         }
                                     }
-                                    else
+                                    if (!eventIsCancelled)
                                     {
                                         PlayAdvancePlanningInCombat(ui);
                                     }
@@ -3453,6 +3787,7 @@ namespace ConsoleHandler
                                 case "Escape Route":
                                     DiscardEventFromHunterAtIndex(cardName, i);
                                     draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                                    bool eventIsCancelledB = false;
                                     if (draculaEventCard != null)
                                     {
                                         switch (draculaEventCard.name)
@@ -3460,10 +3795,20 @@ namespace ConsoleHandler
                                             case "DevilishPower":
                                                 ui.TellUser("Dracula played Devilish power to cancel this event");
                                                 DiscardEventFromDracula("Devilish Power");
+                                                int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                                                if (hunterPlayingGoodluck > 0)
+                                                {
+                                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                                }
+                                                else
+                                                {
+                                                    eventIsCancelledB = true;
+                                                }
+
                                                 break;
                                         }
                                     }
-                                    else
+                                    if (!eventIsCancelledB)
                                     {
                                         PlayEscapeRouteInCombat(i, ui);
                                         return "Escape Route";
@@ -3472,6 +3817,7 @@ namespace ConsoleHandler
                                 case "Heroic Leap":
                                     DiscardEventFromHunterAtIndex(cardName, i);
                                     draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                                    bool eventIsCancelledC = false;
                                     if (draculaEventCard != null)
                                     {
                                         switch (draculaEventCard.name)
@@ -3479,10 +3825,20 @@ namespace ConsoleHandler
                                             case "DevilishPower":
                                                 ui.TellUser("Dracula played Devilish power to cancel this event");
                                                 DiscardEventFromDracula("Devilish Power");
+                                                int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                                                if (hunterPlayingGoodluck > 0)
+                                                {
+                                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                                }
+                                                else
+                                                {
+                                                    eventIsCancelledC = true;
+                                                }
+
                                                 break;
                                         }
                                     }
-                                    else
+                                    if (!eventIsCancelledC)
                                     {
                                         PlayHeroicLeapInCombat(i, ui);
                                     }
@@ -3539,6 +3895,11 @@ namespace ConsoleHandler
                             case "DevilishPower":
                                 ui.TellUser("Dracula played Devilish power to cancel this event");
                                 DiscardEventFromDracula("Devilish Power");
+                                int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                                if (hunterPlayingGoodluck > 0)
+                                {
+                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                }
                                 break;
                         }
                     }
@@ -3580,10 +3941,23 @@ namespace ConsoleHandler
             ui.TellUser("Add 1 to all dice rolls for that hunter");
         }
 
-        private void PlayWildHorses(List<Hunter> hunters, UserInterface ui)
+        private void PlayWildHorses(List<Hunter> huntersBeingMoved, UserInterface ui)
         {
             ui.TellUser("Dracula played Wild Horses");
-            Location locationToMoveHuntersToWithWildHorses = dracula.ChooseLocationToSendHuntersToWithWildHorses(this, hunters);
+            int hunterIndex = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+            if (hunterIndex > 0)
+            {
+                DiscardEventFromHunterAtIndex("Good Luck", hunterIndex);
+            }
+            else
+            {
+                Location locationToMoveHuntersToWithWildHorses = dracula.ChooseLocationToSendHuntersToWithWildHorses(this, huntersBeingMoved);
+                ui.TellUser("Dracula moved you to " + locationToMoveHuntersToWithWildHorses.name);
+                foreach (Hunter h in huntersBeingMoved)
+                {
+                    h.currentLocation = locationToMoveHuntersToWithWildHorses;
+                }
+            }
         }
 
         private void PlayRage(List<Hunter> huntersInCombat, UserInterface ui)
@@ -3765,6 +4139,7 @@ namespace ConsoleHandler
             {
                 DiscardEventFromHunterAtIndex("Great Strength", hunterIndex);
                 Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                bool eventIsCancelled = false;
                 if (draculaEventCard != null)
                 {
                     switch (draculaEventCard.name)
@@ -3772,10 +4147,20 @@ namespace ConsoleHandler
                         case "DevilishPower":
                             ui.TellUser("Dracula played Devilish power to cancel this event");
                             DiscardEventFromDracula("Devilish Power");
+                            int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                            if (hunterPlayingGoodluck > 0)
+                            {
+                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            }
+                            else
+                            {
+                                eventIsCancelled = true;
+                            }
+
                             break;
                     }
                 }
-                else
+                if (!eventIsCancelled)
                 {
                     return;
                 }
@@ -3997,9 +4382,20 @@ namespace ConsoleHandler
             {
                 switch (draculaEventCard.name)
                 {
-                    case "False Tip-off":
-                        PlayCustomsSearch(hunterIndex, ui);
-                        return true;
+                    case "Customs Search":
+                        int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                        if (hunterPlayingGoodluck > 0)
+                        {
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            DiscardEventFromDracula("Customs Search");
+                        }
+                        else
+                        {
+
+                            PlayCustomsSearch(hunterIndex, ui);
+                            return true;
+                        }
+                        break;
                 }
             }
             return false;

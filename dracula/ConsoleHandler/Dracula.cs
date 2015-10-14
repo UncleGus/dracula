@@ -30,6 +30,8 @@ namespace DraculaHandler
         public List<Event> eventCardsInHand = new List<Event>();
         public int eventHandSize;
         public DecisionMaker logic = new DecisionMaker();
+        public string advanceMovePower = null;
+        public Location advanceMoveDestination = null;
 
         public Dracula()
         {
@@ -150,9 +152,44 @@ namespace DraculaHandler
         {
             switch (eventCardDrawn.name)
             {
-                case "Evasion": PlayEvasion(g, ui); break;
-                case "Night Visit": PlayNightVisit(g, ui); break;
-                case "Vampiric Influence": PlayVampiricInfluence(g, ui); break;
+                case "Evasion":
+                    int hunterPlayingGoodluckC = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                    if (hunterPlayingGoodluckC > 0)
+                    {
+                        g.DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluckC);
+                        g.DiscardEventFromDracula("Night Visit");
+                    }
+                    else
+                    {
+
+                        PlayEvasion(g, ui); break;
+                    }
+                    break;
+                case "Night Visit":
+                    int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                    if (hunterPlayingGoodluck > 0)
+                    {
+                        g.DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                        g.DiscardEventFromDracula("Night Visit");
+                    }
+                    else
+                    {
+                        PlayNightVisit(g, ui); break;
+                    }
+                    break;
+                case "Vampiric Influence":
+                    int hunterPlayingGoodluckB = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                    if (hunterPlayingGoodluckB > 0)
+                    {
+                        g.DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluckB);
+                        g.DiscardEventFromDracula("Vampiric Influence");
+                    }
+                    else
+                    {
+
+                        PlayVampiricInfluence(g, ui); break;
+                    }
+                    break;
             }
         }
 
