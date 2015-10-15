@@ -25,6 +25,8 @@ namespace HunterHandler
         public List<Item> itemsKnownToDracula = new List<Item>();
         public string travelType = null;
         public Location destination = null;
+        public Item itemShownToDraculaForBeingBitten = null;
+        public Event eventShownToDraculaForBeingBitten = null;
 
         public Hunter(string newName, int newHealth, int newNumberOfBites, int newBitesRequiredToKill)
         {

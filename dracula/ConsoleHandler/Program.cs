@@ -44,6 +44,7 @@ namespace ConsoleHandler
                     case "re": PerformRevealEncounter(g, commandSet.argument1, ui); break;
                     case "fight": PerformCombat(g, commandSet.argument1, commandSet.argument2, ui); break;
                     case "clear": PerformTrailClear(g, commandSet.argument1, ui); break;
+                    case "known": g.TellMeWhatYouKnow(ui); break;
 #endif
 
                     case "m": PerformHunterMove(g, commandSet.argument1, commandSet.argument2, ui); break;
@@ -288,7 +289,7 @@ namespace ConsoleHandler
                     ui.TellUser("I can't find that event");
                 }
             }
-            g.DiscardEventFromHunterAtIndex(eventName, hunterIndex);
+            g.DiscardEventFromHunterAtIndex(eventName, hunterIndex, ui);
             ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " discarded " + eventName + " and has " + g.NumberOfEventCardsAtHunterIndex(hunterIndex) + " events left");
         }
 
@@ -312,7 +313,7 @@ namespace ConsoleHandler
                     ui.TellUser("I can't find that item");
                 }
             }
-            g.DiscardItemFromHunterAtIndex(itemName, hunterIndex);
+            g.DiscardItemFromHunterAtIndex(itemName, hunterIndex, ui);
             ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " discarded " + itemName + " and has " + g.NumberOfItemCardsAtHunterIndex(hunterIndex) + " items left");
         }
 
@@ -347,13 +348,13 @@ namespace ConsoleHandler
             {
                 hunterIndex--;
             }
-            g.AddEventCardToHunterAtIndex(hunterIndex);
+            g.AddEventCardToHunterAtIndex(hunterIndex, ui);
             ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " drew an event and now has " + g.NumberOfEventCardsAtHunterIndex(hunterIndex));
             switch (g.HunterShouldDiscardAtHunterIndex(hunterIndex))
             {
                 case "event": ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " needs to discard an event"); break;
                 case "item or event": ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " needs to discard an item or an event"); break;
-            }
+            }            
         }
 
         private static void PerformCatchTrain(GameState g, string argument1, UserInterface ui)
@@ -424,15 +425,15 @@ namespace ConsoleHandler
             {
                 case "Rufus Smith":
                     g.PlayRufusSmith();
-                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex, ui);
                     break;
                 case "Jonathan Harker":
                     g.PlayJonathanHarker();
-                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex, ui);
                     break;
                 case "Sister Agatha":
                     g.PlaySisterAgatha();
-                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex, ui);
                     break;
                 case "Heroic Leap":
                     g.PlayHeroicLeap(ui);
@@ -442,15 +443,15 @@ namespace ConsoleHandler
                     break;
                 case "Money Trail":
                     g.PlayMoneyTrail(ui);
-                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex, ui);
                     break;
                 case "Sense of Emergency":
                     g.PlaySenseOfEmergency(hunterIndex, ui);
-                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex, ui);
                     break;
                 case "Vampire Lair":
                     g.PlayVampireLair(hunterIndex, ui);
-                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex, ui);
                     break;
                 case "Long Day":
                     if (g.Time() < 1)
@@ -460,50 +461,50 @@ namespace ConsoleHandler
                     else
                     {
                         g.PlayLongDay(ui);
-                        g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                        g.DiscardEventFromHunterAtIndex(cardName, hunterIndex, ui);
                     }
                     break;
                 case "Mystic Research":
                     g.PlayMysticResearch(ui);
-                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex, ui);
                     break;
                 case "Advance Planning":
                     g.PlayAdvancePlanning(ui);
                     break;
                 case "Newspaper Reports":
                     g.PlayNewspaperReports(ui);
-                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex, ui);
                     break;
                 case "Re-Equip":
                     g.PlayReEquip(ui);
-                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex, ui);
                     break;
                 case "Consecrated Ground":
                     g.PlayConsecratedGround(hunterIndex, ui);
-                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex, ui);
                     break;
                 case "Telegraph Ahead":
                     g.PlayTelegraphAhead(hunterIndex, ui);
-                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex, ui);
                     break;
                 case "Hypnosis":
                     g.PlayHypnosis(ui);
-                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex, ui);
                     break;
                 case "Stormy Seas":
                     g.PlayStormySeas(ui);
-                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex, ui);
                     break;
                 case "Surprising Return":
                     g.PlaySurprisingReturn(hunterIndex, ui);
-                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex, ui);
                     break;
                 case "Good Luck":
                     g.PlayGoodLuck(hunterIndex, ui);
                     break;
                 case "Blood Transfusion":
                     g.PlayBloodTransfusion(ui);
-                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex, ui);
                     break;
                 case "Secret Weapon":
                     g.PlaySecretWeapon(ui);
@@ -513,11 +514,11 @@ namespace ConsoleHandler
                     break;
                 case "Chartered Carriage":
                     g.PlayCharteredCarriage(ui);
-                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex, ui);
                     break;
                 case "Excellent Weather":
                     g.PlayExcellentWeather(ui);
-                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex, ui);
                     break;
                 case "Escape Route":
                     g.PlayEscapeRoute(ui);

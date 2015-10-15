@@ -156,7 +156,7 @@ namespace DraculaHandler
                     int hunterPlayingGoodluckC = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                     if (hunterPlayingGoodluckC > 0)
                     {
-                        g.DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluckC);
+                        g.DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluckC, ui);
                         g.DiscardEventFromDracula("Night Visit");
                     }
                     else
@@ -169,7 +169,7 @@ namespace DraculaHandler
                     int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                     if (hunterPlayingGoodluck > 0)
                     {
-                        g.DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                        g.DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                         g.DiscardEventFromDracula("Night Visit");
                     }
                     else
@@ -181,7 +181,7 @@ namespace DraculaHandler
                     int hunterPlayingGoodluckB = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                     if (hunterPlayingGoodluckB > 0)
                     {
-                        g.DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluckB);
+                        g.DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluckB, ui);
                         g.DiscardEventFromDracula("Vampiric Influence");
                     }
                     else
@@ -884,7 +884,7 @@ namespace DraculaHandler
                 int hunterIndex = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                 if (hunterIndex > 0)
                 {
-                    g.DiscardEventFromHunterAtIndex("Good Luck", hunterIndex);
+                    g.DiscardEventFromHunterAtIndex("Good Luck", hunterIndex, ui);
                     eventCardsInHand.Remove(eventCardsInHand.Find(c => c.name == "Devilish Power"));
                     eventToReturn = null;
                 }
@@ -1138,7 +1138,7 @@ namespace DraculaHandler
                     int hunterIndex = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                     if (hunterIndex > 0)
                     {
-                        g.DiscardEventFromHunterAtIndex("Good Luck", hunterIndex);
+                        g.DiscardEventFromHunterAtIndex("Good Luck", hunterIndex, ui);
                     }
                     else
                     {
@@ -1153,7 +1153,7 @@ namespace DraculaHandler
                 int hunterIndex = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                 if (hunterIndex > 0)
                 {
-                    g.DiscardEventFromHunterAtIndex("Good Luck", hunterIndex);
+                    g.DiscardEventFromHunterAtIndex("Good Luck", hunterIndex, ui);
                 }
                 else
                 {

@@ -251,7 +251,7 @@ namespace ConsoleHandler
             if (firstEncounter != null)
             {
                 int hunterIndex = ui.GetHunterPlayingSecretWeapon(firstEncounter.name);
-                DiscardEventFromHunterAtIndex("Secret Weapon", hunterIndex);
+                DiscardEventFromHunterAtIndex("Secret Weapon", hunterIndex, ui);
                 if (hunterIndex > 0)
                 {
                     Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
@@ -266,7 +266,7 @@ namespace ConsoleHandler
                                 int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                                 if (hunterPlayingGoodluck > 0)
                                 {
-                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                                 }
                                 else
                                 {
@@ -315,7 +315,7 @@ namespace ConsoleHandler
             {
                 line = ui.GetNameOfItemDiscardedByHunter(hunters[hunterIndex].name);
             } while (GetItemByNameFromItemDeck(line).name == "Unknown item");
-            DiscardItemFromHunterAtIndex(line, hunterIndex);
+            DiscardItemFromHunterAtIndex(line, hunterIndex, ui);
             do
             {
                 line = ui.GetNameOfItemRetrievedFromDiscardByHunter(hunters[hunterIndex].name);
@@ -362,7 +362,7 @@ namespace ConsoleHandler
                                 int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                                 if (hunterPlayingGoodluck > 0)
                                 {
-                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                                 }
                                 else
                                 {
@@ -459,7 +459,7 @@ namespace ConsoleHandler
                         int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                         if (hunterPlayingGoodluck > 0)
                         {
-                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                             DiscardEventFromDracula("Control Storms");
                         }
                         else
@@ -474,7 +474,7 @@ namespace ConsoleHandler
 
         private void PlayForewarnedBeforeEncounter(int hunterIndex, UserInterface ui)
         {
-            DiscardEventFromHunterAtIndex("Forewarned", hunterIndex);
+            DiscardEventFromHunterAtIndex("Forewarned", hunterIndex, ui);
             ui.TellUser("Encounter cancelled");
         }
 
@@ -514,7 +514,7 @@ namespace ConsoleHandler
                         int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                         if (hunterPlayingGoodluck > 0)
                         {
-                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                         }
                         else
                         {
@@ -548,7 +548,7 @@ namespace ConsoleHandler
                                 int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                                 if (hunterPlayingGoodluck > 0)
                                 {
-                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                                 }
                                 else
                                 {
@@ -618,7 +618,7 @@ namespace ConsoleHandler
                         int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                         if (hunterPlayingGoodluck > 0)
                         {
-                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                         }
                         else
                         {
@@ -647,7 +647,7 @@ namespace ConsoleHandler
                         int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                         if (hunterPlayingGoodluck > 0)
                         {
-                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                         }
                         else
                         {
@@ -660,7 +660,7 @@ namespace ConsoleHandler
                         int hunterPlayingGoodluckB = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                         if (hunterPlayingGoodluckB > 0)
                         {
-                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluckB);
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluckB, ui);
                         }
                         else
                         {
@@ -699,7 +699,7 @@ namespace ConsoleHandler
                         int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                         if (hunterPlayingGoodluck > 0)
                         {
-                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                         }
                         else
                         {
@@ -714,6 +714,11 @@ namespace ConsoleHandler
                 int hunterIndexB = ui.GetIndexOfHunterReceivingBloodTransfusion();
                 hunters[hunterIndexA].health--;
                 hunters[hunterIndexB].numberOfBites--;
+                if (hunters[hunterIndexB].numberOfBites < 1)
+                {
+                    hunters[hunterIndexB].itemShownToDraculaForBeingBitten = null;
+                    hunters[hunterIndexB].eventShownToDraculaForBeingBitten = null;
+                }
                 ui.TellUser(hunters[hunterIndexA].name + " donated blood (1 health) to " + hunters[hunterIndexB].name + " who was cured of a Bite");
                 Logger.WriteToDebugLog(hunters[hunterIndexA].name + " donated blood (1 health) to " + hunters[hunterIndexB].name + " who was cured of a Bite");
                 Logger.WriteToGameLog(hunters[hunterIndexA].name + " donated blood (1 health) to " + hunters[hunterIndexB].name + " who was cured of a Bite");
@@ -728,11 +733,11 @@ namespace ConsoleHandler
                 case 1:
                     eventDiscard.Add(draculaAlly);
                     draculaAlly = null;
-                    DiscardEventFromHunterAtIndex("Good Luck", hunterIndex);
+                    DiscardEventFromHunterAtIndex("Good Luck", hunterIndex, ui);
                     break;
                 case 2:
                     roadblockCounter = new Roadblock();
-                    DiscardEventFromHunterAtIndex("Good Luck", hunterIndex);
+                    DiscardEventFromHunterAtIndex("Good Luck", hunterIndex, ui);
                     break;
             }
         }
@@ -751,7 +756,7 @@ namespace ConsoleHandler
                         int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                         if (hunterPlayingGoodluck > 0)
                         {
-                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                         }
                         else
                         {
@@ -769,7 +774,7 @@ namespace ConsoleHandler
                 } while (cardToReclaim.ToLower() != "none" && GetEventByNameFromEventDiscard(cardToReclaim).name == "Unknown event");
                 if (cardToReclaim.ToLower() != "none")
                 {
-                    AddEventCardToHunterAtIndex(hunterIndex);
+                    AddEventCardToHunterAtIndex(hunterIndex, ui);
                     ui.TellUser("Don't forget to tell me what you discarded");
                 }
             }
@@ -801,7 +806,7 @@ namespace ConsoleHandler
                         int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                         if (hunterPlayingGoodluck > 0)
                         {
-                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                         }
                         else
                         {
@@ -839,7 +844,7 @@ namespace ConsoleHandler
                                 int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                                 if (hunterPlayingGoodluck > 0)
                                 {
-                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                                 }
                                 else
                                 {
@@ -872,7 +877,7 @@ namespace ConsoleHandler
                         int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                         if (hunterPlayingGoodluck > 0)
                         {
-                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                         }
                         else
                         {
@@ -905,7 +910,7 @@ namespace ConsoleHandler
                                 int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                                 if (hunterPlayingGoodluck > 0)
                                 {
-                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                                 }
                                 else
                                 {
@@ -988,7 +993,7 @@ namespace ConsoleHandler
                         int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                         if (hunterPlayingGoodluck > 0)
                         {
-                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                         }
                         else
                         {
@@ -1013,7 +1018,7 @@ namespace ConsoleHandler
                                 int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                                 if (hunterPlayingGoodluck > 0)
                                 {
-                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                                     DiscardEventFromDracula("Control Storms");
                                 }
                                 else
@@ -1045,7 +1050,7 @@ namespace ConsoleHandler
                         int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                         if (hunterPlayingGoodluck > 0)
                         {
-                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                         }
                         else
                         {
@@ -1071,7 +1076,7 @@ namespace ConsoleHandler
                 }
                 locationToConsecrate.isConsecrated = true;
 
-                DiscardItemFromHunterAtIndex("Heavenly Host", hunterIndex);
+                DiscardItemFromHunterAtIndex("Heavenly Host", hunterIndex, ui);
                 if (locationToConsecrate == dracula.currentLocation)
                 {
                     locationToConsecrate.isRevealed = true;
@@ -1105,7 +1110,7 @@ namespace ConsoleHandler
                         int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                         if (hunterPlayingGoodluck > 0)
                         {
-                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                         }
                         else
                         {
@@ -1135,7 +1140,7 @@ namespace ConsoleHandler
                         int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                         if (hunterPlayingGoodluck > 0)
                         {
-                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                         }
                         else
                         {
@@ -1176,7 +1181,7 @@ namespace ConsoleHandler
                                 int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                                 if (hunterPlayingGoodluck > 0)
                                 {
-                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                                 }
                                 else
                                 {
@@ -1213,7 +1218,7 @@ namespace ConsoleHandler
                         int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                         if (hunterPlayingGoodluck > 0)
                         {
-                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                         }
                         else
                         {
@@ -1248,7 +1253,7 @@ namespace ConsoleHandler
                             int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                             if (hunterPlayingGoodluck > 0)
                             {
-                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                             }
                             else
                             {
@@ -1279,7 +1284,7 @@ namespace ConsoleHandler
                         int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                         if (hunterPlayingGoodluck > 0)
                         {
-                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                         }
                         else
                         {
@@ -1331,7 +1336,7 @@ namespace ConsoleHandler
                         int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                         if (hunterPlayingGoodluck > 0)
                         {
-                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                         }
                         else
                         {
@@ -1363,7 +1368,7 @@ namespace ConsoleHandler
                         int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                         if (hunterPlayingGoodluck > 0)
                         {
-                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                         }
                         else
                         {
@@ -1392,7 +1397,7 @@ namespace ConsoleHandler
                                     int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                                     if (hunterPlayingGoodluck > 0)
                                     {
-                                        DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                        DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                                     }
                                     else
                                     {
@@ -2748,7 +2753,7 @@ namespace ConsoleHandler
                             int hunterPlayingGoodluckC = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                             if (hunterPlayingGoodluckC > 0)
                             {
-                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluckC);
+                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluckC, ui);
                             }
                             else
                             {
@@ -2760,7 +2765,7 @@ namespace ConsoleHandler
                             int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                             if (hunterPlayingGoodluck > 0)
                             {
-                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                             }
                             else
                             {
@@ -2775,7 +2780,7 @@ namespace ConsoleHandler
                             int hunterPlayingGoodluckB = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                             if (hunterPlayingGoodluckB > 0)
                             {
-                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluckB);
+                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluckB, ui);
                             }
                             else
                             {
@@ -3140,7 +3145,7 @@ namespace ConsoleHandler
                             int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                             if (hunterPlayingGoodluck > 0)
                             {
-                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                             }
                             else
                             {
@@ -3477,7 +3482,7 @@ namespace ConsoleHandler
                     int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                     if (hunterPlayingGoodluck > 0)
                     {
-                        DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                        DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                         dieRoll = ui.GetDieRoll();
                     }
                     else
@@ -3611,15 +3616,16 @@ namespace ConsoleHandler
             int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
             if (hunterPlayingGoodluck > 0)
             {
-                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
             }
         }
 
-        internal void AddEventCardToHunterAtIndex(int hunterIndex)
+        internal void AddEventCardToHunterAtIndex(int hunterIndex, UserInterface ui)
         {
             hunters[hunterIndex].numberOfEvents++;
             Logger.WriteToDebugLog(hunters[hunterIndex].name + " draw an event card, up to " + hunters[hunterIndex].numberOfEvents);
             Logger.WriteToGameLog(hunters[hunterIndex].name + " draw an event card, up to " + hunters[hunterIndex].numberOfEvents);
+            CheckBittenHunterCards(ui);
         }
 
         internal void AddItemCardToHunterAtIndex(int hunterIndex)
@@ -3634,10 +3640,15 @@ namespace ConsoleHandler
             return resolve;
         }
 
-        internal void DiscardEventFromHunterAtIndex(string eventName, int hunterIndex)
+        internal void DiscardEventFromHunterAtIndex(string eventName, int hunterIndex, UserInterface ui)
         {
             Event eventToDiscard = GetEventByNameFromEventDeck(eventName);
             eventDeck.Remove(eventToDiscard);
+            if (hunters[hunterIndex].eventShownToDraculaForBeingBitten == eventToDiscard)
+            {
+                hunters[hunterIndex].eventShownToDraculaForBeingBitten = null;
+                CheckBittenHunterCards(ui);
+            }
             eventDiscard.Add(eventToDiscard);
             hunters[hunterIndex].numberOfEvents--;
             Logger.WriteToDebugLog(hunters[hunterIndex].name + " discarded " + eventName + " down to " + hunters[hunterIndex].numberOfEvents);
@@ -3697,7 +3708,7 @@ namespace ConsoleHandler
             }
         }
 
-        internal void DiscardItemFromHunterAtIndex(string itemName, int hunterIndex)
+        internal void DiscardItemFromHunterAtIndex(string itemName, int hunterIndex, UserInterface ui)
         {
             Item itemToDiscard;
             if (hunters[hunterIndex].itemsKnownToDracula.FindIndex(i => i.name == itemName) > -1)
@@ -3710,8 +3721,17 @@ namespace ConsoleHandler
                 itemToDiscard = GetItemByNameFromItemDeck(itemName);
                 itemDeck.Remove(itemToDiscard);
             }
+            if (hunters[hunterIndex].itemShownToDraculaForBeingBitten == itemToDiscard)
+            {
+                hunters[hunterIndex].itemShownToDraculaForBeingBitten = null;
+                CheckBittenHunterCards(ui);
+            }
             itemDiscard.Add(itemToDiscard);
             hunters[hunterIndex].numberOfItems--;
+            if (itemName == "Dogs")
+            {
+                hunters[hunterIndex].hasDogsFaceUp = false;
+            }
             Logger.WriteToDebugLog(hunters[hunterIndex].name + " discarded " + itemName + " down to " + hunters[hunterIndex].numberOfEvents);
             Logger.WriteToGameLog(hunters[hunterIndex].name + " discarded " + itemName + " down to " + hunters[hunterIndex].numberOfEvents);
         }
@@ -3805,7 +3825,7 @@ namespace ConsoleHandler
                             int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                             if (hunterPlayingGoodluck > 0)
                             {
-                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                             }
                             else
                             {
@@ -3818,7 +3838,7 @@ namespace ConsoleHandler
                             int hunterPlayingGoodluckB = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                             if (hunterPlayingGoodluckB > 0)
                             {
-                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluckB);
+                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluckB, ui);
                             }
                             else
                             {
@@ -3865,7 +3885,7 @@ namespace ConsoleHandler
                             switch (cardName)
                             {
                                 case "Advance Planning":
-                                    DiscardEventFromHunterAtIndex(cardName, i);
+                                    DiscardEventFromHunterAtIndex(cardName, i, ui);
                                     draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
                                     bool eventIsCancelled = false;
                                     if (draculaEventCard != null)
@@ -3878,7 +3898,7 @@ namespace ConsoleHandler
                                                 int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                                                 if (hunterPlayingGoodluck > 0)
                                                 {
-                                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                                                 }
                                                 else
                                                 {
@@ -3894,7 +3914,7 @@ namespace ConsoleHandler
                                     }
                                     break;
                                 case "Escape Route":
-                                    DiscardEventFromHunterAtIndex(cardName, i);
+                                    DiscardEventFromHunterAtIndex(cardName, i, ui);
                                     draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
                                     bool eventIsCancelledB = false;
                                     if (draculaEventCard != null)
@@ -3907,7 +3927,7 @@ namespace ConsoleHandler
                                                 int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                                                 if (hunterPlayingGoodluck > 0)
                                                 {
-                                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                                                 }
                                                 else
                                                 {
@@ -3924,7 +3944,7 @@ namespace ConsoleHandler
                                     }
                                     break;
                                 case "Heroic Leap":
-                                    DiscardEventFromHunterAtIndex(cardName, i);
+                                    DiscardEventFromHunterAtIndex(cardName, i, ui);
                                     draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
                                     bool eventIsCancelledC = false;
                                     if (draculaEventCard != null)
@@ -3937,7 +3957,7 @@ namespace ConsoleHandler
                                                 int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                                                 if (hunterPlayingGoodluck > 0)
                                                 {
-                                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                                                 }
                                                 else
                                                 {
@@ -3969,7 +3989,7 @@ namespace ConsoleHandler
                                         enemyCombatCards.Remove(enemyCombatCards.Find(card => card.name == "Escape (Mist)"));
                                     }
                                     catch (Exception e) { }
-                                    DiscardEventFromHunterAtIndex(cardName, i);
+                                    DiscardEventFromHunterAtIndex(cardName, i, ui);
                                     break;
                             }
 
@@ -3995,7 +4015,7 @@ namespace ConsoleHandler
             {
                 if (ui.AskIfHunterIsUsingGreatStrengthToCancelDamage(roundResult.hunterTargeted))
                 {
-                    DiscardEventFromHunterAtIndex("Great Strength", Array.FindIndex(hunters, h => h.name == roundResult.hunterTargeted));
+                    DiscardEventFromHunterAtIndex("Great Strength", Array.FindIndex(hunters, h => h.name == roundResult.hunterTargeted), ui);
                     draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
                     if (draculaEventCard != null)
                     {
@@ -4007,7 +4027,7 @@ namespace ConsoleHandler
                                 int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                                 if (hunterPlayingGoodluck > 0)
                                 {
-                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                                 }
                                 break;
                         }
@@ -4056,7 +4076,7 @@ namespace ConsoleHandler
             int hunterIndex = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
             if (hunterIndex > 0)
             {
-                DiscardEventFromHunterAtIndex("Good Luck", hunterIndex);
+                DiscardEventFromHunterAtIndex("Good Luck", hunterIndex, ui);
             }
             else
             {
@@ -4085,7 +4105,7 @@ namespace ConsoleHandler
             } while (GetItemByNameFromItemDeck(cardInRagedHunterHand).name == "Unknown item" && cardInRagedHunterHand.ToLower() != "none");
             Item itemToDiscard = dracula.ChooseItemCardToDiscard(itemsInHunterHand);
             ui.TellUser("Discarding " + itemToDiscard.name);
-            DiscardItemFromHunterAtIndex(itemToDiscard.name, Array.FindIndex(hunters, h => h.name == huntersInCombat.First().name));
+            DiscardItemFromHunterAtIndex(itemToDiscard.name, Array.FindIndex(hunters, h => h.name == huntersInCombat.First().name), ui);
         }
 
         private void PlayTrap(UserInterface ui)
@@ -4111,7 +4131,24 @@ namespace ConsoleHandler
                         }
                     }
                 } while (GetItemByNameFromItemDeck(newHunterCardUsed).name == "Unknown item" && GetItemByNameFromList(newHunterCardUsed, hunterBasicCards).name == "Unknown item");
-                h.lastItemUsedInCombat = newHunterCardUsed;
+                if (newHunterCardUsed != "Punch" && newHunterCardUsed != "Dodge" && newHunterCardUsed != "Escape")
+                {
+                    if (h.itemsKnownToDracula.FindIndex(it => it.name == newHunterCardUsed) == -1)
+                    {
+                        h.itemsKnownToDracula.Add(GetItemByNameFromItemDeck(newHunterCardUsed));
+                    }
+                    else if (newHunterCardUsed == h.lastItemUsedInCombat)
+                    {
+                        List<Item> copyOfHunterItemsKnown = new List<Item>();
+                        copyOfHunterItemsKnown.AddRange(h.itemsKnownToDracula);
+                        copyOfHunterItemsKnown.Remove(copyOfHunterItemsKnown.Find(it => it.name == newHunterCardUsed));
+                        if (copyOfHunterItemsKnown.FindIndex(it => it.name == newHunterCardUsed) == -1)
+                        {
+                            h.itemsKnownToDracula.Add(GetItemByNameFromItemDeck(newHunterCardUsed));
+                        }
+                    }
+                    h.lastItemUsedInCombat = newHunterCardUsed;
+                }
             }
             ui.TellUser("Enemy chose " + newEnemyCardUsed + " against " + targetHunterName);
             string newOutcome = ui.GetCombatRoundOutcome();
@@ -4155,11 +4192,20 @@ namespace ConsoleHandler
             switch (itemName)
             {
                 case "Local Rumors": PlayLocalRumors(hunterIndex, ui); break;
-                case "Dogs": hunters[hunterIndex].hasDogsFaceUp = true; break;
-                case "Fast Horse": ui.TellUser("You may now move two road spaces"); DiscardItemFromHunterAtIndex("Fast Horse", hunterIndex); break;
+                case "Dogs": PlayDogs(hunterIndex, ui);  break;
+                case "Fast Horse": ui.TellUser("You may now move two road spaces"); DiscardItemFromHunterAtIndex("Fast Horse", hunterIndex, ui); break;
                 case "Heavenly Host": PlayHeavenlyHost(hunterIndex, ui); break;
                 case "Holy Water": PlayHolyWater(hunterIndex, ui); break;
                 default: break;
+            }
+        }
+
+        private void PlayDogs(int hunterIndex, UserInterface ui)
+        {
+            hunters[hunterIndex].hasDogsFaceUp = true;
+            if (hunters[hunterIndex].itemsKnownToDracula.FindIndex(item => item.name == "Dogs") == -1)
+            {
+                hunters[hunterIndex].itemsKnownToDracula.Add(GetItemByNameFromItemDeck("Dogs"));
             }
         }
 
@@ -4200,15 +4246,21 @@ namespace ConsoleHandler
                     hunterToHeal.health -= 2;
                     HandlePossibleHunterDeath(ui); break;
                 case 2: break;
-                case 3: hunterToHeal.numberOfBites--; break;
+                case 3: hunterToHeal.numberOfBites--;
+                    if (hunterToHeal.numberOfBites < 1)
+                    {
+                        hunterToHeal.itemShownToDraculaForBeingBitten = null;
+                        hunterToHeal.eventShownToDraculaForBeingBitten = null;
+                    }
+                    break;
             }
-            DiscardItemFromHunterAtIndex("Holy Water", hunterIndex);
+            DiscardItemFromHunterAtIndex("Holy Water", hunterIndex, ui);
         }
 
         private void PlayHeavenlyHost(int hunterIndex, UserInterface ui)
         {
             hunters[hunterIndex].currentLocation.hasHost = true;
-            DiscardItemFromHunterAtIndex("Heavenly Host", hunterIndex);
+            DiscardItemFromHunterAtIndex("Heavenly Host", hunterIndex, ui);
         }
 
         private void PlayLocalRumors(int hunterIndex, UserInterface ui)
@@ -4234,7 +4286,7 @@ namespace ConsoleHandler
                 encounterToReveal = ui.GetIndexOfEncounterToReveal();
             }
             locationWhereEncounterIsBeingRevealed.encounters[encounterToReveal].isRevealed = true;
-            DiscardItemFromHunterAtIndex("Local Rumors", hunterIndex);
+            DiscardItemFromHunterAtIndex("Local Rumors", hunterIndex, ui);
         }
 
         internal bool HunterHasGroupAtHunterIndex(int hunterIndex)
@@ -4246,7 +4298,7 @@ namespace ConsoleHandler
         {
             if (ui.AskIfHunterIsUsingGreatStrengthToCancelBite(hunters[hunterIndex].name))
             {
-                DiscardEventFromHunterAtIndex("Great Strength", hunterIndex);
+                DiscardEventFromHunterAtIndex("Great Strength", hunterIndex, ui);
                 Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
                 bool eventIsCancelled = false;
                 if (draculaEventCard != null)
@@ -4259,7 +4311,7 @@ namespace ConsoleHandler
                             int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                             if (hunterPlayingGoodluck > 0)
                             {
-                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                                DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                             }
                             else
                             {
@@ -4271,6 +4323,7 @@ namespace ConsoleHandler
                 }
                 if (!eventIsCancelled)
                 {
+                    CheckBittenHunterCards(ui);
                     return;
                 }
             }
@@ -4367,7 +4420,7 @@ namespace ConsoleHandler
                                 ui.TellUser("I can't find that event");
                             }
                         }
-                        DiscardEventFromHunterAtIndex(eventName, hunterIndex);
+                        DiscardEventFromHunterAtIndex(eventName, hunterIndex, ui);
                     }
                     while (h.numberOfItems > 0)
                     {
@@ -4380,7 +4433,7 @@ namespace ConsoleHandler
                                 ui.TellUser("I can't find that item");
                             }
                         }
-                        DiscardItemFromHunterAtIndex(itemName, hunterIndex);
+                        DiscardItemFromHunterAtIndex(itemName, hunterIndex, ui);
                     }
                 }
             }
@@ -4430,7 +4483,14 @@ namespace ConsoleHandler
                     HandlePossibleHunterDeath(ui);
                     break;
                 case 2: break;
-                case 3: hunters[hunterIndex].numberOfBites--; break;
+                case 3:
+                    hunters[hunterIndex].numberOfBites--;
+                    if (hunters[hunterIndex].numberOfBites < 1)
+                    {
+                        hunters[hunterIndex].itemShownToDraculaForBeingBitten = null;
+                        hunters[hunterIndex].eventShownToDraculaForBeingBitten = null;
+                    }
+                    break;
             }
 
         }
@@ -4495,7 +4555,7 @@ namespace ConsoleHandler
                         int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                         if (hunterPlayingGoodluck > 0)
                         {
-                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
                             DiscardEventFromDracula("Customs Search");
                         }
                         else
@@ -4602,6 +4662,64 @@ namespace ConsoleHandler
                 }
             }
             return false;
+        }
+
+        internal void TellMeWhatYouKnow(UserInterface ui)
+        {
+            ui.TellUser("This is what I know");
+            foreach (Hunter h in hunters)
+            {
+                ui.TellUser(h.name + " has:");
+                foreach (Item i in h.itemsKnownToDracula)
+                {
+                    ui.TellUser(i.name);
+                }
+                foreach (Event e in h.eventsKnownToDracula)
+                {
+                    ui.TellUser(e.name);
+                }
+                if (h.destination != null)
+                {
+                    ui.TellUser(h.name + " will move to " + h.destination + " by " + h.travelType + " next turn");
+                }
+            }
+        }
+
+        internal void CheckBittenHunterCards(UserInterface ui)
+        {
+            foreach (Hunter h in hunters)
+            {
+                if (h.numberOfBites > 0)
+                {
+                    if (h.numberOfItems > 0 && h.itemShownToDraculaForBeingBitten == null)
+                    {
+                        string line;
+                        do
+                        {
+                            line = ui.AskHunterToRevealItem(h.name);
+                        } while (GetItemByNameFromItemDeck(line).name == "Unknown item" && h.itemsKnownToDracula.FindIndex(itm => itm.name == line) == -1);
+                        if (h.itemsKnownToDracula.FindIndex(itm => itm.name == line) == -1)
+                        {
+                            h.itemsKnownToDracula.Add(GetItemByNameFromItemDeck(line));
+                        }
+                        h.itemShownToDraculaForBeingBitten = GetItemByNameFromItemDeck(line);
+                    }
+                    if (h.numberOfEvents > 0 && h.eventShownToDraculaForBeingBitten == null)
+                    {
+                        string line;
+                        do
+                        {
+                            line = ui.AskHunterToRevealEvent(h.name);
+                        } while (GetEventByNameFromEventDeck(line).name == "Unknown item" && h.eventsKnownToDracula.FindIndex(ev => ev.name == line) == -1);
+                        if (h.eventsKnownToDracula.FindIndex(ev => ev.name == line) == -1)
+                        {
+                            h.eventsKnownToDracula.Add(GetEventByNameFromEventDeck(line));
+                        }
+                        h.eventShownToDraculaForBeingBitten = GetEventByNameFromEventDeck(line);
+                    }
+
+                }
+            }
         }
     }
 }

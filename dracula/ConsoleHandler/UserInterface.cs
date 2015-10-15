@@ -935,5 +935,17 @@ namespace ConsoleHandler
             TellUser("To which location will " + name + " be travelling next turn?");
             return AskUser();
         }
+
+        internal string AskHunterToRevealItem(string p)
+        {
+            TellUser(p + " is bitten and has an unrevealed item, please tell me what it is");
+            return AskUser();
+        }
+
+        internal string AskHunterToRevealEvent(string p)
+        {
+            TellUser(p + " is bitten and has an unrevealed event, please tell me what it is");
+            return AskUser();
+        }
     }
 }
