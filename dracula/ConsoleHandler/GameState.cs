@@ -320,6 +320,8 @@ namespace ConsoleHandler
             {
                 line = ui.GetNameOfItemRetrievedFromDiscardByHunter(hunters[hunterIndex].name);
             } while (GetItemByNameFromItemDiscard(line).name == "Unknown item");
+            hunters[hunterIndex].itemsKnownToDracula.Add(GetItemByNameFromItemDiscard(line));
+            itemDiscard.Remove(GetItemByNameFromItemDiscard(line));
             hunters[hunterIndex].numberOfItems++;
 
         }
@@ -622,7 +624,6 @@ namespace ConsoleHandler
                         {
                             eventIsCancelled = true;
                         }
-
                         break;
                 }
             }
@@ -635,6 +636,7 @@ namespace ConsoleHandler
         internal void PlayCharteredCarriage(UserInterface ui)
         {
             Event draculaEventCard = dracula.WillPlayCardToCancelCharteredCarriage(this);
+            bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
                 switch (draculaEventCard.name)
@@ -642,12 +644,35 @@ namespace ConsoleHandler
                     case "False Tip-off":
                         ui.TellUser("Dracula played False Tip-off to cancel your Chartered Carriage");
                         DiscardEventFromDracula("False Tip-off");
+                        int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                        if (hunterPlayingGoodluck > 0)
+                        {
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck);
+                        }
+                        else
+                        {
+                            eventIsCancelled = true;
+                        }
+                        break;
+                    case "Devilish Power":
+                        ui.TellUser("Dracula played Devilish Power to cancel this event");
+                        DiscardEventFromDracula("Devilish Power");
+                        int hunterPlayingGoodluckB = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                        if (hunterPlayingGoodluckB > 0)
+                        {
+                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluckB);
+                        }
+                        else
+                        {
+                            eventIsCancelled = true;
+                        }
                         break;
                 }
             }
-            else
-
+            if (!eventIsCancelled)
+            {
                 ui.TellUser("You may catch a fast train this turn");
+            }
         }
 
         internal void PlayForewarned(UserInterface ui)
@@ -695,9 +720,21 @@ namespace ConsoleHandler
             }
         }
 
-        internal void PlayGoodLuck(UserInterface ui)
+        internal void PlayGoodLuck(int hunterIndex, UserInterface ui)
         {
-            ui.TellUser("You are supposed to use Good Luck to cancel Dracula's events, I will ask you whenever he plays one");
+            int response = ui.AskHunterDiscardAllyOrRoadblock();
+            switch (response)
+            {
+                case 1:
+                    eventDiscard.Add(draculaAlly);
+                    draculaAlly = null;
+                    DiscardEventFromHunterAtIndex("Good Luck", hunterIndex);
+                    break;
+                case 2:
+                    roadblockCounter = new Roadblock();
+                    DiscardEventFromHunterAtIndex("Good Luck", hunterIndex);
+                    break;
+            }
         }
 
         internal void PlaySurprisingReturn(int hunterIndex, UserInterface ui)
@@ -3329,7 +3366,68 @@ namespace ConsoleHandler
 
         public bool ResolveSpy(List<Hunter> huntersEncountered, UserInterface ui)
         {
-            ui.TellUser("Hunter(s) encounter a spy, but Dracula has no brain, so it doesn't matter");
+            ui.TellUser(huntersEncountered.First().name + " encountered a spy" + (huntersEncountered.Count() > 1 ? " with his group" : ""));
+            foreach (Hunter h in huntersEncountered)
+            {
+                List<String> itemsAlreadyKnownToDracula = new List<String>();
+                for (int i = 0; i < h.numberOfItems; i++)
+                {
+                    string line = "";
+                    do
+                    {
+                        line = ui.GetNameOfItemInHandFromHunter(h.name);
+                        if (GetItemByNameFromItemDeck(line).name == "Unknown item" && h.itemsKnownToDracula.FindIndex(item => item.name == line) == -1)
+                        {
+                            ui.TellUser("I didn't recognise that card name");
+                        }
+                    } while (GetItemByNameFromItemDeck(line).name == "Unknown item" && h.itemsKnownToDracula.FindIndex(item => item.name == line) == -1);
+                    itemsAlreadyKnownToDracula.Add(line);
+                }
+                List<Item> itemsToAddToKnownItems = new List<Item>();
+                itemsToAddToKnownItems.AddRange(h.itemsKnownToDracula);
+                foreach (string name in itemsAlreadyKnownToDracula) {
+                    if (itemsToAddToKnownItems.FindIndex(it => it.name == name) > -1) {
+                        itemsToAddToKnownItems.Remove(itemsToAddToKnownItems.Find(it => it.name == name));
+                    }
+                    else
+                    {
+                        h.itemsKnownToDracula.Add(GetItemByNameFromItemDeck(name));
+                    }
+                }
+                List<String> eventsAlreadyKnownToDracula = new List<String>();
+                for (int i = 0; i < h.numberOfItems; i++)
+                {
+                    string line = "";
+                    do
+                    {
+                        line = ui.GetNameOfEventInHandFromHunter(h.name);
+                        if (GetEventByNameFromEventDeck(line).name == "Unknown event" && h.eventsKnownToDracula.FindIndex(ev => ev.name == line) == -1)
+                        {
+                            ui.TellUser("I didn't recognise that card name");
+                        }
+                    } while (GetEventByNameFromEventDeck(line).name == "Unknown event" && h.eventsKnownToDracula.FindIndex(ev => ev.name == line) == -1);
+                    eventsAlreadyKnownToDracula.Add(line);
+                }
+                List<Event> eventsToAddToKnownEvents = new List<Event>();
+                eventsToAddToKnownEvents.AddRange(h.eventsKnownToDracula);
+                foreach (string name in eventsAlreadyKnownToDracula)
+                {
+                    if (eventsToAddToKnownEvents.FindIndex(eve => eve.name == name) > -1)
+                    {
+                        eventsToAddToKnownEvents.Remove(eventsToAddToKnownEvents.Find(eve => eve.name == name));
+                    }
+                    else
+                    {
+                        h.eventsKnownToDracula.Add(GetEventByNameFromEventDeck(name));
+                    }
+                }
+                h.travelType = ui.AskHunterWhatTravelTypeForSpy(h.name);
+                string lineB;
+                do {
+                    lineB = ui.AskHunterWhichLocationTheyAreMovingToNextTurn(h.name);
+                } while (GetLocationFromName(lineB).name == "Unknown location");
+                h.destination = GetLocationFromName(lineB);                
+            }
             return true;
         }
 
@@ -3601,8 +3699,17 @@ namespace ConsoleHandler
 
         internal void DiscardItemFromHunterAtIndex(string itemName, int hunterIndex)
         {
-            Item itemToDiscard = GetItemByNameFromItemDeck(itemName);
-            itemDeck.Remove(itemToDiscard);
+            Item itemToDiscard;
+            if (hunters[hunterIndex].itemsKnownToDracula.FindIndex(i => i.name == itemName) > -1)
+            {
+                itemToDiscard = hunters[hunterIndex].itemsKnownToDracula.Find(i => i.name == itemName);
+                hunters[hunterIndex].itemsKnownToDracula.Remove(itemToDiscard);
+            }
+            else
+            {
+                itemToDiscard = GetItemByNameFromItemDeck(itemName);
+                itemDeck.Remove(itemToDiscard);
+            }
             itemDiscard.Add(itemToDiscard);
             hunters[hunterIndex].numberOfItems--;
             Logger.WriteToDebugLog(hunters[hunterIndex].name + " discarded " + itemName + " down to " + hunters[hunterIndex].numberOfEvents);
@@ -3978,7 +4085,7 @@ namespace ConsoleHandler
             } while (GetItemByNameFromItemDeck(cardInRagedHunterHand).name == "Unknown item" && cardInRagedHunterHand.ToLower() != "none");
             Item itemToDiscard = dracula.ChooseItemCardToDiscard(itemsInHunterHand);
             ui.TellUser("Discarding " + itemToDiscard.name);
-            huntersInCombat.First().numberOfItems--;
+            DiscardItemFromHunterAtIndex(itemToDiscard.name, Array.FindIndex(hunters, h => h.name == huntersInCombat.First().name));
         }
 
         private void PlayTrap(UserInterface ui)
@@ -4432,7 +4539,8 @@ namespace ConsoleHandler
         {
             for (int i = 0; i < 4; i++)
             {
-                if (hunters[i].currentLocation == location) {
+                if (hunters[i].currentLocation == location)
+                {
                     return i;
                 }
             }
@@ -4482,6 +4590,18 @@ namespace ConsoleHandler
             {
                 ui.TellUser("There is a roadblock on the " + roadblockCounter.connectionType + " between " + roadblockCounter.firstLocation.name + " and " + roadblockCounter.secondLocation.name);
             }
+        }
+
+        internal bool HeavenlyHostIsInPlay()
+        {
+            foreach (Location loc in map)
+            {
+                if (loc.hasHost)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

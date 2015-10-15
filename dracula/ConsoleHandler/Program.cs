@@ -499,7 +499,7 @@ namespace ConsoleHandler
                     g.DiscardEventFromHunterAtIndex(cardName, hunterIndex);
                     break;
                 case "Good Luck":
-                    g.PlayGoodLuck(ui);
+                    g.PlayGoodLuck(hunterIndex, ui);
                     break;
                 case "Blood Transfusion":
                     g.PlayBloodTransfusion(ui);

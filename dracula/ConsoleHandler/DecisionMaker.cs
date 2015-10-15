@@ -14,6 +14,7 @@ namespace ConsoleHandler
 {
     public class DecisionMaker
     {
+        // done
         internal Location DecideDraculaStartLocation(GameState g)
         {
             Location startLocation;
@@ -24,6 +25,7 @@ namespace ConsoleHandler
             return startLocation;
         }
 
+        // done
         internal void DecideMove(GameState g, Dracula dracula, out string powerName, out Location goingTo)
         {
             if (dracula.advanceMovePower != null || dracula.advanceMoveDestination != null)
@@ -65,11 +67,13 @@ namespace ConsoleHandler
             }
         }
 
+        // done
         internal int DecideDoubleBackLocation(GameState g, Dracula dracula)
         {
             return new Random().Next(0, dracula.possibleDoubleBackMoves.Count());
         }
 
+        // done
         internal string DecideWhichAllyToKeep(string p1, string p2)
         {
             if (new Random().Next(0, 2) > 0)
@@ -82,31 +86,37 @@ namespace ConsoleHandler
             }
         }
 
+        // done
         internal Encounter DecideWhichEncounterToDiscard(GameState g, Dracula dracula)
         {
             return dracula.encounterHand[new Random().Next(0, dracula.encounterHand.Count())];
         }
 
+        // done
         internal Event DecideWhichEventToDiscard(GameState g, Dracula dracula)
         {
             return dracula.eventCardsInHand[new Random().Next(0, dracula.eventCardsInHand.Count())];
         }
 
+        // done
         internal Encounter DecideWhichEncounterToPlace(GameState g, Dracula dracula)
         {
             return dracula.encounterHand[new Random().Next(0, dracula.encounterHand.Count())];
         }
 
+        // done
         internal bool DecideToPutLocationInCatacombs(GameState g, Dracula dracula)
         {
             return new Random().Next(0, 6) > 4;
         }
 
+        // done
         internal bool DecideToDiscardCatacombLocation(GameState g, Dracula dracula)
         {
             return new Random().Next(0, 5) > 3;
         }
 
+        // done
         internal string DecideToDiscardEventOrItem(GameState g, Dracula dracula, Hunter hunter)
         {
             if (hunter.numberOfEvents + hunter.numberOfItems > 0)
@@ -124,6 +134,7 @@ namespace ConsoleHandler
             return "no cards";
         }
 
+        // done
         internal bool DecideToCancelHunterTrain(GameState g, Dracula dracula, Hunter hunter)
         {
             if (dracula.eventCardsInHand.FindIndex(card => card.name == "False Tip-Off") > -1)
@@ -137,6 +148,7 @@ namespace ConsoleHandler
             return false;
         }
 
+        // done
         internal Item DecideWhichCombatCardToPlay(Hunter hunter, List<Item> combatCards, CombatRoundResult result)
         {
             int chosenCardIndex;
@@ -147,16 +159,19 @@ namespace ConsoleHandler
             return combatCards[chosenCardIndex];
         }
 
+        // done
         internal void DecideOrderOfEncountersAtLocation(Hunter hunter, Location location)
         {
             // do nothing for now
         }
 
+        // done
         internal string DecideHunterToAttack(Hunter hunter, List<Item> combatCards, CombatRoundResult result)
         {
             return hunter.huntersInGroup[new Random().Next(0, hunter.huntersInGroup.Count())].name;
         }
 
+        // done
         internal Encounter DecideWhichCatacombsEncounterToDiscard(GameState g, Location goingTo, UserInterface ui)
         {
             if (goingTo.encounters.Count() > 1)
@@ -171,41 +186,97 @@ namespace ConsoleHandler
             }
         }
 
-        internal Event DecideEventCardToPlayAtStartOfHunterMovement(GameState g)
+        // done
+        internal Event DecideEventCardToPlayAtStartOfHunterMovement(GameState g, Dracula dracula)
         {
+            if (dracula.eventCardsInHand.FindIndex(e => e.name == "Control Storms") > -1) {
+                if (new Random().Next(0, 2) > 0)
+                {
+                    return dracula.eventCardsInHand.Find(e => e.name == "Control Storms");
+                }
+            }
             return null;
         }
 
-        internal Event DecideEventCardToPlayAtEndOfHunterMovement(GameState g)
+        // done
+        internal Event DecideEventCardToPlayAtStartOfDraculaTurn(GameState g, Dracula dracula)
         {
+            List<Event> eventCardsThatCanBePlayed = new List<Event>();
+            if (dracula.eventCardsInHand.FindIndex(ev => ev.name == "Time Runs Short") > -1) {
+                eventCardsThatCanBePlayed.Add(dracula.eventCardsInHand.Find(ev => ev.name == "Time Runs Short"));
+            }
+            if (dracula.eventCardsInHand.FindIndex(ev => ev.name == "Unearthly Swiftness") > -1) {
+                eventCardsThatCanBePlayed.Add(dracula.eventCardsInHand.Find(ev => ev.name == "Unearthly Swiftness"));
+            }
+            if (dracula.eventCardsInHand.FindIndex(ev => ev.name == "Roadblock") > -1) {
+                eventCardsThatCanBePlayed.Add(dracula.eventCardsInHand.Find(ev => ev.name == "Roadblock"));
+            }
+            if (dracula.eventCardsInHand.FindIndex(ev => ev.name == "Devilish Power") > -1 && (g.HuntersHaveAlly() || g.HeavenlyHostIsInPlay())) {
+                eventCardsThatCanBePlayed.Add(dracula.eventCardsInHand.Find(ev => ev.name == "Devilish Power"));
+            }
+            if (new Random().Next(0, 3) > 1)
+            {
+                return eventCardsThatCanBePlayed[new Random().Next(0, eventCardsThatCanBePlayed.Count())];
+            }
             return null;
         }
 
-        internal Event DecideEventCardToPlayAtStartOfDraculaTurn(GameState g)
+        // done
+        internal Event DecideToPlaySeductionDuringVampireEncounter(GameState g, Dracula dracula)
         {
+            if (dracula.eventCardsInHand.FindIndex(e => e.name == "Seduction") > -1)
+            {
+                if (new Random().Next(0, 2) > 0)
+                {
+                    return dracula.eventCardsInHand.Find(e => e.name == "Seduction");
+                }
+            }
             return null;
         }
 
-        internal Event DecideToPlaySeductionDuringVampireEncounter(GameState g)
+        // done
+        internal Event DecideToPlayCardAtStartOfCombat(GameState g, Dracula dracula, bool trapPlayed)
         {
+            List<Event> eventCardsThatCanBePlayed = new List<Event>();
+            if (dracula.eventCardsInHand.FindIndex(ev => ev.name == "Trap") > -1)
+            {
+                eventCardsThatCanBePlayed.Add(dracula.eventCardsInHand.Find(ev => ev.name == "Trap"));
+            }
+            if (dracula.eventCardsInHand.FindIndex(ev => ev.name == "Rage") > -1)
+            {
+                eventCardsThatCanBePlayed.Add(dracula.eventCardsInHand.Find(ev => ev.name == "Rage"));
+            }
+            if (dracula.eventCardsInHand.FindIndex(ev => ev.name == "Wild Horses") > -1)
+            {
+                eventCardsThatCanBePlayed.Add(dracula.eventCardsInHand.Find(ev => ev.name == "Wild Horses"));
+            }
+            if (new Random().Next(0, 2) > 0)
+            {
+                return eventCardsThatCanBePlayed[new Random().Next(0, eventCardsThatCanBePlayed.Count())];
+            }
             return null;
         }
 
-        internal Event DecideToPlayCardAtStartOfCombat(GameState g, bool trapPlayed)
-        {
-            return null;
-        }
-
+        // done
         internal Location DecideLocationToSendHunterWithControlStorms(GameState g, int hunterIndex, List<Location> possiblePorts)
         {
             return possiblePorts[new Random().Next(0, possiblePorts.Count())];
         }
 
-        internal Event DecideToPlayCustomsSearch(GameState g, Hunter hunter)
+        // done
+        internal Event DecideToPlayCustomsSearch(GameState g, Dracula dracula, Hunter hunter)
         {
+            if (dracula.eventCardsInHand.FindIndex(e => e.name == "Control Storms") > -1)
+            {
+                if (new Random().Next(0, 2) > 0)
+                {
+                    return dracula.eventCardsInHand.Find(e => e.name == "Control Storms");
+                }
+            }
             return null;
         }
 
+        // done
         internal Location DecideWhereToEvadeTo(GameState g)
         {
             List<Location> map = g.GetMap();
@@ -216,38 +287,52 @@ namespace ConsoleHandler
             return locationToReturn;
         }
 
+        // done
         internal Hunter DecideWhoToNightVisit(GameState g)
         {
             List <Hunter> bittenHunters = g.GetBittenHunters();
             return bittenHunters[new Random().Next(0, bittenHunters.Count())];
         }
 
+        // done
         internal Hunter DecideWhoToInfluence(GameState g)
         {
             List<Hunter> bittenHunters = g.GetBittenHunters();
             return bittenHunters[new Random().Next(0, bittenHunters.Count())];
         }
 
+        // done
         internal Hunter DecideWhichHunterToRage(List<Hunter> huntersInCombat)
         {
             return huntersInCombat[new Random().Next(0, huntersInCombat.Count())];
         }
 
+        // done
         internal Item DecideWhichItemToDiscard(List<Item> items)
         {
             return items[new Random().Next(0, items.Count())];
         }
 
+        // done
         internal Location DecideWhereToSendHuntersWithWildHorses(GameState g, List<Hunter> hunters)
         {
             return hunters.First().currentLocation.byRoad[new Random().Next(0, hunters.First().currentLocation.byRoad.Count())];
         }
 
-        internal Event DecideWhetherToPlayRelentlessMinion(GameState g, List<Hunter> huntersEncountered, string enemyType)
+        // done
+        internal Event DecideWhetherToPlayRelentlessMinion(GameState g, List<Hunter> huntersEncountered, string enemyType, Dracula dracula)
         {
+            if (dracula.eventCardsInHand.FindIndex(e => e.name == "Relentless Minion") > -1)
+            {
+                if (new Random().Next(0, 2) > 0)
+                {
+                    return dracula.eventCardsInHand.Find(e => e.name == "Relentless Minion");
+                }
+            }
             return null;
         }
 
+        // done
         internal void DecideWhereToPutRoadblock(GameState g, Roadblock roadblockCounter)
         {
             List<Location> map = g.GetMap();
@@ -292,11 +377,20 @@ namespace ConsoleHandler
             roadblockCounter.secondLocation = secondLocationToBlock;
         }
 
-        internal Event DecideWhetherToPlaySensationalistPress(GameState g, int trailIndex)
+        // done
+        internal Event DecideWhetherToPlaySensationalistPress(GameState g, int trailIndex, Dracula dracula)
         {
+            if (dracula.eventCardsInHand.FindIndex(e => e.name == "Sensationalist Press") > -1)
+            {
+                if (new Random().Next(0, 2) > 0)
+                {
+                    return dracula.eventCardsInHand.Find(e => e.name == "Sensationalist Press");
+                }
+            }
             return null;
         }
 
+        // done
         internal Location DecideWhichPortToGoToAfterStormySeas(GameState g, Location locationStormed)
         {
             Location port;
@@ -307,16 +401,39 @@ namespace ConsoleHandler
             return port;
         }
 
-        internal Event DecideWhetherToCancelCharteredCarriage(GameState g)
+        // done
+        internal Event DecideWhetherToCancelCharteredCarriage(GameState g, Dracula dracula)
         {
+            List<Event> eventCardsThatCanBePlayed = new List<Event>();
+            if (dracula.eventCardsInHand.FindIndex(ev => ev.name == "False Tip-off") > -1)
+            {
+                eventCardsThatCanBePlayed.Add(dracula.eventCardsInHand.Find(ev => ev.name == "False Tip-off"));
+            }
+            if (dracula.eventCardsInHand.FindIndex(ev => ev.name == "Devilish Power") > -1)
+            {
+                eventCardsThatCanBePlayed.Add(dracula.eventCardsInHand.Find(ev => ev.name == "Devilish Power"));
+            }
+            if (new Random().Next(0, 2) > 0)
+            {
+                return eventCardsThatCanBePlayed[new Random().Next(0, eventCardsThatCanBePlayed.Count())];
+            }
             return null;
         }
 
-        internal Event DecideWhetherToPlayDevilishPower(GameState g)
+        // done
+        internal Event DecideWhetherToPlayDevilishPower(GameState g, Dracula dracula)
         {
+            if (dracula.eventCardsInHand.FindIndex(e => e.name == "Devilish Power") > -1)
+            {
+                if (new Random().Next(0, 4) > 2)
+                {
+                    return dracula.eventCardsInHand.Find(e => e.name == "Devilish Power");
+                }
+            }
             return null;
         }
 
+        // done
         internal Location DecideWhichLocationToRemoveHeavenlyHostFrom(GameState g)
         {
             List<Location> map = g.GetMap();
@@ -331,11 +448,13 @@ namespace ConsoleHandler
             return locationsWithHost[new Random().Next(0, locationsWithHost.Count())];
         }
 
+        // done
         internal Hunter DecideWhichHunterToAmbush(Hunter[] hunters)
         {
             return hunters[new Random().Next(0, 4)];
         }
 
+        // done
         internal Encounter DecideWhichEncounterToAmbushHunterWith(List<Encounter> encounterHand)
         {
             return encounterHand[new Random().Next(0, encounterHand.Count())];

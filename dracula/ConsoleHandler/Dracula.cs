@@ -560,7 +560,7 @@ namespace DraculaHandler
 
         internal Event WillPlayCardToCancelCharteredCarriage(GameState g)
         {
-            return logic.DecideWhetherToCancelCharteredCarriage(g);
+            return logic.DecideWhetherToCancelCharteredCarriage(g, this);
         }
 
         public void TrimTrail(GameState g, int length)
@@ -878,7 +878,7 @@ namespace DraculaHandler
 
         internal Event WillPlayDevilishPower(GameState g, UserInterface ui)
         {
-            Event eventToReturn = logic.DecideWhetherToPlayDevilishPower(g);
+            Event eventToReturn = logic.DecideWhetherToPlayDevilishPower(g, this);
             if (eventToReturn != null)
             {
                 int hunterIndex = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
@@ -1060,27 +1060,22 @@ namespace DraculaHandler
 
         internal Event PlayEventCardAtStartOfHunterMovement(GameState g)
         {
-            return logic.DecideEventCardToPlayAtStartOfHunterMovement(g);
-        }
-
-        internal Event PlayEventCardAtEndOfHunterMovement(GameState g)
-        {
-            return logic.DecideEventCardToPlayAtEndOfHunterMovement(g);
+            return logic.DecideEventCardToPlayAtStartOfHunterMovement(g, this);
         }
 
         internal Event PlayEventCardAtStartOfDraculaTurn(GameState g)
         {
-            return logic.DecideEventCardToPlayAtStartOfDraculaTurn(g);
+            return logic.DecideEventCardToPlayAtStartOfDraculaTurn(g, this);
         }
 
         internal Event PlaySeductionCard(GameState g)
         {
-            return logic.DecideToPlaySeductionDuringVampireEncounter(g);
+            return logic.DecideToPlaySeductionDuringVampireEncounter(g, this);
         }
 
         internal Event PlayEventCardAtStartOfCombat(GameState g, bool trapPlayed)
         {
-            return logic.DecideToPlayCardAtStartOfCombat(g, trapPlayed);
+            return logic.DecideToPlayCardAtStartOfCombat(g, this, trapPlayed);
         }
 
         internal Location DecideWhereToSendHunterWithControlStorms(int hunterIndex, List<Location> possiblePorts, GameState g)
@@ -1090,7 +1085,7 @@ namespace DraculaHandler
 
         internal Event WillPlayCustomsSearch(GameState g, Hunter hunter)
         {
-            return logic.DecideToPlayCustomsSearch(g, hunter);
+            return logic.DecideToPlayCustomsSearch(g, this, hunter);
         }
 
         internal Hunter ChooseHunterToRage(List<Hunter> huntersInCombat)
@@ -1110,7 +1105,7 @@ namespace DraculaHandler
 
         internal Event WillPlayRelentlessMinion(GameState g, List<Hunter> huntersEncountered, string enemyType)
         {
-            return logic.DecideWhetherToPlayRelentlessMinion(g, huntersEncountered, enemyType);
+            return logic.DecideWhetherToPlayRelentlessMinion(g, huntersEncountered, enemyType, this);
         }
 
         internal void PlaceRoadBlockCounter(GameState g, Roadblock roadblockCounter)
@@ -1120,7 +1115,7 @@ namespace DraculaHandler
 
         internal Event WillPlaySensationalistPress(GameState g, int trailIndex)
         {
-            return logic.DecideWhetherToPlaySensationalistPress(g, trailIndex);
+            return logic.DecideWhetherToPlaySensationalistPress(g, trailIndex, this);
         }
 
         internal Location DecideWhichPortToGoToAfterStormySeas(GameState g, Location locationStormed)

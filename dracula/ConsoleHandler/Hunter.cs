@@ -1,4 +1,6 @@
-﻿using LocationHandler;
+﻿using ConsoleHandler;
+using EventHandler;
+using LocationHandler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +21,10 @@ namespace HunterHandler
         public bool hasDogsFaceUp;
         public List<Hunter> huntersInGroup = new List<Hunter>();
         public string lastItemUsedInCombat;
+        public List<Event> eventsKnownToDracula = new List<Event>();
+        public List<Item> itemsKnownToDracula = new List<Item>();
+        public string travelType = null;
+        public Location destination = null;
 
         public Hunter(string newName, int newHealth, int newNumberOfBites, int newBitesRequiredToKill)
         {

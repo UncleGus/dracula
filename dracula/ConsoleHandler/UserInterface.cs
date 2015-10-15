@@ -885,5 +885,55 @@ namespace ConsoleHandler
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 0 || hunterIndex > 4);
             return hunterIndex - 1;
         }
+
+        internal int AskHunterDiscardAllyOrRoadblock()
+        {
+            string line = "";
+            int response;
+            do
+            {
+                TellUser("What are you discarding? 0 = Nothing; 1 = Dracula's Ally; 2 = Roadblock counter");
+                line = AskUser();
+            } while (!int.TryParse(line, out response) || response < 0 || response > 2);
+            return response;
+            
+        }
+
+        internal string GetNameOfItemInHandFromHunter(string p)
+        {
+            TellUser("What is the name of the item in " + p + "'s hand?");
+            return AskUser();
+        }
+
+        internal string GetNameOfEventInHandFromHunter(string p)
+        {
+            TellUser("What is the name of the event in " + p + "'s hand?");
+            return AskUser();
+        }
+
+        internal string AskHunterWhatTravelTypeForSpy(string name)
+        {
+            string line = "";
+            int response;
+            do
+            {
+                TellUser("How will " + name + " be travelling next turn? 1) Road 2) Rail 3) Sea 4) Sense Of Emergency");
+                line = AskUser();
+            } while (!int.TryParse(line, out response) || response < 1 || response > 4);
+            switch (response)
+            {
+                case 1: return "Road";
+                case 2: return "Rail";
+                case 3: return "Sea";
+                case 4: return "Sense Of Emergency";
+            }
+            return "Hovercraft";
+        }
+
+        internal string AskHunterWhichLocationTheyAreMovingToNextTurn(string name)
+        {
+            TellUser("To which location will " + name + " be travelling next turn?");
+            return AskUser();
+        }
     }
 }
