@@ -16,9 +16,9 @@ namespace ConsoleHandler
             Logger.ClearLogs(ui);
 
 
-#if DEBUG
-            g.SetupForTesting();
-#elif RELEASE
+//#if DEBUG
+//            g.SetupForTesting();
+//#elif RELEASE
 
             g.SetLocationForHunterAt(0, ui.GetHunterStartLocation(g, 0));
             g.SetLocationForHunterAt(1, ui.GetHunterStartLocation(g, 1));
@@ -29,7 +29,7 @@ namespace ConsoleHandler
             g.DrawEncountersUpToHandSize();
             PerformDraculaTurn(g, ui);
 
-#endif
+//#endif
             CommandSet commandSet = new CommandSet();
 
             do
@@ -328,7 +328,7 @@ namespace ConsoleHandler
             {
                 hunterIndex--;
             }
-            g.AddItemCardToHunterAtIndex(hunterIndex);
+            g.AddItemCardToHunterAtIndex(hunterIndex, ui);
             ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " drew an item and now has " + g.NumberOfItemCardsAtHunterIndex(hunterIndex));
             switch (g.HunterShouldDiscardAtHunterIndex(hunterIndex))
             {

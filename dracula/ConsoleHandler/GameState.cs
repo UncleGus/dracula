@@ -3628,11 +3628,12 @@ namespace ConsoleHandler
             CheckBittenHunterCards(ui);
         }
 
-        internal void AddItemCardToHunterAtIndex(int hunterIndex)
+        internal void AddItemCardToHunterAtIndex(int hunterIndex, UserInterface ui)
         {
             hunters[hunterIndex].numberOfItems++;
             Logger.WriteToDebugLog(hunters[hunterIndex].name + " draw an item card, up to " + hunters[hunterIndex].numberOfItems);
             Logger.WriteToGameLog(hunters[hunterIndex].name + " draw an item card, up to " + hunters[hunterIndex].numberOfItems);
+            CheckBittenHunterCards(ui);
         }
 
         internal int ResolveTracker()

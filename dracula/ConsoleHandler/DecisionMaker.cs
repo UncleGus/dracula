@@ -214,7 +214,7 @@ namespace ConsoleHandler
             if (dracula.eventCardsInHand.FindIndex(ev => ev.name == "Devilish Power") > -1 && (g.HuntersHaveAlly() || g.HeavenlyHostIsInPlay())) {
                 eventCardsThatCanBePlayed.Add(dracula.eventCardsInHand.Find(ev => ev.name == "Devilish Power"));
             }
-            if (new Random().Next(0, 3) > 1)
+            if (eventCardsThatCanBePlayed.Count() > 0 && new Random().Next(0, 3) > 1)
             {
                 return eventCardsThatCanBePlayed[new Random().Next(0, eventCardsThatCanBePlayed.Count())];
             }
@@ -250,7 +250,7 @@ namespace ConsoleHandler
             {
                 eventCardsThatCanBePlayed.Add(dracula.eventCardsInHand.Find(ev => ev.name == "Wild Horses"));
             }
-            if (new Random().Next(0, 2) > 0)
+            if (eventCardsThatCanBePlayed.Count() > 0 && new Random().Next(0, 2) > 0)
             {
                 return eventCardsThatCanBePlayed[new Random().Next(0, eventCardsThatCanBePlayed.Count())];
             }
@@ -413,7 +413,7 @@ namespace ConsoleHandler
             {
                 eventCardsThatCanBePlayed.Add(dracula.eventCardsInHand.Find(ev => ev.name == "Devilish Power"));
             }
-            if (new Random().Next(0, 2) > 0)
+            if (eventCardsThatCanBePlayed.Count() > 0 && new Random().Next(0, 2) > 0)
             {
                 return eventCardsThatCanBePlayed[new Random().Next(0, eventCardsThatCanBePlayed.Count())];
             }
