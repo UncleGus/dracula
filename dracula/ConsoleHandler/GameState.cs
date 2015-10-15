@@ -251,9 +251,11 @@ namespace ConsoleHandler
             if (firstEncounter != null)
             {
                 int hunterIndex = ui.GetHunterPlayingSecretWeapon(firstEncounter.name);
-                DiscardEventFromHunterAtIndex("Secret Weapon", hunterIndex, ui);
                 if (hunterIndex > 0)
                 {
+                    DiscardEventFromHunterAtIndex("Secret Weapon", hunterIndex, ui);
+                    Logger.WriteToDebugLog(hunters[hunterIndex].name + " played Secret Weapon");
+                    Logger.WriteToGameLog(hunters[hunterIndex].name + " played Secret Weapon");
                     Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
                     bool eventIsCancelled = false;
                     if (draculaEventCard != null)
