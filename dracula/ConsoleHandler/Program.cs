@@ -16,9 +16,9 @@ namespace ConsoleHandler
             Logger.ClearLogs(ui);
 
 
-//#if DEBUG
-//            g.SetupForTesting();
-//#elif RELEASE
+            //#if DEBUG
+            //            g.SetupForTesting();
+            //#elif RELEASE
 
             g.SetLocationForHunterAt(0, ui.GetHunterStartLocation(g, 0));
             g.SetLocationForHunterAt(1, ui.GetHunterStartLocation(g, 1));
@@ -29,7 +29,7 @@ namespace ConsoleHandler
             g.DrawEncountersUpToHandSize();
             PerformDraculaTurn(g, ui);
 
-//#endif
+            //#endif
             CommandSet commandSet = new CommandSet();
 
             do
@@ -50,7 +50,7 @@ namespace ConsoleHandler
                     case "m": PerformHunterMove(g, commandSet.argument1, commandSet.argument2, ui); break;
                     case "t": PerformCatchTrain(g, commandSet.argument1, ui); break;
                     case "e": PerformPlayEventCard(g, commandSet.argument1, commandSet.argument2, ui); break;
-                    case "d": PerformDraculaDrawCards(g, commandSet.argument1, ui); break;
+                    case "d": PerformDraculaDrawCards(g, ui); break;
                     case "v": PerformHunterDrawEvent(g, commandSet.argument1, ui); break;
                     case "i": PerformHunterDrawItem(g, commandSet.argument1, ui); break;
                     case "a": PerformHunterDiscardEvent(g, commandSet.argument1, commandSet.argument2, ui); break;
@@ -90,7 +90,7 @@ namespace ConsoleHandler
             int resolveType;
             if (!int.TryParse(argument2, out resolveType) || resolveType < 1 || resolveType > 3)
             {
-                resolveType= ui.GetTypeOfResolveUsed();
+                resolveType = ui.GetTypeOfResolveUsed();
             }
             switch (resolveType)
             {
@@ -131,7 +131,7 @@ namespace ConsoleHandler
             {
                 hunterIndex--;
             }
-            g.RestHunterAtHunterIndex(hunterIndex, ui);           
+            g.RestHunterAtHunterIndex(hunterIndex, ui);
         }
 
         private static void PerformUseItem(GameState g, string argument1, string argument2, UserInterface ui)
@@ -222,7 +222,7 @@ namespace ConsoleHandler
                     }
                 }
             } while (hunterToAdd != -2);
-            
+
         }
 
         private static void PerformCombat(GameState g, string argument1, string argument2, UserInterface ui)
@@ -258,7 +258,8 @@ namespace ConsoleHandler
                     }
                     break;
                 case "Enemy killed": break;
-                case "Hunter killed": g.HandlePossibleHunterDeath(ui);
+                case "Hunter killed":
+                    g.HandlePossibleHunterDeath(ui);
                     break;
                 case "End":
                     if (g.Time() > 2 && enemyInCombat == 1)
@@ -354,7 +355,7 @@ namespace ConsoleHandler
             {
                 case "event": ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " needs to discard an event"); break;
                 case "item or event": ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " needs to discard an item or an event"); break;
-            }            
+            }
         }
 
         private static void PerformCatchTrain(GameState g, string argument1, UserInterface ui)
@@ -369,7 +370,10 @@ namespace ConsoleHandler
                 hunterIndex--;
             }
             Logger.WriteToDebugLog(g.NameOfHunterAtIndex(hunterIndex) + " is attempting to catch a train");
-            g.DraculaCancelTrain(hunterIndex, ui);
+            if (!g.DraculaCancelTrain(hunterIndex, ui))
+            {
+                ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " can catch a train");
+            }
         }
 
         private static void PerformHunterMove(GameState g, string argument1, string argument2, UserInterface ui)
@@ -391,30 +395,19 @@ namespace ConsoleHandler
             while (locationToMoveTo.name == "Unknown location")
             {
                 locationToMoveTo = g.GetLocationFromName(ui.GetNameOfLocationWhereHunterIsMoving(g.NameOfHunterAtIndex(hunterIndex)));
-            }            
-            g.MoveHunterToLocationAtHunterIndex(hunterIndex, locationToMoveTo);
+            }
+            ui.TellUser(locationToMoveTo.name);
+            g.MoveHunterToLocationAtHunterIndex(hunterIndex, locationToMoveTo, ui);
             if (!g.DraculaWillPlayCustomsSearch(hunterIndex, ui))
             {
                 g.SearchWithHunterAtIndex(hunterIndex, locationToMoveTo, ui);
             }
         }
 
-        private static void PerformDraculaDrawCards(GameState g, string argument, UserInterface ui)
+        private static void PerformDraculaDrawCards(GameState g, UserInterface ui)
         {
-            int numberOfCards;
-            if (int.TryParse(argument, out numberOfCards))
-            {
-                do
-                {
-                    g.DrawEventCardForDracula(ui);
-                    numberOfCards--;
-                } while (numberOfCards > 0);
-                g.DiscardDraculaCardsDownToHandSize(ui);
-            }
-            else
-            {
-                ui.TellUser("Dracula cannot draw " + argument + " cards");
-            }
+            g.DrawEventCardForDracula(ui);
+            g.DiscardDraculaCardsDownToHandSize(ui);
         }
 
         private static void PerformPlayEventCard(GameState g, string argument1, string argument2, UserInterface ui)
@@ -594,7 +587,8 @@ namespace ConsoleHandler
             if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
             {
                 hunterIndex = ui.GetIndexOfHunterPlayingEventCard();
-            } else
+            }
+            else
             {
                 hunterIndex--;
             }
@@ -619,7 +613,7 @@ namespace ConsoleHandler
             Logger.WriteToGameLog(g.NameOfHunterAtIndex(hunterIndex) + " is playing event card " + g.NameOfEventCardAtIndex(eventIndex));
             return g.NameOfEventCardAtIndex(eventIndex);
         }
-        
+
     }
 
 }

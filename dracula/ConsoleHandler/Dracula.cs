@@ -98,6 +98,14 @@ namespace DraculaHandler
                     {
                         locationWhereHideWasUsed = currentLocation;
                     }
+                    if (powerUsed == "Dark Call")
+                    {
+                        blood -= 2;
+                    }
+                    if (powerUsed == "Feed")
+                    {
+                        blood++;
+                    }
                 }
                 else if (powerUsed == "Double Back")
                 {
@@ -106,6 +114,7 @@ namespace DraculaHandler
                 else if (powerUsed == "Wolf Form")
                 {
                     DoWolfFormMove(g, destination, ui);
+                    blood--;
                 }
 
                 // put the power used at the head of the trail
@@ -134,10 +143,12 @@ namespace DraculaHandler
             Logger.WriteToGameLog("Dracula drew card " + eventCardDrawn.name);
             if (eventCardDrawn.type == EventType.Ally)
             {
+                ui.TellUser("Dracula drew " + eventCardDrawn.name);
                 PlayAlly(g, eventCardDrawn, ui);
             }
             else if (eventCardDrawn.type == EventType.PlayImmediately)
             {
+                ui.TellUser("Dracula drew " + eventCardDrawn.name);
                 PlayImmediately(g, eventCardDrawn, ui);
                 g.RemoveEventFromEventDeck(eventCardDrawn);
             }
@@ -186,7 +197,6 @@ namespace DraculaHandler
                     }
                     else
                     {
-
                         PlayVampiricInfluence(g, ui); break;
                     }
                     break;
@@ -197,7 +207,34 @@ namespace DraculaHandler
         {
             Hunter hunterToInfluence = logic.DecideWhoToInfluence(g);
             ui.TellUser(hunterToInfluence.name + " was affected by Dracula's Vampiric Influence and must reveal all cards and tell Dracula their next move");
-            ui.TellUser("Of course, none of this means anything right now because I don't have a brain, so don't bother doing anything");
+            foreach (Item item in hunterToInfluence.itemsKnownToDracula)
+            {
+                g.MoveItemFromKnownItemsToItemDeck(hunterToInfluence, item);
+            }
+            foreach (Event e in hunterToInfluence.eventsKnownToDracula)
+            {
+                g.MoveEventFromKnownEventsToEventDeck(hunterToInfluence, e);
+            }
+            for (int i = 0; i < hunterToInfluence.numberOfItems; i++)
+            {
+                string line;
+                do
+                {
+                    line = ui.AskHunterToRevealItemByVampiricInfluence(hunterToInfluence.name);
+                } while (g.GetItemByNameFromItemDeck(line).name == "Unknown item");
+                ui.TellUser(line);
+                g.MoveItemFromItemDeckToKnownItems(hunterToInfluence, g.GetItemByNameFromItemDeck(line));
+            }
+            for (int i = 0; i < hunterToInfluence.numberOfEvents; i++)
+            {
+                string line;
+                do
+                {
+                    line = ui.AskHunterToRevealEventByVampiricInfluence(hunterToInfluence.name);
+                } while (g.GetEventByNameFromEventDeck(line).name == "Unknown event");
+                ui.TellUser(line);
+                g.MoveEventFromEventDeckToKnownEvents(hunterToInfluence, g.GetEventByNameFromEventDeck(line));
+            }
         }
 
         private void PlayNightVisit(GameState g, UserInterface ui)
@@ -479,7 +516,7 @@ namespace DraculaHandler
                             {
                                 // Wolf Form
                                 DeterminePossibleWolfFormLocations();
-                                if (possibleMoves.Count() > 0)
+                                if (possibleMoves.Count() > 0 && blood > 1)
                                 {
                                     Logger.WriteToDebugLog("Adding Wolf Form to the list");
                                     possiblePowers.Add(powers[i]);
@@ -499,8 +536,11 @@ namespace DraculaHandler
                                 }
                                 else
                                 {
-                                    Logger.WriteToDebugLog("Adding power " + powers[i].name + " to the list");
-                                    possiblePowers.Add(powers[i]);
+                                    if (powers[i].name != "Dark Call" || blood > 2)
+                                    {
+                                        Logger.WriteToDebugLog("Adding power " + powers[i].name + " to the list");
+                                        possiblePowers.Add(powers[i]);
+                                    }
                                 }
                             }
                         }

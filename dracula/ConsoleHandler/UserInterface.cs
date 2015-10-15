@@ -241,6 +241,12 @@ namespace ConsoleHandler
             return AskUser();
         }
 
+        internal string AskHunterToRevealItemByVampiricInfluence(string name)
+        {
+            TellUser("What is the name of the item being revealed by " + name + "?");
+            return AskUser();
+        }
+
         internal int GetIndexOfMovingHunter()
         {
             string line = "";
@@ -251,6 +257,12 @@ namespace ConsoleHandler
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
             return hunterIndex - 1;
+        }
+
+        internal string AskHunterToRevealEventByVampiricInfluence(string name)
+        {
+            TellUser("What is the name of the event being revealed by " + name + "?");
+            return AskUser();
         }
 
         internal CommandSet GetCommandSet()
@@ -936,7 +948,7 @@ namespace ConsoleHandler
             return AskUser();
         }
 
-        internal string AskHunterToRevealItem(string p)
+        internal string AskHunterToRevealItemForBeingBitten(string p)
         {
             TellUser(p + " is bitten and has an unrevealed item, please tell me what it is");
             return AskUser();
