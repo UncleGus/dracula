@@ -689,28 +689,16 @@ namespace ConsoleHandler
             return hunterIndex - 1;
         }
 
-        internal bool GetDidDraculaEscape()
+        internal bool GetDidDraculaEscapeAsBat()
         {
             string line;
             do
             {
-                TellUser("Did Dracula escape?");
+                TellUser("Did Dracula escape as Bat?");
                 line = AskUser();
             }
             while (!"yes".Contains(line.ToLower()) && !"no".Contains(line.ToLower()));
             return "yes".Contains(line.ToLower()) ? true : false;
-        }
-
-        public int GetDraculaEscapeForm()
-        {
-            string line;
-            int result;
-            do
-            {
-                TellUser("In what form? 1) Man 2) Mist 3) Bats");
-                line = AskUser();
-            } while (!int.TryParse(line, out result) || result < 1 || result > 3);
-            return result;
         }
 
         internal int GetIndexOfHunterResting()
@@ -958,6 +946,12 @@ namespace ConsoleHandler
             }
             while (!"yes".Contains(line.ToLower()) && !"no".Contains(line.ToLower()));
             return "yes".Contains(line.ToLower()) ? true : false;
+        }
+
+        internal string GetEventCardDrawnByDesecratedSoil()
+        {
+            TellUser("Draw an event card and if it is a hunter event, tell me the name, or say \"Dracula\" if it is a Dracula event card");
+            return AskUser();
         }
     }
 }

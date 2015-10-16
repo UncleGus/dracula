@@ -42,7 +42,6 @@ namespace ConsoleHandler
 #if DEBUG                    
                     case "rl": PerformRevealLocation(g, commandSet.argument1, ui); break;
                     case "re": PerformRevealEncounter(g, commandSet.argument1, ui); break;
-                    case "fight": PerformCombat(g, commandSet.argument1, commandSet.argument2, true, ui); break;
                     case "clear": PerformTrailClear(g, commandSet.argument1, ui); break;
                     case "known": g.TellMeWhatYouKnow(ui); break;
 #endif
@@ -234,51 +233,6 @@ namespace ConsoleHandler
                 }
             } while (hunterToAdd != -2);
 
-        }
-
-        private static void PerformCombat(GameState g, string argument1, string argument2, bool hunterMoved, UserInterface ui)
-        {
-            int hunterIndex;
-            if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
-            {
-                hunterIndex = ui.GetIndexOfHunterEnteringCombat();
-            }
-            else
-            {
-                hunterIndex--;
-            }
-            int enemyInCombat;
-            if (!int.TryParse(argument2, out enemyInCombat) || enemyInCombat < 1 || enemyInCombat > 6)
-            {
-                enemyInCombat = ui.GetTypeOfEnemyEnteringCombat();
-            }
-            switch (g.ResolveCombat(hunterIndex, enemyInCombat, hunterMoved, ui))
-            {
-                case "Bite":
-                    if (g.NumberOfHuntersAtLocation(g.LocationOfHunterAtHunterIndex(hunterIndex)) > 1)
-                    {
-                        g.ApplyBiteToOneOfMultipleHunters(hunterIndex, ui);
-                    }
-                    else
-                    {
-                        g.ApplyBiteToHunter(hunterIndex, ui);
-                    }
-                    if (g.Time() > 2 && enemyInCombat == 1)
-                    {
-                        g.HandleDraculaEscape(ui);
-                    }
-                    break;
-                case "Enemy killed": break;
-                case "Hunter killed":
-                    g.HandlePossibleHunterDeath(ui);
-                    break;
-                case "End":
-                    if (g.Time() > 2 && enemyInCombat == 1)
-                    {
-                        g.HandleDraculaEscape(ui);
-                    }
-                    break;
-            }
         }
 
         private static void PerformHunterDiscardEvent(GameState g, string argument1, string argument2, UserInterface ui)

@@ -239,7 +239,14 @@ namespace ConsoleHandler
             if ((LocationIsInTrail(location) || LocationIsInCatacombs(location)) && location.type != LocationType.Sea)
             {
                 Logger.WriteToDebugLog("Hunter moved to a location that Dracula has visited");
-                ui.TellUser("Search reveals evidence of Dracula's visit");
+                if (location == dracula.currentLocation)
+                {
+                    ui.TellUser("Dracula is here!");
+                }
+                else
+                {
+                    ui.TellUser("Search reveals evidence of Dracula's visit");
+                }
                 location.isRevealed = true;
                 ResolveEncountersAtLocation(hunters[hunterIndex], location, ui);
                 if (location == dracula.currentLocation)
@@ -259,6 +266,7 @@ namespace ConsoleHandler
             foreach (Encounter enc in location.encounters)
             {
                 enc.isRevealed = true;
+                ui.TellUser(enc.name + " is revealed");
             }
             ui.drawGameState(this);
             bool resolveNextEncounter = true;
@@ -398,7 +406,7 @@ namespace ConsoleHandler
                 hunterIndex = ui.GetHunterPlayingForewarned(enc.name);
                 if (hunterIndex > -1)
                 {
-                    
+
                     draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
                     bool eventIsCancelled = false;
                     if (draculaEventCard != null)
@@ -1124,7 +1132,8 @@ namespace ConsoleHandler
                 do
                 {
                     locationToConsecrate = GetLocationFromName(ui.GetNameOfLocationToConsecrate());
-                } while (locationToConsecrate.name == "Unknown location" || locationToConsecrate.type != LocationType.City || locationToConsecrate.name == "Galatz" || locationToConsecrate.name == "Klausenburg");
+                    ui.TellUser(locationToConsecrate.name);
+                } while (locationToConsecrate.name == "Unknown location" || (locationToConsecrate.type != LocationType.City && locationToConsecrate.type != LocationType.Town) || locationToConsecrate.name == "Galatz" || locationToConsecrate.name == "Klausenburg");
                 Logger.WriteToDebugLog("Consecrate Ground was played in " + locationToConsecrate.name);
                 Logger.WriteToGameLog("Consecrate Ground was played in " + locationToConsecrate.name);
 
@@ -1135,7 +1144,6 @@ namespace ConsoleHandler
                 locationToConsecrate.isConsecrated = true;
                 ui.TellUser(locationToConsecrate.name + " is now consecrated ground");
 
-                DiscardItemFromHunterAtIndex("Heavenly Host", hunterIndex, ui);
                 if (locationToConsecrate == dracula.currentLocation)
                 {
                     locationToConsecrate.isRevealed = true;
@@ -2519,6 +2527,10 @@ namespace ConsoleHandler
 
         internal string NameOfDraculaAlly()
         {
+            if (draculaAlly == null)
+            {
+                return "No ally";
+            }
             return draculaAlly.name;
         }
 
@@ -2872,7 +2884,7 @@ namespace ConsoleHandler
                 {
                     if (dracula.trail.Count() > 5)
                     {
-                        dracula.trail[6].isRevealed = true;
+                        dracula.trail[5].isRevealed = true;
                     }
                 }
             }
@@ -3056,10 +3068,16 @@ namespace ConsoleHandler
             ui.TellUser("Dracula matured Desecrated Soil");
             for (int i = 0; i < 2; i++)
             {
-                Event cardDrawn = eventDeck[new Random().Next(0, eventDeck.Count())];
-                if (!cardDrawn.isDraculaCard)
+                Event cardDrawn;
+                string line;
+                do
                 {
-                    ui.TellUser("Dracula drew " + cardDrawn.name + ", discarded");
+                    line = ui.GetEventCardDrawnByDesecratedSoil();
+                    cardDrawn = GetEventByNameFromEventDeck(line);
+                } while (cardDrawn.name == "Unknown event" && !"dracula".StartsWith(line.ToLower()));
+                if (!"dracula".StartsWith(line.ToLower()))
+                {
+                    ui.TellUser(cardDrawn.name + " is discarded");
                     eventDeck.Remove(cardDrawn);
                     eventDiscard.Add(cardDrawn);
                 }
@@ -3161,10 +3179,16 @@ namespace ConsoleHandler
                 ui.TellUser("and " + huntersEncountered[i].name + " ");
             }
             ui.TellUser("encountered Desecrated Soil");
-            Event cardDrawn = eventDeck[new Random().Next(0, eventDeck.Count())];
-            if (!cardDrawn.isDraculaCard)
+            Event cardDrawn;
+            string line;
+            do
             {
-                ui.TellUser("Dracula drew " + cardDrawn.name + ", discarded");
+                line = ui.GetEventCardDrawnByDesecratedSoil();
+                cardDrawn = GetEventByNameFromEventDeck(line);
+            } while (cardDrawn.name == "Unknown event" && !"dracula".StartsWith(line.ToLower()));
+            if (!"dracula".StartsWith(line.ToLower()))
+            {
+                ui.TellUser(cardDrawn.name + " is discarded");
                 eventDeck.Remove(cardDrawn);
                 eventDiscard.Add(cardDrawn);
             }
@@ -3183,21 +3207,20 @@ namespace ConsoleHandler
 
         public bool ResolveFog(List<Hunter> huntersEncountered, UserInterface ui)
         {
-            Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Desecrated Fog");
-            Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Desecrated Fog");
+            Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Fog");
+            Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Fog");
             ui.TellUser(huntersEncountered.First().name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
                 ui.TellUser("and " + huntersEncountered[i] + " ");
             }
             ui.TellUser("encountered Fog");
-            ui.TellUser("Place Fog in front of you until the end of your turn");
+            ui.TellUser("Place Fog in front of you until the end of your next turn");
             return false;
         }
 
         public bool ResolveMinionWithKnife(List<Hunter> huntersEncountered, UserInterface ui)
         {
-            ui.TellUser("Conduct a combat with a Minion with Knife");
             int hunterIndex = 0;
             switch (huntersEncountered[0].name)
             {
@@ -3240,7 +3263,6 @@ namespace ConsoleHandler
 
         public bool ResolveMinionWithKnifeAndPistol(List<Hunter> huntersEncountered, UserInterface ui)
         {
-            ui.TellUser("Conduct a combat with a Minion with Knife and Pistol");
             int hunterIndex = 0;
             switch (huntersEncountered[0].name)
             {
@@ -3274,7 +3296,6 @@ namespace ConsoleHandler
 
         public bool ResolveMinionWithKnifeAndRifle(List<Hunter> huntersEncountered, UserInterface ui)
         {
-            ui.TellUser("Conduct a combat with a Minion with Knife and Rifle");
             int hunterIndex = 0;
             switch (huntersEncountered[0].name)
             {
@@ -3821,6 +3842,24 @@ namespace ConsoleHandler
         {
             List<Item> enemyCombatCards = new List<Item>();
             List<Item> hunterBasicCards = new List<Item>();
+            List<Hunter> huntersInCombat = new List<Hunter>();
+            if (hunterMoved)
+            {
+                foreach (Hunter h in hunters[hunterIndex].huntersInGroup)
+                {
+                    huntersInCombat.Add(h);
+                }
+            }
+            else
+            {
+                foreach (Hunter h in hunters)
+                {
+                    if (h.currentLocation == hunters[hunterIndex].currentLocation)
+                    {
+                        huntersInCombat.Add(h);
+                    }
+                }
+            }
             hunterBasicCards.Add(new Item("Punch"));
             hunterBasicCards.Add(new Item("Escape"));
             bool trapPlayed = false;
@@ -3892,7 +3931,7 @@ namespace ConsoleHandler
                     }
 
             }
-            ui.TellUser(hunters[hunterIndex].name + " is entering combat against " + enemyName + (hunters[hunterIndex].huntersInGroup.Count() > 1 ? " with his group" : ""));
+            ui.TellUser(hunters[hunterIndex].name + " is entering combat against " + enemyName + (huntersInCombat.Count() > 1 ? " with " + huntersInCombat[1].name : "") + (huntersInCombat.Count() > 2 ? " and " + huntersInCombat[2].name : "") + (huntersInCombat.Count() > 3 ? " and " + huntersInCombat[3].name : ""));
             Event draculaEventCard = null;
             do
             {
@@ -3947,7 +3986,7 @@ namespace ConsoleHandler
                     }
                 }
             } while (draculaEventCard != null);
-            bool[] hunterPlayedCard = new bool[4] { false, false, false, false };
+            bool[] hunterPlayedCard = new bool[4] { true, true, true, true };
             int hunterPlayingCard = 0;
             while (hunterPlayedCard[0] || hunterPlayedCard[1] || hunterPlayedCard[2] || hunterPlayedCard[3])
             {
@@ -4078,7 +4117,7 @@ namespace ConsoleHandler
                 hunterPlayingCard = (hunterPlayingCard + 1) % 4;
             }
             CombatRoundResult roundResult = new CombatRoundResult();
-            roundResult = ResolveRoundOfCombat(hunterIndex, enemyCombatCards, hunterBasicCards, roundResult, hunterMoved, ui);
+            roundResult = ResolveRoundOfCombat(huntersInCombat, enemyCombatCards, hunterBasicCards, roundResult, hunterMoved, ui);
             rageRounds--;
             if (rageRounds == 0)
             {
@@ -4117,9 +4156,9 @@ namespace ConsoleHandler
                         }
                     }
                 }
-                roundResult = ResolveRoundOfCombat(hunterIndex, enemyCombatCards, hunterBasicCards, roundResult, hunterMoved, ui);
+                roundResult = ResolveRoundOfCombat(huntersInCombat, enemyCombatCards, hunterBasicCards, roundResult, hunterMoved, ui);
             }
-            foreach (Hunter h in hunters[hunterIndex].huntersInGroup)
+            foreach (Hunter h in huntersInCombat)
             {
                 h.health -= ui.GetHunterHealthLost(h.name);
             }
@@ -4130,6 +4169,19 @@ namespace ConsoleHandler
             ui.TellUser("Be sure to discard any items that were destroyed/consumed in this combat");
             if (roundResult.outcome == "Bite" || roundResult.outcome == "Enemy killed" || roundResult.outcome == "Hunter killed" || roundResult.outcome == "End")
             {
+                switch (roundResult.outcome)
+                {
+                    case "Bite":
+                        ApplyBiteToHunter(Array.FindIndex(hunters, hunt => hunt.name == roundResult.hunterTargeted), ui);
+                        HandleDraculaEscape(ui);
+                        break;
+                    case "End":
+                        if (time > 2)
+                        {
+                            HandleDraculaEscape(ui);
+                        }
+                        break;
+                }
                 return roundResult.outcome;
             }
             return ui.GetCombatRoundOutcome();
@@ -4198,30 +4250,11 @@ namespace ConsoleHandler
             ui.TellUser("Dracula played Trap");
         }
 
-        private CombatRoundResult ResolveRoundOfCombat(int hunterIndex, List<Item> combatCards, List<Item> hunterBasicCards, CombatRoundResult result, bool hunterMoved, UserInterface ui)
+        private CombatRoundResult ResolveRoundOfCombat(List<Hunter> huntersFighting, List<Item> combatCards, List<Item> hunterBasicCards, CombatRoundResult result, bool hunterMoved, UserInterface ui)
         {
             string targetHunterName;
-            string newEnemyCardUsed = dracula.ChooseCombatCardAndTarget(hunters[hunterIndex], combatCards, result, NameOfHunterAlly(), out targetHunterName).name;
+            string newEnemyCardUsed = dracula.ChooseCombatCardAndTarget(huntersFighting, combatCards, result, NameOfHunterAlly(), out targetHunterName).name;
             string newHunterCardUsed = "nothing";
-            // really shouldn't be building this list every round
-            List<Hunter> huntersFighting = new List<Hunter>();
-            if (hunterMoved)
-            {
-                foreach (Hunter h in hunters[hunterIndex].huntersInGroup)
-                {
-                    huntersFighting.Add(h);
-                }
-            }
-            else
-            {
-                foreach (Hunter h in hunters)
-                {
-                    if (h.currentLocation == hunters[hunterIndex].currentLocation)
-                    {
-                        huntersFighting.Add(h);
-                    }
-                }
-            }
             foreach (Hunter h in huntersFighting)
             {
                 do
@@ -4359,7 +4392,8 @@ namespace ConsoleHandler
                     hunterToHeal.health -= 2;
                     HandlePossibleHunterDeath(ui); break;
                 case 2: break;
-                case 3: hunterToHeal.numberOfBites--;
+                case 3:
+                    hunterToHeal.numberOfBites--;
                     if (hunterToHeal.numberOfBites < 1)
                     {
                         hunterToHeal.itemShownToDraculaForBeingBitten = null;
@@ -4479,12 +4513,9 @@ namespace ConsoleHandler
 
         internal void HandleDraculaEscape(UserInterface ui)
         {
-            if (ui.GetDidDraculaEscape())
+            if (ui.GetDidDraculaEscapeAsBat())
             {
-                if (ui.GetDraculaEscapeForm() == 3)
-                {
-                    dracula.DoEscapeAsBatsMove(this, ui);
-                }
+                dracula.DoEscapeAsBatsMove(this, ui);
             }
         }
 
@@ -4826,7 +4857,7 @@ namespace ConsoleHandler
                         {
                             line = ui.AskHunterToRevealEvent(h.name);
                             ui.TellUser(GetEventByNameFromEventDeck(line).name);
-                        } while (GetEventByNameFromEventDeck(line).name == "Unknown item" && h.eventsKnownToDracula.FindIndex(ev => ev.name == line) == -1);
+                        } while (GetEventByNameFromEventDeck(line).name == "Unknown event" && h.eventsKnownToDracula.FindIndex(ev => ev.name == line) == -1);
                         if (h.eventsKnownToDracula.FindIndex(ev => ev.name == line) == -1)
                         {
                             h.eventsKnownToDracula.Add(GetEventByNameFromEventDeck(line));

@@ -151,7 +151,7 @@ namespace ConsoleHandler
         }
 
         // done
-        internal Item DecideWhichCombatCardToPlay(Hunter hunter, Dracula dracula, List<Item> combatCards, string hunterAllyName, CombatRoundResult result)
+        internal Item DecideWhichCombatCardToPlay(List<Hunter> huntersFighting, Dracula dracula, List<Item> combatCards, string hunterAllyName, CombatRoundResult result)
         {
             if (hunterAllyName == "Sister Agatha" && dracula.blood < 3)
             {
@@ -187,9 +187,9 @@ namespace ConsoleHandler
         }
 
         // done
-        internal string DecideHunterToAttack(Hunter hunter, List<Item> combatCards, CombatRoundResult result)
+        internal string DecideHunterToAttack(List<Hunter> huntersFighting, List<Item> combatCards, CombatRoundResult result)
         {
-            return hunter.huntersInGroup[new Random().Next(0, hunter.huntersInGroup.Count())].name;
+            return huntersFighting[new Random().Next(0, huntersFighting.Count())].name;
         }
 
         // done

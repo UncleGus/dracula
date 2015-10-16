@@ -101,7 +101,7 @@ namespace DraculaHandler
                     {
                         blood -= 2;
                     }
-                    if (powerUsed == "Feed" && blood < 16)
+                    if (powerUsed == "Feed" && blood < 15)
                     {
                         blood++;
                     }
@@ -1109,10 +1109,10 @@ namespace DraculaHandler
             return eventCardsInHand[eventCardsInHand.FindIndex(card => card.name == p)];
         }
 
-        internal Item ChooseCombatCardAndTarget(Hunter hunter, List<Item> combatCards, CombatRoundResult result, string hunterAllyName, out string name)
+        internal Item ChooseCombatCardAndTarget(List<Hunter> huntersFigting, List<Item> combatCards, CombatRoundResult result, string hunterAllyName, out string name)
         {
-            name = logic.DecideHunterToAttack(hunter, combatCards, result);
-            return logic.DecideWhichCombatCardToPlay(hunter, this, combatCards, hunterAllyName, result);
+            name = logic.DecideHunterToAttack(huntersFigting, combatCards, result);
+            return logic.DecideWhichCombatCardToPlay(huntersFigting, this, combatCards, hunterAllyName, result);
         }
 
         internal Location DecideWhereToSendHunterWithBats(GameState gameState, Hunter hunter, UserInterface ui)
