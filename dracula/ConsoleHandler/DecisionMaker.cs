@@ -21,13 +21,14 @@ namespace ConsoleHandler
             do
             {
                 startLocation = g.LocationAtMapIndex(new Random().Next(0, g.MapSize()));
-            } while (startLocation.type == LocationType.Hospital);
+            } while (startLocation.type == LocationType.Hospital || startLocation.type == LocationType.Sea || startLocation.type == LocationType.Castle || g.IndexOfHunterAtLocation(startLocation) > -1);
             return startLocation;
         }
 
         // done
-        internal void DecideMove(GameState g, Dracula dracula, out string powerName, out Location goingTo)
+        internal Location DecideMove(GameState g, Dracula dracula, out string powerName)
         {
+            Location goingTo;
             if (dracula.advanceMovePower != null || dracula.advanceMoveDestination != null)
             {
                 powerName = dracula.advanceMovePower;
@@ -65,6 +66,7 @@ namespace ConsoleHandler
                 powerName = "no power";
                 goingTo = dracula.possibleMoves[chosenActionIndex];
             }
+            return goingTo;
         }
 
         // done
@@ -139,7 +141,7 @@ namespace ConsoleHandler
         {
             if (dracula.eventCardsInHand.FindIndex(card => card.name == "False Tip-Off") > -1)
             {
-                if (new Random().Next(0, 2) > 1) {
+                if (new Random().Next(0, 2) > 0) {
                     return true;
                 }
                 Logger.WriteToDebugLog("Dracula decided not to play his False Tip-Off");
@@ -149,13 +151,32 @@ namespace ConsoleHandler
         }
 
         // done
-        internal Item DecideWhichCombatCardToPlay(Hunter hunter, List<Item> combatCards, CombatRoundResult result)
+        internal Item DecideWhichCombatCardToPlay(Hunter hunter, Dracula dracula, List<Item> combatCards, string hunterAllyName, CombatRoundResult result)
         {
+            if (hunterAllyName == "Sister Agatha" && dracula.blood < 3)
+            {
+                if (combatCards.FindIndex(card => card.name == "Fangs") > -1)
+                {
+                    combatCards.Remove(combatCards.Find(card => card.name == "Fangs"));
+                }
+                if (combatCards.FindIndex(card => card.name == "Escape (Man)") > -1)
+                {
+                    combatCards.Remove(combatCards.Find(card => card.name == "Fangs"));
+                }
+                if (combatCards.FindIndex(card => card.name == "Escape (Bat)") > -1)
+                {
+                    combatCards.Remove(combatCards.Find(card => card.name == "Fangs"));
+                }
+                if (combatCards.FindIndex(card => card.name == "Escape (Mist)") > -1)
+                {
+                    combatCards.Remove(combatCards.Find(card => card.name == "Fangs"));
+                }
+            }
             int chosenCardIndex;
             do
             {
                 chosenCardIndex = new Random().Next(0, combatCards.Count());
-            } while (combatCards[chosenCardIndex].name == result.enemyCardUsed);
+            } while (combatCards[chosenCardIndex].name == result.enemyCardUsed || (result.outcome == "Repel" && combatCards[chosenCardIndex].name != "Dodge" && combatCards[chosenCardIndex].name != "Escape (Man)" && combatCards[chosenCardIndex].name != "Esacpe (Bat)" && combatCards[chosenCardIndex].name != "Escape (Mist)"));
             return combatCards[chosenCardIndex];
         }
 
@@ -235,7 +256,7 @@ namespace ConsoleHandler
         }
 
         // done
-        internal Event DecideToPlayCardAtStartOfCombat(GameState g, Dracula dracula, bool trapPlayed)
+        internal Event DecideToPlayCardAtStartOfCombat(GameState g, Dracula dracula, bool trapPlayed, bool hunterMoved, int enemyType)
         {
             List<Event> eventCardsThatCanBePlayed = new List<Event>();
             if (dracula.eventCardsInHand.FindIndex(ev => ev.name == "Trap") > -1)
@@ -244,11 +265,17 @@ namespace ConsoleHandler
             }
             if (dracula.eventCardsInHand.FindIndex(ev => ev.name == "Rage") > -1)
             {
-                eventCardsThatCanBePlayed.Add(dracula.eventCardsInHand.Find(ev => ev.name == "Rage"));
+                if (enemyType == 1)
+                {
+                    eventCardsThatCanBePlayed.Add(dracula.eventCardsInHand.Find(ev => ev.name == "Rage"));
+                }
             }
             if (dracula.eventCardsInHand.FindIndex(ev => ev.name == "Wild Horses") > -1)
             {
-                eventCardsThatCanBePlayed.Add(dracula.eventCardsInHand.Find(ev => ev.name == "Wild Horses"));
+                if (!hunterMoved && enemyType == 1)
+                {
+                    eventCardsThatCanBePlayed.Add(dracula.eventCardsInHand.Find(ev => ev.name == "Wild Horses"));
+                }
             }
             if (eventCardsThatCanBePlayed.Count() > 0 && new Random().Next(0, 2) > 0)
             {
@@ -458,6 +485,12 @@ namespace ConsoleHandler
         internal Encounter DecideWhichEncounterToAmbushHunterWith(List<Encounter> encounterHand)
         {
             return encounterHand[new Random().Next(0, encounterHand.Count())];
+        }
+
+        // done
+        internal int DecideWhichHunterToAttackWithQuincey(GameState g)
+        {
+            return new Random().Next(0, 4);
         }
     }
 }

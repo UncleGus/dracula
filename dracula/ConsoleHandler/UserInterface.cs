@@ -317,7 +317,7 @@ namespace ConsoleHandler
 
         internal string GetSecondLocationNameForHiredScouts()
         {
-            TellUser("Name the first city");
+            TellUser("Name the second city");
             return AskUser();
         }
 
@@ -456,7 +456,7 @@ namespace ConsoleHandler
 
         internal string GetCombatCardFromHunter(string name)
         {
-            TellUser("What card did " + name + " use?");
+            TellUser("What combat card did " + name + " use?");
             return AskUser();
         }
 
@@ -815,21 +815,9 @@ namespace ConsoleHandler
             return hunterIndex - 1;
         }
 
-        internal int GetHunterPlayingSecretWeapon(string name)
-        {
-            string line = "";
-            int hunterIndex;
-            do
-            {
-                TellUser("The encounter is " + name + ", is anyone playing Secret Weapon? 0 = Nobody; 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
-                line = AskUser();
-            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 0 || hunterIndex > 4);
-            return hunterIndex - 1;
-        }
-
         internal void ShowHelp()
         {
-            TellUser("(M)ove hunter, Catch (T)rain, Play (E)vent, Give (D)racula event card, Give Hunter e(V)ent card, Give Hunter (I)tem, Disc(A)rd Hunter event, Dis(C)ard Hunter item, Setup (G)roups, Perform (B)ats move, T(R)ade items, (U)se item, Get s(O)me rest, Use (H)ospital font, (S)pend resolve, Sleep (Z)zzzz and let Dracula have his turn, (EXIT)");
+            TellUser("(M)ove hunter, Catch (T)rain, Play (E)vent, Give (D)racula event card, Give Hunter e(V)ent card, Give Hunter (I)tem, Disc(A)rd Hunter event, Dis(C)ard Hunter item, Setup (G)roups, Perform (B)ats move, T(R)ade items, (U)se item, Get s(O)me rest, Use (H)ospital font, (S)pend resolve, Sleep (Z)zzzz and let Dracula have his turn, View (STATE) of the game, (EXIT)");
         }
 
         internal string GetNameOfLocationToConsecrate()
@@ -958,6 +946,18 @@ namespace ConsoleHandler
         {
             TellUser(p + " is bitten and has an unrevealed event, please tell me what it is");
             return AskUser();
+        }
+
+        internal bool AskIfHunterIsPlayingSecretWeapon(string name)
+        {
+            string line;
+            do
+            {
+                TellUser("Is " + name + " playing Secret Weapon?");
+                line = AskUser();
+            }
+            while (!"yes".Contains(line.ToLower()) && !"no".Contains(line.ToLower()));
+            return "yes".Contains(line.ToLower()) ? true : false;
         }
     }
 }

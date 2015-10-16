@@ -29,7 +29,7 @@ namespace DraculaHandler
         public Location[] catacombs = new Location[3];
         public List<Event> eventCardsInHand = new List<Event>();
         public int eventHandSize;
-        public DecisionMaker logic = new DecisionMaker();
+        private DecisionMaker logic = new DecisionMaker();
         public string advanceMovePower = null;
         public Location advanceMoveDestination = null;
 
@@ -79,8 +79,7 @@ namespace DraculaHandler
 
 
             string powerUsed;
-            Location destination;
-            logic.DecideMove(g, this, out powerUsed, out destination);
+            Location destination = logic.DecideMove(g, this, out powerUsed);
 
             // choose a power
             if (powerUsed != "no power")
@@ -102,7 +101,7 @@ namespace DraculaHandler
                     {
                         blood -= 2;
                     }
-                    if (powerUsed == "Feed")
+                    if (powerUsed == "Feed" && blood < 16)
                     {
                         blood++;
                     }
@@ -222,7 +221,7 @@ namespace DraculaHandler
                 {
                     line = ui.AskHunterToRevealItemByVampiricInfluence(hunterToInfluence.name);
                 } while (g.GetItemByNameFromItemDeck(line).name == "Unknown item");
-                ui.TellUser(line);
+                ui.TellUser(g.GetItemByNameFromItemDeck(line).name);
                 g.MoveItemFromItemDeckToKnownItems(hunterToInfluence, g.GetItemByNameFromItemDeck(line));
             }
             for (int i = 0; i < hunterToInfluence.numberOfEvents; i++)
@@ -232,9 +231,18 @@ namespace DraculaHandler
                 {
                     line = ui.AskHunterToRevealEventByVampiricInfluence(hunterToInfluence.name);
                 } while (g.GetEventByNameFromEventDeck(line).name == "Unknown event");
-                ui.TellUser(line);
+                ui.TellUser(g.GetEventByNameFromEventDeck(line).name);
                 g.MoveEventFromEventDeckToKnownEvents(hunterToInfluence, g.GetEventByNameFromEventDeck(line));
             }
+            string lineA;
+            do
+            {
+                lineA = ui.AskHunterWhichLocationTheyAreMovingToNextTurn(hunterToInfluence.name);
+            } while (g.GetLocationFromName(lineA).name == "Unknown location");
+            hunterToInfluence.destination = g.GetLocationFromName(lineA);
+            ui.TellUser(hunterToInfluence.destination.name);
+            hunterToInfluence.travelType = ui.AskHunterWhatTravelTypeForSpy(hunterToInfluence.name);
+            ui.TellUser(hunterToInfluence.travelType);
         }
 
         private void PlayNightVisit(GameState g, UserInterface ui)
@@ -271,8 +279,15 @@ namespace DraculaHandler
                 string allyToKeep = logic.DecideWhichAllyToKeep(g.NameOfDraculaAlly(), allyDrawn.name);
                 string allyDiscarded = (allyToKeep == allyDrawn.name ? g.NameOfDraculaAlly() : allyDrawn.name);
                 Logger.WriteToDebugLog("Keeping " + allyToKeep);
-                g.AddEventToEventDiscard(g.GetEventByNameFromEventDeck(allyDiscarded));
-                g.SetDraculaAlly(g.GetEventByNameFromEventDeck(allyToKeep));
+                if (allyToKeep == allyDrawn.name)
+                {
+                    g.RemoveDraculaAlly();
+                    g.SetDraculaAlly(g.GetEventByNameFromEventDeck(allyToKeep));
+                }
+                else
+                {
+                    g.DiscardEventCard(allyDrawn.name);
+                }
                 switch (allyDiscarded)
                 {
                     case "Immanuel Hildesheim":
@@ -990,6 +1005,32 @@ namespace DraculaHandler
 
         public void TakeStartOfTurnActions(GameState g, UserInterface ui)
         {
+            if (g.NameOfDraculaAlly() == "Quincey P. Morris")
+            {
+                int hunterIndex = logic.DecideWhichHunterToAttackWithQuincey(g);
+                ui.TellUser("Dracula has chosen " + g.NameOfHunterAtIndex(hunterIndex) + " to affect with Quincey P. Morris");
+                switch (ui.GetHunterHolyItems(g.NameOfHunterAtIndex(hunterIndex))) {
+                    case 0:
+                        ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " loses 1 health");
+                        g.AdjustHealthOfHunterAtIndex(hunterIndex, -1);
+                        g.HandlePossibleHunterDeath(ui);
+                        break;
+                    case 1:
+                        if (!g.HunterHasItemKnownToDracula(hunterIndex, "Crucifix"))
+                        {
+                            g.AddToHunterItemsKnownToDracula(hunterIndex, "Crucifix");
+                        }
+                        ui.TellUser("No effect from Quincey P. Morris");
+                        break;
+                    case 2:
+                        if (!g.HunterHasItemKnownToDracula(hunterIndex, "Heavenly Host"))
+                        {
+                            g.AddToHunterItemsKnownToDracula(hunterIndex, "Heavenly Host");
+                        }
+                        ui.TellUser("No effect from Quincey P. Morris");
+                        break;
+                }
+            }
             Logger.WriteToDebugLog("Deciding what to do with Catacombs locations");
             for (int i = 0; i < 3; i++)
             {
@@ -1015,9 +1056,12 @@ namespace DraculaHandler
         public void DoActionPhase(GameState g, UserInterface ui)
         {
             Logger.WriteToDebugLog("PERFORMING ACTION PHASE");
-            if (g.IndexOfHunterAtLocation(currentLocation) > -1)
+            if (g.IndexOfHunterAtLocation(currentLocation) > -1 && locationWhereHideWasUsed != currentLocation)
             {
-                g.ResolveCombat(g.IndexOfHunterAtLocation(currentLocation), 1, ui);
+                ui.TellUser("Dracula moved into " + currentLocation.name + " and is entering combat with " + g.NameOfHunterAtIndex(g.IndexOfHunterAtLocation(currentLocation)));
+                g.RevealLocationAtTrailIndex(0, ui);
+                ui.drawGameState(g);
+                g.ResolveCombat(g.IndexOfHunterAtLocation(currentLocation), 1, false, ui);
             }
             else
             {
@@ -1065,10 +1109,10 @@ namespace DraculaHandler
             return eventCardsInHand[eventCardsInHand.FindIndex(card => card.name == p)];
         }
 
-        internal Item ChooseCombatCardAndTarget(Hunter hunter, List<Item> combatCards, CombatRoundResult result, out string name)
+        internal Item ChooseCombatCardAndTarget(Hunter hunter, List<Item> combatCards, CombatRoundResult result, string hunterAllyName, out string name)
         {
             name = logic.DecideHunterToAttack(hunter, combatCards, result);
-            return logic.DecideWhichCombatCardToPlay(hunter, combatCards, result);
+            return logic.DecideWhichCombatCardToPlay(hunter, this, combatCards, hunterAllyName, result);
         }
 
         internal Location DecideWhereToSendHunterWithBats(GameState gameState, Hunter hunter, UserInterface ui)
@@ -1093,8 +1137,7 @@ namespace DraculaHandler
             }
             possiblePowers.Clear();
             string throwAway;
-            Location locationToMoveTo;
-            logic.DecideMove(g, this, out throwAway, out locationToMoveTo);
+            Location locationToMoveTo = logic.DecideMove(g, this, out throwAway);
             MoveByRoadOrSea(g, locationToMoveTo, ui);
         }
 
@@ -1113,9 +1156,9 @@ namespace DraculaHandler
             return logic.DecideToPlaySeductionDuringVampireEncounter(g, this);
         }
 
-        internal Event PlayEventCardAtStartOfCombat(GameState g, bool trapPlayed)
+        internal Event PlayEventCardAtStartOfCombat(GameState g, bool trapPlayed, bool hunterMoved, int enemyType)
         {
-            return logic.DecideToPlayCardAtStartOfCombat(g, this, trapPlayed);
+            return logic.DecideToPlayCardAtStartOfCombat(g, this, trapPlayed, hunterMoved, enemyType);
         }
 
         internal Location DecideWhereToSendHunterWithControlStorms(int hunterIndex, List<Location> possiblePorts, GameState g)
@@ -1210,6 +1253,16 @@ namespace DraculaHandler
         internal Encounter ChooseEncounterToAmbushHunter()
         {
             return logic.DecideWhichEncounterToAmbushHunterWith(encounterHand);
+        }
+
+        internal Location ChooseStartLocation(GameState g)
+        {
+            return logic.DecideDraculaStartLocation(g);
+        }
+
+        internal Location ChooseMoveForHypnosis(GameState g, out string powerUsed)
+        {
+            return logic.DecideMove(g, this, out powerUsed);
         }
     }
 

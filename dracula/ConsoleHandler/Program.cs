@@ -16,9 +16,9 @@ namespace ConsoleHandler
             Logger.ClearLogs(ui);
 
 
-            //#if DEBUG
-            //            g.SetupForTesting();
-            //#elif RELEASE
+//#if DEBUG
+//            g.SetupForTesting(ui);
+//#elif RELEASE
 
             g.SetLocationForHunterAt(0, ui.GetHunterStartLocation(g, 0));
             g.SetLocationForHunterAt(1, ui.GetHunterStartLocation(g, 1));
@@ -29,7 +29,7 @@ namespace ConsoleHandler
             g.DrawEncountersUpToHandSize();
             PerformDraculaTurn(g, ui);
 
-            //#endif
+//#endif
             CommandSet commandSet = new CommandSet();
 
             do
@@ -42,7 +42,7 @@ namespace ConsoleHandler
 #if DEBUG                    
                     case "rl": PerformRevealLocation(g, commandSet.argument1, ui); break;
                     case "re": PerformRevealEncounter(g, commandSet.argument1, ui); break;
-                    case "fight": PerformCombat(g, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "fight": PerformCombat(g, commandSet.argument1, commandSet.argument2, true, ui); break;
                     case "clear": PerformTrailClear(g, commandSet.argument1, ui); break;
                     case "known": g.TellMeWhatYouKnow(ui); break;
 #endif
@@ -64,11 +64,17 @@ namespace ConsoleHandler
                     case "h": PerformHospital(g, commandSet.argument1, ui); break;
                     case "s": PerformResolve(g, commandSet.argument1, commandSet.argument2, ui); break;
                     case "help": ui.ShowHelp(); break;
+                    case "save": PerformSave(g, ui); break;
                     case "state": ShowKnownState(g, ui); break;
                     case "exit": break;
                     default: Console.WriteLine("I don't know what you're talking about, 'help' for help"); break;
                 }
             } while (commandSet.command != "exit");
+        }
+
+        private static void PerformSave(GameState g, UserInterface ui)
+        {
+            ui.TellUser("This isn't implemented yet");
         }
 
         private static void ShowKnownState(GameState g, UserInterface ui)
@@ -148,9 +154,14 @@ namespace ConsoleHandler
             string itemName = g.GetItemByNameFromItemDeck(argument2).name;
             while (itemName == "Unknown item")
             {
-                itemName = g.GetItemByNameFromItemDeck(ui.GetNameOfItemUsedByHunter(g.NameOfHunterAtIndex(hunterIndex))).name;
+                string line = ui.GetNameOfItemUsedByHunter(g.NameOfHunterAtIndex(hunterIndex));
+                itemName = g.GetItemByNameFromItemDeck(line).name;
                 if (itemName == "Unknown item")
                 {
+                    if (line.ToLower() == "cancel")
+                    {
+                        return;
+                    }
                     ui.TellUser("I can't find that item");
                 }
             }
@@ -225,7 +236,7 @@ namespace ConsoleHandler
 
         }
 
-        private static void PerformCombat(GameState g, string argument1, string argument2, UserInterface ui)
+        private static void PerformCombat(GameState g, string argument1, string argument2, bool hunterMoved, UserInterface ui)
         {
             int hunterIndex;
             if (!int.TryParse(argument1, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4)
@@ -241,7 +252,7 @@ namespace ConsoleHandler
             {
                 enemyInCombat = ui.GetTypeOfEnemyEnteringCombat();
             }
-            switch (g.ResolveCombat(hunterIndex, enemyInCombat, ui))
+            switch (g.ResolveCombat(hunterIndex, enemyInCombat, hunterMoved, ui))
             {
                 case "Bite":
                     if (g.NumberOfHuntersAtLocation(g.LocationOfHunterAtHunterIndex(hunterIndex)) > 1)
@@ -284,9 +295,14 @@ namespace ConsoleHandler
             string eventName = g.GetEventByNameFromEventDeck(argument2).name;
             while (eventName == "Unknown event")
             {
-                eventName = g.GetEventByNameFromEventDeck(ui.GetNameOfEventDiscardedByHunter(g.NameOfHunterAtIndex(hunterIndex))).name;
+                string line = ui.GetNameOfEventDiscardedByHunter(g.NameOfHunterAtIndex(hunterIndex));
+                eventName = g.GetEventByNameFromEventDeck(line).name;
                 if (eventName == "Unknown event")
                 {
+                    if (line.ToLower() == "cancel")
+                    {
+                        return;
+                    }
                     ui.TellUser("I can't find that event");
                 }
             }
@@ -395,8 +411,8 @@ namespace ConsoleHandler
             while (locationToMoveTo.name == "Unknown location")
             {
                 locationToMoveTo = g.GetLocationFromName(ui.GetNameOfLocationWhereHunterIsMoving(g.NameOfHunterAtIndex(hunterIndex)));
+                ui.TellUser(locationToMoveTo.name);
             }
-            ui.TellUser(locationToMoveTo.name);
             g.MoveHunterToLocationAtHunterIndex(hunterIndex, locationToMoveTo, ui);
             if (!g.DraculaWillPlayCustomsSearch(hunterIndex, ui))
             {
@@ -493,7 +509,7 @@ namespace ConsoleHandler
                     g.DiscardEventFromHunterAtIndex(cardName, hunterIndex, ui);
                     break;
                 case "Good Luck":
-                    g.PlayGoodLuck(hunterIndex, ui);
+                    g.PlayGoodLuck(hunterIndex, ui); // discard handled within function
                     break;
                 case "Blood Transfusion":
                     g.PlayBloodTransfusion(ui);
@@ -518,6 +534,10 @@ namespace ConsoleHandler
                     break;
                 case "Hired Scouts":
                     g.PlayHiredScouts(ui);
+                    g.DiscardEventFromHunterAtIndex(cardName, hunterIndex, ui);
+                    break;
+                case "cancel":
+                    ui.TellUser("Action canclled");
                     break;
             }
         }
@@ -600,6 +620,10 @@ namespace ConsoleHandler
                 eventIndex = g.IndexOfEventCardInEventDeck(line);
                 if (eventIndex == -1)
                 {
+                    if (line.ToLower() == "cancel")
+                    {
+                        return "cancel";
+                    }
                     ui.TellUser("I don't recognise a card starting with " + line);
                 }
                 else if (g.EventCardIsDraculaCardAtIndex(eventIndex))
