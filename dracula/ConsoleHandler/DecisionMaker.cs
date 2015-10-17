@@ -293,11 +293,11 @@ namespace ConsoleHandler
         // done
         internal Event DecideToPlayCustomsSearch(GameState g, Dracula dracula, Hunter hunter)
         {
-            if (dracula.eventCardsInHand.FindIndex(e => e.name == "Control Storms") > -1)
+            if (dracula.eventCardsInHand.FindIndex(e => e.name == "Customs Search") > -1)
             {
                 if (new Random().Next(0, 2) > 0)
                 {
-                    return dracula.eventCardsInHand.Find(e => e.name == "Control Storms");
+                    return dracula.eventCardsInHand.Find(e => e.name == "Customs Search");
                 }
             }
             return null;

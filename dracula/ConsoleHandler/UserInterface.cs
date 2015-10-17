@@ -203,7 +203,7 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                TellUser("Who do you want to add to or remove from " + name + "'s group? 2) Van Helsing 3) Dr. Seward 4) Mina Harker -1) Cancel");
+                TellUser("Who do you want to add to or remove from " + name + "'s group? 2) Dr. Seward 3) Van Helsing 4) Mina Harker -1) Cancel");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < -1 || hunterIndex > 4);
             return hunterIndex - 1;
@@ -229,7 +229,7 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                TellUser("Whose group would you like to set up? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; (Mina Harker can't lead a group)");
+                TellUser("Whose group would you like to set up? 1 = Lord Godalming; 2 = Dr. Seward; 3 = Van Helsing; (Mina Harker can't lead a group)");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 3);
             return hunterIndex - 1;
@@ -253,7 +253,7 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                TellUser("Who is moving? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                TellUser("Who is moving? 1 = Lord Godalming; 2 = Dr. Seward; 3 = Van Helsing; 4 = Mina Harker");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
             return hunterIndex - 1;
@@ -370,7 +370,7 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                TellUser("Who is drawing an event card? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                TellUser("Who is drawing an event card? 1 = Lord Godalming; 2 = Dr. Seward; 3 = Van Helsing; 4 = Mina Harker");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
             return hunterIndex - 1;
@@ -382,7 +382,7 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                TellUser("Who is drawing an item card? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                TellUser("Who is drawing an item card? 1 = Lord Godalming; 2 = Dr. Seward; 3 = Van Helsing; 4 = Mina Harker");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
             return hunterIndex - 1;
@@ -394,7 +394,7 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                TellUser("Who is discarding an event card? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                TellUser("Who is discarding an event card? 1 = Lord Godalming; 2 = Dr. Seward; 3 = Van Helsing; 4 = Mina Harker");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
             return hunterIndex - 1;
@@ -412,7 +412,7 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                TellUser("Who is discarding an item card? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                TellUser("Who is discarding an item card? 1 = Lord Godalming; 2 = Dr. Seward; 3 = Van Helsing; 4 = Mina Harker");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
             return hunterIndex - 1;
@@ -424,17 +424,17 @@ namespace ConsoleHandler
             return AskUser();
         }
 
-        internal int GetIndexOfHunterEnteringCombat()
-        {
-            string line = "";
-            int hunterIndex;
-            do
-            {
-                TellUser("Who is entering combat? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
-                line = AskUser();
-            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
-            return hunterIndex - 1;
-        }
+        //internal int GetIndexOfHunterEnteringCombat()
+        //{
+        //    string line = "";
+        //    int hunterIndex;
+        //    do
+        //    {
+        //        TellUser("Who is entering combat? 1 = Lord Godalming; 2 = Dr. Seward; 3 = Van Helsing; 4 = Mina Harker");
+        //        line = AskUser();
+        //    } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
+        //    return hunterIndex - 1;
+        //}
 
         internal int GetTypeOfEnemyEnteringCombat()
         {
@@ -484,6 +484,18 @@ namespace ConsoleHandler
             return line;
         }
 
+        internal bool AskIfHunterIsPlayingForeWarned(string name)
+        {
+            string line;
+            do
+            {
+                TellUser("Is " + name + " playing Forewarned?");
+                line = AskUser();
+            }
+            while (!"yes".Contains(line.ToLower()) && !"no".Contains(line.ToLower()));
+            return "yes".Contains(line.ToLower()) ? true : false;
+        }
+
         internal int GetDraculaBloodLost()
         {
             string line;
@@ -521,17 +533,17 @@ namespace ConsoleHandler
             return answer;
         }
 
-        internal bool GetCombatOutcome()
-        {
-            string line;
-            do
-            {
-                TellUser("Did you defeat the enemy?");
-                line = AskUser();
-            }
-            while (!"yes".Contains(line.ToLower()) && !"no".Contains(line.ToLower()));
-            return "yes".Contains(line.ToLower()) ? true : false;
-        }
+        //internal bool GetCombatOutcome()
+        //{
+        //    string line;
+        //    do
+        //    {
+        //        TellUser("Did you defeat the enemy?");
+        //        line = AskUser();
+        //    }
+        //    while (!"yes".Contains(line.ToLower()) && !"no".Contains(line.ToLower()));
+        //    return "yes".Contains(line.ToLower()) ? true : false;
+        //}
 
         internal int GetIndexOfHunterBeingMovedByBats()
         {
@@ -539,7 +551,7 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                TellUser("Who is being moved by Bats? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                TellUser("Who is being moved by Bats? 1 = Lord Godalming; 2 = Dr. Seward; 3 = Van Helsing; 4 = Mina Harker");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
             return hunterIndex - 1;
@@ -551,7 +563,7 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                TellUser("Who is entering trade? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                TellUser("Who is entering trade? 1 = Lord Godalming; 2 = Dr. Seward; 3 = Van Helsing; 4 = Mina Harker");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
             return hunterIndex - 1;
@@ -575,7 +587,7 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                TellUser("Who is using an item? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                TellUser("Who is using an item? 1 = Lord Godalming; 2 = Dr. Seward; 3 = Van Helsing; 4 = Mina Harker");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
             return hunterIndex - 1;
@@ -629,7 +641,7 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                TellUser("Who is playing the event card? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                TellUser("Who is playing the event card? 1 = Lord Godalming; 2 = Dr. Seward; 3 = Van Helsing; 4 = Mina Harker");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
             return hunterIndex - 1;
@@ -653,7 +665,7 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                TellUser("Who is donating blood? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward (Mina Harker cannot have her bite healed)");
+                TellUser("Who is donating blood? 1 = Lord Godalming; 2 = Dr. Seward; 3 = Van Helsing; (Mina Harker cannot have her bite healed)");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 3);
             return hunterIndex - 1;
@@ -665,7 +677,7 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                TellUser("Who is donating blood? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                TellUser("Who is donating blood? 1 = Lord Godalming; 2 = Dr. Seward; 3 = Van Helsing; 4 = Mina Harker");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
             return hunterIndex - 1;
@@ -683,7 +695,7 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                TellUser("Who was bitten? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                TellUser("Who was bitten? 1 = Lord Godalming; 2 = Dr. Seward; 3 = Van Helsing; 4 = Mina Harker");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
             return hunterIndex - 1;
@@ -707,7 +719,7 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                TellUser("Who is resting? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                TellUser("Who is resting? 1 = Lord Godalming; 2 = Dr. Seward; 3 = Van Helsing; 4 = Mina Harker");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
             return hunterIndex - 1;
@@ -731,7 +743,7 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                TellUser("Who is using the Holy Water font? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward (Mina Harker's bite cannot be healed)");
+                TellUser("Who is using the Holy Water font? 1 = Lord Godalming; 2 = Dr. Seward; 3 = Van Helsing; (Mina Harker's bite cannot be healed)");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 3);
             return hunterIndex - 1;
@@ -743,7 +755,7 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                TellUser("Who is using Resolve? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                TellUser("Who is using Resolve? 1 = Lord Godalming; 2 = Dr. Seward; 3 = Van Helsing; 4 = Mina Harker");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
             return hunterIndex - 1;
@@ -779,29 +791,29 @@ namespace ConsoleHandler
             return AskUser();
         }
 
-        internal bool GetUserCancelEncounter(string name)
-        {
-            string line;
-            do
-            {
-                TellUser("The encounter is " + name + ", do you want to cancel it?");
-                line = AskUser();
-            }
-            while (!"yes".Contains(line.ToLower()) && !"no".Contains(line.ToLower()));
-            return "yes".Contains(line.ToLower()) ? true : false;
-        }
+        //internal bool GetUserCancelEncounter(string name)
+        //{
+        //    string line;
+        //    do
+        //    {
+        //        TellUser("The encounter is " + name + ", do you want to cancel it?");
+        //        line = AskUser();
+        //    }
+        //    while (!"yes".Contains(line.ToLower()) && !"no".Contains(line.ToLower()));
+        //    return "yes".Contains(line.ToLower()) ? true : false;
+        //}
 
-        internal int GetHunterPlayingForewarned(string name)
-        {
-            string line = "";
-            int hunterIndex;
-            do
-            {
-                TellUser("The encounter is " + name + ", is anyone playing Forewarned? 0 = Nobody; 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
-                line = AskUser();
-            } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 0 || hunterIndex > 4);
-            return hunterIndex - 1;
-        }
+        //internal int GetHunterPlayingForewarned(string name)
+        //{
+        //    string line = "";
+        //    int hunterIndex;
+        //    do
+        //    {
+        //        TellUser("The encounter is " + name + ", is anyone playing Forewarned? 0 = Nobody; 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+        //        line = AskUser();
+        //    } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 0 || hunterIndex > 4);
+        //    return hunterIndex - 1;
+        //}
 
         internal void ShowHelp()
         {
@@ -826,7 +838,7 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                TellUser("Who was killed? 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                TellUser("Who was killed? 1 = Lord Godalming; 2 = Dr. Seward; 3 = Van Helsing; 4 = Mina Harker");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 1 || hunterIndex > 4);
             return hunterIndex - 1;
@@ -868,7 +880,7 @@ namespace ConsoleHandler
             int hunterIndex;
             do
             {
-                TellUser("Will anyone play Good Luck to cancel this event card? 0 = Nobody; 1 = Lord Godalming; 2 = Van Helsing; 3 = Dr. Seward; 4 = Mina Harker");
+                TellUser("Will anyone play Good Luck to cancel this event card? 0 = Nobody; 1 = Lord Godalming; 2 = Dr. Seward; 3 = Van Helsing; 4 = Mina Harker");
                 line = AskUser();
             } while (!int.TryParse(line, out hunterIndex) || hunterIndex < 0 || hunterIndex > 4);
             return hunterIndex - 1;

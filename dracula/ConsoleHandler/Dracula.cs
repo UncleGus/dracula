@@ -1056,7 +1056,7 @@ namespace DraculaHandler
         public void DoActionPhase(GameState g, UserInterface ui)
         {
             Logger.WriteToDebugLog("PERFORMING ACTION PHASE");
-            if (g.IndexOfHunterAtLocation(currentLocation) > -1 && locationWhereHideWasUsed != currentLocation)
+            if (g.IndexOfHunterAtLocation(currentLocation) > -1 && locationWhereHideWasUsed != currentLocation && currentLocation.type != LocationType.Sea)
             {
                 ui.TellUser("Dracula moved into " + currentLocation.name + " and is entering combat with " + g.NameOfHunterAtIndex(g.IndexOfHunterAtLocation(currentLocation)));
                 g.RevealLocationAtTrailIndex(0, ui);

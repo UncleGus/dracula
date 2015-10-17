@@ -248,8 +248,8 @@ namespace ConsoleHandler
                     ui.TellUser("Search reveals evidence of Dracula's visit");
                 }
                 location.isRevealed = true;
-                ResolveEncountersAtLocation(hunters[hunterIndex], location, ui);
-                if (location == dracula.currentLocation)
+                bool canFightDracula = ResolveEncountersAtLocation(hunters[hunterIndex], location, ui);
+                if (location == dracula.currentLocation && canFightDracula)
                 {
                     ResolveCombat(hunterIndex, 1, true, ui);
                 }
@@ -260,7 +260,7 @@ namespace ConsoleHandler
             }
         }
 
-        private void ResolveEncountersAtLocation(Hunter hunter, Location location, UserInterface ui)
+        private bool ResolveEncountersAtLocation(Hunter hunter, Location location, UserInterface ui)
         {
             dracula.OrderEncounters(hunter, location);
             foreach (Encounter enc in location.encounters)
@@ -275,6 +275,7 @@ namespace ConsoleHandler
             Encounter firstEncounter = null;
             Encounter secondEncounter = null;
 
+
             if (location.encounters.Count() > 0)
             {
                 firstEncounter = location.encounters.First();
@@ -285,21 +286,23 @@ namespace ConsoleHandler
             }
             if (firstEncounter != null)
             {
+                bool encounterCancelled = false;
                 foreach (Hunter h in hunters)
                 {
+                    int hunterIndex = IndexOfHunter(h);
                     if (h.currentLocation == location)
                     {
                         if (ui.AskIfHunterIsPlayingSecretWeapon(h.name))
                         {
-                            int hunterIndex = IndexOfHunter(h);
+                            
                             DiscardEventFromHunterAtIndex("Secret Weapon", hunterIndex, ui);
                             Logger.WriteToDebugLog(h.name + " played Secret Weapon");
                             Logger.WriteToGameLog(h.name + " played Secret Weapon");
-                            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                            Event draculaEventCardA = dracula.WillPlayDevilishPower(this, ui);
                             bool eventIsCancelled = false;
-                            if (draculaEventCard != null)
+                            if (draculaEventCardA != null)
                             {
-                                switch (draculaEventCard.name)
+                                switch (draculaEventCardA.name)
                                 {
                                     case "DevilishPower":
                                         ui.TellUser("Dracula played Devilish power to cancel this event");
@@ -322,34 +325,155 @@ namespace ConsoleHandler
                                 PlaySecretWeaponBeforeEncounter(hunterIndex, ui);
                             }
                         }
+                        Event draculaEventCard;
+                        if (ui.AskIfHunterIsPlayingForeWarned(h.name))
+                        {
+                            draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                            bool eventIsCancelled = false;
+                            if (draculaEventCard != null)
+                            {
+                                switch (draculaEventCard.name)
+                                {
+                                    case "DevilishPower":
+                                        ui.TellUser("Dracula played Devilish power to cancel this event");
+                                        DiscardEventFromDracula("Devilish Power");
+                                        int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                                        if (hunterPlayingGoodluck > -1)
+                                        {
+                                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
+                                        }
+                                        else
+                                        {
+                                            eventIsCancelled = true;
+                                        }
+
+                                        break;
+                                }
+                            }
+                            if (!eventIsCancelled)
+                            {
+                                PlayForewarnedBeforeEncounter(hunterIndex, ui);
+                                encounterCancelled = true;
+                             }
+                        }
                     }
                 }
-
-                resolveNextEncounter = ResolveEncounter(firstEncounter, hunter, out discardEncounter, ui);
+                if (encounterCancelled)
+                {
+                    resolveNextEncounter = true;
+                    discardEncounter = true;
+                }
+                else
+                {
+                    resolveNextEncounter = ResolveEncounter(firstEncounter, hunter, out discardEncounter, ui);
+                }
                 if (discardEncounter)
                 {
                     location.encounters.Remove(firstEncounter);
-                    encounterPool.Remove(firstEncounter);
+                    encounterPool.Add(firstEncounter);
+                    firstEncounter.isRevealed = false;
                 }
                 else if (firstEncounter.name == "Bats" || firstEncounter.name == "Fog")
                 {
                     encounterLimbo.Add(firstEncounter);
+                    location.encounters.Remove(firstEncounter);
                 }
             }
             if (secondEncounter != null)
             {
-                resolveNextEncounter = ResolveEncounter(secondEncounter, hunter, out discardEncounter, ui);
+                bool encounterCancelled = false;
+                foreach (Hunter h in hunters)
+                {
+                    int hunterIndex = IndexOfHunter(h);
+                    if (h.currentLocation == location)
+                    {
+                        if (ui.AskIfHunterIsPlayingSecretWeapon(h.name))
+                        {
+
+                            DiscardEventFromHunterAtIndex("Secret Weapon", hunterIndex, ui);
+                            Logger.WriteToDebugLog(h.name + " played Secret Weapon");
+                            Logger.WriteToGameLog(h.name + " played Secret Weapon");
+                            Event draculaEventCardA = dracula.WillPlayDevilishPower(this, ui);
+                            bool eventIsCancelled = false;
+                            if (draculaEventCardA != null)
+                            {
+                                switch (draculaEventCardA.name)
+                                {
+                                    case "DevilishPower":
+                                        ui.TellUser("Dracula played Devilish power to cancel this event");
+                                        Logger.WriteToDebugLog("Dracula played Devilish Power");
+                                        DiscardEventFromDracula("Devilish Power");
+                                        int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                                        if (hunterPlayingGoodluck > -1)
+                                        {
+                                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
+                                        }
+                                        else
+                                        {
+                                            eventIsCancelled = true;
+                                        }
+                                        break;
+                                }
+                            }
+                            if (!eventIsCancelled)
+                            {
+                                PlaySecretWeaponBeforeEncounter(hunterIndex, ui);
+                            }
+                        }
+                        Event draculaEventCard;
+                        if (ui.AskIfHunterIsPlayingForeWarned(h.name))
+                        {
+                            draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                            bool eventIsCancelled = false;
+                            if (draculaEventCard != null)
+                            {
+                                switch (draculaEventCard.name)
+                                {
+                                    case "DevilishPower":
+                                        ui.TellUser("Dracula played Devilish power to cancel this event");
+                                        DiscardEventFromDracula("Devilish Power");
+                                        int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
+                                        if (hunterPlayingGoodluck > -1)
+                                        {
+                                            DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
+                                        }
+                                        else
+                                        {
+                                            eventIsCancelled = true;
+                                        }
+
+                                        break;
+                                }
+                            }
+                            if (!eventIsCancelled)
+                            {
+                                PlayForewarnedBeforeEncounter(hunterIndex, ui);
+                                encounterCancelled = true;
+                            }
+                        }
+                    }
+                }
+                if (encounterCancelled)
+                {
+                    resolveNextEncounter = true;
+                    discardEncounter = true;
+                }
+                else
+                {
+                    resolveNextEncounter = ResolveEncounter(secondEncounter, hunter, out discardEncounter, ui);
+                }
                 if (discardEncounter)
                 {
                     location.encounters.Remove(secondEncounter);
-                    encounterPool.Remove(secondEncounter);
+                    encounterPool.Add(secondEncounter);
                 }
                 else if (secondEncounter.name == "Bats" || secondEncounter.name == "Fog")
                 {
                     encounterLimbo.Add(secondEncounter);
+                    location.encounters.Remove(secondEncounter);
                 }
             }
-
+            return resolveNextEncounter;
         }
 
         private int IndexOfHunter(Hunter h)
@@ -398,48 +522,7 @@ namespace ConsoleHandler
         {
             bool resolveNextEncounter = true;
             discard = true;
-            bool resolvingEventCards = true;
-            int hunterIndex;
-            Event draculaEventCard;
-            while (resolvingEventCards)
-            {
-                hunterIndex = ui.GetHunterPlayingForewarned(enc.name);
-                if (hunterIndex > -1)
-                {
 
-                    draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
-                    bool eventIsCancelled = false;
-                    if (draculaEventCard != null)
-                    {
-                        switch (draculaEventCard.name)
-                        {
-                            case "DevilishPower":
-                                ui.TellUser("Dracula played Devilish power to cancel this event");
-                                DiscardEventFromDracula("Devilish Power");
-                                int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
-                                if (hunterPlayingGoodluck > -1)
-                                {
-                                    DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
-                                }
-                                else
-                                {
-                                    eventIsCancelled = true;
-                                }
-
-                                break;
-                        }
-                    }
-                    if (!eventIsCancelled)
-                    {
-                        PlayForewarnedBeforeEncounter(hunterIndex, ui);
-                        return true;
-                    }
-                }
-                else
-                {
-                    resolvingEventCards = false;
-                }
-            }
             switch (enc.name)
             {
                 case "Ambush":
@@ -836,7 +919,6 @@ namespace ConsoleHandler
                 if (cardToReclaim.ToLower() != "none")
                 {
                     AddEventCardToHunterAtIndex(hunterIndex, ui);
-                    ui.TellUser("Don't forget to tell me what you discarded");
                 }
             }
         }
@@ -2876,8 +2958,9 @@ namespace ConsoleHandler
             foreach (Encounter enc in encounterLimbo)
             {
                 encounterPool.Add(enc);
-                encounterLimbo.Remove(enc);
+                enc.isRevealed = false;
             }
+            encounterLimbo.Clear();
             if (HuntersHaveAlly())
             {
                 if (hunterAlly.name == "Jonathan Harker")
@@ -4412,10 +4495,10 @@ namespace ConsoleHandler
 
         private void PlayLocalRumors(int hunterIndex, UserInterface ui)
         {
-            int locationIndex = 0;
+            int locationIndex = -1;
             do
             {
-                ui.GetLocationIndexOfEncounterToReveal();
+                locationIndex = ui.GetLocationIndexOfEncounterToReveal();
             }
             while (dracula.trail[locationIndex] == null && (locationIndex > 5 ? dracula.catacombs[locationIndex - 6] == null : true));
             Location locationWhereEncounterIsBeingRevealed;
@@ -4587,7 +4670,7 @@ namespace ConsoleHandler
         internal void RestHunterAtHunterIndex(int hunterIndex, UserInterface ui)
         {
             int numberOfEvents = 2;
-            if (hunters[hunterIndex].currentLocation == hunters[2].currentLocation)
+            if (hunters[hunterIndex].currentLocation == hunters[1].currentLocation)
             {
                 numberOfEvents = 1;
             }
