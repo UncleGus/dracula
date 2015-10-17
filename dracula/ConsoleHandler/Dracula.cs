@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using LocationHandler;
 using LogHandler;
 using EncounterHandler;
-using ConsoleHandler;
+using DraculaSimulator;
 using EventHandler;
 using HunterHandler;
 
@@ -1095,7 +1095,7 @@ namespace DraculaHandler
 
         internal bool WillCancelTrain(GameState g, HunterHandler.Hunter hunter)
         {
-            return logic.DecideToCancelHunterTrain(g, this, hunter);
+            return logic.DecideToPlayFalseTipOff(g, this, hunter);
         }
 
         internal void DiscardEventFromHand(GameState g, string p)
@@ -1143,7 +1143,7 @@ namespace DraculaHandler
 
         internal Event PlayEventCardAtStartOfHunterMovement(GameState g)
         {
-            return logic.DecideEventCardToPlayAtStartOfHunterMovement(g, this);
+            return logic.DecideToPlayControlStorms(g, this);
         }
 
         internal Event PlayEventCardAtStartOfDraculaTurn(GameState g)

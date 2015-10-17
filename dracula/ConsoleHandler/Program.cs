@@ -4,7 +4,7 @@ using LogHandler;
 using System;
 using System.Linq;
 
-namespace ConsoleHandler
+namespace DraculaSimulator
 {
     class Program
     {

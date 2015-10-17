@@ -10,24 +10,27 @@ using EventHandler;
 using HunterHandler;
 using LogHandler;
 
-namespace ConsoleHandler
+namespace DraculaSimulator
 {
     public class DecisionMaker
     {
         // done
         internal Location DecideDraculaStartLocation(GameState g)
         {
+            Logger.WriteToDebugLog("Starting to decide where Dracula will start");
             Location startLocation;
             do
             {
                 startLocation = g.LocationAtMapIndex(new Random().Next(0, g.MapSize()));
             } while (startLocation.type == LocationType.Hospital || startLocation.type == LocationType.Sea || startLocation.type == LocationType.Castle || g.IndexOfHunterAtLocation(startLocation) > -1);
+            Logger.WriteToDebugLog("Returning" + startLocation);
             return startLocation;
         }
 
         // done
         internal Location DecideMove(GameState g, Dracula dracula, out string powerName)
         {
+            Logger.WriteToDebugLog("Starting to decide what move to make");
             Location goingTo;
             if (dracula.advanceMovePower != null || dracula.advanceMoveDestination != null)
             {
@@ -66,93 +69,113 @@ namespace ConsoleHandler
                 powerName = "no power";
                 goingTo = dracula.possibleMoves[chosenActionIndex];
             }
+            Logger.WriteToDebugLog("Returning " + powerName + " and " + goingTo.name);
             return goingTo;
         }
 
         // done
-        internal int DecideDoubleBackLocation(GameState g, Dracula dracula)
+        internal string DecideWhichAllyToKeep(string firstAllyName, string secondAllyName)
         {
-            return new Random().Next(0, dracula.possibleDoubleBackMoves.Count());
-        }
-
-        // done
-        internal string DecideWhichAllyToKeep(string p1, string p2)
-        {
+            Logger.WriteToDebugLog("Deciding which of two allies to keep");
             if (new Random().Next(0, 2) > 0)
             {
-                return p1;
+                Logger.WriteToDebugLog("Returning " + firstAllyName);
+                return firstAllyName;
             }
             else
             {
-                return p2;
+                Logger.WriteToDebugLog("Returning " + secondAllyName);
+                return secondAllyName;
             }
         }
 
         // done
         internal Encounter DecideWhichEncounterToDiscard(GameState g, Dracula dracula)
         {
-            return dracula.encounterHand[new Random().Next(0, dracula.encounterHand.Count())];
+            Logger.WriteToDebugLog("Deciding which encounter to discard");
+            Encounter encounterToDiscard = dracula.encounterHand[new Random().Next(0, dracula.encounterHand.Count())];
+            Logger.WriteToDebugLog("Returning " + encounterToDiscard.name);
+            return encounterToDiscard;
         }
 
         // done
         internal Event DecideWhichEventToDiscard(GameState g, Dracula dracula)
         {
-            return dracula.eventCardsInHand[new Random().Next(0, dracula.eventCardsInHand.Count())];
+            Logger.WriteToDebugLog("Deciding which event to discard");
+            Event eventToDiscard = dracula.eventCardsInHand[new Random().Next(0, dracula.eventCardsInHand.Count())];
+            Logger.WriteToDebugLog("Returning " + eventToDiscard.name);
+            return eventToDiscard;
         }
 
         // done
         internal Encounter DecideWhichEncounterToPlace(GameState g, Dracula dracula)
         {
-            return dracula.encounterHand[new Random().Next(0, dracula.encounterHand.Count())];
+            Logger.WriteToDebugLog("Deciding which encounter to place");
+            Encounter encounterToPlace = dracula.encounterHand[new Random().Next(0, dracula.encounterHand.Count())];
+            Logger.WriteToDebugLog("Returning " + encounterToPlace.name);
+            return encounterToPlace;
         }
 
         // done
         internal bool DecideToPutLocationInCatacombs(GameState g, Dracula dracula)
         {
-            return new Random().Next(0, 6) > 4;
+            Logger.WriteToDebugLog("Deciding whether to put a location in the catacombs");
+            bool isPuttingLocationInCatacombs = new Random().Next(0, 6) > 4;
+            Logger.WriteToDebugLog("Returning " + isPuttingLocationInCatacombs);
+            return isPuttingLocationInCatacombs;
         }
 
         // done
         internal bool DecideToDiscardCatacombLocation(GameState g, Dracula dracula)
         {
-            return new Random().Next(0, 5) > 3;
+            Logger.WriteToDebugLog("Deciding whether to discard location from catacombs");
+            bool isDiscardingCatacombLocation = new Random().Next(0, 5) > 3;
+            Logger.WriteToDebugLog("Returning " + isDiscardingCatacombLocation);
+            return isDiscardingCatacombLocation;
         }
 
         // done
         internal string DecideToDiscardEventOrItem(GameState g, Dracula dracula, Hunter hunter)
         {
+            Logger.WriteToDebugLog("Deciding whether to discard hunter's event or item");
             if (hunter.numberOfEvents + hunter.numberOfItems > 0)
             {
                 int cardToDiscard = new Random().Next(0, hunter.numberOfEvents + hunter.numberOfItems);
                 if (cardToDiscard + 1 > hunter.numberOfEvents)
                 {
+                    Logger.WriteToDebugLog("Returning item");
                     return "item";
                 }
                 else
                 {
+                    Logger.WriteToDebugLog("Returning event");
                     return "event";
                 }
             }
+            Logger.WriteToDebugLog("Returning no cards");
             return "no cards";
         }
 
         // done
-        internal bool DecideToCancelHunterTrain(GameState g, Dracula dracula, Hunter hunter)
+        internal bool DecideToPlayFalseTipOff(GameState g, Dracula dracula, Hunter hunter)
         {
+            Logger.WriteToDebugLog("Deciding whether to play False Tip-Off");
             if (dracula.eventCardsInHand.FindIndex(card => card.name == "False Tip-Off") > -1)
             {
-                if (new Random().Next(0, 2) > 0) {
+                if (new Random().Next(0, 2) > 0)
+                {
+                    Logger.WriteToDebugLog("Returning true");
                     return true;
                 }
-                Logger.WriteToDebugLog("Dracula decided not to play his False Tip-Off");
             }
-            Logger.WriteToDebugLog("Dracula does not have a False Tip-Off");
+            Logger.WriteToDebugLog("Returning false");
             return false;
         }
 
         // done
         internal Item DecideWhichCombatCardToPlay(List<Hunter> huntersFighting, Dracula dracula, List<Item> combatCards, string hunterAllyName, CombatRoundResult result)
         {
+            Logger.WriteToDebugLog("Deciding which combat card to play");
             if (hunterAllyName == "Sister Agatha" && dracula.blood < 3)
             {
                 if (combatCards.FindIndex(card => card.name == "Fangs") > -1)
@@ -177,51 +200,64 @@ namespace ConsoleHandler
             {
                 chosenCardIndex = new Random().Next(0, combatCards.Count());
             } while (combatCards[chosenCardIndex].name == result.enemyCardUsed || (result.outcome == "Repel" && combatCards[chosenCardIndex].name != "Dodge" && combatCards[chosenCardIndex].name != "Escape (Man)" && combatCards[chosenCardIndex].name != "Esacpe (Bat)" && combatCards[chosenCardIndex].name != "Escape (Mist)"));
+            Logger.WriteToDebugLog("Returning " + combatCards[chosenCardIndex].name);
             return combatCards[chosenCardIndex];
         }
 
         // done
         internal void DecideOrderOfEncountersAtLocation(Hunter hunter, Location location)
         {
+            Logger.WriteToDebugLog("Deciding order of encounters at location");
+            Logger.WriteToDebugLog("Nothing to perform or return");
             // do nothing for now
         }
 
         // done
         internal string DecideHunterToAttack(List<Hunter> huntersFighting, List<Item> combatCards, CombatRoundResult result)
         {
-            return huntersFighting[new Random().Next(0, huntersFighting.Count())].name;
+            Logger.WriteToDebugLog("Deciding which hunter to attack");
+            string nameOfHunterToAttack = huntersFighting[new Random().Next(0, huntersFighting.Count())].name;
+            Logger.WriteToDebugLog("Returning " + nameOfHunterToAttack);
+            return nameOfHunterToAttack;
         }
 
         // done
         internal Encounter DecideWhichCatacombsEncounterToDiscard(GameState g, Location goingTo, UserInterface ui)
         {
+            Logger.WriteToDebugLog("Deciding which encounter to discard off a location previously in the catacombs");
             if (goingTo.encounters.Count() > 1)
             {
                 int random = new Random().Next(0, 2);
                 ui.TellUser("Dracula discarded the encounter in slot " + random);
+                Logger.WriteToDebugLog("Returning " + goingTo.encounters[random]);
                 return goingTo.encounters[random];
             }
             else
             {
+                Logger.WriteToDebugLog("Returning " + goingTo.encounters.First().name);
                 return goingTo.encounters.First();
             }
         }
 
         // done
-        internal Event DecideEventCardToPlayAtStartOfHunterMovement(GameState g, Dracula dracula)
+        internal Event DecideToPlayControlStorms(GameState g, Dracula dracula)
         {
+            Logger.WriteToDebugLog("Deciding whether to play Control Storms");
             if (dracula.eventCardsInHand.FindIndex(e => e.name == "Control Storms") > -1) {
                 if (new Random().Next(0, 2) > 0)
                 {
+                    Logger.WriteToDebugLog("Returning Control Storms");
                     return dracula.eventCardsInHand.Find(e => e.name == "Control Storms");
                 }
             }
+            Logger.WriteToDebugLog("Returning null");
             return null;
         }
 
         // done
         internal Event DecideEventCardToPlayAtStartOfDraculaTurn(GameState g, Dracula dracula)
         {
+            Logger.WriteToDebugLog("Deciding what card to play at the start of Dracula's turn");
             List<Event> eventCardsThatCanBePlayed = new List<Event>();
             if (dracula.eventCardsInHand.FindIndex(ev => ev.name == "Time Runs Short") > -1) {
                 eventCardsThatCanBePlayed.Add(dracula.eventCardsInHand.Find(ev => ev.name == "Time Runs Short"));
@@ -237,21 +273,26 @@ namespace ConsoleHandler
             }
             if (eventCardsThatCanBePlayed.Count() > 0 && new Random().Next(0, 3) > 1)
             {
-                return eventCardsThatCanBePlayed[new Random().Next(0, eventCardsThatCanBePlayed.Count())];
+                Event cardToPlay = eventCardsThatCanBePlayed[new Random().Next(0, eventCardsThatCanBePlayed.Count())];
+                Logger.WriteToDebugLog("Returning " + cardToPlay.name);
             }
+            Logger.WriteToDebugLog("Returning null");
             return null;
         }
 
         // done
         internal Event DecideToPlaySeductionDuringVampireEncounter(GameState g, Dracula dracula)
         {
+            Logger.WriteToDebugLog("Deciding to play Seduction");
             if (dracula.eventCardsInHand.FindIndex(e => e.name == "Seduction") > -1)
             {
                 if (new Random().Next(0, 2) > 0)
                 {
+                    Logger.WriteToDebugLog("Returning Seduction");
                     return dracula.eventCardsInHand.Find(e => e.name == "Seduction");
                 }
             }
+            Logger.WriteToDebugLog("Returning null");
             return null;
         }
 

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using LocationHandler;
 
-namespace ConsoleHandler
+namespace DraculaSimulator
 {
     public class UserInterface
     {
