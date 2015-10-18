@@ -299,6 +299,7 @@ namespace DraculaSimulator
         // done
         internal Event DecideToPlayCardAtStartOfCombat(GameState g, Dracula dracula, bool trapPlayed, bool hunterMoved, int enemyType)
         {
+            Logger.WriteToDebugLog("Deciding which card to play at the start of combat");
             List<Event> eventCardsThatCanBePlayed = new List<Event>();
             if (dracula.eventCardsInHand.FindIndex(ev => ev.name == "Trap") > -1)
             {
@@ -320,89 +321,119 @@ namespace DraculaSimulator
             }
             if (eventCardsThatCanBePlayed.Count() > 0 && new Random().Next(0, 2) > 0)
             {
-                return eventCardsThatCanBePlayed[new Random().Next(0, eventCardsThatCanBePlayed.Count())];
+                Event cardToReturn = eventCardsThatCanBePlayed[new Random().Next(0, eventCardsThatCanBePlayed.Count())];
+                Logger.WriteToDebugLog("Returning " + cardToReturn.name);
+                return cardToReturn;
             }
+            Logger.WriteToDebugLog("Returning null");
             return null;
         }
 
         // done
         internal Location DecideLocationToSendHunterWithControlStorms(GameState g, int hunterIndex, List<Location> possiblePorts)
         {
-            return possiblePorts[new Random().Next(0, possiblePorts.Count())];
+            Logger.WriteToDebugLog("Deciding where to send hunter with Control Storms");
+            Location destination = possiblePorts[new Random().Next(0, possiblePorts.Count())];
+            Logger.WriteToDebugLog("Returning " + destination.name);
+            return destination;
         }
 
         // done
         internal Event DecideToPlayCustomsSearch(GameState g, Dracula dracula, Hunter hunter)
         {
+            Logger.WriteToDebugLog("Deciding whether to play Customs Search");
             if (dracula.eventCardsInHand.FindIndex(e => e.name == "Customs Search") > -1)
             {
                 if (new Random().Next(0, 2) > 0)
                 {
+                    Logger.WriteToDebugLog("Returning Customs Search");
                     return dracula.eventCardsInHand.Find(e => e.name == "Customs Search");
                 }
             }
+            Logger.WriteToDebugLog("Returning null");
             return null;
         }
 
         // done
         internal Location DecideWhereToEvadeTo(GameState g)
         {
+            Logger.WriteToDebugLog("Deciding where to move with Evade");
             List<Location> map = g.GetMap();
             Location locationToReturn;
             do {
             locationToReturn = map[new Random().Next(0, map.Count())];
             } while (g.LocationIsInTrail(locationToReturn) || g.LocationIsInCatacombs(locationToReturn));
+            Logger.WriteToDebugLog("Returning " + locationToReturn.name);
             return locationToReturn;
         }
 
         // done
         internal Hunter DecideWhoToNightVisit(GameState g)
         {
+            Logger.WriteToDebugLog("Deciding who to attack with Night Visit");
             List <Hunter> bittenHunters = g.GetBittenHunters();
-            return bittenHunters[new Random().Next(0, bittenHunters.Count())];
+            Hunter victim = bittenHunters[new Random().Next(0, bittenHunters.Count())];
+            Logger.WriteToDebugLog("Returning " + victim.name);
+            return victim;
         }
 
         // done
         internal Hunter DecideWhoToInfluence(GameState g)
         {
+            Logger.WriteToDebugLog("Deciding which hunter to target with Vampiric Influence");
             List<Hunter> bittenHunters = g.GetBittenHunters();
-            return bittenHunters[new Random().Next(0, bittenHunters.Count())];
+            Hunter victim = bittenHunters[new Random().Next(0, bittenHunters.Count())];
+            Logger.WriteToDebugLog("Returning " + victim.name);
+            return victim;
         }
 
         // done
         internal Hunter DecideWhichHunterToRage(List<Hunter> huntersInCombat)
         {
-            return huntersInCombat[new Random().Next(0, huntersInCombat.Count())];
+            Logger.WriteToDebugLog("Deciding which hunter to target with Rage");
+            Hunter victim = huntersInCombat[new Random().Next(0, huntersInCombat.Count())];
+            Logger.WriteToDebugLog("Returning " + victim.name);
+            return victim;
         }
 
         // done
         internal Item DecideWhichItemToDiscard(List<Item> items)
         {
-            return items[new Random().Next(0, items.Count())];
+            Logger.WriteToDebugLog("Deciding which item to discard from hunter");
+            Item discardedItem =  items[new Random().Next(0, items.Count())];
+            Logger.WriteToDebugLog("Returning " + discardedItem.name);
+            return discardedItem;
         }
 
         // done
         internal Location DecideWhereToSendHuntersWithWildHorses(GameState g, List<Hunter> hunters)
         {
-            return hunters.First().currentLocation.byRoad[new Random().Next(0, hunters.First().currentLocation.byRoad.Count())];
+            Logger.WriteToDebugLog("Deciding where to send hunter with Wild Horses");
+            Location destination = hunters.First().currentLocation.byRoad[new Random().Next(0, hunters.First().currentLocation.byRoad.Count())];
+            Logger.WriteToDebugLog("Returning " + destination);
+            return destination;
         }
 
         // done
         internal Event DecideWhetherToPlayRelentlessMinion(GameState g, List<Hunter> huntersEncountered, string enemyType, Dracula dracula)
         {
+            Logger.WriteToDebugLog("Deciding whether to play Relentless Minion");
             if (dracula.eventCardsInHand.FindIndex(e => e.name == "Relentless Minion") > -1)
             {
                 if (new Random().Next(0, 2) > 0)
                 {
+                    Logger.WriteToDebugLog("Returning Relentless Minion");
                     return dracula.eventCardsInHand.Find(e => e.name == "Relentless Minion");
                 }
             }
+            Logger.WriteToDebugLog("Returning null");
             return null;
         }
 
         // done
         internal void DecideWhereToPutRoadblock(GameState g, Roadblock roadblockCounter)
         {
+            Logger.WriteToDebugLog("Deciding where to put Roadblock");
             List<Location> map = g.GetMap();
             Location firstLocationToBlock;
             do
@@ -443,35 +474,42 @@ namespace DraculaSimulator
             }
             roadblockCounter.firstLocation = firstLocationToBlock;
             roadblockCounter.secondLocation = secondLocationToBlock;
+            Logger.WriteToDebugLog("Nothing is returned, but the Roadblock counter has been put on the " + roadblockCounter.connectionType + " between " + roadblockCounter.firstLocation + " and " + roadblockCounter.secondLocation);
         }
 
         // done
         internal Event DecideWhetherToPlaySensationalistPress(GameState g, int trailIndex, Dracula dracula)
         {
+            Logger.WriteToDebugLog("Deciding whether to play Sensationalist Press");
             if (dracula.eventCardsInHand.FindIndex(e => e.name == "Sensationalist Press") > -1)
             {
                 if (new Random().Next(0, 2) > 0)
                 {
+                    Logger.WriteToDebugLog("Returning Sensationalist Press");
                     return dracula.eventCardsInHand.Find(e => e.name == "Sensationalist Press");
                 }
             }
+            Logger.WriteToDebugLog("Returning null");
             return null;
         }
 
         // done
         internal Location DecideWhichPortToGoToAfterStormySeas(GameState g, Location locationStormed)
         {
+            Logger.WriteToDebugLog("Deciding which port to go to after having Stormy Seas played on current location");
             Location port;
             do
             {
                 port = locationStormed.bySea[new Random().Next(0, locationStormed.bySea.Count())];
             } while (port.type != LocationType.City && port.type != LocationType.Town);
+            Logger.WriteToDebugLog("Returning " + port.name);
             return port;
         }
 
         // done
         internal Event DecideWhetherToCancelCharteredCarriage(GameState g, Dracula dracula)
         {
+            Logger.WriteToDebugLog("Deciding whether to cancel Chartered Carriage");
             List<Event> eventCardsThatCanBePlayed = new List<Event>();
             if (dracula.eventCardsInHand.FindIndex(ev => ev.name == "False Tip-off") > -1)
             {
@@ -483,27 +521,34 @@ namespace DraculaSimulator
             }
             if (eventCardsThatCanBePlayed.Count() > 0 && new Random().Next(0, 2) > 0)
             {
-                return eventCardsThatCanBePlayed[new Random().Next(0, eventCardsThatCanBePlayed.Count())];
+                Event eventToReturn = eventCardsThatCanBePlayed[new Random().Next(0, eventCardsThatCanBePlayed.Count())];
+                Logger.WriteToDebugLog("Returning " + eventToReturn.name);
+                return eventToReturn;
             }
+            Logger.WriteToDebugLog("Returning null");
             return null;
         }
 
         // done
         internal Event DecideWhetherToPlayDevilishPower(GameState g, Dracula dracula)
         {
+            Logger.WriteToDebugLog("Deciding whether to play Devilish Power");
             if (dracula.eventCardsInHand.FindIndex(e => e.name == "Devilish Power") > -1)
             {
                 if (new Random().Next(0, 4) > 2)
                 {
+                    Logger.WriteToDebugLog("Returning Devilish Power");
                     return dracula.eventCardsInHand.Find(e => e.name == "Devilish Power");
                 }
             }
+            Logger.WriteToDebugLog("Returning null");
             return null;
         }
 
         // done
         internal Location DecideWhichLocationToRemoveHeavenlyHostFrom(GameState g)
         {
+            Logger.WriteToDebugLog("Deciding from which location to remove Heavenly Host");
             List<Location> map = g.GetMap();
             List<Location> locationsWithHost = new List<Location>();
             foreach (Location loc in map)
@@ -513,25 +558,45 @@ namespace DraculaSimulator
                     locationsWithHost.Add(loc);
                 }
             }
-            return locationsWithHost[new Random().Next(0, locationsWithHost.Count())];
+            Location target = locationsWithHost[new Random().Next(0, locationsWithHost.Count())];
+            Logger.WriteToDebugLog("Returning " + target.name);
+            return target;
         }
 
         // done
         internal Hunter DecideWhichHunterToAmbush(Hunter[] hunters)
         {
-            return hunters[new Random().Next(0, 4)];
+            Logger.WriteToDebugLog("Deciding which hunter to Ambush");
+            Hunter victim = hunters[new Random().Next(0, 4)];
+            Logger.WriteToDebugLog("Returning " + victim.name);
+            return victim;
         }
 
         // done
         internal Encounter DecideWhichEncounterToAmbushHunterWith(List<Encounter> encounterHand)
         {
-            return encounterHand[new Random().Next(0, encounterHand.Count())];
+            Logger.WriteToDebugLog("Decising with which encounter to Ambush hunter");
+            Encounter ambush = encounterHand[new Random().Next(0, encounterHand.Count())];
+            Logger.WriteToDebugLog("Returning " + ambush.name);
+            return ambush;
         }
 
         // done
-        internal int DecideWhichHunterToAttackWithQuincey(GameState g)
+        internal Hunter DecideWhichHunterToAttackWithQuincey(Hunter[] hunters)
         {
-            return new Random().Next(0, 4);
+            Logger.WriteToDebugLog("Deciding which hunter to target with Quincey P. Morris");
+            Hunter victim = hunters[new Random().Next(0, 4)];
+            Logger.WriteToDebugLog("Returning " + victim.name);
+            return victim;
+        }
+
+        // done
+        internal Location DecideWhereToSendHuntersWithBats(GameState g, Hunter hunter, List<Location> batsMoves)
+        {
+            Logger.WriteToDebugLog("Deciding where to send hunter with Bats");
+            Location destination = batsMoves[new Random().Next(0, batsMoves.Count())];
+            Logger.WriteToDebugLog("Returning " + destination.name);
+            return destination;
         }
     }
 }

@@ -167,11 +167,9 @@ namespace DraculaHandler
                     if (hunterPlayingGoodluckC > 0)
                     {
                         g.DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluckC, ui);
-                        g.DiscardEventFromDracula("Night Visit");
                     }
                     else
                     {
-
                         PlayEvasion(g, ui); break;
                     }
                     break;
@@ -180,7 +178,6 @@ namespace DraculaHandler
                     if (hunterPlayingGoodluck > 0)
                     {
                         g.DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
-                        g.DiscardEventFromDracula("Night Visit");
                     }
                     else
                     {
@@ -192,7 +189,6 @@ namespace DraculaHandler
                     if (hunterPlayingGoodluckB > 0)
                     {
                         g.DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluckB, ui);
-                        g.DiscardEventFromDracula("Vampiric Influence");
                     }
                     else
                     {
@@ -205,7 +201,9 @@ namespace DraculaHandler
         private void PlayVampiricInfluence(GameState g, UserInterface ui)
         {
             Hunter hunterToInfluence = logic.DecideWhoToInfluence(g);
+            Logger.WriteToDebugLog("Playing Vampiric Influence on " + hunterToInfluence.name);
             ui.TellUser(hunterToInfluence.name + " was affected by Dracula's Vampiric Influence and must reveal all cards and tell Dracula their next move");
+            Logger.WriteToDebugLog("Resetting everything known about " + hunterToInfluence.name + "'s cards");
             foreach (Item item in hunterToInfluence.itemsKnownToDracula)
             {
                 g.MoveItemFromKnownItemsToItemDeck(hunterToInfluence, item);
@@ -220,8 +218,8 @@ namespace DraculaHandler
                 do
                 {
                     line = ui.AskHunterToRevealItemByVampiricInfluence(hunterToInfluence.name);
+                    ui.TellUser(g.GetItemByNameFromItemDeck(line).name);
                 } while (g.GetItemByNameFromItemDeck(line).name == "Unknown item");
-                ui.TellUser(g.GetItemByNameFromItemDeck(line).name);
                 g.MoveItemFromItemDeckToKnownItems(hunterToInfluence, g.GetItemByNameFromItemDeck(line));
             }
             for (int i = 0; i < hunterToInfluence.numberOfEvents; i++)
@@ -230,24 +228,28 @@ namespace DraculaHandler
                 do
                 {
                     line = ui.AskHunterToRevealEventByVampiricInfluence(hunterToInfluence.name);
+                    ui.TellUser(g.GetEventByNameFromEventDeck(line).name);
                 } while (g.GetEventByNameFromEventDeck(line).name == "Unknown event");
-                ui.TellUser(g.GetEventByNameFromEventDeck(line).name);
                 g.MoveEventFromEventDeckToKnownEvents(hunterToInfluence, g.GetEventByNameFromEventDeck(line));
             }
             string lineA;
             do
             {
                 lineA = ui.AskHunterWhichLocationTheyAreMovingToNextTurn(hunterToInfluence.name);
+                ui.TellUser(g.GetLocationFromName(lineA).name);
             } while (g.GetLocationFromName(lineA).name == "Unknown location");
             hunterToInfluence.destination = g.GetLocationFromName(lineA);
             ui.TellUser(hunterToInfluence.destination.name);
             hunterToInfluence.travelType = ui.AskHunterWhatTravelTypeForSpy(hunterToInfluence.name);
             ui.TellUser(hunterToInfluence.travelType);
+            Logger.WriteToDebugLog(hunterToInfluence.name + "'s next move recorded as " + hunterToInfluence.destination.name + " by " + hunterToInfluence.travelType);
         }
 
         private void PlayNightVisit(GameState g, UserInterface ui)
         {
+            
             Hunter hunterToVisit = logic.DecideWhoToNightVisit(g);
+            Logger.WriteToDebugLog("Playing Night Visit on " + hunterToVisit.name);
             ui.TellUser(hunterToVisit.name + " was visited by Dracula in the night and loses 2 health");
             hunterToVisit.health -= 2;
             g.HandlePossibleHunterDeath(ui);
@@ -255,8 +257,8 @@ namespace DraculaHandler
 
         private void PlayEvasion(GameState g, UserInterface ui)
         {
-            ui.TellUser("Dracula drew Evasion");
             Location locationToMoveTo = logic.DecideWhereToEvadeTo(g);
+            Logger.WriteToDebugLog("Moving to " + locationToMoveTo.name + " with Evasion");
             MoveByRoadOrSea(g, locationToMoveTo, ui);
             PlaceEncounterIfLegal(g, locationToMoveTo);
         }
@@ -348,30 +350,6 @@ namespace DraculaHandler
                 Logger.WriteToDebugLog("Dracula discarded " + cardToDiscard.name);
                 Logger.WriteToGameLog("Dracula discarded " + cardToDiscard.name);
                 ui.TellUser("Dracula discarded " + cardToDiscard.name);
-            }
-        }
-
-        public void ShowLocation(UserInterface ui)
-        {
-            ui.TellUser("Dracula is currently in: " + currentLocation.name);
-        }
-
-        public void ShowTrail(UserInterface ui)
-        {
-            for (int i = 0; i < trail.Count(); i++)
-            {
-                string powerName = "";
-                for (int j = 0; j < powers.Count(); j++)
-                {
-                    if (powers[j].positionInTrail == i)
-                    {
-                        if (trail[i].name != powers[j].name)
-                        {
-                            powerName = powerName + " with " + powers[j].name;
-                        }
-                    }
-                }
-                ui.TellUser(trail[i].name + powerName);
             }
         }
 
@@ -1007,25 +985,25 @@ namespace DraculaHandler
         {
             if (g.NameOfDraculaAlly() == "Quincey P. Morris")
             {
-                int hunterIndex = logic.DecideWhichHunterToAttackWithQuincey(g);
-                ui.TellUser("Dracula has chosen " + g.NameOfHunterAtIndex(hunterIndex) + " to affect with Quincey P. Morris");
-                switch (ui.GetHunterHolyItems(g.NameOfHunterAtIndex(hunterIndex))) {
+                Hunter victim = logic.DecideWhichHunterToAttackWithQuincey(g.GetHunters());
+                ui.TellUser("Dracula has chosen " + victim.name + " to affect with Quincey P. Morris");
+                switch (ui.GetHunterHolyItems(victim.name)) {
                     case 0:
-                        ui.TellUser(g.NameOfHunterAtIndex(hunterIndex) + " loses 1 health");
-                        g.AdjustHealthOfHunterAtIndex(hunterIndex, -1);
+                        ui.TellUser(victim.name + " loses 1 health");
+                        victim.health--;
                         g.HandlePossibleHunterDeath(ui);
                         break;
                     case 1:
-                        if (!g.HunterHasItemKnownToDracula(hunterIndex, "Crucifix"))
-                        {
-                            g.AddToHunterItemsKnownToDracula(hunterIndex, "Crucifix");
+                        if (victim.itemsKnownToDracula.FindIndex(item => item.name == "Crucifix") == -1)
+                        {   
+                            g.AddToHunterItemsKnownToDracula(victim, "Crucifix");
                         }
                         ui.TellUser("No effect from Quincey P. Morris");
                         break;
                     case 2:
-                        if (!g.HunterHasItemKnownToDracula(hunterIndex, "Heavenly Host"))
+                        if (victim.itemsKnownToDracula.FindIndex(item => item.name == "Heavenly Host") == -1)
                         {
-                            g.AddToHunterItemsKnownToDracula(hunterIndex, "Heavenly Host");
+                            g.AddToHunterItemsKnownToDracula(victim, "Heavenly Host");
                         }
                         ui.TellUser("No effect from Quincey P. Morris");
                         break;
@@ -1115,14 +1093,14 @@ namespace DraculaHandler
             return logic.DecideWhichCombatCardToPlay(huntersFigting, this, combatCards, hunterAllyName, result);
         }
 
-        internal Location DecideWhereToSendHunterWithBats(GameState gameState, Hunter hunter, UserInterface ui)
+        internal Location DecideWhereToSendHunterWithBats(GameState g, Hunter hunter, UserInterface ui)
         {
             List<Location> batsMoves = new List<Location>();
             foreach (Location loc in hunter.currentLocation.byRoad)
             {
                 batsMoves.Add(loc);
             }
-            return batsMoves[new Random().Next(0, batsMoves.Count())];
+            return logic.DecideWhereToSendHuntersWithBats(g, hunter, batsMoves);
         }
 
         internal void DoEscapeAsBatsMove(GameState g, UserInterface ui)
@@ -1136,12 +1114,12 @@ namespace DraculaHandler
                 }
             }
             possiblePowers.Clear();
-            string throwAway;
+            string throwAway; // declaring this only so that it can be fed into the DecideMove function; no purpose for it after that
             Location locationToMoveTo = logic.DecideMove(g, this, out throwAway);
             MoveByRoadOrSea(g, locationToMoveTo, ui);
         }
 
-        internal Event PlayEventCardAtStartOfHunterMovement(GameState g)
+        internal Event PlayControlStorms(GameState g)
         {
             return logic.DecideToPlayControlStorms(g, this);
         }
@@ -1217,6 +1195,7 @@ namespace DraculaHandler
                 else
                 {
                     Location locationToRemoveHost = logic.DecideWhichLocationToRemoveHeavenlyHostFrom(g);
+                    Logger.WriteToDebugLog("Dracula played Devilish Power to discard a Heavenly Host from " + locationToRemoveHost.name);
                     ui.TellUser("Dracula played Devilish Power to discard a Heavenly Host from " + locationToRemoveHost.name);
                     int hunterIndex = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                     if (hunterIndex > 0)
@@ -1233,6 +1212,7 @@ namespace DraculaHandler
             else
             {
                 ui.TellUser("Dracula played Devilish Power to discard the Hunters' Ally from play");
+                Logger.WriteToDebugLog("Dracula played Devilish Power to discard the Hunters' Ally from play");
                 int hunterIndex = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                 if (hunterIndex > 0)
                 {

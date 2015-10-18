@@ -590,7 +590,7 @@ namespace DraculaSimulator
 
         internal bool DraculaWillPlayControlStorms(int hunterIndex, UserInterface ui)
         {
-            Event draculaEventCard = dracula.PlayEventCardAtStartOfHunterMovement(this);
+            Event draculaEventCard = dracula.PlayControlStorms(this);
             if (draculaEventCard != null)
             {
                 switch (draculaEventCard.name)
@@ -1004,6 +1004,11 @@ namespace DraculaSimulator
                     dracula.MatureEncounters(this, ui);
                 }
             }
+        }
+
+        internal Hunter[] GetHunters()
+        {
+            return hunters;
         }
 
         internal void PlayHypnosis(UserInterface ui)
@@ -4200,7 +4205,7 @@ namespace DraculaSimulator
                 hunterPlayingCard = (hunterPlayingCard + 1) % 4;
             }
             CombatRoundResult roundResult = new CombatRoundResult();
-            roundResult = ResolveRoundOfCombat(huntersInCombat, enemyCombatCards, hunterBasicCards, roundResult, hunterMoved, ui);
+            roundResult = ResolveRoundOfCombat(huntersInCombat, enemyCombatCards, hunterBasicCards, roundResult, hunterMoved, enemyInCombat, ui);
             rageRounds--;
             if (rageRounds == 0)
             {
@@ -4239,7 +4244,7 @@ namespace DraculaSimulator
                         }
                     }
                 }
-                roundResult = ResolveRoundOfCombat(huntersInCombat, enemyCombatCards, hunterBasicCards, roundResult, hunterMoved, ui);
+                roundResult = ResolveRoundOfCombat(huntersInCombat, enemyCombatCards, hunterBasicCards, roundResult, hunterMoved, enemyInCombat, ui);
             }
             foreach (Hunter h in huntersInCombat)
             {
@@ -4333,7 +4338,7 @@ namespace DraculaSimulator
             ui.TellUser("Dracula played Trap");
         }
 
-        private CombatRoundResult ResolveRoundOfCombat(List<Hunter> huntersFighting, List<Item> combatCards, List<Item> hunterBasicCards, CombatRoundResult result, bool hunterMoved, UserInterface ui)
+        private CombatRoundResult ResolveRoundOfCombat(List<Hunter> huntersFighting, List<Item> combatCards, List<Item> hunterBasicCards, CombatRoundResult result, bool hunterMoved, int enemyType, UserInterface ui)
         {
             string targetHunterName;
             string newEnemyCardUsed = dracula.ChooseCombatCardAndTarget(huntersFighting, combatCards, result, NameOfHunterAlly(), out targetHunterName).name;
@@ -4371,7 +4376,7 @@ namespace DraculaSimulator
                 }
             }
             ui.TellUser("Enemy chose " + newEnemyCardUsed + " against " + targetHunterName);
-            if (NameOfHunterAlly() == "Sister Agatha")
+            if (NameOfHunterAlly() == "Sister Agatha" && enemyType == 6)
             {
                 if (newEnemyCardUsed == "Fangs" || newEnemyCardUsed == "Escape (Man)" || newEnemyCardUsed == "Escape (Bat)" || newEnemyCardUsed == "Escape (Mist)")
                 {
@@ -4991,9 +4996,9 @@ namespace DraculaSimulator
             return false;
         }
 
-        internal void AddToHunterItemsKnownToDracula(int hunterIndex, string p)
+        internal void AddToHunterItemsKnownToDracula(Hunter hunter, string p)
         {
-            hunters[hunterIndex].itemsKnownToDracula.Add(GetItemByNameFromItemDeck(p));
+            hunter.itemsKnownToDracula.Add(GetItemByNameFromItemDeck(p));
             itemDeck.Remove(GetItemByNameFromItemDeck(p));
         }
     }
