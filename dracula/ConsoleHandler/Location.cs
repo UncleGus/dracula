@@ -3,48 +3,46 @@ using EncounterHandler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace LocationHandler
 {
-    public class Location
+    public class LocationDetail
     {
-        public string name;
-        public string abbreviation;
-        public LocationType type;
-        public bool isEastern;
-        public List<Location> byRoad;
-        public List<Location> byTrain;
-        public List<Location> bySea;
-        public bool isRevealed;
-        public List<Encounter> encounters;
-        public bool hasHost = false;
-        public bool isConsecrated = false;
-        public int turnsUntilStormSubsides;
+        public Location Index;
+        public string Name;
+        public string Abbreviation;
+        public LocationType Type;
+        public bool IsEastern;
+        public List<Location> ByRoad;
+        public List<Location> ByTrain;
+        public List<Location> BySea;
+        public List<Encounter> Encounters;
 
-        public Location()
+        public LocationDetail()
         {
-            byRoad = new List<Location>();
-            byTrain = new List<Location>();
-            bySea = new List<Location>();
-            encounters = new List<Encounter>();
-            isRevealed = false;
-            turnsUntilStormSubsides = 0;
+            ByRoad = new List<Location>();
+            ByTrain = new List<Location>();
+            BySea = new List<Location>();
+            Encounters = new List<Encounter>();
         }
 
+        // move to Map
         public bool IsPort()
         {
-            return bySea.Count() > 0 && (type == LocationType.Town || type == LocationType.City);
+            return BySea.Count() > 0 && (Type == LocationType.Town || Type == LocationType.City);
         }
 
-        public void DrawLocation()
+        // move to UserInterface
+        public void DrawLocation(GameState g)
         {
-            if (type == LocationType.Sea)
+            if (Type == LocationType.Sea)
             {
                 Console.ForegroundColor = ConsoleColor.Cyan;
             }
-            else if (type == LocationType.Power)
+            else if (Type == LocationType.Power)
             {
                 Console.ForegroundColor = ConsoleColor.DarkGreen;
             }
@@ -53,9 +51,9 @@ namespace LocationHandler
                 Console.ForegroundColor = ConsoleColor.Red;
             }
 
-            if (isRevealed)
+            if (g.RevealedLocations.Contains(Index))
             {
-                Console.Write(abbreviation + " ");
+                Console.Write(Abbreviation + " ");
             }
             else
             {
@@ -64,18 +62,19 @@ namespace LocationHandler
             Console.ResetColor();
         }
 
+        // move to UserInterface
         public void DrawEncounter()
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            if (encounters.Count() > 0)
+            if (Encounters.Count() > 0)
             {
-                if (encounters[0].isRevealed)
+                if (Encounters[0].isRevealed)
                 {
-                    Console.Write(encounters[0].abbreviation + " ");
+                    Console.Write(Encounters[0].abbreviation + " ");
                 }
                 else
                 {
-                        Console.Write(" ■  ");
+                    Console.Write(" ■  ");
                 }
             }
             else
@@ -84,14 +83,15 @@ namespace LocationHandler
             }
         }
 
+        // move to UserInterface
         public void DrawEncounter(bool drawingSecondEncounter)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            if (encounters.Count() > 1)
+            if (Encounters.Count() > 1)
             {
-                if (encounters[1].isRevealed)
+                if (Encounters[1].isRevealed)
                 {
-                    Console.Write(encounters[1].abbreviation + " ");
+                    Console.Write(Encounters[1].abbreviation + " ");
                 }
                 else
                 {
@@ -115,64 +115,78 @@ namespace LocationHandler
         Power
     }
 
-    //public static class LocationHelper
-    //{
-    //    public static void ShowLocationDetails(Location location)
-    //    {
-    //        Console.WriteLine("Name: " + location.name + " (" + location.abbreviation + ")");
-    //        Console.WriteLine("Type: " + location.type);
-    //        if (location.type != LocationType.Sea)
-    //        {
-    //            Console.WriteLine("Realm: " + (location.isEastern ? "East" : "West"));
-    //        }
-    //        if (location.byRoad.Count() > 0)
-    //        {
-    //            Console.WriteLine("Connected by road to:");
-    //            for (int i = 0; i < location.byRoad.Count(); i++)
-    //            {
-    //                Console.WriteLine("    " + location.byRoad[i].name);
-    //            }
-    //        }
-    //        if (location.byTrain.Count() > 0)
-    //        {
-
-    //            Console.WriteLine("Connected by train to:");
-    //            for (int i = 0; i < location.byTrain.Count(); i++)
-    //            {
-    //                Console.WriteLine("    " + location.byTrain[i].name);
-    //            }
-    //        }
-    //        if (location.bySea.Count() > 0)
-    //        {
-
-    //            Console.WriteLine("Connected by sea to:");
-    //            for (int i = 0; i < location.bySea.Count(); i++)
-    //            {
-    //                Console.WriteLine("    " + location.bySea[i].name);
-    //            }
-    //        }
-    //        if (location.encounters.Count() > 0)
-    //        {
-    //            Console.WriteLine("Encounters here:");
-    //            for (int i = 0; i < location.encounters.Count(); i++)
-    //            {
-    //                Console.WriteLine("    " + location.encounters[i].name);
-    //            }
-    //        }
-    //    }
-
-    //    public static void RevealLocation(GameState g, int trailIndex, UserInterface ui)
-    //    {
-    //        try
-    //        {
-    //            g.RevealLocationAtTrailIndex(trailIndex, ui);
-    //        }
-    //        catch (ArgumentOutOfRangeException)
-    //        { }
-    //    }
-
-    //    public static void RevealEncounter(List<Location> trail, int trailIndex)
-    //    {
-    //    }
-    //}
+    public enum Location
+    {
+        adriaticsea,
+        alicante,
+        amsterdam,
+        athens,
+        atlanticocean,
+        barcelona,
+        bari,
+        bayofbiscay,
+        belgrade,
+        berlin,
+        blacksea,
+        bordeaux,
+        brussels,
+        bucharest,
+        budapest,
+        cadiz,
+        cagliari,
+        castledracula,
+        clermontferrand,
+        cologne,
+        constanta,
+        dublin,
+        edinburgh,
+        englishchannel,
+        florence,
+        frankfurt,
+        galatz,
+        galway,
+        geneva,
+        genoa,
+        granada,
+        hamburg,
+        ioniansea,
+        irishsea,
+        klausenburg,
+        lehavre,
+        leipzig,
+        lisbon,
+        liverpool,
+        london,
+        madrid,
+        manchester,
+        marseilles,
+        mediterraneansea,
+        milan,
+        munich,
+        nantes,
+        naples,
+        northsea,
+        nuremburg,
+        paris,
+        plymouth,
+        prague,
+        rome,
+        salonica,
+        santander,
+        saragossa,
+        sarajevo,
+        sofia,
+        stjosephandstmary,
+        strasbourg,
+        swansea,
+        szeged,
+        toulouse,
+        tyrrheniansea,
+        valona,
+        varna,
+        venice,
+        vienna,
+        zagreb,
+        zurich
+    }
 }

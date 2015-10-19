@@ -6,240 +6,291 @@ using LocationHandler;
 using LogHandler;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace DraculaSimulator
 {
-    [Serializable]
+    [DataContract]
     public class GameState
     {
-        private Dracula dracula;
-        private Hunter[] hunters = new Hunter[4];
-        private List<Location> map = new List<Location>();
-        private List<Encounter> encounterPool = new List<Encounter>();
-        private List<Encounter> encounterLimbo = new List<Encounter>();
-        private List<Event> eventDeck = new List<Event>();
-        private List<Event> eventDiscard = new List<Event>();
-        private List<Item> itemDeck = new List<Item>();
-        private List<Item> itemDiscard = new List<Item>();
-        private Event draculaAlly;
-        private Event hunterAlly;
-        private int time;
-        private string[] timesOfDay;
-        private int resolve;
-        private int vampireTracker;
-        private Roadblock roadblockCounter = new Roadblock();
+        [DataMember]
+        public Dracula Dracula { get; set; }
+        [DataMember]
+        public Hunter[] Hunters { get; set; }
+        //private List<LocationDetail> map;
+        //public List<LocationDetail> Map
+        //{
+        //    get
+        //    {
+        //        if (map == null)
+        //        {
+        //            map = CreateMap();
+        //        }
+        //        return map;
+        //    }
+        //}
+        [DataMember]
+        public List<Encounter> EncounterPool { get; set; }
+        [DataMember]
+        public List<Encounter> EncounterLimbo { get; set; }
+        [DataMember]
+        public List<Event> EventDeck { get; set; }
+        [DataMember]
+        public List<Event> EventDiscard { get; set; }
+        [DataMember]
+        public List<Item> ItemDeck { get; set; }
+        [DataMember]
+        public List<Item> ItemDiscard { get; set; }
+        [DataMember]
+        public Event DraculaAlly { get; set; }
+        [DataMember]
+        public Event HunterAlly { get; set; }
+        [DataMember]
+        public int TimeIndex { get; set; }
+        [DataMember]
+        public string[] TimesOfDay { get; set; }
+        [DataMember]
+        public int Resolve { get; set; }
+        [DataMember]
+        public int VampirePointTracker { get; set; }
+        [DataMember]
+        public Roadblock RoadblockCounter { get; set; }
+        [DataMember]
+        public Location HeavenlyHostLocationA { get; set; }
+        [DataMember]
+        public Location HeavenlyHostLocationB { get; set; }
+        [DataMember]
+        public List<Location> RevealedLocations { get; set; }
 
         public GameState()
         {
-            hunters[0] = new Hunter("Lord Godalming", 12, 0, 2);
-            hunters[1] = new Hunter("Dr. Seward", 10, 0, 2);
-            hunters[2] = new Hunter("Van Helsing", 8, 0, 3);
-            hunters[3] = new Hunter("Mina Harker", 8, 1, 2);
+            Hunters = new Hunter[4];
+            Hunters[0] = new Hunter(0, "Lord Godalming", 12, 0, 2);
+            Hunters[1] = new Hunter(1, "Dr. Seward", 10, 0, 2);
+            Hunters[2] = new Hunter(2, "Van Helsing", 8, 0, 3);
+            Hunters[3] = new Hunter(3, "Mina Harker", 8, 1, 2);
 
-            resolve = -1;
-            vampireTracker = -1;
+            Resolve = -1;
+            VampirePointTracker = -1;
 
-            time = -1;
-            timesOfDay = new string[6] { "Dawn", "Noon", "Dusk", "Twilight", "Midnight", "Small Hours" };
+            TimeIndex = -1;
+            TimesOfDay = new string[6] { "Dawn", "Noon", "Dusk", "Twilight", "Midnight", "Small Hours" };
 
-            SetUpMap();
+            EncounterPool = new List<Encounter>();
+            EncounterLimbo = new List<Encounter>();
             SetUpEncounters();
+
+            EventDeck = new List<Event>();
+            EventDiscard = new List<Event>();
             SetUpEvents();
+
+            ItemDeck = new List<Item>();
+            ItemDiscard = new List<Item>();
             SetUpItems();
 
-            dracula = new Dracula();
+            Dracula = new Dracula();
         }
 
         private void SetUpItems()
         {
-            itemDeck.Add(new Item("Crucifix"));
-            itemDeck.Add(new Item("Crucifix"));
-            itemDeck.Add(new Item("Crucifix"));
-            itemDeck.Add(new Item("Dogs"));
-            itemDeck.Add(new Item("Dogs"));
-            itemDeck.Add(new Item("Fast Horse"));
-            itemDeck.Add(new Item("Fast Horse"));
-            itemDeck.Add(new Item("Fast Horse"));
-            itemDeck.Add(new Item("Garlic"));
-            itemDeck.Add(new Item("Garlic"));
-            itemDeck.Add(new Item("Garlic"));
-            itemDeck.Add(new Item("Garlic"));
-            itemDeck.Add(new Item("Heavenly Host"));
-            itemDeck.Add(new Item("Heavenly Host"));
-            itemDeck.Add(new Item("Holy Water"));
-            itemDeck.Add(new Item("Holy Water"));
-            itemDeck.Add(new Item("Holy Water"));
-            itemDeck.Add(new Item("Knife"));
-            itemDeck.Add(new Item("Knife"));
-            itemDeck.Add(new Item("Knife"));
-            itemDeck.Add(new Item("Knife"));
-            itemDeck.Add(new Item("Knife"));
-            itemDeck.Add(new Item("Local Rumours"));
-            itemDeck.Add(new Item("Local Rumours"));
-            itemDeck.Add(new Item("Pistol"));
-            itemDeck.Add(new Item("Pistol"));
-            itemDeck.Add(new Item("Pistol"));
-            itemDeck.Add(new Item("Pistol"));
-            itemDeck.Add(new Item("Pistol"));
-            itemDeck.Add(new Item("Sacred Bullets"));
-            itemDeck.Add(new Item("Sacred Bullets"));
-            itemDeck.Add(new Item("Sacred Bullets"));
-            itemDeck.Add(new Item("Stake"));
-            itemDeck.Add(new Item("Stake"));
-            itemDeck.Add(new Item("Stake"));
-            itemDeck.Add(new Item("Stake"));
-            itemDeck.Add(new Item("Rifle"));
-            itemDeck.Add(new Item("Rifle"));
-            itemDeck.Add(new Item("Rifle"));
-            itemDeck.Add(new Item("Rifle"));
+            ItemDeck.Add(new Item("Crucifix"));
+            ItemDeck.Add(new Item("Crucifix"));
+            ItemDeck.Add(new Item("Crucifix"));
+            ItemDeck.Add(new Item("Dogs"));
+            ItemDeck.Add(new Item("Dogs"));
+            ItemDeck.Add(new Item("Fast Horse"));
+            ItemDeck.Add(new Item("Fast Horse"));
+            ItemDeck.Add(new Item("Fast Horse"));
+            ItemDeck.Add(new Item("Garlic"));
+            ItemDeck.Add(new Item("Garlic"));
+            ItemDeck.Add(new Item("Garlic"));
+            ItemDeck.Add(new Item("Garlic"));
+            ItemDeck.Add(new Item("Heavenly Host"));
+            ItemDeck.Add(new Item("Heavenly Host"));
+            ItemDeck.Add(new Item("Holy Water"));
+            ItemDeck.Add(new Item("Holy Water"));
+            ItemDeck.Add(new Item("Holy Water"));
+            ItemDeck.Add(new Item("Knife"));
+            ItemDeck.Add(new Item("Knife"));
+            ItemDeck.Add(new Item("Knife"));
+            ItemDeck.Add(new Item("Knife"));
+            ItemDeck.Add(new Item("Knife"));
+            ItemDeck.Add(new Item("Local Rumours"));
+            ItemDeck.Add(new Item("Local Rumours"));
+            ItemDeck.Add(new Item("Pistol"));
+            ItemDeck.Add(new Item("Pistol"));
+            ItemDeck.Add(new Item("Pistol"));
+            ItemDeck.Add(new Item("Pistol"));
+            ItemDeck.Add(new Item("Pistol"));
+            ItemDeck.Add(new Item("Sacred Bullets"));
+            ItemDeck.Add(new Item("Sacred Bullets"));
+            ItemDeck.Add(new Item("Sacred Bullets"));
+            ItemDeck.Add(new Item("Stake"));
+            ItemDeck.Add(new Item("Stake"));
+            ItemDeck.Add(new Item("Stake"));
+            ItemDeck.Add(new Item("Stake"));
+            ItemDeck.Add(new Item("Rifle"));
+            ItemDeck.Add(new Item("Rifle"));
+            ItemDeck.Add(new Item("Rifle"));
+            ItemDeck.Add(new Item("Rifle"));
         }
 
-        internal void AddHunterAToHunterBGroup(int hunterToAdd, int hunterIndex)
-        {
-            hunters[hunterIndex].huntersInGroup.Add(hunters[hunterToAdd]);
-        }
+        // remove
+        //internal void AddHunterAToHunterBGroup(int hunterToAdd, int hunterIndex)
+        //{
+        //    Hunters[hunterIndex].HuntersInGroup.Add(Hunters[hunterToAdd]);
+        //}
 
-        internal void RemoveHunterAFromHunterBGroup(int hunterToAdd, int hunterIndex)
-        {
-            hunters[hunterIndex].huntersInGroup.Remove(hunters[hunterToAdd]);
-        }
+        // remove
+        //internal void RemoveHunterAFromHunterBGroup(int hunterToAdd, int hunterIndex)
+        //{
+        //    Hunters[hunterIndex].HuntersInGroup.Remove(Hunters[hunterToAdd]);
+        //}
 
-        internal bool HunterAIsInHunterBGroup(int hunterToAdd, int hunterIndex)
-        {
-            return hunters[hunterIndex].huntersInGroup.Contains(hunters[hunterToAdd]);
-        }
+        // remove
+        //internal bool HunterAIsInHunterBGroup(int hunterToAdd, int hunterIndex)
+        //{
+        //    return Hunters[hunterIndex].HuntersInGroup.Contains(Hunters[hunterToAdd]);
+        //}
 
-        internal int GetHunterToAddToGroup(GameState g, int hunterIndex, UserInterface ui)
-        {
-            int hunterToAdd = ui.GetHunterToAddToGroup(hunters[hunterIndex].name);
-            if (hunterToAdd != -2 && hunterToAdd < hunterIndex)
-            {
-                ui.TellUser(hunters[hunterToAdd].name + " cannot join " + hunters[hunterIndex].name + "'s group, instead " + hunters[hunterIndex].name + " should be added to " + hunters[hunterToAdd].name + "'s group");
-                return -2;
-            }
-            return hunterToAdd;
-        }
+        // remove
+        //internal int GetHunterToAddToGroup(GameState g, int hunterIndex, UserInterface ui)
+        //{
+        //    int hunterToAdd = ui.GetHunterToAddToGroup(Hunters[hunterIndex].Name);
+        //    if (hunterToAdd != -2 && hunterToAdd < hunterIndex)
+        //    {
+        //        ui.TellUser(Hunters[hunterToAdd].Name + " cannot join " + Hunters[hunterIndex].Name + "'s group, instead " + Hunters[hunterIndex].Name + " should be added to " + Hunters[hunterToAdd].Name + "'s group");
+        //        return -2;
+        //    }
+        //    return hunterToAdd;
+        //}
 
         private void SetUpEvents()
         {
-            eventDeck.Add(new Event("Rufus Smith", false, EventType.Ally));
-            eventDeck.Add(new Event("Jonathan Harker", false, EventType.Ally));
-            eventDeck.Add(new Event("Sister Agatha", false, EventType.Ally));
-            eventDeck.Add(new Event("Heroic Leap", false, EventType.Keep));
-            eventDeck.Add(new Event("Great Strength", false, EventType.Keep));
-            eventDeck.Add(new Event("Money Trail", false, EventType.Keep));
-            eventDeck.Add(new Event("Sense of Emergency", false, EventType.Keep));
-            eventDeck.Add(new Event("Sense of Emergency", false, EventType.Keep));
-            eventDeck.Add(new Event("Vampire Lair", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Long Day", false, EventType.Keep));
-            eventDeck.Add(new Event("Long Day", false, EventType.Keep));
-            eventDeck.Add(new Event("Mystic Research", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Mystic Research", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Advance Planning", false, EventType.Keep));
-            eventDeck.Add(new Event("Advance Planning", false, EventType.Keep));
-            eventDeck.Add(new Event("Advance Planning", false, EventType.Keep));
-            eventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Re-Equip", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Re-Equip", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Re-Equip", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Consecrated Ground", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Telegraph Ahead", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Telegraph Ahead", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Hypnosis", false, EventType.Keep));
-            eventDeck.Add(new Event("Hypnosis", false, EventType.Keep));
-            eventDeck.Add(new Event("Stormy Seas", false, EventType.Keep));
-            eventDeck.Add(new Event("Surprising Return", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Surprising Return", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Good Luck", false, EventType.Keep));
-            eventDeck.Add(new Event("Good Luck", false, EventType.Keep));
-            eventDeck.Add(new Event("Blood Transfusion", false, EventType.Keep));
-            eventDeck.Add(new Event("Secret Weapon", false, EventType.Keep));
-            eventDeck.Add(new Event("Secret Weapon", false, EventType.Keep));
-            eventDeck.Add(new Event("Forewarned", false, EventType.Keep));
-            eventDeck.Add(new Event("Forewarned", false, EventType.Keep));
-            eventDeck.Add(new Event("Forewarned", false, EventType.Keep));
-            eventDeck.Add(new Event("Chartered Carriage", false, EventType.Keep));
-            eventDeck.Add(new Event("Chartered Carriage", false, EventType.Keep));
-            eventDeck.Add(new Event("Chartered Carriage", false, EventType.Keep));
-            eventDeck.Add(new Event("Excellent Weather", false, EventType.Keep));
-            eventDeck.Add(new Event("Excellent Weather", false, EventType.Keep));
-            eventDeck.Add(new Event("Escape Route", false, EventType.Keep));
-            eventDeck.Add(new Event("Escape Route", false, EventType.Keep));
-            eventDeck.Add(new Event("Hired Scouts", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Hired Scouts", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Hired Scouts", false, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Dracula's Brides", true, EventType.Ally));
-            eventDeck.Add(new Event("Immanuel Hildesheim", true, EventType.Ally));
-            eventDeck.Add(new Event("Quincey P. Morris", true, EventType.Ally));
-            eventDeck.Add(new Event("Roadblock", true, EventType.Keep));
-            eventDeck.Add(new Event("Unearthly Swiftness", true, EventType.Keep));
-            eventDeck.Add(new Event("Time Runs Short", true, EventType.Keep));
-            eventDeck.Add(new Event("Customs Search", true, EventType.Keep));
-            eventDeck.Add(new Event("Devilish Power", true, EventType.Keep));
-            eventDeck.Add(new Event("Devilish Power", true, EventType.Keep));
-            eventDeck.Add(new Event("Vampiric Influence", true, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Vampiric Influence", true, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Night Visit", true, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Evasion", true, EventType.PlayImmediately));
-            eventDeck.Add(new Event("Wild Horses", true, EventType.Keep));
-            eventDeck.Add(new Event("False Tip-off", true, EventType.Keep));
-            eventDeck.Add(new Event("False Tip-off", true, EventType.Keep));
-            eventDeck.Add(new Event("Sensationalist Press", true, EventType.Keep));
-            eventDeck.Add(new Event("Rage", true, EventType.Keep));
-            eventDeck.Add(new Event("Seduction", true, EventType.Keep));
-            eventDeck.Add(new Event("Control Storms", true, EventType.Keep));
-            eventDeck.Add(new Event("Relentless Minion", true, EventType.Keep));
-            eventDeck.Add(new Event("Relentless Minion", true, EventType.Keep));
-            eventDeck.Add(new Event("Trap", true, EventType.Keep));
-            eventDeck.Add(new Event("Trap", true, EventType.Keep));
-            eventDeck.Add(new Event("Trap", true, EventType.Keep));
+            EventDeck.Add(new Event("Rufus Smith", false, EventType.Ally));
+            EventDeck.Add(new Event("Jonathan Harker", false, EventType.Ally));
+            EventDeck.Add(new Event("Sister Agatha", false, EventType.Ally));
+            EventDeck.Add(new Event("Heroic Leap", false, EventType.Keep));
+            EventDeck.Add(new Event("Great Strength", false, EventType.Keep));
+            EventDeck.Add(new Event("Money Trail", false, EventType.Keep));
+            EventDeck.Add(new Event("Sense of Emergency", false, EventType.Keep));
+            EventDeck.Add(new Event("Sense of Emergency", false, EventType.Keep));
+            EventDeck.Add(new Event("Vampire Lair", false, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Long Day", false, EventType.Keep));
+            EventDeck.Add(new Event("Long Day", false, EventType.Keep));
+            EventDeck.Add(new Event("Mystic Research", false, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Mystic Research", false, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Advance Planning", false, EventType.Keep));
+            EventDeck.Add(new Event("Advance Planning", false, EventType.Keep));
+            EventDeck.Add(new Event("Advance Planning", false, EventType.Keep));
+            EventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Re-Equip", false, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Re-Equip", false, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Re-Equip", false, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Consecrated Ground", false, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Telegraph Ahead", false, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Telegraph Ahead", false, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Hypnosis", false, EventType.Keep));
+            EventDeck.Add(new Event("Hypnosis", false, EventType.Keep));
+            EventDeck.Add(new Event("Stormy Seas", false, EventType.Keep));
+            EventDeck.Add(new Event("Surprising Return", false, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Surprising Return", false, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Good Luck", false, EventType.Keep));
+            EventDeck.Add(new Event("Good Luck", false, EventType.Keep));
+            EventDeck.Add(new Event("Blood Transfusion", false, EventType.Keep));
+            EventDeck.Add(new Event("Secret Weapon", false, EventType.Keep));
+            EventDeck.Add(new Event("Secret Weapon", false, EventType.Keep));
+            EventDeck.Add(new Event("Forewarned", false, EventType.Keep));
+            EventDeck.Add(new Event("Forewarned", false, EventType.Keep));
+            EventDeck.Add(new Event("Forewarned", false, EventType.Keep));
+            EventDeck.Add(new Event("Chartered Carriage", false, EventType.Keep));
+            EventDeck.Add(new Event("Chartered Carriage", false, EventType.Keep));
+            EventDeck.Add(new Event("Chartered Carriage", false, EventType.Keep));
+            EventDeck.Add(new Event("Excellent Weather", false, EventType.Keep));
+            EventDeck.Add(new Event("Excellent Weather", false, EventType.Keep));
+            EventDeck.Add(new Event("Escape Route", false, EventType.Keep));
+            EventDeck.Add(new Event("Escape Route", false, EventType.Keep));
+            EventDeck.Add(new Event("Hired Scouts", false, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Hired Scouts", false, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Hired Scouts", false, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Dracula's Brides", true, EventType.Ally));
+            EventDeck.Add(new Event("Immanuel Hildesheim", true, EventType.Ally));
+            EventDeck.Add(new Event("Quincey P. Morris", true, EventType.Ally));
+            EventDeck.Add(new Event("Roadblock", true, EventType.Keep));
+            EventDeck.Add(new Event("Unearthly Swiftness", true, EventType.Keep));
+            EventDeck.Add(new Event("Time Runs Short", true, EventType.Keep));
+            EventDeck.Add(new Event("Customs Search", true, EventType.Keep));
+            EventDeck.Add(new Event("Devilish Power", true, EventType.Keep));
+            EventDeck.Add(new Event("Devilish Power", true, EventType.Keep));
+            EventDeck.Add(new Event("Vampiric Influence", true, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Vampiric Influence", true, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Night Visit", true, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Evasion", true, EventType.PlayImmediately));
+            EventDeck.Add(new Event("Wild Horses", true, EventType.Keep));
+            EventDeck.Add(new Event("False Tip-off", true, EventType.Keep));
+            EventDeck.Add(new Event("False Tip-off", true, EventType.Keep));
+            EventDeck.Add(new Event("Sensationalist Press", true, EventType.Keep));
+            EventDeck.Add(new Event("Rage", true, EventType.Keep));
+            EventDeck.Add(new Event("Seduction", true, EventType.Keep));
+            EventDeck.Add(new Event("Control Storms", true, EventType.Keep));
+            EventDeck.Add(new Event("Relentless Minion", true, EventType.Keep));
+            EventDeck.Add(new Event("Relentless Minion", true, EventType.Keep));
+            EventDeck.Add(new Event("Trap", true, EventType.Keep));
+            EventDeck.Add(new Event("Trap", true, EventType.Keep));
+            EventDeck.Add(new Event("Trap", true, EventType.Keep));
         }
 
-        internal void MoveEventFromEventDeckToKnownEvents(Hunter hunterToInfluence, Event e)
-        {
-            eventDeck.Remove(e);
-            hunterToInfluence.eventsKnownToDracula.Add(e);
-        }
+        // remove
+        //internal void MoveEventFromEventDeckToKnownEvents(Hunter hunterToInfluence, Event e)
+        //{
+        //    EventDeck.Remove(e);
+        //    hunterToInfluence.EventsKnownToDracula.Add(e);
+        //}
 
-        internal void MoveItemFromItemDeckToKnownItems(Hunter hunterToInfluence, Item item)
-        {
-            itemDeck.Remove(item);
-            hunterToInfluence.itemsKnownToDracula.Add(item);
-        }
+        // remove
+        //internal void MoveItemFromItemDeckToKnownItems(Hunter hunterToInfluence, Item item)
+        //{
+        //    ItemDeck.Remove(item);
+        //    hunterToInfluence.ItemsKnownToDracula.Add(item);
+        //}
 
-        internal void MoveEventFromKnownEventsToEventDeck(Hunter hunterToInfluence, Event e)
-        {
-            eventDeck.Add(e);
-            hunterToInfluence.eventsKnownToDracula.Remove(e);
-        }
+        // remove
+        //internal void MoveEventFromKnownEventsToEventDeck(Hunter hunterToInfluence, Event e)
+        //{
+        //    EventDeck.Add(e);
+        //    hunterToInfluence.EventsKnownToDracula.Remove(e);
+        //}
 
-        internal void MoveItemFromKnownItemsToItemDeck(Hunter hunterToInfluence, Item item)
-        {
-            itemDeck.Add(item);
-            hunterToInfluence.itemsKnownToDracula.Remove(item);
-        }
+        // remove
+        //internal void MoveItemFromKnownItemsToItemDeck(Hunter hunterToInfluence, Item item)
+        //{
+        //    ItemDeck.Add(item);
+        //    hunterToInfluence.ItemsKnownToDracula.Remove(item);
+        //}
 
-        internal void GetHunterGroupMemberNamesAtHunterIndex(int hunterIndex, string[] names)
-        {
-            for (int i = 0; i < hunters[hunterIndex].huntersInGroup.Count(); i++)
-            {
-                names[i] = hunters[hunterIndex].huntersInGroup[i].name;
-            }
-        }
+        // remove
+        //internal void GetHunterGroupMemberNamesAtHunterIndex(int hunterIndex, string[] names)
+        //{
+        //    for (int i = 0; i < Hunters[hunterIndex].HuntersInGroup.Count(); i++)
+        //    {
+        //        names[i] = Hunters[hunterIndex].HuntersInGroup[i].Name;
+        //    }
+        //}
 
-        internal void SearchWithHunterAtIndex(int hunterIndex, Location location, UserInterface ui)
+        internal void SearchWithHunterAtIndex(Hunter hunter, Map map, Location location, UserInterface ui)
         {
-            if ((LocationIsInTrail(location) || LocationIsInCatacombs(location)) && location.type != LocationType.Sea)
+            if ((Dracula.LocationIsInTrail(location) || Dracula.LocationIsInCatacombs(location)) && map.LocationDetails(location).Type != LocationType.Sea)
             {
                 Logger.WriteToDebugLog("Hunter moved to a location that Dracula has visited");
-                if (location == dracula.currentLocation)
+                if (location == Dracula.CurrentLocation)
                 {
                     ui.TellUser("Dracula is here!");
                 }
@@ -247,23 +298,23 @@ namespace DraculaSimulator
                 {
                     ui.TellUser("Search reveals evidence of Dracula's visit");
                 }
-                location.isRevealed = true;
-                bool canFightDracula = ResolveEncountersAtLocation(hunters[hunterIndex], location, ui);
-                if (location == dracula.currentLocation && canFightDracula)
+                RevealedLocations.Add(location);
+                bool canFightDracula = ResolveEncountersAtLocation(hunter, location, ui);
+                if (location == Dracula.CurrentLocation && canFightDracula)
                 {
                     ResolveCombat(hunterIndex, 1, true, ui);
                 }
             }
-            else if (location.type != LocationType.Hospital && location.type != LocationType.Sea && location.type != LocationType.Castle)
+            else if (location.Type != LocationType.Hospital && location.Type != LocationType.Sea && location.Type != LocationType.Castle)
             {
-                ui.TellUser("Search reveals nothing in " + location.name);
+                ui.TellUser("Search reveals nothing in " + location.Name);
             }
         }
 
-        private bool ResolveEncountersAtLocation(Hunter hunter, Location location, UserInterface ui)
+        private bool ResolveEncountersAtLocation(Hunter hunter, Map map, Location location, UserInterface ui)
         {
-            dracula.OrderEncounters(hunter, location);
-            foreach (Encounter enc in location.encounters)
+            Dracula.OrderEncounters(hunter, location);
+            foreach (Encounter enc in map.LocationDetails(location).Encounters)
             {
                 enc.isRevealed = true;
                 ui.TellUser(enc.name + " is revealed");
@@ -276,29 +327,29 @@ namespace DraculaSimulator
             Encounter secondEncounter = null;
 
 
-            if (location.encounters.Count() > 0)
+            if (map.LocationDetails(location).Encounters.Count() > 0)
             {
-                firstEncounter = location.encounters.First();
+                firstEncounter = map.LocationDetails(location).Encounters.First();
             }
-            if (location.encounters.Count() > 1)
+            if (map.LocationDetails(location).Encounters.Count() > 1)
             {
-                secondEncounter = location.encounters[1];
+                secondEncounter = map.LocationDetails(location).Encounters[1];
             }
             if (firstEncounter != null)
             {
                 bool encounterCancelled = false;
-                foreach (Hunter h in hunters)
+                foreach (Hunter h in Hunters)
                 {
                     int hunterIndex = IndexOfHunter(h);
-                    if (h.currentLocation == location)
+                    if (h.CurrentLocation == location)
                     {
-                        if (ui.AskIfHunterIsPlayingSecretWeapon(h.name))
+                        if (ui.AskIfHunterIsPlayingSecretWeapon(h.Name))
                         {
-                            
+
                             DiscardEventFromHunterAtIndex("Secret Weapon", hunterIndex, ui);
-                            Logger.WriteToDebugLog(h.name + " played Secret Weapon");
-                            Logger.WriteToGameLog(h.name + " played Secret Weapon");
-                            Event draculaEventCardA = dracula.WillPlayDevilishPower(this, ui);
+                            Logger.WriteToDebugLog(h.Name + " played Secret Weapon");
+                            Logger.WriteToGameLog(h.Name + " played Secret Weapon");
+                            Event draculaEventCardA = Dracula.WillPlayDevilishPower(this, ui);
                             bool eventIsCancelled = false;
                             if (draculaEventCardA != null)
                             {
@@ -326,9 +377,9 @@ namespace DraculaSimulator
                             }
                         }
                         Event draculaEventCard;
-                        if (ui.AskIfHunterIsPlayingForeWarned(h.name))
+                        if (ui.AskIfHunterIsPlayingForeWarned(h.Name))
                         {
-                            draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                            draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
                             bool eventIsCancelled = false;
                             if (draculaEventCard != null)
                             {
@@ -354,7 +405,7 @@ namespace DraculaSimulator
                             {
                                 PlayForewarnedBeforeEncounter(hunterIndex, ui);
                                 encounterCancelled = true;
-                             }
+                            }
                         }
                     }
                 }
@@ -369,31 +420,31 @@ namespace DraculaSimulator
                 }
                 if (discardEncounter)
                 {
-                    location.encounters.Remove(firstEncounter);
-                    encounterPool.Add(firstEncounter);
+                    map.LocationDetails(location).Encounters.Remove(firstEncounter);
+                    EncounterPool.Add(firstEncounter);
                     firstEncounter.isRevealed = false;
                 }
                 else if (firstEncounter.name == "Bats" || firstEncounter.name == "Fog")
                 {
-                    encounterLimbo.Add(firstEncounter);
-                    location.encounters.Remove(firstEncounter);
+                    EncounterLimbo.Add(firstEncounter);
+                    map.LocationDetails(location).Encounters.Remove(firstEncounter);
                 }
             }
             if (secondEncounter != null)
             {
                 bool encounterCancelled = false;
-                foreach (Hunter h in hunters)
+                foreach (Hunter h in Hunters)
                 {
                     int hunterIndex = IndexOfHunter(h);
-                    if (h.currentLocation == location)
+                    if (h.CurrentLocation == location)
                     {
-                        if (ui.AskIfHunterIsPlayingSecretWeapon(h.name))
+                        if (ui.AskIfHunterIsPlayingSecretWeapon(h.Name))
                         {
 
                             DiscardEventFromHunterAtIndex("Secret Weapon", hunterIndex, ui);
-                            Logger.WriteToDebugLog(h.name + " played Secret Weapon");
-                            Logger.WriteToGameLog(h.name + " played Secret Weapon");
-                            Event draculaEventCardA = dracula.WillPlayDevilishPower(this, ui);
+                            Logger.WriteToDebugLog(h.Name + " played Secret Weapon");
+                            Logger.WriteToGameLog(h.Name + " played Secret Weapon");
+                            Event draculaEventCardA = Dracula.WillPlayDevilishPower(this, ui);
                             bool eventIsCancelled = false;
                             if (draculaEventCardA != null)
                             {
@@ -421,9 +472,9 @@ namespace DraculaSimulator
                             }
                         }
                         Event draculaEventCard;
-                        if (ui.AskIfHunterIsPlayingForeWarned(h.name))
+                        if (ui.AskIfHunterIsPlayingForeWarned(h.Name))
                         {
-                            draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                            draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
                             bool eventIsCancelled = false;
                             if (draculaEventCard != null)
                             {
@@ -464,23 +515,24 @@ namespace DraculaSimulator
                 }
                 if (discardEncounter)
                 {
-                    location.encounters.Remove(secondEncounter);
-                    encounterPool.Add(secondEncounter);
+                    map.LocationDetails(location).Encounters.Remove(secondEncounter);
+                    EncounterPool.Add(secondEncounter);
                 }
                 else if (secondEncounter.name == "Bats" || secondEncounter.name == "Fog")
                 {
-                    encounterLimbo.Add(secondEncounter);
-                    location.encounters.Remove(secondEncounter);
+                    EncounterLimbo.Add(secondEncounter);
+                    map.LocationDetails(location).Encounters.Remove(secondEncounter);
                 }
             }
             return resolveNextEncounter;
         }
 
+        // remove
         private int IndexOfHunter(Hunter h)
         {
             for (int i = 0; i < 4; i++)
             {
-                if (hunters[i].name == h.name)
+                if (Hunters[i].Name == h.Name)
                 {
                     return i;
                 }
@@ -493,16 +545,16 @@ namespace DraculaSimulator
             string line = "";
             do
             {
-                line = ui.GetNameOfItemDiscardedByHunter(hunters[hunterIndex].name);
+                line = ui.GetNameOfItemDiscardedByHunter(Hunters[hunterIndex].Name);
             } while (GetItemByNameFromItemDeck(line).name == "Unknown item");
             DiscardItemFromHunterAtIndex(line, hunterIndex, ui);
             do
             {
-                line = ui.GetNameOfItemRetrievedFromDiscardByHunter(hunters[hunterIndex].name);
+                line = ui.GetNameOfItemRetrievedFromDiscardByHunter(Hunters[hunterIndex].Name);
             } while (GetItemByNameFromItemDiscard(line).name == "Unknown item");
-            hunters[hunterIndex].itemsKnownToDracula.Add(GetItemByNameFromItemDiscard(line));
-            itemDiscard.Remove(GetItemByNameFromItemDiscard(line));
-            hunters[hunterIndex].numberOfItems++;
+            Hunters[hunterIndex].ItemsKnownToDracula.Add(GetItemByNameFromItemDiscard(line));
+            ItemDiscard.Remove(GetItemByNameFromItemDiscard(line));
+            Hunters[hunterIndex].NumberOfItems++;
 
         }
 
@@ -510,7 +562,7 @@ namespace DraculaSimulator
         {
             try
             {
-                return itemDiscard[itemDiscard.FindIndex(card => card.name.ToLower().StartsWith(line.ToLower()))];
+                return ItemDiscard[ItemDiscard.FindIndex(card => card.name.ToLower().StartsWith(line.ToLower()))];
             }
             catch (ArgumentOutOfRangeException)
             {
@@ -523,65 +575,71 @@ namespace DraculaSimulator
             bool resolveNextEncounter = true;
             discard = true;
 
+            List<Hunter> huntersInvolved = new List<Hunter>();
+            foreach (int ind in hunter.HuntersInGroup)
+            {
+                huntersInvolved.Add(Hunters[ind]);
+            }
+
             switch (enc.name)
             {
                 case "Ambush":
-                    resolveNextEncounter = ResolveAmbush(hunter.huntersInGroup, ui);
+                    resolveNextEncounter = ResolveAmbush(huntersInvolved, ui);
                     break;
                 case "Assasin":
-                    resolveNextEncounter = ResolveAssassin(hunter.huntersInGroup, ui);
+                    resolveNextEncounter = ResolveAssassin(huntersInvolved, ui);
                     break;
                 case "Bats":
-                    resolveNextEncounter = ResolveBats(hunter.huntersInGroup, ui);
+                    resolveNextEncounter = ResolveBats(huntersInvolved, ui);
                     discard = false;
                     break;
                 case "Desecrated Soil":
-                    resolveNextEncounter = ResolveDesecratedSoil(hunter.huntersInGroup, ui);
+                    resolveNextEncounter = ResolveDesecratedSoil(huntersInvolved, ui);
                     break;
                 case "Fog":
-                    resolveNextEncounter = ResolveFog(hunter.huntersInGroup, ui);
+                    resolveNextEncounter = ResolveFog(huntersInvolved, ui);
                     discard = false;
                     break;
                 case "Minion with Knife":
-                    resolveNextEncounter = ResolveMinionWithKnife(hunter.huntersInGroup, ui);
+                    resolveNextEncounter = ResolveMinionWithKnife(huntersInvolved, ui);
                     break;
                 case "Minion with Knife and Pistol":
-                    resolveNextEncounter = ResolveMinionWithKnifeAndPistol(hunter.huntersInGroup, ui);
+                    resolveNextEncounter = ResolveMinionWithKnifeAndPistol(huntersInvolved, ui);
                     break;
                 case "Minion with Knife and Rifle":
-                    resolveNextEncounter = ResolveMinionWithKnifeAndRifle(hunter.huntersInGroup, ui);
+                    resolveNextEncounter = ResolveMinionWithKnifeAndRifle(huntersInvolved, ui);
                     break;
                 case "Hoax":
-                    resolveNextEncounter = ResolveHoax(hunter.huntersInGroup, ui);
+                    resolveNextEncounter = ResolveHoax(huntersInvolved, ui);
                     break;
                 case "Lightning":
-                    resolveNextEncounter = ResolveLightning(hunter.huntersInGroup, ui);
+                    resolveNextEncounter = ResolveLightning(huntersInvolved, ui);
                     break;
                 case "Peasants":
-                    resolveNextEncounter = ResolvePeasants(hunter.huntersInGroup, ui);
+                    resolveNextEncounter = ResolvePeasants(huntersInvolved, ui);
                     break;
                 case "Plague":
-                    resolveNextEncounter = ResolvePlague(hunter.huntersInGroup, ui);
+                    resolveNextEncounter = ResolvePlague(huntersInvolved, ui);
                     break;
                 case "Rats":
-                    resolveNextEncounter = ResolveRats(hunter.huntersInGroup, ui);
+                    resolveNextEncounter = ResolveRats(huntersInvolved, ui);
                     break;
                 case "Saboteur":
-                    resolveNextEncounter = ResolveSaboteur(hunter.huntersInGroup, ui);
+                    resolveNextEncounter = ResolveSaboteur(huntersInvolved, ui);
                     break;
                 case "Spy":
-                    resolveNextEncounter = ResolveSpy(hunter.huntersInGroup, ui);
+                    resolveNextEncounter = ResolveSpy(huntersInvolved, ui);
                     break;
                 case "Thief":
-                    resolveNextEncounter = ResolveThief(hunter.huntersInGroup, ui);
+                    resolveNextEncounter = ResolveThief(huntersInvolved, ui);
                     break;
                 case "New Vampire":
                     bool discardVampire = true;
-                    resolveNextEncounter = ResolveNewVampire(hunter.huntersInGroup, out discardVampire, ui);
+                    resolveNextEncounter = ResolveNewVampire(huntersInvolved, out discardVampire, ui);
                     discard = discardVampire;
                     break;
                 case "Wolves":
-                    resolveNextEncounter = ResolveWolves(hunter.huntersInGroup, ui);
+                    resolveNextEncounter = ResolveWolves(huntersInvolved, ui);
                     break;
 
             }
@@ -590,7 +648,7 @@ namespace DraculaSimulator
 
         internal bool DraculaWillPlayControlStorms(int hunterIndex, UserInterface ui)
         {
-            Event draculaEventCard = dracula.PlayControlStorms(this);
+            Event draculaEventCard = Dracula.PlayControlStorms(this);
             if (draculaEventCard != null)
             {
                 switch (draculaEventCard.name)
@@ -604,8 +662,8 @@ namespace DraculaSimulator
                         if (hunterPlayingGoodluck > -1)
                         {
                             DiscardEventFromHunterAtIndex("Good Luck", hunterPlayingGoodluck, ui);
-                            Logger.WriteToDebugLog(hunters[hunterPlayingGoodluck].name + " played Good Luck");
-                            Logger.WriteToGameLog(hunters[hunterPlayingGoodluck].name + " played Good Luck");
+                            Logger.WriteToDebugLog(Hunters[hunterPlayingGoodluck].Name + " played Good Luck");
+                            Logger.WriteToGameLog(Hunters[hunterPlayingGoodluck].Name + " played Good Luck");
                         }
                         else
                         {
@@ -623,9 +681,10 @@ namespace DraculaSimulator
             ui.TellUser("Encounter cancelled");
         }
 
-        public bool LocationIsInCatacombs(Location location)
+        // remove
+        public bool LocationIsInCatacombs(LocationDetail location)
         {
-            return dracula.catacombs.Contains(location);
+            return Dracula.Catacombs.Contains(location);
         }
 
         internal void PlayRufusSmith()
@@ -647,7 +706,7 @@ namespace DraculaSimulator
 
         internal void PlayHiredScouts(UserInterface ui)
         {
-            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -672,23 +731,23 @@ namespace DraculaSimulator
             if (!eventIsCancelled)
             {
                 string line = "";
-                Location locationToReveal;
+                LocationDetail locationToReveal;
                 do
                 {
                     line = ui.GetFirstLocationNameForHiredScouts();
                     locationToReveal = GetLocationFromName(line);
-                    ui.TellUser(locationToReveal.name);
-                } while (locationToReveal.name == "Unknown location");
+                    ui.TellUser(locationToReveal.Name);
+                } while (locationToReveal.Name == "Unknown location" || locationToReveal.Name == "Multiple locations");
                 if (LocationIsInTrail(locationToReveal))
                 {
                     bool revealingThis = true;
-                    draculaEventCard = dracula.WillPlaySensationalistPress(this, 0);
+                    draculaEventCard = Dracula.WillPlaySensationalistPress(this, 0);
                     if (draculaEventCard != null)
                     {
                         switch (draculaEventCard.name)
                         {
                             case "Sensationalist Press":
-                                ui.TellUser("Dracula played Sensationalist Press to cancel revealing" + locationToReveal.name);
+                                ui.TellUser("Dracula played Sensationalist Press to cancel revealing" + locationToReveal.Name);
                                 DiscardEventFromDracula("Sensationalist Press");
                                 int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                                 if (hunterPlayingGoodluck > -1)
@@ -704,12 +763,12 @@ namespace DraculaSimulator
                     }
                     if (revealingThis)
                     {
-                        locationToReveal.isRevealed = true;
-                        ui.TellUser("Revealing " + locationToReveal.name);
-                        for (int i = 0; i < locationToReveal.encounters.Count(); i++)
+                        locationToReveal.IsRevealed = true;
+                        ui.TellUser("Revealing " + locationToReveal.Name);
+                        for (int i = 0; i < locationToReveal.Encounters.Count(); i++)
                         {
-                            locationToReveal.encounters[i].isRevealed = true;
-                            ui.TellUser(" and " + locationToReveal.encounters[i].name);
+                            locationToReveal.Encounters[i].isRevealed = true;
+                            ui.TellUser(" and " + locationToReveal.Encounters[i].name);
                         }
                         ui.TellUser("");
                         ui.drawGameState(this);
@@ -717,28 +776,28 @@ namespace DraculaSimulator
                 }
                 else
                 {
-                    ui.TellUser(locationToReveal.name + " is not in Dracula's trail");
+                    ui.TellUser(locationToReveal.Name + " is not in Dracula's trail");
                 }
                 do
                 {
                     line = ui.GetSecondLocationNameForHiredScouts();
                     locationToReveal = GetLocationFromName(line);
-                    ui.TellUser(locationToReveal.name);
-                } while (locationToReveal.name == "Unknown location");
+                    ui.TellUser(locationToReveal.Name);
+                } while (locationToReveal.Name == "Unknown location" || locationToReveal.Name == "Multiple locations");
                 if (LocationIsInTrail(locationToReveal))
                 {
-                    locationToReveal.isRevealed = true;
-                    ui.TellUser("Revealing " + locationToReveal.name);
-                    for (int i = 0; i < locationToReveal.encounters.Count(); i++)
+                    locationToReveal.IsRevealed = true;
+                    ui.TellUser("Revealing " + locationToReveal.Name);
+                    for (int i = 0; i < locationToReveal.Encounters.Count(); i++)
                     {
-                        locationToReveal.encounters[i].isRevealed = true;
-                        ui.TellUser(" and " + locationToReveal.encounters[i].name);
+                        locationToReveal.Encounters[i].isRevealed = true;
+                        ui.TellUser(" and " + locationToReveal.Encounters[i].name);
                     }
                     ui.TellUser("");
                 }
                 else
                 {
-                    ui.TellUser(locationToReveal.name + " is not in Dracula's trail");
+                    ui.TellUser(locationToReveal.Name + " is not in Dracula's trail");
                 }
             }
         }
@@ -750,7 +809,7 @@ namespace DraculaSimulator
 
         internal void PlayExcellentWeather(UserInterface ui)
         {
-            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -779,7 +838,7 @@ namespace DraculaSimulator
 
         internal void PlayCharteredCarriage(UserInterface ui)
         {
-            Event draculaEventCard = dracula.WillPlayCardToCancelCharteredCarriage(this);
+            Event draculaEventCard = Dracula.WillPlayCardToCancelCharteredCarriage(this);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -831,7 +890,7 @@ namespace DraculaSimulator
 
         internal void PlayBloodTransfusion(UserInterface ui)
         {
-            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -856,16 +915,16 @@ namespace DraculaSimulator
             {
                 int hunterIndexA = ui.GetIndexOfHunterGivingBloodTransfusion();
                 int hunterIndexB = ui.GetIndexOfHunterReceivingBloodTransfusion();
-                hunters[hunterIndexA].health--;
-                hunters[hunterIndexB].numberOfBites--;
-                if (hunters[hunterIndexB].numberOfBites < 1)
+                Hunters[hunterIndexA].Health--;
+                Hunters[hunterIndexB].NumberOfBites--;
+                if (Hunters[hunterIndexB].NumberOfBites < 1)
                 {
-                    hunters[hunterIndexB].itemShownToDraculaForBeingBitten = null;
-                    hunters[hunterIndexB].eventShownToDraculaForBeingBitten = null;
+                    Hunters[hunterIndexB].ItemShownToDraculaForBeingBitten = null;
+                    Hunters[hunterIndexB].EventShownToDraculaForBeingBitten = null;
                 }
-                ui.TellUser(hunters[hunterIndexA].name + " donated blood (1 health) to " + hunters[hunterIndexB].name + " who was cured of a Bite");
-                Logger.WriteToDebugLog(hunters[hunterIndexA].name + " donated blood (1 health) to " + hunters[hunterIndexB].name + " who was cured of a Bite");
-                Logger.WriteToGameLog(hunters[hunterIndexA].name + " donated blood (1 health) to " + hunters[hunterIndexB].name + " who was cured of a Bite");
+                ui.TellUser(Hunters[hunterIndexA].Name + " donated blood (1 health) to " + Hunters[hunterIndexB].Name + " who was cured of a Bite");
+                Logger.WriteToDebugLog(Hunters[hunterIndexA].Name + " donated blood (1 health) to " + Hunters[hunterIndexB].Name + " who was cured of a Bite");
+                Logger.WriteToGameLog(Hunters[hunterIndexA].Name + " donated blood (1 health) to " + Hunters[hunterIndexB].Name + " who was cured of a Bite");
             }
         }
 
@@ -875,12 +934,12 @@ namespace DraculaSimulator
             switch (response)
             {
                 case 1:
-                    eventDiscard.Add(draculaAlly);
-                    draculaAlly = null;
+                    EventDiscard.Add(DraculaAlly);
+                    DraculaAlly = null;
                     DiscardEventFromHunterAtIndex("Good Luck", hunterIndex, ui);
                     break;
                 case 2:
-                    roadblockCounter = new Roadblock();
+                    RoadblockCounter = new Roadblock();
                     DiscardEventFromHunterAtIndex("Good Luck", hunterIndex, ui);
                     break;
             }
@@ -888,7 +947,7 @@ namespace DraculaSimulator
 
         internal void PlaySurprisingReturn(int hunterIndex, UserInterface ui)
         {
-            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -927,7 +986,7 @@ namespace DraculaSimulator
         {
             try
             {
-                return eventDiscard[eventDiscard.FindIndex(card => card.name.ToLower().StartsWith(cardToReclaim.ToLower()))];
+                return EventDiscard[EventDiscard.FindIndex(card => card.name.ToLower().StartsWith(cardToReclaim.ToLower()))];
             }
             catch (ArgumentOutOfRangeException)
             {
@@ -937,7 +996,7 @@ namespace DraculaSimulator
 
         internal void PlayStormySeas(UserInterface ui)
         {
-            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -960,22 +1019,22 @@ namespace DraculaSimulator
             }
             if (!eventIsCancelled)
             {
-                Location locationToStorm;
+                LocationDetail locationToStorm;
                 do
                 {
                     locationToStorm = GetLocationFromName(ui.GetNameOfLocationWhereStormySeasIsBeingPlayed());
-                    ui.TellUser(locationToStorm.name);
-                } while (locationToStorm.name == "Unknown location" || locationToStorm.type != LocationType.Sea);
-                Logger.WriteToDebugLog("Stormy Seas was played in " + locationToStorm.name);
-                Logger.WriteToGameLog("Stormy Seas was played in " + locationToStorm.name);
-                locationToStorm.turnsUntilStormSubsides = 2;
-                if (locationToStorm == dracula.currentLocation)
+                    ui.TellUser(locationToStorm.Name);
+                } while (locationToStorm.Name == "Unknown location" || locationToStorm.Name == "Multiple locations" || locationToStorm.Type != LocationType.Sea);
+                Logger.WriteToDebugLog("Stormy Seas was played in " + locationToStorm.Name);
+                Logger.WriteToGameLog("Stormy Seas was played in " + locationToStorm.Name);
+                locationToStorm.TurnsUntilStormSubsides = 2;
+                if (locationToStorm == Dracula.CurrentLocation)
                 {
-                    locationToStorm.isRevealed = true;
+                    locationToStorm.IsRevealed = true;
                     ui.TellUser("That is where Dracula was");
-                    Location locationToMoveTo = dracula.DecideWhichPortToGoToAfterStormySeas(this, locationToStorm);
-                    dracula.MoveByRoadOrSea(this, locationToMoveTo, ui);
-                    draculaEventCard = dracula.WillPlaySensationalistPress(this, 0);
+                    LocationDetail locationToMoveTo = Dracula.DecideWhichPortToGoToAfterStormySeas(this, locationToStorm);
+                    Dracula.MoveByRoadOrSea(this, locationToMoveTo, ui);
+                    draculaEventCard = Dracula.WillPlaySensationalistPress(this, 0);
                     bool revealing = true;
                     if (draculaEventCard != null)
                     {
@@ -998,22 +1057,23 @@ namespace DraculaSimulator
                     }
                     if (revealing)
                     {
-                        dracula.trail[0].isRevealed = true;
+                        Dracula.Trail[0].IsRevealed = true;
                     }
-                    dracula.HandleDroppedOffLocations(this, ui);
-                    dracula.MatureEncounters(this, ui);
+                    Dracula.HandleDroppedOffLocations(this, ui);
+                    Dracula.MatureEncounters(this, ui);
                 }
             }
         }
 
+        // remove
         internal Hunter[] GetHunters()
         {
-            return hunters;
+            return Hunters;
         }
 
         internal void PlayHypnosis(UserInterface ui)
         {
-            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -1046,7 +1106,7 @@ namespace DraculaSimulator
                     ui.TellUser("The hypnosis was successful");
                     Logger.WriteToDebugLog("The hypnosis was successful");
                     Logger.WriteToGameLog("The hypnosis was successful");
-                    draculaEventCard = dracula.WillPlaySensationalistPress(this, 0);
+                    draculaEventCard = Dracula.WillPlaySensationalistPress(this, 0);
                     bool revealing = true;
                     if (draculaEventCard != null)
                     {
@@ -1069,66 +1129,66 @@ namespace DraculaSimulator
                     }
                     if (revealing)
                     {
-                        ui.TellUser("Dracula's current location is " + dracula.currentLocation.name);
-                        dracula.currentLocation.isRevealed = true;
+                        ui.TellUser("Dracula's current location is " + Dracula.CurrentLocation.Name);
+                        Dracula.CurrentLocation.IsRevealed = true;
                     }
-                    foreach (Location l in dracula.trail)
+                    foreach (LocationDetail l in Dracula.Trail)
                     {
-                        foreach (Encounter e in l.encounters)
+                        foreach (Encounter e in l.Encounters)
                         {
                             if (e.name == "New Vampire")
                             {
                                 e.isRevealed = true;
-                                Logger.WriteToDebugLog("Vampire revealed at " + l.name);
-                                Logger.WriteToGameLog("Vampire revealed at " + l.name);
+                                Logger.WriteToDebugLog("Vampire revealed at " + l.Name);
+                                Logger.WriteToGameLog("Vampire revealed at " + l.Name);
                             }
                         }
                     }
-                    foreach (Location l in dracula.catacombs)
+                    foreach (LocationDetail l in Dracula.Catacombs)
                     {
-                        foreach (Encounter e in l.encounters)
+                        foreach (Encounter e in l.Encounters)
                         {
                             if (e.name == "New Vampire")
                             {
                                 e.isRevealed = true;
-                                Logger.WriteToDebugLog("Vampire revealed at " + l.name);
-                                Logger.WriteToGameLog("Vampire revealed at " + l.name);
+                                Logger.WriteToDebugLog("Vampire revealed at " + l.Name);
+                                Logger.WriteToGameLog("Vampire revealed at " + l.Name);
                             }
                         }
                     }
-                    dracula.DeterminePossibleLocations();
-                    dracula.DeterminePossiblePowers(dracula.currentLocation.type == LocationType.Sea ? time : time + 1);
+                    Dracula.DeterminePossibleLocations();
+                    Dracula.DeterminePossiblePowers(Dracula.CurrentLocation.Type == LocationType.Sea ? TimeIndex : TimeIndex + 1);
 
                     Logger.WriteToDebugLog("Checking if there are legal moves");
-                    if (dracula.possibleMoves.Count() + dracula.possiblePowers.Count() == 0)
+                    if (Dracula.PossibleMoves.Count() + Dracula.PossiblePowers.Count() == 0)
                     {
                         Logger.WriteToDebugLog("Dracula has no legal moves");
                         ui.TellUser("Dracula is cornered by his own trail");
                     }
-                    else if (dracula.possibleMoves.Count() == 0 && dracula.possiblePowers.Count() == 1 && dracula.possiblePowers.Contains(dracula.powers[1]))
+                    else if (Dracula.PossibleMoves.Count() == 0 && Dracula.PossiblePowers.Count() == 1 && Dracula.PossiblePowers.Contains(Dracula.Powers[1]))
                     {
                         Logger.WriteToDebugLog("Dracula has no regular moves available");
-                        dracula.DeterminePossibleWolfFormLocations();
-                        if (dracula.possibleMoves.Count() == 0)
+                        Dracula.DeterminePossibleWolfFormLocations();
+                        if (Dracula.PossibleMoves.Count() == 0)
                         {
                             Logger.WriteToDebugLog("Dracula has no moves available by Wolf Form");
                             ui.TellUser("Dracula is cornered by his own trail");
                         }
-                        dracula.DeterminePossibleLocations();
+                        Dracula.DeterminePossibleLocations();
                     }
 
                     string powerUsed;
-                    Location destination = dracula.ChooseMoveForHypnosis(this, out powerUsed);
-                    ui.TellUser("Dracula will use " + powerUsed + " and move to " + destination.name);
-                    dracula.advanceMovePower = powerUsed;
-                    dracula.advanceMoveDestination = destination;
+                    LocationDetail destination = Dracula.ChooseMoveForHypnosis(this, out powerUsed);
+                    ui.TellUser("Dracula will use " + powerUsed + " and move to " + destination.Name);
+                    Dracula.AdvanceMovePower = powerUsed;
+                    Dracula.AdvanceMoveDestination = destination;
                 }
             }
         }
 
         internal void PlayTelegraphAhead(int hunterIndex, UserInterface ui)
         {
-            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -1152,9 +1212,9 @@ namespace DraculaSimulator
             if (!eventIsCancelled)
             {
                 int locationsRevealed = 0;
-                foreach (Location loc in hunters[hunterIndex].currentLocation.byRoad)
+                foreach (LocationDetail loc in Hunters[hunterIndex].CurrentLocation.ByRoad)
                 {
-                    draculaEventCard = dracula.WillPlaySensationalistPress(this, 0);
+                    draculaEventCard = Dracula.WillPlaySensationalistPress(this, 0);
                     bool revealing = true;
                     if (draculaEventCard != null)
                     {
@@ -1178,7 +1238,7 @@ namespace DraculaSimulator
                     }
                     if (revealing)
                     {
-                        loc.isRevealed = true;
+                        loc.IsRevealed = true;
                         locationsRevealed++;
                     }
                 }
@@ -1191,7 +1251,7 @@ namespace DraculaSimulator
 
         internal void PlayConsecratedGround(int hunterIndex, UserInterface ui)
         {
-            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -1215,36 +1275,36 @@ namespace DraculaSimulator
             }
             if (!eventIsCancelled)
             {
-                Location locationToConsecrate;
+                LocationDetail locationToConsecrate;
                 do
                 {
                     locationToConsecrate = GetLocationFromName(ui.GetNameOfLocationToConsecrate());
-                    ui.TellUser(locationToConsecrate.name);
-                } while (locationToConsecrate.name == "Unknown location" || (locationToConsecrate.type != LocationType.City && locationToConsecrate.type != LocationType.Town) || locationToConsecrate.name == "Galatz" || locationToConsecrate.name == "Klausenburg");
-                Logger.WriteToDebugLog("Consecrate Ground was played in " + locationToConsecrate.name);
-                Logger.WriteToGameLog("Consecrate Ground was played in " + locationToConsecrate.name);
+                    ui.TellUser(locationToConsecrate.Name);
+                } while (locationToConsecrate.Name == "Unknown location" || locationToConsecrate.Name == "Multiple locations" || (locationToConsecrate.Type != LocationType.City && locationToConsecrate.Type != LocationType.Town) || locationToConsecrate.Name == "Galatz" || locationToConsecrate.Name == "Klausenburg");
+                Logger.WriteToDebugLog("Consecrate Ground was played in " + locationToConsecrate.Name);
+                Logger.WriteToGameLog("Consecrate Ground was played in " + locationToConsecrate.Name);
 
-                foreach (Location loc in map)
+                foreach (LocationDetail loc in Map)
                 {
-                    loc.isConsecrated = false;
+                    loc.IsConsecrated = false;
                 }
-                locationToConsecrate.isConsecrated = true;
-                ui.TellUser(locationToConsecrate.name + " is now consecrated ground");
+                locationToConsecrate.IsConsecrated = true;
+                ui.TellUser(locationToConsecrate.Name + " is now consecrated ground");
 
-                if (locationToConsecrate == dracula.currentLocation)
+                if (locationToConsecrate == Dracula.CurrentLocation)
                 {
-                    locationToConsecrate.isRevealed = true;
+                    locationToConsecrate.IsRevealed = true;
                     List<Encounter> encountersToDiscard = new List<Encounter>();
-                    foreach (Encounter e in locationToConsecrate.encounters)
+                    foreach (Encounter e in locationToConsecrate.Encounters)
                     {
                         ui.TellUser(e.name + " was discarded");
                         encountersToDiscard.Add(e);
                         e.isRevealed = false;
-                        encounterPool.Add(e);
+                        EncounterPool.Add(e);
                     }
                     foreach (Encounter e in encountersToDiscard)
                     {
-                        locationToConsecrate.encounters.Remove(e);
+                        locationToConsecrate.Encounters.Remove(e);
                     }
                 }
             }
@@ -1252,7 +1312,7 @@ namespace DraculaSimulator
 
         internal void PlayReEquip(UserInterface ui)
         {
-            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -1282,7 +1342,7 @@ namespace DraculaSimulator
 
         internal void PlayNewspaperReports(UserInterface ui)
         {
-            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -1323,7 +1383,7 @@ namespace DraculaSimulator
                 }
                 else
                 {
-                    draculaEventCard = dracula.WillPlaySensationalistPress(this, 0);
+                    draculaEventCard = Dracula.WillPlaySensationalistPress(this, 0);
                     bool revealing = true;
                     if (draculaEventCard != null)
                     {
@@ -1360,7 +1420,7 @@ namespace DraculaSimulator
 
         internal void PlayMysticResearch(UserInterface ui)
         {
-            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -1385,7 +1445,7 @@ namespace DraculaSimulator
             if (!eventIsCancelled)
             {
                 ui.TellUser("These are Draculas cards:");
-                foreach (Event card in dracula.eventCardsInHand)
+                foreach (Event card in Dracula.EventCardsInHand)
                 {
                     ui.TellUser(card.name);
                 }
@@ -1395,7 +1455,7 @@ namespace DraculaSimulator
         internal void PlayLongDay(UserInterface ui)
         {
             {
-                Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
                 bool eventIsCancelled = false;
                 if (draculaEventCard != null)
                 {
@@ -1426,7 +1486,7 @@ namespace DraculaSimulator
 
         internal void PlayVampireLair(int hunterIndex, UserInterface ui)
         {
-            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -1463,13 +1523,13 @@ namespace DraculaSimulator
                         }
                         break;
                     case "Enemy wounded":
-                        vampireTracker--;
+                        VampirePointTracker--;
                         break;
                     case "Enemy killed":
-                        vampireTracker--;
+                        VampirePointTracker--;
                         break;
                     case "Hunter killed":
-                        hunters[ui.GetNameOfHunterKilled()].health = 0;
+                        Hunters[ui.GetNameOfHunterKilled()].Health = 0;
                         HandlePossibleHunterDeath(ui);
                         break;
                 }
@@ -1478,7 +1538,7 @@ namespace DraculaSimulator
 
         internal void PlaySenseOfEmergency(int hunterIndex, UserInterface ui)
         {
-            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -1502,15 +1562,15 @@ namespace DraculaSimulator
             }
             if (!eventIsCancelled)
             {
-                hunters[hunterIndex].health -= 6;
-                hunters[hunterIndex].health += vampireTracker;
-                ui.TellUser("Adjust " + hunters[hunterIndex].name + "'s health and then perform a move to any location");
+                Hunters[hunterIndex].Health -= 6;
+                Hunters[hunterIndex].Health += VampirePointTracker;
+                ui.TellUser("Adjust " + Hunters[hunterIndex].Name + "'s health and then perform a move to any location");
             }
         }
 
         internal void PlayMoneyTrail(UserInterface ui)
         {
-            Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -1539,7 +1599,7 @@ namespace DraculaSimulator
                 {
                     if (TypeOfLocationAtTrailIndex(i) == LocationType.Sea)
                     {
-                        draculaEventCard = dracula.WillPlaySensationalistPress(this, i);
+                        draculaEventCard = Dracula.WillPlaySensationalistPress(this, i);
                         bool revealing = true;
                         if (draculaEventCard != null)
                         {
@@ -1601,1005 +1661,1011 @@ namespace DraculaSimulator
 
         private void SetUpEncounters()
         {
-            encounterPool.Add(new Encounter("Ambush", "AMB"));
-            encounterPool.Add(new Encounter("Ambush", "AMB"));
-            encounterPool.Add(new Encounter("Ambush", "AMB"));
-            encounterPool.Add(new Encounter("Assasin", "ASS"));
-            encounterPool.Add(new Encounter("Bats", "BAT"));
-            encounterPool.Add(new Encounter("Bats", "BAT"));
-            encounterPool.Add(new Encounter("Bats", "BAT"));
-            encounterPool.Add(new Encounter("Desecrated Soil", "DES"));
-            encounterPool.Add(new Encounter("Desecrated Soil", "DES"));
-            encounterPool.Add(new Encounter("Desecrated Soil", "DES"));
-            encounterPool.Add(new Encounter("Fog", "FOG"));
-            encounterPool.Add(new Encounter("Fog", "FOG"));
-            encounterPool.Add(new Encounter("Fog", "FOG"));
-            encounterPool.Add(new Encounter("Fog", "FOG"));
-            encounterPool.Add(new Encounter("Minion with Knife", "MIK"));
-            encounterPool.Add(new Encounter("Minion with Knife", "MIK"));
-            encounterPool.Add(new Encounter("Minion with Knife", "MIK"));
-            encounterPool.Add(new Encounter("Minion with Knife and Pistol", "MIP"));
-            encounterPool.Add(new Encounter("Minion with Knife and Pistol", "MIP"));
-            encounterPool.Add(new Encounter("Minion with Knife and Rifle", "MIR"));
-            encounterPool.Add(new Encounter("Minion with Knife and Rifle", "MIR"));
-            encounterPool.Add(new Encounter("Hoax", "HOA"));
-            encounterPool.Add(new Encounter("Hoax", "HOA"));
-            encounterPool.Add(new Encounter("Lightning", "LIG"));
-            encounterPool.Add(new Encounter("Lightning", "LIG"));
-            encounterPool.Add(new Encounter("Peasants", "PEA"));
-            encounterPool.Add(new Encounter("Peasants", "PEA"));
-            encounterPool.Add(new Encounter("Plague", "PLA"));
-            encounterPool.Add(new Encounter("Rats", "RAT"));
-            encounterPool.Add(new Encounter("Rats", "RAT"));
-            encounterPool.Add(new Encounter("Saboteur", "SAB"));
-            encounterPool.Add(new Encounter("Saboteur", "SAB"));
-            encounterPool.Add(new Encounter("Spy", "SPY"));
-            encounterPool.Add(new Encounter("Spy", "SPY"));
-            encounterPool.Add(new Encounter("Thief", "THI"));
-            encounterPool.Add(new Encounter("Thief", "THI"));
-            encounterPool.Add(new Encounter("New Vampire", "VAM"));
-            encounterPool.Add(new Encounter("New Vampire", "VAM"));
-            encounterPool.Add(new Encounter("New Vampire", "VAM"));
-            encounterPool.Add(new Encounter("New Vampire", "VAM"));
-            encounterPool.Add(new Encounter("New Vampire", "VAM"));
-            encounterPool.Add(new Encounter("New Vampire", "VAM"));
-            encounterPool.Add(new Encounter("Wolves", "WOL"));
-            encounterPool.Add(new Encounter("Wolves", "WOL"));
-            encounterPool.Add(new Encounter("Wolves", "WOL"));
+            EncounterPool.Add(new Encounter("Ambush", "AMB"));
+            EncounterPool.Add(new Encounter("Ambush", "AMB"));
+            EncounterPool.Add(new Encounter("Ambush", "AMB"));
+            EncounterPool.Add(new Encounter("Assasin", "ASS"));
+            EncounterPool.Add(new Encounter("Bats", "BAT"));
+            EncounterPool.Add(new Encounter("Bats", "BAT"));
+            EncounterPool.Add(new Encounter("Bats", "BAT"));
+            EncounterPool.Add(new Encounter("Desecrated Soil", "DES"));
+            EncounterPool.Add(new Encounter("Desecrated Soil", "DES"));
+            EncounterPool.Add(new Encounter("Desecrated Soil", "DES"));
+            EncounterPool.Add(new Encounter("Fog", "FOG"));
+            EncounterPool.Add(new Encounter("Fog", "FOG"));
+            EncounterPool.Add(new Encounter("Fog", "FOG"));
+            EncounterPool.Add(new Encounter("Fog", "FOG"));
+            EncounterPool.Add(new Encounter("Minion with Knife", "MIK"));
+            EncounterPool.Add(new Encounter("Minion with Knife", "MIK"));
+            EncounterPool.Add(new Encounter("Minion with Knife", "MIK"));
+            EncounterPool.Add(new Encounter("Minion with Knife and Pistol", "MIP"));
+            EncounterPool.Add(new Encounter("Minion with Knife and Pistol", "MIP"));
+            EncounterPool.Add(new Encounter("Minion with Knife and Rifle", "MIR"));
+            EncounterPool.Add(new Encounter("Minion with Knife and Rifle", "MIR"));
+            EncounterPool.Add(new Encounter("Hoax", "HOA"));
+            EncounterPool.Add(new Encounter("Hoax", "HOA"));
+            EncounterPool.Add(new Encounter("Lightning", "LIG"));
+            EncounterPool.Add(new Encounter("Lightning", "LIG"));
+            EncounterPool.Add(new Encounter("Peasants", "PEA"));
+            EncounterPool.Add(new Encounter("Peasants", "PEA"));
+            EncounterPool.Add(new Encounter("Plague", "PLA"));
+            EncounterPool.Add(new Encounter("Rats", "RAT"));
+            EncounterPool.Add(new Encounter("Rats", "RAT"));
+            EncounterPool.Add(new Encounter("Saboteur", "SAB"));
+            EncounterPool.Add(new Encounter("Saboteur", "SAB"));
+            EncounterPool.Add(new Encounter("Spy", "SPY"));
+            EncounterPool.Add(new Encounter("Spy", "SPY"));
+            EncounterPool.Add(new Encounter("Thief", "THI"));
+            EncounterPool.Add(new Encounter("Thief", "THI"));
+            EncounterPool.Add(new Encounter("New Vampire", "VAM"));
+            EncounterPool.Add(new Encounter("New Vampire", "VAM"));
+            EncounterPool.Add(new Encounter("New Vampire", "VAM"));
+            EncounterPool.Add(new Encounter("New Vampire", "VAM"));
+            EncounterPool.Add(new Encounter("New Vampire", "VAM"));
+            EncounterPool.Add(new Encounter("New Vampire", "VAM"));
+            EncounterPool.Add(new Encounter("Wolves", "WOL"));
+            EncounterPool.Add(new Encounter("Wolves", "WOL"));
+            EncounterPool.Add(new Encounter("Wolves", "WOL"));
         }
 
+        // remove
         internal void RemoveHunterAlly()
         {
-            eventDiscard.Add(hunterAlly);
-            hunterAlly = null;
+            EventDiscard.Add(HunterAlly);
+            HunterAlly = null;
         }
 
-        private void SetUpMap()
+        //private List<LocationDetail> CreateMap()
+        //{
+        //    List<LocationDetail> tempMap = new List<LocationDetail>();
+        //    LocationDetail galway = new LocationDetail();
+        //    LocationDetail dublin = new LocationDetail();
+        //    LocationDetail liverpool = new LocationDetail();
+        //    LocationDetail edinburgh = new LocationDetail();
+        //    LocationDetail manchester = new LocationDetail();
+        //    LocationDetail swansea = new LocationDetail();
+        //    LocationDetail plymouth = new LocationDetail();
+        //    LocationDetail nantes = new LocationDetail();
+        //    LocationDetail lehavre = new LocationDetail();
+        //    LocationDetail london = new LocationDetail();
+        //    LocationDetail paris = new LocationDetail();
+        //    LocationDetail brussels = new LocationDetail();
+        //    LocationDetail amsterdam = new LocationDetail();
+        //    LocationDetail strasbourg = new LocationDetail();
+        //    LocationDetail cologne = new LocationDetail();
+        //    LocationDetail hamburg = new LocationDetail();
+        //    LocationDetail frankfurt = new LocationDetail();
+        //    LocationDetail nuremburg = new LocationDetail();
+        //    LocationDetail leipzig = new LocationDetail();
+        //    LocationDetail berlin = new LocationDetail();
+        //    LocationDetail prague = new LocationDetail();
+        //    LocationDetail castledracula = new LocationDetail();
+        //    LocationDetail santander = new LocationDetail();
+        //    LocationDetail saragossa = new LocationDetail();
+        //    LocationDetail bordeaux = new LocationDetail();
+        //    LocationDetail toulouse = new LocationDetail();
+        //    LocationDetail barcelona = new LocationDetail();
+        //    LocationDetail clermontferrand = new LocationDetail();
+        //    LocationDetail marseilles = new LocationDetail();
+        //    LocationDetail geneva = new LocationDetail();
+        //    LocationDetail genoa = new LocationDetail();
+        //    LocationDetail milan = new LocationDetail();
+        //    LocationDetail zurich = new LocationDetail();
+        //    LocationDetail florence = new LocationDetail();
+        //    LocationDetail venice = new LocationDetail();
+        //    LocationDetail munich = new LocationDetail();
+        //    LocationDetail zagreb = new LocationDetail();
+        //    LocationDetail vienna = new LocationDetail();
+        //    LocationDetail stjosephandstmary = new LocationDetail();
+        //    LocationDetail sarajevo = new LocationDetail();
+        //    LocationDetail szeged = new LocationDetail();
+        //    LocationDetail budapest = new LocationDetail();
+        //    LocationDetail belgrade = new LocationDetail();
+        //    LocationDetail klausenburg = new LocationDetail();
+        //    LocationDetail sofia = new LocationDetail();
+        //    LocationDetail bucharest = new LocationDetail();
+        //    LocationDetail galatz = new LocationDetail();
+        //    LocationDetail varna = new LocationDetail();
+        //    LocationDetail constanta = new LocationDetail();
+        //    LocationDetail lisbon = new LocationDetail();
+        //    LocationDetail cadiz = new LocationDetail();
+        //    LocationDetail madrid = new LocationDetail();
+        //    LocationDetail granada = new LocationDetail();
+        //    LocationDetail alicante = new LocationDetail();
+        //    LocationDetail cagliari = new LocationDetail();
+        //    LocationDetail rome = new LocationDetail();
+        //    LocationDetail naples = new LocationDetail();
+        //    LocationDetail bari = new LocationDetail();
+        //    LocationDetail valona = new LocationDetail();
+        //    LocationDetail salonica = new LocationDetail();
+        //    LocationDetail athens = new LocationDetail();
+        //    LocationDetail atlanticocean = new LocationDetail();
+        //    LocationDetail irishsea = new LocationDetail();
+        //    LocationDetail englishchannel = new LocationDetail();
+        //    LocationDetail northsea = new LocationDetail();
+        //    LocationDetail bayofbiscay = new LocationDetail();
+        //    LocationDetail mediterraneansea = new LocationDetail();
+        //    LocationDetail tyrrheniansea = new LocationDetail();
+        //    LocationDetail adriaticsea = new LocationDetail();
+        //    LocationDetail ioniansea = new LocationDetail();
+        //    LocationDetail blacksea = new LocationDetail();
+
+        //    galway.Name = "Galway";
+        //    galway.Abbreviation = "GAW";
+        //    galway.Type = LocationType.Town;
+        //    galway.IsEastern = false;
+        //    galway.ByRoad.Add(Location.dublin);
+        //    galway.BySea.Add(Location.atlanticocean);
+        //    tempMap.Add(galway);
+
+        //    dublin.Name = "Dublin";
+        //    dublin.Abbreviation = "DUB";
+        //    dublin.Type = LocationType.Town;
+        //    dublin.IsEastern = false;
+        //    dublin.ByRoad.Add(Location.galway);
+        //    dublin.BySea.Add(Location.irishsea);
+        //    tempMap.Add(dublin);
+
+        //    liverpool.Name = "Liverpool";
+        //    liverpool.Abbreviation = "LIV";
+        //    liverpool.Type = LocationType.City;
+        //    liverpool.IsEastern = false;
+        //    liverpool.ByRoad.Add(Location.manchester);
+        //    liverpool.ByRoad.Add(Location.swansea);
+        //    liverpool.ByTrain.Add(Location.manchester);
+        //    liverpool.BySea.Add(Location.irishsea);
+        //    tempMap.Add(liverpool);
+
+        //    edinburgh.Name = "Edinburgh";
+        //    edinburgh.Abbreviation = "EDI";
+        //    edinburgh.Type = LocationType.City;
+        //    edinburgh.IsEastern = false;
+        //    edinburgh.ByRoad.Add(Location.manchester);
+        //    edinburgh.ByTrain.Add(Location.manchester);
+        //    edinburgh.BySea.Add(Location.northsea);
+        //    tempMap.Add(edinburgh);
+
+        //    manchester.Name = "Manchester";
+        //    manchester.Abbreviation = "MAN";
+        //    manchester.Type = LocationType.City;
+        //    manchester.IsEastern = false;
+        //    manchester.ByRoad.Add(Location.edinburgh);
+        //    manchester.ByRoad.Add(Location.liverpool);
+        //    manchester.ByRoad.Add(Location.london);
+        //    manchester.ByTrain.Add(Location.edinburgh);
+        //    manchester.ByTrain.Add(Location.liverpool);
+        //    manchester.ByTrain.Add(Location.london);
+        //    tempMap.Add(manchester);
+
+        //    swansea.Name = "Swansea";
+        //    swansea.Abbreviation = "SWA";
+        //    swansea.Type = LocationType.Town;
+        //    swansea.IsEastern = false;
+        //    swansea.ByRoad.Add(Location.liverpool);
+        //    swansea.ByRoad.Add(Location.london);
+        //    swansea.ByTrain.Add(Location.london);
+        //    swansea.BySea.Add(Location.irishsea);
+        //    tempMap.Add(swansea);
+
+        //    plymouth.Name = "Plymouth";
+        //    plymouth.Abbreviation = "PLY";
+        //    plymouth.Type = LocationType.Town;
+        //    plymouth.IsEastern = false;
+        //    plymouth.ByRoad.Add(Location.london);
+        //    plymouth.BySea.Add(Location.englishchannel);
+        //    tempMap.Add(plymouth);
+
+        //    nantes.Name = "Nantes";
+        //    nantes.Abbreviation = "NAN";
+        //    nantes.Type = LocationType.City;
+        //    nantes.IsEastern = false;
+        //    nantes.ByRoad.Add(Location.lehavre);
+        //    nantes.ByRoad.Add(Location.paris);
+        //    nantes.ByRoad.Add(Location.clermontferrand);
+        //    nantes.ByRoad.Add(Location.bordeaux);
+        //    nantes.BySea.Add(Location.bayofbiscay);
+        //    tempMap.Add(nantes);
+
+        //    lehavre.Name = "Le Havre";
+        //    lehavre.Abbreviation = "LEH";
+        //    lehavre.Type = LocationType.Town;
+        //    lehavre.IsEastern = false;
+        //    lehavre.ByRoad.Add(Location.nantes);
+        //    lehavre.ByRoad.Add(Location.paris);
+        //    lehavre.ByRoad.Add(Location.brussels);
+        //    lehavre.ByTrain.Add(Location.paris);
+        //    lehavre.BySea.Add(Location.englishchannel);
+        //    tempMap.Add(lehavre);
+
+        //    london.Name = "London";
+        //    london.Abbreviation = "LON";
+        //    london.Type = LocationType.City;
+        //    london.IsEastern = false;
+        //    london.ByRoad.Add(Location.manchester);
+        //    london.ByRoad.Add(Location.swansea);
+        //    london.ByRoad.Add(Location.plymouth);
+        //    london.ByTrain.Add(Location.manchester);
+        //    london.ByTrain.Add(Location.swansea);
+        //    london.BySea.Add(Location.englishchannel);
+        //    tempMap.Add(london);
+
+        //    paris.Name = "Paris";
+        //    paris.Abbreviation = "PAR";
+        //    paris.Type = LocationType.City;
+        //    paris.IsEastern = false;
+        //    paris.ByRoad.Add(Location.nantes);
+        //    paris.ByRoad.Add(Location.lehavre);
+        //    paris.ByRoad.Add(Location.brussels);
+        //    paris.ByRoad.Add(Location.strasbourg);
+        //    paris.ByRoad.Add(Location.geneva);
+        //    paris.ByRoad.Add(Location.clermontferrand);
+        //    paris.ByTrain.Add(Location.lehavre);
+        //    paris.ByTrain.Add(Location.brussels);
+        //    paris.ByTrain.Add(Location.marseilles);
+        //    paris.ByTrain.Add(Location.bordeaux);
+        //    tempMap.Add(paris);
+
+        //    brussels.Name = "Brussels";
+        //    brussels.Abbreviation = "BRU";
+        //    brussels.Type = LocationType.City;
+        //    brussels.IsEastern = false;
+        //    brussels.ByRoad.Add(Location.lehavre);
+        //    brussels.ByRoad.Add(Location.amsterdam);
+        //    brussels.ByRoad.Add(Location.cologne);
+        //    brussels.ByRoad.Add(Location.strasbourg);
+        //    brussels.ByRoad.Add(Location.paris);
+        //    brussels.ByTrain.Add(Location.cologne);
+        //    brussels.ByTrain.Add(Location.paris);
+        //    tempMap.Add(brussels);
+
+        //    amsterdam.Name = "Amsterdam";
+        //    amsterdam.Abbreviation = "AMS";
+        //    amsterdam.Type = LocationType.City;
+        //    amsterdam.IsEastern = false;
+        //    amsterdam.ByRoad.Add(Location.brussels);
+        //    amsterdam.ByRoad.Add(Location.cologne);
+        //    amsterdam.BySea.Add(Location.northsea);
+        //    tempMap.Add(amsterdam);
+
+        //    strasbourg.Name = "Strasbourg";
+        //    strasbourg.Abbreviation = "STR";
+        //    strasbourg.Type = LocationType.Town;
+        //    strasbourg.IsEastern = false;
+        //    strasbourg.ByRoad.Add(Location.paris);
+        //    strasbourg.ByRoad.Add(Location.brussels);
+        //    strasbourg.ByRoad.Add(Location.cologne);
+        //    strasbourg.ByRoad.Add(Location.frankfurt);
+        //    strasbourg.ByRoad.Add(Location.nuremburg);
+        //    strasbourg.ByRoad.Add(Location.munich);
+        //    strasbourg.ByRoad.Add(Location.zurich);
+        //    strasbourg.ByRoad.Add(Location.geneva);
+        //    strasbourg.ByTrain.Add(Location.frankfurt);
+        //    strasbourg.ByTrain.Add(Location.zurich);
+        //    tempMap.Add(strasbourg);
+
+        //    cologne.Name = "Cologne";
+        //    cologne.Abbreviation = "COL";
+        //    cologne.Type = LocationType.City;
+        //    cologne.IsEastern = false;
+        //    cologne.ByRoad.Add(Location.brussels);
+        //    cologne.ByRoad.Add(Location.amsterdam);
+        //    cologne.ByRoad.Add(Location.hamburg);
+        //    cologne.ByRoad.Add(Location.leipzig);
+        //    cologne.ByRoad.Add(Location.frankfurt);
+        //    cologne.ByRoad.Add(Location.strasbourg);
+        //    cologne.ByTrain.Add(Location.brussels);
+        //    cologne.ByTrain.Add(Location.frankfurt);
+        //    tempMap.Add(cologne);
+
+        //    hamburg.Name = "Hamburg";
+        //    hamburg.Abbreviation = "HAM";
+        //    hamburg.Type = LocationType.City;
+        //    hamburg.IsEastern = false;
+        //    hamburg.ByRoad.Add(Location.cologne);
+        //    hamburg.ByRoad.Add(Location.berlin);
+        //    hamburg.ByRoad.Add(Location.leipzig);
+        //    hamburg.ByTrain.Add(Location.berlin);
+        //    hamburg.BySea.Add(Location.northsea);
+        //    tempMap.Add(hamburg);
+
+        //    frankfurt.Name = "Frankfurt";
+        //    frankfurt.Abbreviation = "FRA";
+        //    frankfurt.Type = LocationType.Town;
+        //    frankfurt.IsEastern = false;
+        //    frankfurt.ByRoad.Add(Location.strasbourg);
+        //    frankfurt.ByRoad.Add(Location.cologne);
+        //    frankfurt.ByRoad.Add(Location.leipzig);
+        //    frankfurt.ByRoad.Add(Location.nuremburg);
+        //    frankfurt.ByTrain.Add(Location.strasbourg);
+        //    frankfurt.ByTrain.Add(Location.cologne);
+        //    frankfurt.ByTrain.Add(Location.leipzig);
+        //    tempMap.Add(frankfurt);
+
+        //    nuremburg.Name = "Nuremburg";
+        //    nuremburg.Abbreviation = "NUR";
+        //    nuremburg.Type = LocationType.Town;
+        //    nuremburg.IsEastern = false;
+        //    nuremburg.ByRoad.Add(Location.strasbourg);
+        //    nuremburg.ByRoad.Add(Location.frankfurt);
+        //    nuremburg.ByRoad.Add(Location.leipzig);
+        //    nuremburg.ByRoad.Add(Location.prague);
+        //    nuremburg.ByRoad.Add(Location.munich);
+        //    nuremburg.ByTrain.Add(Location.leipzig);
+        //    nuremburg.ByTrain.Add(Location.munich);
+        //    tempMap.Add(nuremburg);
+
+        //    leipzig.Name = "Leipzig";
+        //    leipzig.Abbreviation = "LEI";
+        //    leipzig.Type = LocationType.City;
+        //    leipzig.IsEastern = false;
+        //    leipzig.ByRoad.Add(Location.cologne);
+        //    leipzig.ByRoad.Add(Location.hamburg);
+        //    leipzig.ByRoad.Add(Location.berlin);
+        //    leipzig.ByRoad.Add(Location.nuremburg);
+        //    leipzig.ByRoad.Add(Location.frankfurt);
+        //    leipzig.ByTrain.Add(Location.frankfurt);
+        //    leipzig.ByTrain.Add(Location.berlin);
+        //    leipzig.ByTrain.Add(Location.nuremburg);
+        //    tempMap.Add(leipzig);
+
+        //    berlin.Name = "Berlin";
+        //    berlin.Abbreviation = "BER";
+        //    berlin.Type = LocationType.City;
+        //    berlin.IsEastern = false;
+        //    berlin.ByRoad.Add(Location.hamburg);
+        //    berlin.ByRoad.Add(Location.prague);
+        //    berlin.ByRoad.Add(Location.leipzig);
+        //    berlin.ByTrain.Add(Location.hamburg);
+        //    berlin.ByTrain.Add(Location.leipzig);
+        //    berlin.ByTrain.Add(Location.prague);
+        //    tempMap.Add(berlin);
+
+        //    prague.Name = "Prague";
+        //    prague.Abbreviation = "PRA";
+        //    prague.Type = LocationType.City;
+        //    prague.IsEastern = true;
+        //    prague.ByRoad.Add(Location.berlin);
+        //    prague.ByRoad.Add(Location.vienna);
+        //    prague.ByRoad.Add(Location.nuremburg);
+        //    prague.ByTrain.Add(Location.berlin);
+        //    prague.ByTrain.Add(Location.vienna);
+        //    tempMap.Add(prague);
+
+        //    castledracula.Name = "Castle Dracula";
+        //    castledracula.Abbreviation = "CAS";
+        //    castledracula.Type = LocationType.Castle;
+        //    castledracula.IsEastern = true;
+        //    castledracula.ByRoad.Add(Location.klausenburg);
+        //    castledracula.ByRoad.Add(Location.galatz);
+        //    tempMap.Add(castledracula);
+
+        //    santander.Name = "Santander";
+        //    santander.Abbreviation = "SAN";
+        //    santander.Type = LocationType.Town;
+        //    santander.IsEastern = false;
+        //    santander.ByRoad.Add(Location.lisbon);
+        //    santander.ByRoad.Add(Location.madrid);
+        //    santander.ByRoad.Add(Location.saragossa);
+        //    santander.ByTrain.Add(Location.madrid);
+        //    santander.BySea.Add(Location.bayofbiscay);
+        //    tempMap.Add(santander);
+
+        //    saragossa.Name = "Saragossa";
+        //    saragossa.Abbreviation = "SAG";
+        //    saragossa.Type = LocationType.Town;
+        //    saragossa.IsEastern = false;
+        //    saragossa.ByRoad.Add(Location.madrid);
+        //    saragossa.ByRoad.Add(Location.santander);
+        //    saragossa.ByRoad.Add(Location.bordeaux);
+        //    saragossa.ByRoad.Add(Location.toulouse);
+        //    saragossa.ByRoad.Add(Location.barcelona);
+        //    saragossa.ByRoad.Add(Location.alicante);
+        //    saragossa.ByTrain.Add(Location.madrid);
+        //    saragossa.ByTrain.Add(Location.bordeaux);
+        //    saragossa.ByTrain.Add(Location.barcelona);
+        //    tempMap.Add(saragossa);
+
+        //    bordeaux.Name = "Bordeaux";
+        //    bordeaux.Abbreviation = "BOR";
+        //    bordeaux.Type = LocationType.City;
+        //    bordeaux.IsEastern = false;
+        //    bordeaux.ByRoad.Add(Location.saragossa);
+        //    bordeaux.ByRoad.Add(Location.nantes);
+        //    bordeaux.ByRoad.Add(Location.clermontferrand);
+        //    bordeaux.ByRoad.Add(Location.toulouse);
+        //    bordeaux.ByTrain.Add(Location.paris);
+        //    bordeaux.ByTrain.Add(Location.saragossa);
+        //    bordeaux.BySea.Add(Location.bayofbiscay);
+        //    tempMap.Add(bordeaux);
+
+        //    toulouse.Name = "Toulouse";
+        //    toulouse.Abbreviation = "TOU";
+        //    toulouse.Type = LocationType.Town;
+        //    toulouse.IsEastern = false;
+        //    toulouse.ByRoad.Add(Location.saragossa);
+        //    toulouse.ByRoad.Add(Location.bordeaux);
+        //    toulouse.ByRoad.Add(Location.clermontferrand);
+        //    toulouse.ByRoad.Add(Location.marseilles);
+        //    toulouse.ByRoad.Add(Location.barcelona);
+        //    tempMap.Add(toulouse);
+
+        //    barcelona.Name = "Barcelona";
+        //    barcelona.Abbreviation = "BAC";
+        //    barcelona.Type = LocationType.City;
+        //    barcelona.IsEastern = false;
+        //    barcelona.ByRoad.Add(Location.saragossa);
+        //    barcelona.ByRoad.Add(Location.toulouse);
+        //    barcelona.ByTrain.Add(Location.saragossa);
+        //    barcelona.ByTrain.Add(Location.alicante);
+        //    barcelona.BySea.Add(Location.mediterraneansea);
+        //    tempMap.Add(barcelona);
+
+        //    clermontferrand.Name = "Clermont Ferrand";
+        //    clermontferrand.Abbreviation = "CLE";
+        //    clermontferrand.Type = LocationType.Town;
+        //    clermontferrand.IsEastern = false;
+        //    clermontferrand.ByRoad.Add(Location.bordeaux);
+        //    clermontferrand.ByRoad.Add(Location.nantes);
+        //    clermontferrand.ByRoad.Add(Location.paris);
+        //    clermontferrand.ByRoad.Add(Location.geneva);
+        //    clermontferrand.ByRoad.Add(Location.marseilles);
+        //    clermontferrand.ByRoad.Add(Location.toulouse);
+        //    tempMap.Add(clermontferrand);
+
+        //    marseilles.Name = "Marseilles";
+        //    marseilles.Abbreviation = "MAR";
+        //    marseilles.Type = LocationType.City;
+        //    marseilles.IsEastern = false;
+        //    marseilles.ByRoad.Add(Location.toulouse);
+        //    marseilles.ByRoad.Add(Location.clermontferrand);
+        //    marseilles.ByRoad.Add(Location.geneva);
+        //    marseilles.ByRoad.Add(Location.zurich);
+        //    marseilles.ByRoad.Add(Location.milan);
+        //    marseilles.ByRoad.Add(Location.genoa);
+        //    marseilles.ByTrain.Add(Location.paris);
+        //    marseilles.BySea.Add(Location.mediterraneansea);
+        //    tempMap.Add(marseilles);
+
+        //    geneva.Name = "Geneva";
+        //    geneva.Abbreviation = "GEV";
+        //    geneva.Type = LocationType.Town;
+        //    geneva.IsEastern = false;
+        //    geneva.ByRoad.Add(Location.marseilles);
+        //    geneva.ByRoad.Add(Location.clermontferrand);
+        //    geneva.ByRoad.Add(Location.paris);
+        //    geneva.ByRoad.Add(Location.strasbourg);
+        //    geneva.ByRoad.Add(Location.zurich);
+        //    geneva.ByTrain.Add(Location.milan);
+        //    tempMap.Add(geneva);
+
+        //    genoa.Name = "Genoa";
+        //    genoa.Abbreviation = "GEO";
+        //    genoa.Type = LocationType.City;
+        //    genoa.IsEastern = true;
+        //    genoa.ByRoad.Add(Location.marseilles);
+        //    genoa.ByRoad.Add(Location.milan);
+        //    genoa.ByRoad.Add(Location.venice);
+        //    genoa.ByRoad.Add(Location.florence);
+        //    genoa.ByTrain.Add(Location.milan);
+        //    genoa.BySea.Add(Location.tyrrheniansea);
+        //    tempMap.Add(genoa);
+
+        //    milan.Name = "Milan";
+        //    milan.Abbreviation = "MIL";
+        //    milan.Type = LocationType.City;
+        //    milan.IsEastern = true;
+        //    milan.ByRoad.Add(Location.marseilles);
+        //    milan.ByRoad.Add(Location.zurich);
+        //    milan.ByRoad.Add(Location.munich);
+        //    milan.ByRoad.Add(Location.venice);
+        //    milan.ByRoad.Add(Location.genoa);
+        //    milan.ByTrain.Add(Location.geneva);
+        //    milan.ByTrain.Add(Location.zurich);
+        //    milan.ByTrain.Add(Location.florence);
+        //    milan.ByTrain.Add(Location.genoa);
+        //    tempMap.Add(milan);
+
+        //    zurich.Name = "Zurich";
+        //    zurich.Abbreviation = "ZUR";
+        //    zurich.Type = LocationType.Town;
+        //    zurich.IsEastern = false;
+        //    zurich.ByRoad.Add(Location.marseilles);
+        //    zurich.ByRoad.Add(Location.geneva);
+        //    zurich.ByRoad.Add(Location.strasbourg);
+        //    zurich.ByRoad.Add(Location.munich);
+        //    zurich.ByRoad.Add(Location.milan);
+        //    zurich.ByTrain.Add(Location.strasbourg);
+        //    zurich.ByTrain.Add(Location.milan);
+        //    tempMap.Add(zurich);
+
+        //    florence.Name = "Florence";
+        //    florence.Abbreviation = "FLO";
+        //    florence.Type = LocationType.Town;
+        //    florence.IsEastern = true;
+        //    florence.ByRoad.Add(Location.genoa);
+        //    florence.ByRoad.Add(Location.venice);
+        //    florence.ByRoad.Add(Location.rome);
+        //    florence.ByTrain.Add(Location.milan);
+        //    florence.ByTrain.Add(Location.rome);
+        //    tempMap.Add(florence);
+
+        //    venice.Name = "Venice";
+        //    venice.Abbreviation = "VEN";
+        //    venice.Type = LocationType.Town;
+        //    venice.IsEastern = true;
+        //    venice.ByRoad.Add(Location.florence);
+        //    venice.ByRoad.Add(Location.genoa);
+        //    venice.ByRoad.Add(Location.milan);
+        //    venice.ByRoad.Add(Location.munich);
+        //    venice.ByTrain.Add(Location.vienna);
+        //    venice.BySea.Add(Location.adriaticsea);
+        //    tempMap.Add(venice);
+
+        //    munich.Name = "Munich";
+        //    munich.Abbreviation = "MUN";
+        //    munich.Type = LocationType.City;
+        //    munich.IsEastern = false;
+        //    munich.ByRoad.Add(Location.milan);
+        //    munich.ByRoad.Add(Location.zurich);
+        //    munich.ByRoad.Add(Location.strasbourg);
+        //    munich.ByRoad.Add(Location.nuremburg);
+        //    munich.ByRoad.Add(Location.vienna);
+        //    munich.ByRoad.Add(Location.zagreb);
+        //    munich.ByRoad.Add(Location.venice);
+        //    munich.ByTrain.Add(Location.nuremburg);
+        //    tempMap.Add(munich);
+
+        //    zagreb.Name = "Zagreb";
+        //    zagreb.Abbreviation = "ZAG";
+        //    zagreb.Type = LocationType.Town;
+        //    zagreb.IsEastern = true;
+        //    zagreb.ByRoad.Add(Location.munich);
+        //    zagreb.ByRoad.Add(Location.vienna);
+        //    zagreb.ByRoad.Add(Location.budapest);
+        //    zagreb.ByRoad.Add(Location.szeged);
+        //    zagreb.ByRoad.Add(Location.stjosephandstmary);
+        //    zagreb.ByRoad.Add(Location.sarajevo);
+        //    tempMap.Add(zagreb);
+
+        //    vienna.Name = "Vienna";
+        //    vienna.Abbreviation = "VIE";
+        //    vienna.Type = LocationType.City;
+        //    vienna.IsEastern = true;
+        //    vienna.ByRoad.Add(Location.munich);
+        //    vienna.ByRoad.Add(Location.prague);
+        //    vienna.ByRoad.Add(Location.budapest);
+        //    vienna.ByRoad.Add(Location.zagreb);
+        //    vienna.ByTrain.Add(Location.venice);
+        //    vienna.ByTrain.Add(Location.prague);
+        //    vienna.ByTrain.Add(Location.budapest);
+        //    tempMap.Add(vienna);
+
+        //    stjosephandstmary.Name = "St. Joseph & St. Mary";
+        //    stjosephandstmary.Abbreviation = "STJ";
+        //    stjosephandstmary.Type = LocationType.Hospital;
+        //    stjosephandstmary.IsEastern = true;
+        //    stjosephandstmary.ByRoad.Add(Location.zagreb);
+        //    stjosephandstmary.ByRoad.Add(Location.szeged);
+        //    stjosephandstmary.ByRoad.Add(Location.belgrade);
+        //    stjosephandstmary.ByRoad.Add(Location.sarajevo);
+        //    tempMap.Add(stjosephandstmary);
+
+        //    sarajevo.Name = "Sarajevo";
+        //    sarajevo.Abbreviation = "SAJ";
+        //    sarajevo.Type = LocationType.Town;
+        //    sarajevo.IsEastern = true;
+        //    sarajevo.ByRoad.Add(Location.zagreb);
+        //    sarajevo.ByRoad.Add(Location.stjosephandstmary);
+        //    sarajevo.ByRoad.Add(Location.belgrade);
+        //    sarajevo.ByRoad.Add(Location.sofia);
+        //    sarajevo.ByRoad.Add(Location.valona);
+        //    tempMap.Add(sarajevo);
+
+        //    szeged.Name = "Szeged";
+        //    szeged.Abbreviation = "SZE";
+        //    szeged.Type = LocationType.Town;
+        //    szeged.IsEastern = true;
+        //    szeged.ByRoad.Add(Location.zagreb);
+        //    szeged.ByRoad.Add(Location.budapest);
+        //    szeged.ByRoad.Add(Location.klausenburg);
+        //    szeged.ByRoad.Add(Location.belgrade);
+        //    szeged.ByRoad.Add(Location.stjosephandstmary);
+        //    szeged.ByTrain.Add(Location.budapest);
+        //    szeged.ByTrain.Add(Location.bucharest);
+        //    szeged.ByTrain.Add(Location.belgrade);
+        //    tempMap.Add(szeged);
+
+        //    budapest.Name = "Budapest";
+        //    budapest.Abbreviation = "BUD";
+        //    budapest.Type = LocationType.City;
+        //    budapest.IsEastern = true;
+        //    budapest.ByRoad.Add(Location.vienna);
+        //    budapest.ByRoad.Add(Location.klausenburg);
+        //    budapest.ByRoad.Add(Location.szeged);
+        //    budapest.ByRoad.Add(Location.zagreb);
+        //    budapest.ByTrain.Add(Location.vienna);
+        //    budapest.ByTrain.Add(Location.szeged);
+        //    tempMap.Add(budapest);
+
+        //    belgrade.Name = "Belgrade";
+        //    belgrade.Abbreviation = "BEL";
+        //    belgrade.Type = LocationType.Town;
+        //    belgrade.IsEastern = true;
+        //    belgrade.ByRoad.Add(Location.stjosephandstmary);
+        //    belgrade.ByRoad.Add(Location.szeged);
+        //    belgrade.ByRoad.Add(Location.klausenburg);
+        //    belgrade.ByRoad.Add(Location.bucharest);
+        //    belgrade.ByRoad.Add(Location.sofia);
+        //    belgrade.ByRoad.Add(Location.sarajevo);
+        //    belgrade.ByTrain.Add(Location.szeged);
+        //    belgrade.ByTrain.Add(Location.sofia);
+        //    tempMap.Add(belgrade);
+
+        //    klausenburg.Name = "Klausenburg";
+        //    klausenburg.Abbreviation = "KLA";
+        //    klausenburg.Type = LocationType.Town;
+        //    klausenburg.IsEastern = true;
+        //    klausenburg.ByRoad.Add(Location.budapest);
+        //    klausenburg.ByRoad.Add(Location.castledracula);
+        //    klausenburg.ByRoad.Add(Location.galatz);
+        //    klausenburg.ByRoad.Add(Location.bucharest);
+        //    klausenburg.ByRoad.Add(Location.belgrade);
+        //    klausenburg.ByRoad.Add(Location.szeged);
+        //    tempMap.Add(klausenburg);
+
+        //    sofia.Name = "Sofia";
+        //    sofia.Abbreviation = "SOF";
+        //    sofia.Type = LocationType.Town;
+        //    sofia.IsEastern = true;
+        //    sofia.ByRoad.Add(Location.sarajevo);
+        //    sofia.ByRoad.Add(Location.belgrade);
+        //    sofia.ByRoad.Add(Location.bucharest);
+        //    sofia.ByRoad.Add(Location.varna);
+        //    sofia.ByRoad.Add(Location.salonica);
+        //    sofia.ByRoad.Add(Location.valona);
+        //    sofia.ByTrain.Add(Location.belgrade);
+        //    sofia.ByTrain.Add(Location.salonica);
+        //    tempMap.Add(sofia);
+
+        //    bucharest.Name = "Bucharest";
+        //    bucharest.Abbreviation = "BUC";
+        //    bucharest.Type = LocationType.City;
+        //    bucharest.IsEastern = true;
+        //    bucharest.ByRoad.Add(Location.belgrade);
+        //    bucharest.ByRoad.Add(Location.klausenburg);
+        //    bucharest.ByRoad.Add(Location.galatz);
+        //    bucharest.ByRoad.Add(Location.constanta);
+        //    bucharest.ByRoad.Add(Location.sofia);
+        //    bucharest.ByTrain.Add(Location.szeged);
+        //    bucharest.ByTrain.Add(Location.galatz);
+        //    bucharest.ByTrain.Add(Location.constanta);
+        //    tempMap.Add(bucharest);
+
+        //    galatz.Name = "Galatz";
+        //    galatz.Abbreviation = "GAT";
+        //    galatz.Type = LocationType.Town;
+        //    galatz.IsEastern = true;
+        //    galatz.ByRoad.Add(Location.klausenburg);
+        //    galatz.ByRoad.Add(Location.castledracula);
+        //    galatz.ByRoad.Add(Location.constanta);
+        //    galatz.ByRoad.Add(Location.bucharest);
+        //    galatz.ByTrain.Add(Location.bucharest);
+        //    tempMap.Add(galatz);
+
+        //    varna.Name = "Varna";
+        //    varna.Abbreviation = "VAR";
+        //    varna.Type = LocationType.City;
+        //    varna.IsEastern = true;
+        //    varna.ByRoad.Add(Location.sofia);
+        //    varna.ByRoad.Add(Location.constanta);
+        //    varna.ByTrain.Add(Location.sofia);
+        //    varna.BySea.Add(Location.blacksea);
+        //    tempMap.Add(varna);
+
+        //    constanta.Name = "Constanta";
+        //    constanta.Abbreviation = "CON";
+        //    constanta.Type = LocationType.City;
+        //    constanta.IsEastern = true;
+        //    constanta.ByRoad.Add(Location.galatz);
+        //    constanta.ByRoad.Add(Location.varna);
+        //    constanta.ByRoad.Add(Location.bucharest);
+        //    constanta.ByTrain.Add(Location.bucharest);
+        //    constanta.BySea.Add(Location.blacksea);
+        //    tempMap.Add(constanta);
+
+        //    lisbon.Name = "Lisbon";
+        //    lisbon.Abbreviation = "LIS";
+        //    lisbon.Type = LocationType.City;
+        //    lisbon.IsEastern = false;
+        //    lisbon.ByRoad.Add(Location.santander);
+        //    lisbon.ByRoad.Add(Location.madrid);
+        //    lisbon.ByRoad.Add(Location.cadiz);
+        //    lisbon.ByTrain.Add(Location.madrid);
+        //    lisbon.BySea.Add(Location.atlanticocean);
+        //    tempMap.Add(lisbon);
+
+        //    cadiz.Name = "Cadiz";
+        //    cadiz.Abbreviation = "CAD";
+        //    cadiz.Type = LocationType.City;
+        //    cadiz.IsEastern = false;
+        //    cadiz.ByRoad.Add(Location.lisbon);
+        //    cadiz.ByRoad.Add(Location.madrid);
+        //    cadiz.ByRoad.Add(Location.granada);
+        //    cadiz.BySea.Add(Location.atlanticocean);
+        //    tempMap.Add(cadiz);
+
+        //    madrid.Name = "Madrid";
+        //    madrid.Abbreviation = "MAD";
+        //    madrid.Type = LocationType.City;
+        //    madrid.IsEastern = false;
+        //    madrid.ByRoad.Add(Location.lisbon);
+        //    madrid.ByRoad.Add(Location.santander);
+        //    madrid.ByRoad.Add(Location.saragossa);
+        //    madrid.ByRoad.Add(Location.alicante);
+        //    madrid.ByRoad.Add(Location.granada);
+        //    madrid.ByRoad.Add(Location.cadiz);
+        //    madrid.ByTrain.Add(Location.lisbon);
+        //    madrid.ByTrain.Add(Location.santander);
+        //    madrid.ByTrain.Add(Location.saragossa);
+        //    madrid.ByTrain.Add(Location.alicante);
+        //    tempMap.Add(madrid);
+
+        //    granada.Name = "Granada";
+        //    granada.Abbreviation = "GRA";
+        //    granada.Type = LocationType.Town;
+        //    granada.IsEastern = false;
+        //    granada.ByRoad.Add(Location.cadiz);
+        //    granada.ByRoad.Add(Location.madrid);
+        //    granada.ByRoad.Add(Location.alicante);
+        //    tempMap.Add(granada);
+
+        //    alicante.Name = "Alicante";
+        //    alicante.Abbreviation = "ALI";
+        //    alicante.Type = LocationType.Town;
+        //    alicante.IsEastern = false;
+        //    alicante.ByRoad.Add(Location.granada);
+        //    alicante.ByRoad.Add(Location.madrid);
+        //    alicante.ByRoad.Add(Location.saragossa);
+        //    alicante.ByTrain.Add(Location.madrid);
+        //    alicante.ByTrain.Add(Location.barcelona);
+        //    alicante.BySea.Add(Location.mediterraneansea);
+        //    tempMap.Add(alicante);
+
+        //    cagliari.Name = "Cagliari";
+        //    cagliari.Abbreviation = "CAG";
+        //    cagliari.Type = LocationType.Town;
+        //    cagliari.IsEastern = true;
+        //    cagliari.BySea.Add(Location.mediterraneansea);
+        //    cagliari.BySea.Add(Location.tyrrheniansea);
+        //    tempMap.Add(cagliari);
+
+        //    rome.Name = "Rome";
+        //    rome.Abbreviation = "ROM";
+        //    rome.Type = LocationType.City;
+        //    rome.IsEastern = true;
+        //    rome.ByRoad.Add(Location.florence);
+        //    rome.ByRoad.Add(Location.bari);
+        //    rome.ByRoad.Add(Location.naples);
+        //    rome.ByTrain.Add(Location.florence);
+        //    rome.ByTrain.Add(Location.naples);
+        //    rome.BySea.Add(Location.tyrrheniansea);
+        //    tempMap.Add(rome);
+
+        //    naples.Name = "Naples";
+        //    naples.Abbreviation = "NAP";
+        //    naples.Type = LocationType.City;
+        //    naples.IsEastern = true;
+        //    naples.ByRoad.Add(Location.rome);
+        //    naples.ByRoad.Add(Location.bari);
+        //    naples.ByTrain.Add(Location.rome);
+        //    naples.ByTrain.Add(Location.bari);
+        //    naples.BySea.Add(Location.tyrrheniansea);
+        //    tempMap.Add(naples);
+
+        //    bari.Name = "Bari";
+        //    bari.Abbreviation = "BAI";
+        //    bari.Type = LocationType.Town;
+        //    bari.IsEastern = true;
+        //    bari.ByRoad.Add(Location.naples);
+        //    bari.ByRoad.Add(Location.rome);
+        //    bari.ByTrain.Add(Location.naples);
+        //    bari.BySea.Add(Location.adriaticsea);
+        //    tempMap.Add(bari);
+
+        //    valona.Name = "Valona";
+        //    valona.Abbreviation = "VAL";
+        //    valona.Type = LocationType.Town;
+        //    valona.IsEastern = true;
+        //    valona.ByRoad.Add(Location.sarajevo);
+        //    valona.ByRoad.Add(Location.sofia);
+        //    valona.ByRoad.Add(Location.salonica);
+        //    valona.ByRoad.Add(Location.athens);
+        //    valona.BySea.Add(Location.ioniansea);
+        //    tempMap.Add(valona);
+
+        //    salonica.Name = "Salonica";
+        //    salonica.Abbreviation = "SAL";
+        //    salonica.Type = LocationType.Town;
+        //    salonica.IsEastern = true;
+        //    salonica.ByRoad.Add(Location.valona);
+        //    salonica.ByRoad.Add(Location.sofia);
+        //    salonica.ByTrain.Add(Location.sofia);
+        //    salonica.BySea.Add(Location.ioniansea);
+        //    tempMap.Add(salonica);
+
+        //    athens.Name = "Athens";
+        //    athens.Abbreviation = "ATH";
+        //    athens.Type = LocationType.City;
+        //    athens.IsEastern = true;
+        //    athens.ByRoad.Add(Location.valona);
+        //    athens.BySea.Add(Location.ioniansea);
+        //    tempMap.Add(athens);
+
+        //    atlanticocean.Name = "Atlantic Ocean";
+        //    atlanticocean.Abbreviation = "ATL";
+        //    atlanticocean.Type = LocationType.Sea;
+        //    atlanticocean.IsEastern = false;
+        //    atlanticocean.BySea.Add(Location.northsea);
+        //    atlanticocean.BySea.Add(Location.irishsea);
+        //    atlanticocean.BySea.Add(Location.englishchannel);
+        //    atlanticocean.BySea.Add(Location.bayofbiscay);
+        //    atlanticocean.BySea.Add(Location.mediterraneansea);
+        //    atlanticocean.BySea.Add(Location.galway);
+        //    atlanticocean.BySea.Add(Location.lisbon);
+        //    atlanticocean.BySea.Add(Location.cadiz);
+        //    tempMap.Add(atlanticocean);
+
+        //    irishsea.Name = "Irish Sea";
+        //    irishsea.Abbreviation = "IRI";
+        //    irishsea.Type = LocationType.Sea;
+        //    irishsea.IsEastern = false;
+        //    irishsea.BySea.Add(Location.atlanticocean);
+        //    irishsea.BySea.Add(Location.dublin);
+        //    irishsea.BySea.Add(Location.liverpool);
+        //    irishsea.BySea.Add(Location.swansea);
+        //    tempMap.Add(irishsea);
+
+        //    englishchannel.Name = "English Channel";
+        //    englishchannel.Abbreviation = "ENG";
+        //    englishchannel.Type = LocationType.Sea;
+        //    englishchannel.IsEastern = false;
+        //    englishchannel.BySea.Add(Location.atlanticocean);
+        //    englishchannel.BySea.Add(Location.northsea);
+        //    englishchannel.BySea.Add(Location.plymouth);
+        //    englishchannel.BySea.Add(Location.london);
+        //    englishchannel.BySea.Add(Location.lehavre);
+        //    tempMap.Add(englishchannel);
+
+        //    northsea.Name = "North Sea";
+        //    northsea.Abbreviation = "NOR";
+        //    northsea.Type = LocationType.Sea;
+        //    northsea.IsEastern = false;
+        //    northsea.BySea.Add(Location.atlanticocean);
+        //    northsea.BySea.Add(Location.englishchannel);
+        //    northsea.BySea.Add(Location.edinburgh);
+        //    northsea.BySea.Add(Location.amsterdam);
+        //    northsea.BySea.Add(Location.hamburg);
+        //    tempMap.Add(northsea);
+
+        //    bayofbiscay.Name = "Bay of Biscay";
+        //    bayofbiscay.Abbreviation = "BAY";
+        //    bayofbiscay.Type = LocationType.Sea;
+        //    bayofbiscay.IsEastern = false;
+        //    bayofbiscay.BySea.Add(Location.atlanticocean);
+        //    bayofbiscay.BySea.Add(Location.nantes);
+        //    bayofbiscay.BySea.Add(Location.bordeaux);
+        //    bayofbiscay.BySea.Add(Location.santander);
+        //    tempMap.Add(bayofbiscay);
+
+        //    mediterraneansea.Name = "Mediterranean Sea";
+        //    mediterraneansea.Abbreviation = "MED";
+        //    mediterraneansea.Type = LocationType.Sea;
+        //    mediterraneansea.IsEastern = true;
+        //    mediterraneansea.BySea.Add(Location.atlanticocean);
+        //    mediterraneansea.BySea.Add(Location.tyrrheniansea);
+        //    mediterraneansea.BySea.Add(Location.alicante);
+        //    mediterraneansea.BySea.Add(Location.barcelona);
+        //    mediterraneansea.BySea.Add(Location.marseilles);
+        //    mediterraneansea.BySea.Add(Location.cagliari);
+        //    tempMap.Add(mediterraneansea);
+
+        //    tyrrheniansea.Name = "Tyrrhenian Sea";
+        //    tyrrheniansea.Abbreviation = "TYR";
+        //    tyrrheniansea.Type = LocationType.Sea;
+        //    tyrrheniansea.IsEastern = false;
+        //    tyrrheniansea.BySea.Add(Location.mediterraneansea);
+        //    tyrrheniansea.BySea.Add(Location.ioniansea);
+        //    tyrrheniansea.BySea.Add(Location.cagliari);
+        //    tyrrheniansea.BySea.Add(Location.genoa);
+        //    tyrrheniansea.BySea.Add(Location.rome);
+        //    tyrrheniansea.BySea.Add(Location.naples);
+        //    tempMap.Add(tyrrheniansea);
+
+        //    adriaticsea.Name = "Adriatic Sea";
+        //    adriaticsea.Abbreviation = "ADR";
+        //    adriaticsea.Type = LocationType.Sea;
+        //    adriaticsea.IsEastern = false;
+        //    adriaticsea.BySea.Add(Location.ioniansea);
+        //    adriaticsea.BySea.Add(Location.bari);
+        //    adriaticsea.BySea.Add(Location.venice);
+        //    tempMap.Add(adriaticsea);
+
+        //    ioniansea.Name = "Ionian Sea";
+        //    ioniansea.Abbreviation = "ION";
+        //    ioniansea.Type = LocationType.Sea;
+        //    ioniansea.IsEastern = false;
+        //    ioniansea.BySea.Add(Location.mediterraneansea);
+        //    ioniansea.BySea.Add(Location.adriaticsea);
+        //    ioniansea.BySea.Add(Location.blacksea);
+        //    ioniansea.BySea.Add(Location.valona);
+        //    ioniansea.BySea.Add(Location.athens);
+        //    ioniansea.BySea.Add(Location.salonica);
+        //    tempMap.Add(ioniansea);
+
+        //    blacksea.Name = "Black Sea";
+        //    blacksea.Abbreviation = "BLA";
+        //    blacksea.Type = LocationType.Sea;
+        //    blacksea.IsEastern = false;
+        //    blacksea.BySea.Add(Location.ioniansea);
+        //    blacksea.BySea.Add(Location.varna);
+        //    blacksea.BySea.Add(Location.constanta);
+        //    tempMap.Add(blacksea);
+
+        //    return tempMap;
+        //}
+
+        // remove
+        internal LocationDetail LocationAtMapIndex(int v)
         {
-            Location galway = new Location();
-            Location dublin = new Location();
-            Location liverpool = new Location();
-            Location edinburgh = new Location();
-            Location manchester = new Location();
-            Location swansea = new Location();
-            Location plymouth = new Location();
-            Location nantes = new Location();
-            Location lehavre = new Location();
-            Location london = new Location();
-            Location paris = new Location();
-            Location brussels = new Location();
-            Location amsterdam = new Location();
-            Location strasbourg = new Location();
-            Location cologne = new Location();
-            Location hamburg = new Location();
-            Location frankfurt = new Location();
-            Location nuremburg = new Location();
-            Location leipzig = new Location();
-            Location berlin = new Location();
-            Location prague = new Location();
-            Location castledracula = new Location();
-            Location santander = new Location();
-            Location saragossa = new Location();
-            Location bordeaux = new Location();
-            Location toulouse = new Location();
-            Location barcelona = new Location();
-            Location clermontferrand = new Location();
-            Location marseilles = new Location();
-            Location geneva = new Location();
-            Location genoa = new Location();
-            Location milan = new Location();
-            Location zurich = new Location();
-            Location florence = new Location();
-            Location venice = new Location();
-            Location munich = new Location();
-            Location zagreb = new Location();
-            Location vienna = new Location();
-            Location stjosephandstmary = new Location();
-            Location sarajevo = new Location();
-            Location szeged = new Location();
-            Location budapest = new Location();
-            Location belgrade = new Location();
-            Location klausenburg = new Location();
-            Location sofia = new Location();
-            Location bucharest = new Location();
-            Location galatz = new Location();
-            Location varna = new Location();
-            Location constanta = new Location();
-            Location lisbon = new Location();
-            Location cadiz = new Location();
-            Location madrid = new Location();
-            Location granada = new Location();
-            Location alicante = new Location();
-            Location cagliari = new Location();
-            Location rome = new Location();
-            Location naples = new Location();
-            Location bari = new Location();
-            Location valona = new Location();
-            Location salonica = new Location();
-            Location athens = new Location();
-            Location atlanticocean = new Location();
-            Location irishsea = new Location();
-            Location englishchannel = new Location();
-            Location northsea = new Location();
-            Location bayofbiscay = new Location();
-            Location mediterraneansea = new Location();
-            Location tyrrheniansea = new Location();
-            Location adriaticsea = new Location();
-            Location ioniansea = new Location();
-            Location blacksea = new Location();
-
-            galway.name = "Galway";
-            galway.abbreviation = "GAW";
-            galway.type = LocationType.Town;
-            galway.isEastern = false;
-            galway.byRoad.Add(dublin);
-            galway.bySea.Add(atlanticocean);
-            map.Add(galway);
-
-            dublin.name = "Dublin";
-            dublin.abbreviation = "DUB";
-            dublin.type = LocationType.Town;
-            dublin.isEastern = false;
-            dublin.byRoad.Add(galway);
-            dublin.bySea.Add(irishsea);
-            map.Add(dublin);
-
-            liverpool.name = "Liverpool";
-            liverpool.abbreviation = "LIV";
-            liverpool.type = LocationType.City;
-            liverpool.isEastern = false;
-            liverpool.byRoad.Add(manchester);
-            liverpool.byRoad.Add(swansea);
-            liverpool.byTrain.Add(manchester);
-            liverpool.bySea.Add(irishsea);
-            map.Add(liverpool);
-
-            edinburgh.name = "Edinburgh";
-            edinburgh.abbreviation = "EDI";
-            edinburgh.type = LocationType.City;
-            edinburgh.isEastern = false;
-            edinburgh.byRoad.Add(manchester);
-            edinburgh.byTrain.Add(manchester);
-            edinburgh.bySea.Add(northsea);
-            map.Add(edinburgh);
-
-            manchester.name = "Manchester";
-            manchester.abbreviation = "MAN";
-            manchester.type = LocationType.City;
-            manchester.isEastern = false;
-            manchester.byRoad.Add(edinburgh);
-            manchester.byRoad.Add(liverpool);
-            manchester.byRoad.Add(london);
-            manchester.byTrain.Add(edinburgh);
-            manchester.byTrain.Add(liverpool);
-            manchester.byTrain.Add(london);
-            map.Add(manchester);
-
-            swansea.name = "Swansea";
-            swansea.abbreviation = "SWA";
-            swansea.type = LocationType.Town;
-            swansea.isEastern = false;
-            swansea.byRoad.Add(liverpool);
-            swansea.byRoad.Add(london);
-            swansea.byTrain.Add(london);
-            swansea.bySea.Add(irishsea);
-            map.Add(swansea);
-
-            plymouth.name = "Plymouth";
-            plymouth.abbreviation = "PLY";
-            plymouth.type = LocationType.Town;
-            plymouth.isEastern = false;
-            plymouth.byRoad.Add(london);
-            plymouth.bySea.Add(englishchannel);
-            map.Add(plymouth);
-
-            nantes.name = "Nantes";
-            nantes.abbreviation = "NAN";
-            nantes.type = LocationType.City;
-            nantes.isEastern = false;
-            nantes.byRoad.Add(lehavre);
-            nantes.byRoad.Add(paris);
-            nantes.byRoad.Add(clermontferrand);
-            nantes.byRoad.Add(bordeaux);
-            nantes.bySea.Add(bayofbiscay);
-            map.Add(nantes);
-
-            lehavre.name = "Le Havre";
-            lehavre.abbreviation = "LEH";
-            lehavre.type = LocationType.Town;
-            lehavre.isEastern = false;
-            lehavre.byRoad.Add(nantes);
-            lehavre.byRoad.Add(paris);
-            lehavre.byRoad.Add(brussels);
-            lehavre.byTrain.Add(paris);
-            lehavre.bySea.Add(englishchannel);
-            map.Add(lehavre);
-
-            london.name = "London";
-            london.abbreviation = "LON";
-            london.type = LocationType.City;
-            london.isEastern = false;
-            london.byRoad.Add(manchester);
-            london.byRoad.Add(swansea);
-            london.byRoad.Add(plymouth);
-            london.byTrain.Add(manchester);
-            london.byTrain.Add(swansea);
-            london.bySea.Add(englishchannel);
-            map.Add(london);
-
-            paris.name = "Paris";
-            paris.abbreviation = "PAR";
-            paris.type = LocationType.City;
-            paris.isEastern = false;
-            paris.byRoad.Add(nantes);
-            paris.byRoad.Add(lehavre);
-            paris.byRoad.Add(brussels);
-            paris.byRoad.Add(strasbourg);
-            paris.byRoad.Add(geneva);
-            paris.byRoad.Add(clermontferrand);
-            paris.byTrain.Add(lehavre);
-            paris.byTrain.Add(brussels);
-            paris.byTrain.Add(marseilles);
-            paris.byTrain.Add(bordeaux);
-            map.Add(paris);
-
-            brussels.name = "Brussels";
-            brussels.abbreviation = "BRU";
-            brussels.type = LocationType.City;
-            brussels.isEastern = false;
-            brussels.byRoad.Add(lehavre);
-            brussels.byRoad.Add(amsterdam);
-            brussels.byRoad.Add(cologne);
-            brussels.byRoad.Add(strasbourg);
-            brussels.byRoad.Add(paris);
-            brussels.byTrain.Add(cologne);
-            brussels.byTrain.Add(paris);
-            map.Add(brussels);
-
-            amsterdam.name = "Amsterdam";
-            amsterdam.abbreviation = "AMS";
-            amsterdam.type = LocationType.City;
-            amsterdam.isEastern = false;
-            amsterdam.byRoad.Add(brussels);
-            amsterdam.byRoad.Add(cologne);
-            amsterdam.bySea.Add(northsea);
-            map.Add(amsterdam);
-
-            strasbourg.name = "Strasbourg";
-            strasbourg.abbreviation = "STR";
-            strasbourg.type = LocationType.Town;
-            strasbourg.isEastern = false;
-            strasbourg.byRoad.Add(paris);
-            strasbourg.byRoad.Add(brussels);
-            strasbourg.byRoad.Add(cologne);
-            strasbourg.byRoad.Add(frankfurt);
-            strasbourg.byRoad.Add(nuremburg);
-            strasbourg.byRoad.Add(munich);
-            strasbourg.byRoad.Add(zurich);
-            strasbourg.byRoad.Add(geneva);
-            strasbourg.byTrain.Add(frankfurt);
-            strasbourg.byTrain.Add(zurich);
-            map.Add(strasbourg);
-
-            cologne.name = "Cologne";
-            cologne.abbreviation = "COL";
-            cologne.type = LocationType.City;
-            cologne.isEastern = false;
-            cologne.byRoad.Add(brussels);
-            cologne.byRoad.Add(amsterdam);
-            cologne.byRoad.Add(hamburg);
-            cologne.byRoad.Add(leipzig);
-            cologne.byRoad.Add(frankfurt);
-            cologne.byRoad.Add(strasbourg);
-            cologne.byTrain.Add(brussels);
-            cologne.byTrain.Add(frankfurt);
-            map.Add(cologne);
-
-            hamburg.name = "Hamburg";
-            hamburg.abbreviation = "HAM";
-            hamburg.type = LocationType.City;
-            hamburg.isEastern = false;
-            hamburg.byRoad.Add(cologne);
-            hamburg.byRoad.Add(berlin);
-            hamburg.byRoad.Add(leipzig);
-            hamburg.byTrain.Add(berlin);
-            hamburg.bySea.Add(northsea);
-            map.Add(hamburg);
-
-            frankfurt.name = "Frankfurt";
-            frankfurt.abbreviation = "FRA";
-            frankfurt.type = LocationType.Town;
-            frankfurt.isEastern = false;
-            frankfurt.byRoad.Add(strasbourg);
-            frankfurt.byRoad.Add(cologne);
-            frankfurt.byRoad.Add(leipzig);
-            frankfurt.byRoad.Add(nuremburg);
-            frankfurt.byTrain.Add(strasbourg);
-            frankfurt.byTrain.Add(cologne);
-            frankfurt.byTrain.Add(leipzig);
-            map.Add(frankfurt);
-
-            nuremburg.name = "Nuremburg";
-            nuremburg.abbreviation = "NUR";
-            nuremburg.type = LocationType.Town;
-            nuremburg.isEastern = false;
-            nuremburg.byRoad.Add(strasbourg);
-            nuremburg.byRoad.Add(frankfurt);
-            nuremburg.byRoad.Add(leipzig);
-            nuremburg.byRoad.Add(prague);
-            nuremburg.byRoad.Add(munich);
-            nuremburg.byTrain.Add(leipzig);
-            nuremburg.byTrain.Add(munich);
-            map.Add(nuremburg);
-
-            leipzig.name = "Leipzig";
-            leipzig.abbreviation = "LEI";
-            leipzig.type = LocationType.City;
-            leipzig.isEastern = false;
-            leipzig.byRoad.Add(cologne);
-            leipzig.byRoad.Add(hamburg);
-            leipzig.byRoad.Add(berlin);
-            leipzig.byRoad.Add(nuremburg);
-            leipzig.byRoad.Add(frankfurt);
-            leipzig.byTrain.Add(frankfurt);
-            leipzig.byTrain.Add(berlin);
-            leipzig.byTrain.Add(nuremburg);
-            map.Add(leipzig);
-
-            berlin.name = "Berlin";
-            berlin.abbreviation = "BER";
-            berlin.type = LocationType.City;
-            berlin.isEastern = false;
-            berlin.byRoad.Add(hamburg);
-            berlin.byRoad.Add(prague);
-            berlin.byRoad.Add(leipzig);
-            berlin.byTrain.Add(hamburg);
-            berlin.byTrain.Add(leipzig);
-            berlin.byTrain.Add(prague);
-            map.Add(berlin);
-
-            prague.name = "Prague";
-            prague.abbreviation = "PRA";
-            prague.type = LocationType.City;
-            prague.isEastern = true;
-            prague.byRoad.Add(berlin);
-            prague.byRoad.Add(vienna);
-            prague.byRoad.Add(nuremburg);
-            prague.byTrain.Add(berlin);
-            prague.byTrain.Add(vienna);
-            map.Add(prague);
-
-            castledracula.name = "Castle Dracula";
-            castledracula.abbreviation = "CAS";
-            castledracula.type = LocationType.Castle;
-            castledracula.isEastern = true;
-            castledracula.byRoad.Add(klausenburg);
-            castledracula.byRoad.Add(galatz);
-            map.Add(castledracula);
-
-            santander.name = "Santander";
-            santander.abbreviation = "SAN";
-            santander.type = LocationType.Town;
-            santander.isEastern = false;
-            santander.byRoad.Add(lisbon);
-            santander.byRoad.Add(madrid);
-            santander.byRoad.Add(saragossa);
-            santander.byTrain.Add(madrid);
-            santander.bySea.Add(bayofbiscay);
-            map.Add(santander);
-
-            saragossa.name = "Saragossa";
-            saragossa.abbreviation = "SAG";
-            saragossa.type = LocationType.Town;
-            saragossa.isEastern = false;
-            saragossa.byRoad.Add(madrid);
-            saragossa.byRoad.Add(santander);
-            saragossa.byRoad.Add(bordeaux);
-            saragossa.byRoad.Add(toulouse);
-            saragossa.byRoad.Add(barcelona);
-            saragossa.byRoad.Add(alicante);
-            saragossa.byTrain.Add(madrid);
-            saragossa.byTrain.Add(bordeaux);
-            saragossa.byTrain.Add(barcelona);
-            map.Add(saragossa);
-
-            bordeaux.name = "Bordeaux";
-            bordeaux.abbreviation = "BOR";
-            bordeaux.type = LocationType.City;
-            bordeaux.isEastern = false;
-            bordeaux.byRoad.Add(saragossa);
-            bordeaux.byRoad.Add(nantes);
-            bordeaux.byRoad.Add(clermontferrand);
-            bordeaux.byRoad.Add(toulouse);
-            bordeaux.byTrain.Add(paris);
-            bordeaux.byTrain.Add(saragossa);
-            bordeaux.bySea.Add(bayofbiscay);
-            map.Add(bordeaux);
-
-            toulouse.name = "Toulouse";
-            toulouse.abbreviation = "TOU";
-            toulouse.type = LocationType.Town;
-            toulouse.isEastern = false;
-            toulouse.byRoad.Add(saragossa);
-            toulouse.byRoad.Add(bordeaux);
-            toulouse.byRoad.Add(clermontferrand);
-            toulouse.byRoad.Add(marseilles);
-            toulouse.byRoad.Add(barcelona);
-            map.Add(toulouse);
-
-            barcelona.name = "Barcelona";
-            barcelona.abbreviation = "BAC";
-            barcelona.type = LocationType.City;
-            barcelona.isEastern = false;
-            barcelona.byRoad.Add(saragossa);
-            barcelona.byRoad.Add(toulouse);
-            barcelona.byTrain.Add(saragossa);
-            barcelona.byTrain.Add(alicante);
-            barcelona.bySea.Add(mediterraneansea);
-            map.Add(barcelona);
-
-            clermontferrand.name = "Clermont Ferrand";
-            clermontferrand.abbreviation = "CLE";
-            clermontferrand.type = LocationType.Town;
-            clermontferrand.isEastern = false;
-            clermontferrand.byRoad.Add(bordeaux);
-            clermontferrand.byRoad.Add(nantes);
-            clermontferrand.byRoad.Add(paris);
-            clermontferrand.byRoad.Add(geneva);
-            clermontferrand.byRoad.Add(marseilles);
-            clermontferrand.byRoad.Add(toulouse);
-            map.Add(clermontferrand);
-
-            marseilles.name = "Marseilles";
-            marseilles.abbreviation = "MAR";
-            marseilles.type = LocationType.City;
-            marseilles.isEastern = false;
-            marseilles.byRoad.Add(toulouse);
-            marseilles.byRoad.Add(clermontferrand);
-            marseilles.byRoad.Add(geneva);
-            marseilles.byRoad.Add(zurich);
-            marseilles.byRoad.Add(milan);
-            marseilles.byRoad.Add(genoa);
-            marseilles.byTrain.Add(paris);
-            marseilles.bySea.Add(mediterraneansea);
-            map.Add(marseilles);
-
-            geneva.name = "Geneva";
-            geneva.abbreviation = "GEV";
-            geneva.type = LocationType.Town;
-            geneva.isEastern = false;
-            geneva.byRoad.Add(marseilles);
-            geneva.byRoad.Add(clermontferrand);
-            geneva.byRoad.Add(paris);
-            geneva.byRoad.Add(strasbourg);
-            geneva.byRoad.Add(zurich);
-            geneva.byTrain.Add(milan);
-            map.Add(geneva);
-
-            genoa.name = "Genoa";
-            genoa.abbreviation = "GEO";
-            genoa.type = LocationType.City;
-            genoa.isEastern = true;
-            genoa.byRoad.Add(marseilles);
-            genoa.byRoad.Add(milan);
-            genoa.byRoad.Add(venice);
-            genoa.byRoad.Add(florence);
-            genoa.byTrain.Add(milan);
-            genoa.bySea.Add(tyrrheniansea);
-            map.Add(genoa);
-
-            milan.name = "Milan";
-            milan.abbreviation = "MIL";
-            milan.type = LocationType.City;
-            milan.isEastern = true;
-            milan.byRoad.Add(marseilles);
-            milan.byRoad.Add(zurich);
-            milan.byRoad.Add(munich);
-            milan.byRoad.Add(venice);
-            milan.byRoad.Add(genoa);
-            milan.byTrain.Add(geneva);
-            milan.byTrain.Add(zurich);
-            milan.byTrain.Add(florence);
-            milan.byTrain.Add(genoa);
-            map.Add(milan);
-
-            zurich.name = "Zurich";
-            zurich.abbreviation = "ZUR";
-            zurich.type = LocationType.Town;
-            zurich.isEastern = false;
-            zurich.byRoad.Add(marseilles);
-            zurich.byRoad.Add(geneva);
-            zurich.byRoad.Add(strasbourg);
-            zurich.byRoad.Add(munich);
-            zurich.byRoad.Add(milan);
-            zurich.byTrain.Add(strasbourg);
-            zurich.byTrain.Add(milan);
-            map.Add(zurich);
-
-            florence.name = "Florence";
-            florence.abbreviation = "FLO";
-            florence.type = LocationType.Town;
-            florence.isEastern = true;
-            florence.byRoad.Add(genoa);
-            florence.byRoad.Add(venice);
-            florence.byRoad.Add(rome);
-            florence.byTrain.Add(milan);
-            florence.byTrain.Add(rome);
-            map.Add(florence);
-
-            venice.name = "Venice";
-            venice.abbreviation = "VEN";
-            venice.type = LocationType.Town;
-            venice.isEastern = true;
-            venice.byRoad.Add(florence);
-            venice.byRoad.Add(genoa);
-            venice.byRoad.Add(milan);
-            venice.byRoad.Add(munich);
-            venice.byTrain.Add(vienna);
-            venice.bySea.Add(adriaticsea);
-            map.Add(venice);
-
-            munich.name = "Munich";
-            munich.abbreviation = "MUN";
-            munich.type = LocationType.City;
-            munich.isEastern = false;
-            munich.byRoad.Add(milan);
-            munich.byRoad.Add(zurich);
-            munich.byRoad.Add(strasbourg);
-            munich.byRoad.Add(nuremburg);
-            munich.byRoad.Add(vienna);
-            munich.byRoad.Add(zagreb);
-            munich.byRoad.Add(venice);
-            munich.byTrain.Add(nuremburg);
-            map.Add(munich);
-
-            zagreb.name = "Zagreb";
-            zagreb.abbreviation = "ZAG";
-            zagreb.type = LocationType.Town;
-            zagreb.isEastern = true;
-            zagreb.byRoad.Add(munich);
-            zagreb.byRoad.Add(vienna);
-            zagreb.byRoad.Add(budapest);
-            zagreb.byRoad.Add(szeged);
-            zagreb.byRoad.Add(stjosephandstmary);
-            zagreb.byRoad.Add(sarajevo);
-            map.Add(zagreb);
-
-            vienna.name = "Vienna";
-            vienna.abbreviation = "VIE";
-            vienna.type = LocationType.City;
-            vienna.isEastern = true;
-            vienna.byRoad.Add(munich);
-            vienna.byRoad.Add(prague);
-            vienna.byRoad.Add(budapest);
-            vienna.byRoad.Add(zagreb);
-            vienna.byTrain.Add(venice);
-            vienna.byTrain.Add(prague);
-            vienna.byTrain.Add(budapest);
-            map.Add(vienna);
-
-            stjosephandstmary.name = "St. Joseph & St. Mary";
-            stjosephandstmary.abbreviation = "STJ";
-            stjosephandstmary.type = LocationType.Hospital;
-            stjosephandstmary.isEastern = true;
-            stjosephandstmary.byRoad.Add(zagreb);
-            stjosephandstmary.byRoad.Add(szeged);
-            stjosephandstmary.byRoad.Add(belgrade);
-            stjosephandstmary.byRoad.Add(sarajevo);
-            map.Add(stjosephandstmary);
-
-            sarajevo.name = "Sarajevo";
-            sarajevo.abbreviation = "SAJ";
-            sarajevo.type = LocationType.Town;
-            sarajevo.isEastern = true;
-            sarajevo.byRoad.Add(zagreb);
-            sarajevo.byRoad.Add(stjosephandstmary);
-            sarajevo.byRoad.Add(belgrade);
-            sarajevo.byRoad.Add(sofia);
-            sarajevo.byRoad.Add(valona);
-            map.Add(sarajevo);
-
-            szeged.name = "Szeged";
-            szeged.abbreviation = "SZE";
-            szeged.type = LocationType.Town;
-            szeged.isEastern = true;
-            szeged.byRoad.Add(zagreb);
-            szeged.byRoad.Add(budapest);
-            szeged.byRoad.Add(klausenburg);
-            szeged.byRoad.Add(belgrade);
-            szeged.byRoad.Add(stjosephandstmary);
-            szeged.byTrain.Add(budapest);
-            szeged.byTrain.Add(bucharest);
-            szeged.byTrain.Add(belgrade);
-            map.Add(szeged);
-
-            budapest.name = "Budapest";
-            budapest.abbreviation = "BUD";
-            budapest.type = LocationType.City;
-            budapest.isEastern = true;
-            budapest.byRoad.Add(vienna);
-            budapest.byRoad.Add(klausenburg);
-            budapest.byRoad.Add(szeged);
-            budapest.byRoad.Add(zagreb);
-            budapest.byTrain.Add(vienna);
-            budapest.byTrain.Add(szeged);
-            map.Add(budapest);
-
-            belgrade.name = "Belgrade";
-            belgrade.abbreviation = "BEL";
-            belgrade.type = LocationType.Town;
-            belgrade.isEastern = true;
-            belgrade.byRoad.Add(stjosephandstmary);
-            belgrade.byRoad.Add(szeged);
-            belgrade.byRoad.Add(klausenburg);
-            belgrade.byRoad.Add(bucharest);
-            belgrade.byRoad.Add(sofia);
-            belgrade.byRoad.Add(sarajevo);
-            belgrade.byTrain.Add(szeged);
-            belgrade.byTrain.Add(sofia);
-            map.Add(belgrade);
-
-            klausenburg.name = "Klausenburg";
-            klausenburg.abbreviation = "KLA";
-            klausenburg.type = LocationType.Town;
-            klausenburg.isEastern = true;
-            klausenburg.byRoad.Add(budapest);
-            klausenburg.byRoad.Add(castledracula);
-            klausenburg.byRoad.Add(galatz);
-            klausenburg.byRoad.Add(bucharest);
-            klausenburg.byRoad.Add(belgrade);
-            klausenburg.byRoad.Add(szeged);
-            map.Add(klausenburg);
-
-            sofia.name = "Sofia";
-            sofia.abbreviation = "SOF";
-            sofia.type = LocationType.Town;
-            sofia.isEastern = true;
-            sofia.byRoad.Add(sarajevo);
-            sofia.byRoad.Add(belgrade);
-            sofia.byRoad.Add(bucharest);
-            sofia.byRoad.Add(varna);
-            sofia.byRoad.Add(salonica);
-            sofia.byRoad.Add(valona);
-            sofia.byTrain.Add(belgrade);
-            sofia.byTrain.Add(salonica);
-            map.Add(sofia);
-
-            bucharest.name = "Bucharest";
-            bucharest.abbreviation = "BUC";
-            bucharest.type = LocationType.City;
-            bucharest.isEastern = true;
-            bucharest.byRoad.Add(belgrade);
-            bucharest.byRoad.Add(klausenburg);
-            bucharest.byRoad.Add(galatz);
-            bucharest.byRoad.Add(constanta);
-            bucharest.byRoad.Add(sofia);
-            bucharest.byTrain.Add(szeged);
-            bucharest.byTrain.Add(galatz);
-            bucharest.byTrain.Add(constanta);
-            map.Add(bucharest);
-
-            galatz.name = "Galatz";
-            galatz.abbreviation = "GAT";
-            galatz.type = LocationType.Town;
-            galatz.isEastern = true;
-            galatz.byRoad.Add(klausenburg);
-            galatz.byRoad.Add(castledracula);
-            galatz.byRoad.Add(constanta);
-            galatz.byRoad.Add(bucharest);
-            galatz.byTrain.Add(bucharest);
-            map.Add(galatz);
-
-            varna.name = "Varna";
-            varna.abbreviation = "VAR";
-            varna.type = LocationType.City;
-            varna.isEastern = true;
-            varna.byRoad.Add(sofia);
-            varna.byRoad.Add(constanta);
-            varna.byTrain.Add(sofia);
-            varna.bySea.Add(blacksea);
-            map.Add(varna);
-
-            constanta.name = "Constanta";
-            constanta.abbreviation = "CON";
-            constanta.type = LocationType.City;
-            constanta.isEastern = true;
-            constanta.byRoad.Add(galatz);
-            constanta.byRoad.Add(varna);
-            constanta.byRoad.Add(bucharest);
-            constanta.byTrain.Add(bucharest);
-            constanta.bySea.Add(blacksea);
-            map.Add(constanta);
-
-            lisbon.name = "Lisbon";
-            lisbon.abbreviation = "LIS";
-            lisbon.type = LocationType.City;
-            lisbon.isEastern = false;
-            lisbon.byRoad.Add(santander);
-            lisbon.byRoad.Add(madrid);
-            lisbon.byRoad.Add(cadiz);
-            lisbon.byTrain.Add(madrid);
-            lisbon.bySea.Add(atlanticocean);
-            map.Add(lisbon);
-
-            cadiz.name = "Cadiz";
-            cadiz.abbreviation = "CAD";
-            cadiz.type = LocationType.City;
-            cadiz.isEastern = false;
-            cadiz.byRoad.Add(lisbon);
-            cadiz.byRoad.Add(madrid);
-            cadiz.byRoad.Add(granada);
-            cadiz.bySea.Add(atlanticocean);
-            map.Add(cadiz);
-
-            madrid.name = "Madrid";
-            madrid.abbreviation = "MAD";
-            madrid.type = LocationType.City;
-            madrid.isEastern = false;
-            madrid.byRoad.Add(lisbon);
-            madrid.byRoad.Add(santander);
-            madrid.byRoad.Add(saragossa);
-            madrid.byRoad.Add(alicante);
-            madrid.byRoad.Add(granada);
-            madrid.byRoad.Add(cadiz);
-            madrid.byTrain.Add(lisbon);
-            madrid.byTrain.Add(santander);
-            madrid.byTrain.Add(saragossa);
-            madrid.byTrain.Add(alicante);
-            map.Add(madrid);
-
-            granada.name = "Granada";
-            granada.abbreviation = "GRA";
-            granada.type = LocationType.Town;
-            granada.isEastern = false;
-            granada.byRoad.Add(cadiz);
-            granada.byRoad.Add(madrid);
-            granada.byRoad.Add(alicante);
-            map.Add(granada);
-
-            alicante.name = "Alicante";
-            alicante.abbreviation = "ALI";
-            alicante.type = LocationType.Town;
-            alicante.isEastern = false;
-            alicante.byRoad.Add(granada);
-            alicante.byRoad.Add(madrid);
-            alicante.byRoad.Add(saragossa);
-            alicante.byTrain.Add(madrid);
-            alicante.byTrain.Add(barcelona);
-            alicante.bySea.Add(mediterraneansea);
-            map.Add(alicante);
-
-            cagliari.name = "Cagliari";
-            cagliari.abbreviation = "CAG";
-            cagliari.type = LocationType.Town;
-            cagliari.isEastern = true;
-            cagliari.bySea.Add(mediterraneansea);
-            cagliari.bySea.Add(tyrrheniansea);
-            map.Add(cagliari);
-
-            rome.name = "Rome";
-            rome.abbreviation = "ROM";
-            rome.type = LocationType.City;
-            rome.isEastern = true;
-            rome.byRoad.Add(florence);
-            rome.byRoad.Add(bari);
-            rome.byRoad.Add(naples);
-            rome.byTrain.Add(florence);
-            rome.byTrain.Add(naples);
-            rome.bySea.Add(tyrrheniansea);
-            map.Add(rome);
-
-            naples.name = "Naples";
-            naples.abbreviation = "NAP";
-            naples.type = LocationType.City;
-            naples.isEastern = true;
-            naples.byRoad.Add(rome);
-            naples.byRoad.Add(bari);
-            naples.byTrain.Add(rome);
-            naples.byTrain.Add(bari);
-            naples.bySea.Add(tyrrheniansea);
-            map.Add(naples);
-
-            bari.name = "Bari";
-            bari.abbreviation = "BAI";
-            bari.type = LocationType.Town;
-            bari.isEastern = true;
-            bari.byRoad.Add(naples);
-            bari.byRoad.Add(rome);
-            bari.byTrain.Add(naples);
-            bari.bySea.Add(adriaticsea);
-            map.Add(bari);
-
-            valona.name = "Valona";
-            valona.abbreviation = "VAL";
-            valona.type = LocationType.Town;
-            valona.isEastern = true;
-            valona.byRoad.Add(sarajevo);
-            valona.byRoad.Add(sofia);
-            valona.byRoad.Add(salonica);
-            valona.byRoad.Add(athens);
-            valona.bySea.Add(ioniansea);
-            map.Add(valona);
-
-            salonica.name = "Salonica";
-            salonica.abbreviation = "SAL";
-            salonica.type = LocationType.Town;
-            salonica.isEastern = true;
-            salonica.byRoad.Add(valona);
-            salonica.byRoad.Add(sofia);
-            salonica.byTrain.Add(sofia);
-            salonica.bySea.Add(ioniansea);
-            map.Add(salonica);
-
-            athens.name = "Athens";
-            athens.abbreviation = "ATH";
-            athens.type = LocationType.City;
-            athens.isEastern = true;
-            athens.byRoad.Add(valona);
-            athens.bySea.Add(ioniansea);
-            map.Add(athens);
-
-            atlanticocean.name = "Atlantic Ocean";
-            atlanticocean.abbreviation = "ATL";
-            atlanticocean.type = LocationType.Sea;
-            atlanticocean.isEastern = false;
-            atlanticocean.bySea.Add(northsea);
-            atlanticocean.bySea.Add(irishsea);
-            atlanticocean.bySea.Add(englishchannel);
-            atlanticocean.bySea.Add(bayofbiscay);
-            atlanticocean.bySea.Add(mediterraneansea);
-            atlanticocean.bySea.Add(galway);
-            atlanticocean.bySea.Add(lisbon);
-            atlanticocean.bySea.Add(cadiz);
-            map.Add(atlanticocean);
-
-            irishsea.name = "Irish Sea";
-            irishsea.abbreviation = "IRI";
-            irishsea.type = LocationType.Sea;
-            irishsea.isEastern = false;
-            irishsea.bySea.Add(atlanticocean);
-            irishsea.bySea.Add(dublin);
-            irishsea.bySea.Add(liverpool);
-            irishsea.bySea.Add(swansea);
-            map.Add(irishsea);
-
-            englishchannel.name = "English Channel";
-            englishchannel.abbreviation = "ENG";
-            englishchannel.type = LocationType.Sea;
-            englishchannel.isEastern = false;
-            englishchannel.bySea.Add(atlanticocean);
-            englishchannel.bySea.Add(northsea);
-            englishchannel.bySea.Add(plymouth);
-            englishchannel.bySea.Add(london);
-            englishchannel.bySea.Add(lehavre);
-            map.Add(englishchannel);
-
-            northsea.name = "North Sea";
-            northsea.abbreviation = "NOR";
-            northsea.type = LocationType.Sea;
-            northsea.isEastern = false;
-            northsea.bySea.Add(atlanticocean);
-            northsea.bySea.Add(englishchannel);
-            northsea.bySea.Add(edinburgh);
-            northsea.bySea.Add(amsterdam);
-            northsea.bySea.Add(hamburg);
-            map.Add(northsea);
-
-            bayofbiscay.name = "Bay of Biscay";
-            bayofbiscay.abbreviation = "BAY";
-            bayofbiscay.type = LocationType.Sea;
-            bayofbiscay.isEastern = false;
-            bayofbiscay.bySea.Add(atlanticocean);
-            bayofbiscay.bySea.Add(nantes);
-            bayofbiscay.bySea.Add(bordeaux);
-            bayofbiscay.bySea.Add(santander);
-            map.Add(bayofbiscay);
-
-            mediterraneansea.name = "Mediterranean Sea";
-            mediterraneansea.abbreviation = "MED";
-            mediterraneansea.type = LocationType.Sea;
-            mediterraneansea.isEastern = true;
-            mediterraneansea.bySea.Add(atlanticocean);
-            mediterraneansea.bySea.Add(tyrrheniansea);
-            mediterraneansea.bySea.Add(alicante);
-            mediterraneansea.bySea.Add(barcelona);
-            mediterraneansea.bySea.Add(marseilles);
-            mediterraneansea.bySea.Add(cagliari);
-            map.Add(mediterraneansea);
-
-            tyrrheniansea.name = "Tyrrhenian Sea";
-            tyrrheniansea.abbreviation = "TYR";
-            tyrrheniansea.type = LocationType.Sea;
-            tyrrheniansea.isEastern = false;
-            tyrrheniansea.bySea.Add(mediterraneansea);
-            tyrrheniansea.bySea.Add(ioniansea);
-            tyrrheniansea.bySea.Add(cagliari);
-            tyrrheniansea.bySea.Add(genoa);
-            tyrrheniansea.bySea.Add(rome);
-            tyrrheniansea.bySea.Add(naples);
-            map.Add(tyrrheniansea);
-
-            adriaticsea.name = "Adriatic Sea";
-            adriaticsea.abbreviation = "ADR";
-            adriaticsea.type = LocationType.Sea;
-            adriaticsea.isEastern = false;
-            adriaticsea.bySea.Add(ioniansea);
-            adriaticsea.bySea.Add(bari);
-            adriaticsea.bySea.Add(venice);
-            map.Add(adriaticsea);
-
-            ioniansea.name = "Ionian Sea";
-            ioniansea.abbreviation = "ION";
-            ioniansea.type = LocationType.Sea;
-            ioniansea.isEastern = false;
-            ioniansea.bySea.Add(mediterraneansea);
-            ioniansea.bySea.Add(adriaticsea);
-            ioniansea.bySea.Add(blacksea);
-            ioniansea.bySea.Add(valona);
-            ioniansea.bySea.Add(athens);
-            ioniansea.bySea.Add(salonica);
-            map.Add(ioniansea);
-
-            blacksea.name = "Black Sea";
-            blacksea.abbreviation = "BLA";
-            blacksea.type = LocationType.Sea;
-            blacksea.isEastern = false;
-            blacksea.bySea.Add(ioniansea);
-            blacksea.bySea.Add(varna);
-            blacksea.bySea.Add(constanta);
-            map.Add(blacksea);
+            return Map[v];
         }
 
-        internal Location LocationAtMapIndex(int v)
+        // remove
+        internal void SetLocationForHunterAt(int v, LocationDetail location)
         {
-            return map[v];
-        }
-
-        internal int MapSize()
-        {
-            return map.Count();
-        }
-
-        internal void SetLocationForHunterAt(int v, Location location)
-        {
-            hunters[v].currentLocation = location;
-            Logger.WriteToDebugLog(hunters[v].name + " started in " + location.name);
-            Logger.WriteToGameLog(hunters[v].name + " started in " + location.name);
+            Hunters[v].CurrentLocation = location;
+            Logger.WriteToDebugLog(Hunters[v].Name + " started in " + location.Name);
+            Logger.WriteToGameLog(Hunters[v].Name + " started in " + location.Name);
         }
 
         internal void PlaceDraculaAtStartLocation()
         {
-            dracula.currentLocation = dracula.ChooseStartLocation(this);
-            dracula.trail.Add(dracula.currentLocation);
-            Logger.WriteToDebugLog("Dracula started in " + dracula.currentLocation.name);
-            Logger.WriteToGameLog("Dracula started in " + dracula.currentLocation.name);
+            Dracula.CurrentLocation = Dracula.ChooseStartLocation(this);
+            Dracula.Trail.Add(Dracula.CurrentLocation);
+            Logger.WriteToDebugLog("Dracula started in " + Dracula.CurrentLocation.Name);
+            Logger.WriteToGameLog("Dracula started in " + Dracula.CurrentLocation.Name);
         }
 
+        // remove
         internal string TimeOfDay()
         {
-            return timesOfDay[Math.Max(0, time)];
+            return TimesOfDay[Math.Max(0, TimeIndex)];
         }
 
+        // remove
         internal void AdjustTime(int v)
         {
-            time += v;
+            TimeIndex += v;
         }
 
+        // remove
         internal int Time()
         {
-            return time;
+            return TimeIndex;
         }
 
+        // remove
         internal void SetHunterAlly(string v)
         {
-            hunterAlly = GetEventByNameFromEventDeck(v);
+            HunterAlly = GetEventByNameFromEventDeck(v);
         }
 
+        // remove
         internal string NameOfHunterAlly()
         {
             if (HuntersHaveAlly())
             {
-                return hunterAlly.name;
+                return HunterAlly.name;
             }
             else
             {
@@ -2607,40 +2673,45 @@ namespace DraculaSimulator
             }
         }
 
+        // remove
         internal bool HuntersHaveAlly()
         {
-            return hunterAlly != null;
+            return HunterAlly != null;
         }
 
+        // remove
         internal string NameOfDraculaAlly()
         {
-            if (draculaAlly == null)
+            if (DraculaAlly == null)
             {
                 return "No ally";
             }
-            return draculaAlly.name;
+            return DraculaAlly.name;
         }
 
+        // remove
         internal void SetDraculaAlly(Event allyDrawn)
         {
-            draculaAlly = allyDrawn;
+            DraculaAlly = allyDrawn;
         }
 
+        // remove
         internal bool DraculaHasAlly()
         {
-            return draculaAlly != null;
+            return DraculaAlly != null;
         }
 
+        // remove
         internal void AddEventToEventDiscard(Event allyDiscarded)
         {
-            eventDiscard.Add(allyDiscarded);
+            EventDiscard.Add(allyDiscarded);
         }
 
         internal Event GetEventByNameFromEventDeck(string v)
         {
             try
             {
-                return eventDeck[eventDeck.FindIndex(card => card.name.ToLower().StartsWith(v.ToLower()))];
+                return EventDeck[EventDeck.FindIndex(card => card.name.ToLower().StartsWith(v.ToLower()))];
             }
             catch (ArgumentOutOfRangeException)
             {
@@ -2648,73 +2719,79 @@ namespace DraculaSimulator
             }
         }
 
+        // remove
         internal string NameOfEventCardAtIndex(int eventIndex)
         {
-            return eventDeck[eventIndex].name;
+            return EventDeck[eventIndex].name;
         }
 
+        // remove
         internal bool EventCardIsDraculaCardAtIndex(int eventIndex)
         {
-            return eventDeck[eventIndex].isDraculaCard;
+            return EventDeck[eventIndex].isDraculaCard;
         }
 
+        // remove
         internal int IndexOfEventCardInEventDeck(string argument2)
         {
-            return eventDeck.FindIndex(card => card.name.ToUpper().StartsWith(argument2.ToUpper()));
+            return EventDeck.FindIndex(card => card.name.ToUpper().StartsWith(argument2.ToUpper()));
         }
 
+        // remove
         internal void RemoveEventFromEventDeck(Event eventCardDrawn)
         {
-            eventDeck.Remove(eventCardDrawn);
+            EventDeck.Remove(eventCardDrawn);
         }
 
         internal Event DrawEventCard()
         {
-            return eventDeck[new Random().Next(0, eventDeck.Count())];
+            return EventDeck[new Random().Next(0, EventDeck.Count())];
         }
 
+        // remove
         internal void RemoveEncounterFromEncounterPool(Encounter tempEncounter)
         {
-            encounterPool.Remove(tempEncounter);
+            EncounterPool.Remove(tempEncounter);
         }
 
         internal Encounter DrawEncounterFromEncounterPool()
         {
-            return encounterPool[new Random().Next(0, encounterPool.Count())];
+            return EncounterPool[new Random().Next(0, EncounterPool.Count())];
         }
 
+        // remove
         internal void AddEncounterToEncounterPool(Encounter encounterToDiscard)
         {
-            encounterPool.Add(encounterToDiscard);
+            EncounterPool.Add(encounterToDiscard);
         }
 
-        internal void MoveHunterToLocationAtHunterIndex(int hunterIndex, Location locationToMoveTo, UserInterface ui)
+        internal void MoveHunterToLocationAtHunterIndex(int hunterIndex, LocationDetail locationToMoveTo, UserInterface ui)
         {
-            foreach (Hunter h in hunters[hunterIndex].huntersInGroup)
+            foreach (int ind in Hunters[hunterIndex].HuntersInGroup)
             {
-                Logger.WriteToDebugLog("Moved " + h.name + " to " + locationToMoveTo.name);
-                Logger.WriteToGameLog(h.name + " moved from " + h.currentLocation.name + " to " + locationToMoveTo.name);
-                ui.TellUser(h.name + " moved from " + h.currentLocation.name + " to " + locationToMoveTo.name);
-                h.currentLocation = locationToMoveTo;
+                Logger.WriteToDebugLog("Moved " + Hunters[ind].Name + " to " + locationToMoveTo.Name);
+                Logger.WriteToGameLog(Hunters[ind].Name + " moved from " + Hunters[ind].CurrentLocation.Name + " to " + locationToMoveTo.Name);
+                ui.TellUser(Hunters[ind].Name + " moved from " + Hunters[ind].CurrentLocation.Name + " to " + locationToMoveTo.Name);
+                Hunters[ind].CurrentLocation = locationToMoveTo;
             }
         }
 
         private void PlayControlStorms(int hunterIndex, UserInterface ui)
         {
-            List<Location> possiblePorts = new List<Location>();
-            List<Location> extensionLocations = new List<Location>();
-            foreach (Location loc in hunters[hunterIndex].currentLocation.bySea)
+            List<LocationDetail> possiblePorts = new List<LocationDetail>();
+            List<LocationDetail> extensionLocations = new List<LocationDetail>();
+            foreach (LocationDetail loc in Hunters[hunterIndex].CurrentLocation.BySea)
             {
                 possiblePorts.Add(loc);
             }
-            foreach (Location loc in possiblePorts)
+            foreach (LocationDetail loc in possiblePorts)
             {
-                foreach (Location ext in loc.bySea)
+                foreach (LocationDetail ext in loc.BySea)
                 {
                     extensionLocations.Add(ext);
                 }
             }
-            foreach (Location loc in extensionLocations)
+            foreach (LocationDetail loc in extensionLocations)
             {
                 if (!possiblePorts.Contains(loc))
                 {
@@ -2722,14 +2799,14 @@ namespace DraculaSimulator
                 }
             }
             extensionLocations.Clear();
-            foreach (Location loc in possiblePorts)
+            foreach (LocationDetail loc in possiblePorts)
             {
-                foreach (Location ext in loc.bySea)
+                foreach (LocationDetail ext in loc.BySea)
                 {
                     extensionLocations.Add(ext);
                 }
             }
-            foreach (Location loc in extensionLocations)
+            foreach (LocationDetail loc in extensionLocations)
             {
                 if (!possiblePorts.Contains(loc))
                 {
@@ -2737,171 +2814,194 @@ namespace DraculaSimulator
                 }
             }
             extensionLocations.Clear();
-            foreach (Location loc in possiblePorts)
+            foreach (LocationDetail loc in possiblePorts)
             {
-                if (loc.type != LocationType.City && loc.type != LocationType.Town)
+                if (loc.Type != LocationType.City && loc.Type != LocationType.Town)
                 {
                     extensionLocations.Add(loc);
                 }
             }
-            foreach (Location ext in extensionLocations)
+            foreach (LocationDetail ext in extensionLocations)
             {
                 possiblePorts.Remove(ext);
             }
-            Location locationToSendHunterTo = dracula.DecideWhereToSendHunterWithControlStorms(hunterIndex, possiblePorts, this);
+            LocationDetail locationToSendHunterTo = Dracula.DecideWhereToSendHunterWithControlStorms(hunterIndex, possiblePorts, this);
             MoveHunterToLocationAtHunterIndex(hunterIndex, locationToSendHunterTo, ui);
             DiscardEventFromDracula("Control Storms");
         }
 
         public void DiscardEventFromDracula(string cardName)
         {
-            Event cardToDiscard = dracula.eventCardsInHand.Find(card => card.name == cardName);
-            eventDiscard.Add(cardToDiscard);
-            dracula.eventCardsInHand.Remove(cardToDiscard);
+            Event cardToDiscard = Dracula.EventCardsInHand.Find(card => card.name == cardName);
+            EventDiscard.Add(cardToDiscard);
+            Dracula.EventCardsInHand.Remove(cardToDiscard);
         }
 
+        // remove
         internal string NameOfHunterAtIndex(int hunterIndex)
         {
-            return hunters[hunterIndex].name;
+            return Hunters[hunterIndex].Name;
         }
 
+        // remove
         internal void DrawEncounterAtCatacombIndex(int i, bool v)
         {
-            dracula.catacombs[i].DrawEncounter(true);
+            Dracula.Catacombs[i].DrawEncounter(true);
         }
 
+        // remove
         internal void DrawEncounterAtTrailIndex(int i)
         {
-            dracula.trail[i].DrawEncounter();
+            Dracula.Trail[i].DrawEncounter();
         }
 
+        // remove
         internal void DrawEncounterAtCatacombIndex(int i)
         {
-            dracula.catacombs[i].DrawEncounter();
+            Dracula.Catacombs[i].DrawEncounter();
         }
 
+        // remove
         internal int NumberOfEncountersAtLocationAtCatacombIndex(int i)
         {
-            return dracula.catacombs[i].encounters.Count();
+            return Dracula.Catacombs[i].Encounters.Count();
         }
 
+        // remove
         internal string DraculaPowerNameAtPowerIndex(int i)
         {
-            return dracula.powers[i].name;
+            return Dracula.Powers[i].name;
         }
 
+        // remove
         internal bool DraculaPowerAtPowerIndexIsAtLocationIndex(int i, int counter)
         {
-            return dracula.powers[i].positionInTrail == counter;
+            return Dracula.Powers[i].positionInTrail == counter;
         }
 
+        // remove
         internal int NumberOfDraculaPowers()
         {
-            return dracula.powers.Count();
+            return Dracula.Powers.Count();
         }
 
+        // remove
         internal int NumberOfEventCardsInDraculaHand()
         {
-            return dracula.eventCardsInHand.Count();
+            return Dracula.EventCardsInHand.Count();
         }
 
+        // remove
         internal string LocationAbbreviationAtCatacombIndex(int i)
         {
-            return dracula.catacombs[i].abbreviation;
+            return Dracula.Catacombs[i].Abbreviation;
         }
 
+        // remove
         internal bool LocationIsRevealedAtCatacombIndex(int i)
         {
-            return dracula.catacombs[i].isRevealed;
+            return Dracula.Catacombs[i].IsRevealed;
         }
 
+        // remove
         internal bool LocationIsEmptyAtCatacombIndex(int i)
         {
-            return dracula.catacombs[i] == null;
+            return Dracula.Catacombs[i] == null;
         }
 
+        // remove
         internal int VampireTracker()
         {
-            return vampireTracker;
+            return VampirePointTracker;
         }
 
+        // remove
         internal int DraculaBloodLevel()
         {
-            return dracula.blood;
+            return Dracula.Blood;
         }
 
+        // remove
         internal void DrawLocationAtTrailIndex(int i)
         {
-            dracula.trail[i].DrawLocation();
+            Dracula.Trail[i].DrawLocation();
         }
 
+        // remove
         internal string NameOfLocationAtTrailIndex(int checkingLocationIndex)
         {
-            return dracula.trail[checkingLocationIndex].name;
+            return Dracula.Trail[checkingLocationIndex].Name;
         }
 
+        // remove
         internal void RevealHide(UserInterface ui)
         {
-            dracula.RevealHide(ui);
+            Dracula.RevealHide(ui);
         }
 
+        // remove
         internal bool LocationWhereHideWasUsedIsDraculaCurrentLocation()
         {
-            return dracula.locationWhereHideWasUsed == dracula.currentLocation;
+            return Dracula.LocationWhereHideWasUsed == Dracula.CurrentLocation;
         }
 
+        // remove
         internal bool DraculaCurrentLocationIsAtTrailIndex(int checkingLocationIndex)
         {
-            return dracula.trail[checkingLocationIndex] == dracula.currentLocation;
+            return Dracula.Trail[checkingLocationIndex] == Dracula.CurrentLocation;
         }
 
+        // remove
         internal bool LocationIsRevealedAtTrailIndex(int checkingLocationIndex)
         {
-            return dracula.trail[checkingLocationIndex].isRevealed;
+            return Dracula.Trail[checkingLocationIndex].IsRevealed;
         }
 
+        // remove
         internal LocationType TypeOfLocationAtTrailIndex(int checkingLocationIndex)
         {
-            return dracula.trail[checkingLocationIndex].type;
+            return Dracula.Trail[checkingLocationIndex].Type;
         }
 
+        // remove
         internal int TrailLength()
         {
-            return dracula.trail.Count();
+            return Dracula.Trail.Count();
         }
 
-        internal bool LocationIsInTrail(Location locationToReveal)
+        // remove
+        internal bool LocationIsInTrail(Map map, Location locationToReveal)
         {
-            return dracula.trail.Contains(locationToReveal);
+            return Dracula.Trail.Contains(locationToReveal);
         }
 
         internal void PerformDraculaTurn(UserInterface ui)
         {
-            if (dracula.currentLocation.type != LocationType.Sea)
+            if (Dracula.CurrentLocation.Type != LocationType.Sea)
             {
-                time = (time + 1) % 6;
-                Logger.WriteToDebugLog("Time is now " + timesOfDay[time]);
-                if (time == 0)
+                TimeIndex = (TimeIndex + 1) % 6;
+                Logger.WriteToDebugLog("Time is now " + TimesOfDay[TimeIndex]);
+                if (TimeIndex == 0)
                 {
-                    vampireTracker++;
-                    resolve++;
-                    Logger.WriteToDebugLog("Increasing vampire track to " + vampireTracker);
-                    Logger.WriteToDebugLog("Increasing resolve to " + resolve);
-                    if (vampireTracker > 0)
+                    VampirePointTracker++;
+                    Resolve++;
+                    Logger.WriteToDebugLog("Increasing vampire track to " + VampirePointTracker);
+                    Logger.WriteToDebugLog("Increasing resolve to " + Resolve);
+                    if (VampirePointTracker > 0)
                     {
-                        Logger.WriteToGameLog("Dracula earned a point, up to " + vampireTracker);
-                        Logger.WriteToGameLog("Hunters gained a point of resolve, up to " + resolve);
+                        Logger.WriteToGameLog("Dracula earned a point, up to " + VampirePointTracker);
+                        Logger.WriteToGameLog("Hunters gained a point of resolve, up to " + Resolve);
                     }
                 }
             }
             else
             {
-                Logger.WriteToDebugLog("Dracula is at sea, skipping Timekeeping phase so time remains " + timesOfDay[Math.Max(0, time)]);
+                Logger.WriteToDebugLog("Dracula is at sea, skipping Timekeeping phase so time remains " + TimesOfDay[Math.Max(0, TimeIndex)]);
             }
             Event draculaEventCard = null;
             do
             {
-                draculaEventCard = dracula.PlayEventCardAtStartOfDraculaTurn(this);
+                draculaEventCard = Dracula.PlayEventCardAtStartOfDraculaTurn(this);
                 if (draculaEventCard != null)
                 {
                     switch (draculaEventCard.name)
@@ -2916,7 +3016,7 @@ namespace DraculaSimulator
                             }
                             else
                             {
-                                time++;
+                                TimeIndex++;
                             }
                             break;
                         case "Unearthly Swiftness":
@@ -2929,8 +3029,8 @@ namespace DraculaSimulator
                             else
                             {
                                 DiscardEventFromDracula(draculaEventCard.name);
-                                dracula.DraculaMovementPhase(this, ui);
-                                dracula.DoActionPhase(this, ui);
+                                Dracula.DraculaMovementPhase(this, ui);
+                                Dracula.DoActionPhase(this, ui);
                             }
                             break;
                         case "Roadblock":
@@ -2943,97 +3043,110 @@ namespace DraculaSimulator
                             }
                             else
                             {
-                                dracula.PlaceRoadBlockCounter(this, roadblockCounter);
-                                ui.TellUser("Dracula played Roadblock and placed the Roadblock counter on the " + roadblockCounter.connectionType + " between " + roadblockCounter.firstLocation + " and " + roadblockCounter.secondLocation);
+                                Dracula.PlaceRoadBlockCounter(this, RoadblockCounter);
+                                ui.TellUser("Dracula played Roadblock and placed the Roadblock counter on the " + RoadblockCounter.connectionType + " between " + RoadblockCounter.firstLocation + " and " + RoadblockCounter.secondLocation);
                             }
                             break;
                         case "Devilish Power":
-                            dracula.PlayDevilishPowerToRemoveHeavenlyHostOrHunterAlly(this, ui); // Good luck is handled within this function
+                            Dracula.PlayDevilishPowerToRemoveHeavenlyHostOrHunterAlly(this, ui); // Good luck is handled within this function
                             DiscardEventFromDracula("Devilish Power");
                             break;
                     }
                 }
             } while (draculaEventCard != null);
-            dracula.TakeStartOfTurnActions(this, ui);
-            dracula.DraculaMovementPhase(this, ui);
-            dracula.HandleDroppedOffLocations(this, ui);
-            dracula.DoActionPhase(this, ui);
-            dracula.MatureEncounters(this, ui);
-            dracula.DrawEncounters(this, dracula.encounterHandSize);
-            foreach (Encounter enc in encounterLimbo)
+            Dracula.TakeStartOfTurnActions(this, ui);
+            Dracula.DraculaMovementPhase(this, ui);
+            Dracula.HandleDroppedOffLocations(this, ui);
+            Dracula.DoActionPhase(this, ui);
+            Dracula.MatureEncounters(this, ui);
+            Dracula.DrawEncounters(this, Dracula.EncounterHandSize);
+            foreach (Encounter enc in EncounterLimbo)
             {
-                encounterPool.Add(enc);
+                EncounterPool.Add(enc);
                 enc.isRevealed = false;
             }
-            encounterLimbo.Clear();
+            EncounterLimbo.Clear();
             if (HuntersHaveAlly())
             {
-                if (hunterAlly.name == "Jonathan Harker")
+                if (HunterAlly.name == "Jonathan Harker")
                 {
-                    if (dracula.trail.Count() > 5)
+                    if (Dracula.Trail.Count() > 5)
                     {
-                        dracula.trail[5].isRevealed = true;
+                        Dracula.Trail[5].IsRevealed = true;
                     }
                 }
             }
         }
 
+        // remove
         internal void RevealEncounterInTrail(int v)
         {
-            try
+            foreach (Encounter enc in Dracula.Trail[v].Encounters)
             {
-                for (int i = 0; i < dracula.trail[v].encounters.Count(); i++)
-                {
-                    dracula.trail[v].encounters[i].isRevealed = true;
-                }
+                enc.isRevealed = true;
             }
-            catch (ArgumentOutOfRangeException)
-            { }
         }
 
+        // remove
         internal void TrimDraculaTrail(int trailLength)
         {
-            dracula.TrimTrail(this, Math.Max(1, trailLength));
+            Dracula.TrimTrail(this, Math.Max(1, trailLength));
         }
 
+        // remove
         internal void DiscardDraculaCardsDownToHandSize(UserInterface ui)
         {
-            dracula.DiscardEventsDownTo(this, dracula.eventHandSize, ui);
+            Dracula.DiscardEventsDownTo(this, Dracula.EventHandSize, ui);
         }
 
+        // remove
         internal void DrawEventCardForDracula(UserInterface ui)
         {
-            dracula.DrawEventCard(this, ui);
+            Dracula.DrawEventCard(this, ui);
         }
 
         internal void RevealLocationAtTrailIndex(int trailIndex, UserInterface ui)
         {
-            if (dracula.trail[trailIndex].name == "Hide")
+            if (Dracula.Trail[trailIndex].Name == "Hide")
             {
-                dracula.RevealHide(ui);
+                Dracula.RevealHide(ui);
             }
             else
             {
-                dracula.trail[trailIndex].isRevealed = true;
+                Dracula.Trail[trailIndex].IsRevealed = true;
             }
         }
 
+        // remove
         internal string DraculaCurrentLocationName()
         {
-            return dracula.currentLocation.name;
+            return Dracula.CurrentLocation.Name;
         }
 
-        public Location GetLocationFromName(string locationName)
+        public LocationDetail GetLocationFromName(string locationName)
         {
-            for (int i = 0; i < map.Count(); i++)
+            for (int i = 0; i < 71; i++)
             {
-                if ((map[i].name.ToLower().StartsWith(locationName.ToLower())) || (map[i].abbreviation.ToLower() == locationName.ToLower()))
+                if ((Map[i].Name.ToLower().StartsWith(locationName.ToLower())) || (Map[i].Abbreviation.ToLower() == locationName.ToLower()))
                 {
-                    return map[i];
+                    string tempName = Map[i].Name;
+                    Map[i].Name = "";
+                    for (int j = i; j < 71; j++)
+                    {
+                        if (Map[j].Name.ToLower().StartsWith(locationName.ToLower()))
+                        {
+                            LocationDetail multipleLocations = new LocationDetail();
+                            multipleLocations.Name = "Multiple locations";
+                            Map[i].Name = tempName;
+                            return multipleLocations;
+                        }
+                    }
+                    Map[i].Name = tempName;
+                    return Map[i];
                 }
             }
-            Location unknownLocation = new Location();
-            unknownLocation.name = "Unknown location";
+            LocationDetail unknownLocation = new LocationDetail();
+            unknownLocation.Name = "Unknown location";
             return unknownLocation;
         }
 
@@ -3073,8 +3186,8 @@ namespace DraculaSimulator
             Logger.WriteToDebugLog("Dracula matured New Vampire");
             Logger.WriteToGameLog("Dracula matured New Vampire");
             ui.TellUser("Dracula matured a New Vampire");
-            vampireTracker += 2;
-            dracula.TrimTrail(this, 1);
+            VampirePointTracker += 2;
+            Dracula.TrimTrail(this, 1);
         }
 
         private void MatureThief(UserInterface ui)
@@ -3166,27 +3279,27 @@ namespace DraculaSimulator
                 if (!"dracula".StartsWith(line.ToLower()))
                 {
                     ui.TellUser(cardDrawn.name + " is discarded");
-                    eventDeck.Remove(cardDrawn);
-                    eventDiscard.Add(cardDrawn);
+                    EventDeck.Remove(cardDrawn);
+                    EventDiscard.Add(cardDrawn);
                 }
                 else
                 {
                     switch (cardDrawn.type)
                     {
-                        case EventType.Ally: dracula.PlayAlly(this, cardDrawn, ui); break;
+                        case EventType.Ally: Dracula.PlayAlly(this, cardDrawn, ui); break;
                         case EventType.Keep:
-                            dracula.eventCardsInHand.Add(cardDrawn);
-                            eventDeck.Remove(cardDrawn);
+                            Dracula.EventCardsInHand.Add(cardDrawn);
+                            EventDeck.Remove(cardDrawn);
                             break;
                         case EventType.PlayImmediately:
-                            dracula.PlayImmediately(this, cardDrawn, ui);
-                            eventDeck.Remove(cardDrawn);
+                            Dracula.PlayImmediately(this, cardDrawn, ui);
+                            EventDeck.Remove(cardDrawn);
                             break;
                     }
                 }
             }
-            dracula.DiscardEventsDownTo(this, dracula.eventHandSize, ui);
-            dracula.TrimTrail(this, 3);
+            Dracula.DiscardEventsDownTo(this, Dracula.EventHandSize, ui);
+            Dracula.TrimTrail(this, 3);
         }
 
         private void MatureBats(UserInterface ui)
@@ -3207,21 +3320,21 @@ namespace DraculaSimulator
             Logger.WriteToGameLog("Dracula matured Ambush");
             ui.TellUser("Dracula matured Ambush");
             bool discard;
-            ResolveEncounter(dracula.ChooseEncounterToAmbushHunter(), dracula.ChooseHunterToAmbush(hunters), out discard, ui);
+            ResolveEncounter(Dracula.ChooseEncounterToAmbushHunter(), Dracula.ChooseHunterToAmbush(Hunters), out discard, ui);
         }
 
         private bool ResolveAmbush(List<Hunter> huntersEncountered, UserInterface ui)
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Ambush");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Ambush");
-            ui.TellUser(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().Name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i].name + " ");
+                ui.TellUser("and " + huntersEncountered[i].Name + " ");
             }
             ui.TellUser("encountered an Ambush");
-            dracula.DrawEncounters(this, dracula.encounterHand.Count() + 1);
-            dracula.DiscardEncountersDownTo(this, dracula.encounterHandSize);
+            Dracula.DrawEncounters(this, Dracula.EncounterHand.Count() + 1);
+            Dracula.DiscardEncountersDownTo(this, Dracula.EncounterHandSize);
             return true;
         }
 
@@ -3229,7 +3342,7 @@ namespace DraculaSimulator
         {
             ui.TellUser("Conduct a combat with an Assasin");
             int hunterIndex = 0;
-            switch (huntersEncountered[0].name)
+            switch (huntersEncountered[0].Name)
             {
                 case "Lord Godalming": hunterIndex = 0; break;
                 case "Van Helsing": hunterIndex = 1; break;
@@ -3247,10 +3360,10 @@ namespace DraculaSimulator
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Bats");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Bats");
-            ui.TellUser(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().Name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i].name + " ");
+                ui.TellUser("and " + huntersEncountered[i].Name + " ");
             }
             ui.TellUser("encountered Bats");
             ui.TellUser("Tell me at the start of your next turn and I will move you");
@@ -3261,10 +3374,10 @@ namespace DraculaSimulator
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Desecrated Soil");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Desecrated Soil");
-            ui.TellUser(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().Name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i].name + " ");
+                ui.TellUser("and " + huntersEncountered[i].Name + " ");
             }
             ui.TellUser("encountered Desecrated Soil");
             Event cardDrawn;
@@ -3277,19 +3390,19 @@ namespace DraculaSimulator
             if (!"dracula".StartsWith(line.ToLower()))
             {
                 ui.TellUser(cardDrawn.name + " is discarded");
-                eventDeck.Remove(cardDrawn);
-                eventDiscard.Add(cardDrawn);
+                EventDeck.Remove(cardDrawn);
+                EventDiscard.Add(cardDrawn);
             }
             else
             {
                 switch (cardDrawn.type)
                 {
-                    case EventType.Ally: dracula.PlayAlly(this, cardDrawn, ui); break;
-                    case EventType.Keep: dracula.eventCardsInHand.Add(cardDrawn); break;
-                    case EventType.PlayImmediately: dracula.PlayImmediately(this, cardDrawn, ui); break;
+                    case EventType.Ally: Dracula.PlayAlly(this, cardDrawn, ui); break;
+                    case EventType.Keep: Dracula.EventCardsInHand.Add(cardDrawn); break;
+                    case EventType.PlayImmediately: Dracula.PlayImmediately(this, cardDrawn, ui); break;
                 }
             }
-            dracula.DiscardEventsDownTo(this, dracula.eventHandSize, ui);
+            Dracula.DiscardEventsDownTo(this, Dracula.EventHandSize, ui);
             return true;
         }
 
@@ -3297,7 +3410,7 @@ namespace DraculaSimulator
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Fog");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Fog");
-            ui.TellUser(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().Name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
                 ui.TellUser("and " + huntersEncountered[i] + " ");
@@ -3310,7 +3423,7 @@ namespace DraculaSimulator
         public bool ResolveMinionWithKnife(List<Hunter> huntersEncountered, UserInterface ui)
         {
             int hunterIndex = 0;
-            switch (huntersEncountered[0].name)
+            switch (huntersEncountered[0].Name)
             {
                 case "Lord Godalming": hunterIndex = 0; break;
                 case "Van Helsing": hunterIndex = 1; break;
@@ -3320,7 +3433,7 @@ namespace DraculaSimulator
             string combatResult = ResolveCombat(hunterIndex, 2, true, ui);
             if (combatResult == "Enemy killed" || combatResult == "End")
             {
-                Event draculaEventCard = dracula.WillPlayRelentlessMinion(this, huntersEncountered, "Minion with Knife");
+                Event draculaEventCard = Dracula.WillPlayRelentlessMinion(this, huntersEncountered, "Minion with Knife");
                 if (draculaEventCard != null)
                 {
                     switch (draculaEventCard.name)
@@ -3352,7 +3465,7 @@ namespace DraculaSimulator
         public bool ResolveMinionWithKnifeAndPistol(List<Hunter> huntersEncountered, UserInterface ui)
         {
             int hunterIndex = 0;
-            switch (huntersEncountered[0].name)
+            switch (huntersEncountered[0].Name)
             {
                 case "Lord Godalming": hunterIndex = 0; break;
                 case "Van Helsing": hunterIndex = 1; break;
@@ -3362,7 +3475,7 @@ namespace DraculaSimulator
             string combatResult = ResolveCombat(hunterIndex, 3, true, ui);
             if (combatResult == "Enemy killed" || combatResult == "End")
             {
-                Event draculaEventCard = dracula.WillPlayRelentlessMinion(this, huntersEncountered, "Minion with Knife and Pistol");
+                Event draculaEventCard = Dracula.WillPlayRelentlessMinion(this, huntersEncountered, "Minion with Knife and Pistol");
                 if (draculaEventCard != null)
                 {
                     switch (draculaEventCard.name)
@@ -3385,7 +3498,7 @@ namespace DraculaSimulator
         public bool ResolveMinionWithKnifeAndRifle(List<Hunter> huntersEncountered, UserInterface ui)
         {
             int hunterIndex = 0;
-            switch (huntersEncountered[0].name)
+            switch (huntersEncountered[0].Name)
             {
                 case "Lord Godalming": hunterIndex = 0; break;
                 case "Van Helsing": hunterIndex = 1; break;
@@ -3395,7 +3508,7 @@ namespace DraculaSimulator
             string combatResult = ResolveCombat(hunterIndex, 4, true, ui);
             if (combatResult == "Enemy killed" || combatResult == "End")
             {
-                Event draculaEventCard = dracula.WillPlayRelentlessMinion(this, huntersEncountered, "Minion with Knife and Rifle");
+                Event draculaEventCard = Dracula.WillPlayRelentlessMinion(this, huntersEncountered, "Minion with Knife and Rifle");
                 if (draculaEventCard != null)
                 {
                     switch (draculaEventCard.name)
@@ -3419,13 +3532,13 @@ namespace DraculaSimulator
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Hoax");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Hoax");
-            ui.TellUser(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().Name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i].name + " ");
+                ui.TellUser("and " + huntersEncountered[i].Name + " ");
             }
             ui.TellUser("encountered Hoax");
-            ui.TellUser("Discard " + (huntersEncountered.First().currentLocation.isEastern ? "one" : "all") + " of your event cards (don't forget to tell me what is discarded");
+            ui.TellUser("Discard " + (huntersEncountered.First().CurrentLocation.IsEastern ? "one" : "all") + " of your event cards (don't forget to tell me what is discarded");
             return true;
         }
 
@@ -3433,29 +3546,29 @@ namespace DraculaSimulator
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Lightning");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Lightning");
-            ui.TellUser(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().Name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i].name + " ");
+                ui.TellUser("and " + huntersEncountered[i].Name + " ");
             }
             ui.TellUser("encountered Lightning");
             for (int i = 0; i < huntersEncountered.Count(); i++)
             {
-                int answer = ui.GetHunterHolyItems(huntersEncountered[i].name);
+                int answer = ui.GetHunterHolyItems(huntersEncountered[i].Name);
                 if (answer > 0)
                 {
-                    Logger.WriteToDebugLog(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
-                    Logger.WriteToGameLog(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
-                    ui.TellUser(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
+                    Logger.WriteToDebugLog(huntersEncountered[i].Name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
+                    Logger.WriteToGameLog(huntersEncountered[i].Name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
+                    ui.TellUser(huntersEncountered[i].Name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
                     return true;
                 }
             }
             for (int i = 0; i < huntersEncountered.Count(); i++)
             {
-                Logger.WriteToDebugLog(huntersEncountered[i].name + " loses 2 health and discards 1 item");
-                Logger.WriteToGameLog(huntersEncountered[i].name + " loses 2 health and discards 1 item");
-                ui.TellUser(huntersEncountered[i].name + " loses 2 health and discards 1 item");
-                huntersEncountered[i].health -= 2;
+                Logger.WriteToDebugLog(huntersEncountered[i].Name + " loses 2 health and discards 1 item");
+                Logger.WriteToGameLog(huntersEncountered[i].Name + " loses 2 health and discards 1 item");
+                ui.TellUser(huntersEncountered[i].Name + " loses 2 health and discards 1 item");
+                huntersEncountered[i].Health -= 2;
             }
             ui.TellUser("Don't forget to tell me what was discarded");
             return !HandlePossibleHunterDeath(ui);
@@ -3465,13 +3578,13 @@ namespace DraculaSimulator
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Peasants");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Peasants");
-            ui.TellUser(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().Name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i].name + " ");
+                ui.TellUser("and " + huntersEncountered[i].Name + " ");
             }
             ui.TellUser("encountered Peasants");
-            ui.TellUser("Discard " + (huntersEncountered.First().currentLocation.isEastern ? "one" : "all") + " of your item cards and redraw randomly (don't forget to tell me what is discarded");
+            ui.TellUser("Discard " + (huntersEncountered.First().CurrentLocation.IsEastern ? "one" : "all") + " of your item cards and redraw randomly (don't forget to tell me what is discarded");
             return true;
         }
 
@@ -3479,18 +3592,18 @@ namespace DraculaSimulator
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Plague");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Plague");
-            ui.TellUser(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().Name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i].name + " ");
+                ui.TellUser("and " + huntersEncountered[i].Name + " ");
             }
             ui.TellUser("encountered Plague");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                Logger.WriteToDebugLog(huntersEncountered[i].name + " loses 2 health");
-                Logger.WriteToGameLog(huntersEncountered[i].name + " loses 2 health");
-                ui.TellUser(huntersEncountered[i].name + " loses 2 health");
-                huntersEncountered[i].health -= 2;
+                Logger.WriteToDebugLog(huntersEncountered[i].Name + " loses 2 health");
+                Logger.WriteToGameLog(huntersEncountered[i].Name + " loses 2 health");
+                ui.TellUser(huntersEncountered[i].Name + " loses 2 health");
+                huntersEncountered[i].Health -= 2;
             }
             return !HandlePossibleHunterDeath(ui);
         }
@@ -3499,27 +3612,27 @@ namespace DraculaSimulator
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Rats");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Rats");
-            ui.TellUser(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().Name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i].name + " ");
+                ui.TellUser("and " + huntersEncountered[i].Name + " ");
             }
             ui.TellUser("encountered Rats");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                if (huntersEncountered[i].hasDogsFaceUp)
+                if (huntersEncountered[i].HasDogsFaceUp)
                 {
-                    ui.TellUser(huntersEncountered[i].name + " has Dogs face up, Rats have no effect");
-                    Logger.WriteToDebugLog(huntersEncountered[i].name + " has Dogs face up, Rats have no effect");
-                    Logger.WriteToGameLog(huntersEncountered[i].name + " has Dogs face up, Rats have no effect");
+                    ui.TellUser(huntersEncountered[i].Name + " has Dogs face up, Rats have no effect");
+                    Logger.WriteToDebugLog(huntersEncountered[i].Name + " has Dogs face up, Rats have no effect");
+                    Logger.WriteToGameLog(huntersEncountered[i].Name + " has Dogs face up, Rats have no effect");
                     return true;
                 }
             }
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("Roll dice for " + huntersEncountered[i].name);
-                int loss = ui.GetHunterHealthLost(huntersEncountered[i].name);
-                huntersEncountered[i].health -= loss;
+                ui.TellUser("Roll dice for " + huntersEncountered[i].Name);
+                int loss = ui.GetHunterHealthLost(huntersEncountered[i].Name);
+                huntersEncountered[i].Health -= loss;
                 Logger.WriteToDebugLog(huntersEncountered[i] + " lost " + loss + " health");
                 Logger.WriteToGameLog(huntersEncountered[i] + " lost " + loss + " health");
             }
@@ -3530,50 +3643,50 @@ namespace DraculaSimulator
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Saboteur");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Saboteur");
-            ui.TellUser(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().Name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i].name + " ");
+                ui.TellUser("and " + huntersEncountered[i].Name + " ");
             }
             ui.TellUser("encountered Saboteur");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                if (huntersEncountered[i].hasDogsFaceUp)
+                if (huntersEncountered[i].HasDogsFaceUp)
                 {
-                    ui.TellUser(huntersEncountered[i].name + " has Dogs face up, Saboteur has no effect");
-                    Logger.WriteToDebugLog(huntersEncountered[i].name + " has Dogs face up, Saboteur has no effect");
-                    Logger.WriteToGameLog(huntersEncountered[i].name + " has Dogs face up, Saboteur has no effect");
+                    ui.TellUser(huntersEncountered[i].Name + " has Dogs face up, Saboteur has no effect");
+                    Logger.WriteToDebugLog(huntersEncountered[i].Name + " has Dogs face up, Saboteur has no effect");
+                    Logger.WriteToGameLog(huntersEncountered[i].Name + " has Dogs face up, Saboteur has no effect");
                     return true;
                 }
             }
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser(huntersEncountered[i].name + " must discard 1 item or event (don't forget to tell me what was discarded");
+                ui.TellUser(huntersEncountered[i].Name + " must discard 1 item or event (don't forget to tell me what was discarded");
             }
             return false;
         }
 
         public bool ResolveSpy(List<Hunter> huntersEncountered, UserInterface ui)
         {
-            ui.TellUser(huntersEncountered.First().name + " encountered a spy" + (huntersEncountered.Count() > 1 ? " with his group" : ""));
+            ui.TellUser(huntersEncountered.First().Name + " encountered a spy" + (huntersEncountered.Count() > 1 ? " with his group" : ""));
             foreach (Hunter h in huntersEncountered)
             {
                 List<String> itemsAlreadyKnownToDracula = new List<String>();
-                for (int i = 0; i < h.numberOfItems; i++)
+                for (int i = 0; i < h.NumberOfItems; i++)
                 {
                     string line = "";
                     do
                     {
-                        line = ui.GetNameOfItemInHandFromHunter(h.name);
-                        if (GetItemByNameFromItemDeck(line).name == "Unknown item" && h.itemsKnownToDracula.FindIndex(item => item.name == line) == -1)
+                        line = ui.GetNameOfItemInHandFromHunter(h.Name);
+                        if (GetItemByNameFromItemDeck(line).name == "Unknown item" && h.ItemsKnownToDracula.FindIndex(item => item.name == line) == -1)
                         {
                             ui.TellUser("I didn't recognise that card name");
                         }
-                    } while (GetItemByNameFromItemDeck(line).name == "Unknown item" && h.itemsKnownToDracula.FindIndex(item => item.name == line) == -1);
+                    } while (GetItemByNameFromItemDeck(line).name == "Unknown item" && h.ItemsKnownToDracula.FindIndex(item => item.name == line) == -1);
                     itemsAlreadyKnownToDracula.Add(line);
                 }
                 List<Item> itemsToAddToKnownItems = new List<Item>();
-                itemsToAddToKnownItems.AddRange(h.itemsKnownToDracula);
+                itemsToAddToKnownItems.AddRange(h.ItemsKnownToDracula);
                 foreach (string name in itemsAlreadyKnownToDracula)
                 {
                     if (itemsToAddToKnownItems.FindIndex(it => it.name == name) > -1)
@@ -3582,25 +3695,25 @@ namespace DraculaSimulator
                     }
                     else
                     {
-                        h.itemsKnownToDracula.Add(GetItemByNameFromItemDeck(name));
+                        h.ItemsKnownToDracula.Add(GetItemByNameFromItemDeck(name));
                     }
                 }
                 List<String> eventsAlreadyKnownToDracula = new List<String>();
-                for (int i = 0; i < h.numberOfItems; i++)
+                for (int i = 0; i < h.NumberOfItems; i++)
                 {
                     string line = "";
                     do
                     {
-                        line = ui.GetNameOfEventInHandFromHunter(h.name);
-                        if (GetEventByNameFromEventDeck(line).name == "Unknown event" && h.eventsKnownToDracula.FindIndex(ev => ev.name == line) == -1)
+                        line = ui.GetNameOfEventInHandFromHunter(h.Name);
+                        if (GetEventByNameFromEventDeck(line).name == "Unknown event" && h.EventsKnownToDracula.FindIndex(ev => ev.name == line) == -1)
                         {
                             ui.TellUser("I didn't recognise that card name");
                         }
-                    } while (GetEventByNameFromEventDeck(line).name == "Unknown event" && h.eventsKnownToDracula.FindIndex(ev => ev.name == line) == -1);
+                    } while (GetEventByNameFromEventDeck(line).name == "Unknown event" && h.EventsKnownToDracula.FindIndex(ev => ev.name == line) == -1);
                     eventsAlreadyKnownToDracula.Add(line);
                 }
                 List<Event> eventsToAddToKnownEvents = new List<Event>();
-                eventsToAddToKnownEvents.AddRange(h.eventsKnownToDracula);
+                eventsToAddToKnownEvents.AddRange(h.EventsKnownToDracula);
                 foreach (string name in eventsAlreadyKnownToDracula)
                 {
                     if (eventsToAddToKnownEvents.FindIndex(eve => eve.name == name) > -1)
@@ -3609,16 +3722,16 @@ namespace DraculaSimulator
                     }
                     else
                     {
-                        h.eventsKnownToDracula.Add(GetEventByNameFromEventDeck(name));
+                        h.EventsKnownToDracula.Add(GetEventByNameFromEventDeck(name));
                     }
                 }
-                h.travelType = ui.AskHunterWhatTravelTypeForSpy(h.name);
+                h.TravelType = ui.AskHunterWhatTravelTypeForSpy(h.Name);
                 string lineB;
                 do
                 {
-                    lineB = ui.AskHunterWhichLocationTheyAreMovingToNextTurn(h.name);
-                } while (GetLocationFromName(lineB).name == "Unknown location");
-                h.destination = GetLocationFromName(lineB);
+                    lineB = ui.AskHunterWhichLocationTheyAreMovingToNextTurn(h.Name);
+                } while (GetLocationFromName(lineB).Name == "Unknown location" || GetLocationFromName(lineB).Name == "Multiple locations");
+                h.Destination = GetLocationFromName(lineB);
             }
             return true;
         }
@@ -3627,40 +3740,40 @@ namespace DraculaSimulator
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Thief");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Thief");
-            ui.TellUser(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().Name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i].name + " ");
+                ui.TellUser("and " + huntersEncountered[i].Name + " ");
             }
             ui.TellUser("encountered Thief");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                if (huntersEncountered[i].hasDogsFaceUp)
+                if (huntersEncountered[i].HasDogsFaceUp)
                 {
-                    ui.TellUser(huntersEncountered[i].name + " has Dogs face up, Thief has no effect");
-                    Logger.WriteToDebugLog(huntersEncountered[i].name + " has Dogs face up, Thief has no effect");
-                    Logger.WriteToGameLog(huntersEncountered[i].name + " has Dogs face up, Thief has no effect");
+                    ui.TellUser(huntersEncountered[i].Name + " has Dogs face up, Thief has no effect");
+                    Logger.WriteToDebugLog(huntersEncountered[i].Name + " has Dogs face up, Thief has no effect");
+                    Logger.WriteToGameLog(huntersEncountered[i].Name + " has Dogs face up, Thief has no effect");
                     return true;
                 }
             }
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                dracula.DiscardHunterCard(this, huntersEncountered[i], ui);
+                Dracula.DiscardHunterCard(this, huntersEncountered[i], ui);
             }
             return true;
         }
 
         public bool ResolveNewVampire(List<Hunter> huntersEncountered, out bool discard, UserInterface ui)
         {
-            if (time < 3)
+            if (TimeIndex < 3)
             {
-                ui.TellUser(huntersEncountered[0].name + " encountered a New Vampire and disposed of it during the day");
+                ui.TellUser(huntersEncountered[0].Name + " encountered a New Vampire and disposed of it during the day");
                 discard = true;
                 return true;
             }
             else
             {
-                Event draculaEventCard = dracula.PlaySeductionCard(this);
+                Event draculaEventCard = Dracula.PlaySeductionCard(this);
                 DiscardEventFromDracula("Seduction");
                 ui.TellUser("Dracula played Seduction");
                 int dieRoll;
@@ -3693,22 +3806,22 @@ namespace DraculaSimulator
                         }
                         else
                         {
-                            answer = ui.GetHunterHolyItems(huntersEncountered[i].name);
+                            answer = ui.GetHunterHolyItems(huntersEncountered[i].Name);
                         }
                         if (answer > 0)
                         {
-                            Logger.WriteToDebugLog(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
-                            Logger.WriteToGameLog(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
-                            ui.TellUser(huntersEncountered[i].name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
+                            Logger.WriteToDebugLog(huntersEncountered[i].Name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
+                            Logger.WriteToGameLog(huntersEncountered[i].Name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
+                            ui.TellUser(huntersEncountered[i].Name + " negated the encounter with " + (answer == 1 ? "a crucifix" : "a heavenly host"));
                             discard = true;
                             return true;
                         }
                     }
                     foreach (Hunter h in huntersEncountered)
                     {
-                        Logger.WriteToDebugLog(h.name + " is bitten");
-                        Logger.WriteToGameLog(h.name + " is bitten");
-                        ui.TellUser(h.name + " is bitten");
+                        Logger.WriteToDebugLog(h.Name + " is bitten");
+                        Logger.WriteToGameLog(h.Name + " is bitten");
+                        ui.TellUser(h.Name + " is bitten");
                         discard = true;
                         return (!HandlePossibleHunterDeath(ui));
                     }
@@ -3720,12 +3833,12 @@ namespace DraculaSimulator
                     ui.TellUser("The Vampire attempts to escape");
                     for (int i = 0; i < huntersEncountered.Count(); i++)
                     {
-                        int answer = ui.GetHunterSharpItems(huntersEncountered[i].name);
+                        int answer = ui.GetHunterSharpItems(huntersEncountered[i].Name);
                         if (answer > 0)
                         {
-                            Logger.WriteToDebugLog(huntersEncountered[i].name + " prevented the Vampire escaping with " + (answer == 1 ? "a Knife" : "a Stake"));
-                            Logger.WriteToGameLog(huntersEncountered[i].name + " prevented the Vampire escaping with " + (answer == 1 ? "a Knife" : "a Stake"));
-                            ui.TellUser(huntersEncountered[i].name + " prevented the Vampire escaping with " + (answer == 1 ? "a Knife" : "a Stake"));
+                            Logger.WriteToDebugLog(huntersEncountered[i].Name + " prevented the Vampire escaping with " + (answer == 1 ? "a Knife" : "a Stake"));
+                            Logger.WriteToGameLog(huntersEncountered[i].Name + " prevented the Vampire escaping with " + (answer == 1 ? "a Knife" : "a Stake"));
+                            ui.TellUser(huntersEncountered[i].Name + " prevented the Vampire escaping with " + (answer == 1 ? "a Knife" : "a Stake"));
                             ui.TellUser("Don't forget to discard the item");
                             discard = true;
                             return true;
@@ -3742,17 +3855,17 @@ namespace DraculaSimulator
         {
             Logger.WriteToDebugLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Wolves");
             Logger.WriteToGameLog("Hunter" + (huntersEncountered.Count() > 0 ? "s" : "") + " encountered Wolves");
-            ui.TellUser(huntersEncountered.First().name + " ");
+            ui.TellUser(huntersEncountered.First().Name + " ");
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                ui.TellUser("and " + huntersEncountered[i].name + " ");
+                ui.TellUser("and " + huntersEncountered[i].Name + " ");
             }
             ui.TellUser("encountered Wolves");
             bool hasPistol = false;
             bool hasRifle = false;
             for (int i = 1; i < huntersEncountered.Count(); i++)
             {
-                int answer = ui.GetHunterEquipmentForWolves(huntersEncountered[i].name);
+                int answer = ui.GetHunterEquipmentForWolves(huntersEncountered[i].Name);
                 switch (answer)
                 {
                     case 1: hasPistol = true; break;
@@ -3771,26 +3884,27 @@ namespace DraculaSimulator
             {
                 for (int i = 1; i < huntersEncountered.Count(); i++)
                 {
-                    Logger.WriteToDebugLog(huntersEncountered[i].name + " loses " + (numberOfWeaponTypes == 1 ? "1" : "2") + " health");
-                    Logger.WriteToGameLog(huntersEncountered[i].name + " loses " + (numberOfWeaponTypes == 1 ? "1" : "2") + " health");
-                    ui.TellUser(huntersEncountered[i].name + " loses " + (numberOfWeaponTypes == 1 ? "1" : "2") + " health");
-                    huntersEncountered[i].health -= (2 - numberOfWeaponTypes);
+                    Logger.WriteToDebugLog(huntersEncountered[i].Name + " loses " + (numberOfWeaponTypes == 1 ? "1" : "2") + " health");
+                    Logger.WriteToGameLog(huntersEncountered[i].Name + " loses " + (numberOfWeaponTypes == 1 ? "1" : "2") + " health");
+                    ui.TellUser(huntersEncountered[i].Name + " loses " + (numberOfWeaponTypes == 1 ? "1" : "2") + " health");
+                    huntersEncountered[i].Health -= (2 - numberOfWeaponTypes);
                 }
 
             }
             return !HandlePossibleHunterDeath(ui);
         }
 
+        // remove
         internal void DrawEncountersUpToHandSize()
         {
-            dracula.DrawEncounters(this, dracula.encounterHandSize);
+            Dracula.DrawEncounters(this, Dracula.EncounterHandSize);
         }
 
         internal bool DraculaCancelTrain(int hunterIndex, UserInterface ui)
         {
             Logger.WriteToDebugLog("Dracula is deciding whether to cancel the train");
 
-            if (dracula.WillCancelTrain(this, hunters[hunterIndex]))
+            if (Dracula.WillCancelTrain(this, Hunters[hunterIndex]))
             {
                 PlayFalseTipOff(ui);
                 return true;
@@ -3801,7 +3915,7 @@ namespace DraculaSimulator
         private void PlayFalseTipOff(UserInterface ui)
         {
             ui.TellUser("I am playing my False Tip-Off card to cancel your train");
-            dracula.DiscardEventFromHand(this, "False Tip-Off");
+            Dracula.DiscardEventFromHand(this, "False Tip-Off");
             int hunterPlayingGoodluck = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
             if (hunterPlayingGoodluck > -1)
             {
@@ -3811,74 +3925,77 @@ namespace DraculaSimulator
 
         internal void AddEventCardToHunterAtIndex(int hunterIndex, UserInterface ui)
         {
-            hunters[hunterIndex].numberOfEvents++;
-            Logger.WriteToDebugLog(hunters[hunterIndex].name + " drew an event card, up to " + hunters[hunterIndex].numberOfEvents);
-            Logger.WriteToGameLog(hunters[hunterIndex].name + " drew an event card, up to " + hunters[hunterIndex].numberOfEvents);
+            Hunters[hunterIndex].NumberOfEvents++;
+            Logger.WriteToDebugLog(Hunters[hunterIndex].Name + " drew an event card, up to " + Hunters[hunterIndex].NumberOfEvents);
+            Logger.WriteToGameLog(Hunters[hunterIndex].Name + " drew an event card, up to " + Hunters[hunterIndex].NumberOfEvents);
             CheckBittenHunterCards(ui);
         }
 
         internal void AddItemCardToHunterAtIndex(int hunterIndex, UserInterface ui)
         {
-            hunters[hunterIndex].numberOfItems++;
-            Logger.WriteToDebugLog(hunters[hunterIndex].name + " drew an item card, up to " + hunters[hunterIndex].numberOfItems);
-            Logger.WriteToGameLog(hunters[hunterIndex].name + " drew an item card, up to " + hunters[hunterIndex].numberOfItems);
+            Hunters[hunterIndex].NumberOfItems++;
+            Logger.WriteToDebugLog(Hunters[hunterIndex].Name + " drew an item card, up to " + Hunters[hunterIndex].NumberOfItems);
+            Logger.WriteToGameLog(Hunters[hunterIndex].Name + " drew an item card, up to " + Hunters[hunterIndex].NumberOfItems);
             CheckBittenHunterCards(ui);
         }
 
+        // remove
         internal int ResolveTracker()
         {
-            return resolve;
+            return Resolve;
         }
 
         internal void DiscardEventFromHunterAtIndex(string eventName, int hunterIndex, UserInterface ui)
         {
             Event eventToDiscard = GetEventByNameFromEventDeck(eventName);
-            eventDeck.Remove(eventToDiscard);
-            if (hunters[hunterIndex].eventShownToDraculaForBeingBitten == eventToDiscard)
+            EventDeck.Remove(eventToDiscard);
+            if (Hunters[hunterIndex].EventShownToDraculaForBeingBitten == eventToDiscard)
             {
-                hunters[hunterIndex].eventShownToDraculaForBeingBitten = null;
+                Hunters[hunterIndex].EventShownToDraculaForBeingBitten = null;
                 CheckBittenHunterCards(ui);
             }
-            eventDiscard.Add(eventToDiscard);
-            hunters[hunterIndex].numberOfEvents--;
-            Logger.WriteToDebugLog(hunters[hunterIndex].name + " discarded " + eventName + " down to " + hunters[hunterIndex].numberOfEvents);
-            Logger.WriteToGameLog(hunters[hunterIndex].name + " discarded " + eventName + " down to " + hunters[hunterIndex].numberOfEvents);
+            EventDiscard.Add(eventToDiscard);
+            Hunters[hunterIndex].NumberOfEvents--;
+            Logger.WriteToDebugLog(Hunters[hunterIndex].Name + " discarded " + eventName + " down to " + Hunters[hunterIndex].NumberOfEvents);
+            Logger.WriteToGameLog(Hunters[hunterIndex].Name + " discarded " + eventName + " down to " + Hunters[hunterIndex].NumberOfEvents);
         }
 
+        // remove
         internal int NumberOfEventCardsAtHunterIndex(int hunterIndex)
         {
-            return hunters[hunterIndex].numberOfEvents;
+            return Hunters[hunterIndex].NumberOfEvents;
         }
 
+        // remove
         internal int NumberOfItemCardsAtHunterIndex(int hunterIndex)
         {
-            return hunters[hunterIndex].numberOfItems;
+            return Hunters[hunterIndex].NumberOfItems;
         }
 
         internal string HunterShouldDiscardAtHunterIndex(int hunterIndex)
         {
             if (hunterIndex == 1)
             {
-                if (hunters[1].numberOfEvents == 4 && hunters[1].numberOfItems == 4)
+                if (Hunters[1].NumberOfEvents == 4 && Hunters[1].NumberOfItems == 4)
                 {
                     return "item or event";
                 }
-                else if (hunters[1].numberOfEvents > 4)
+                else if (Hunters[1].NumberOfEvents > 4)
                 {
                     return "event";
                 }
-                else if (hunters[1].numberOfItems > 4)
+                else if (Hunters[1].NumberOfItems > 4)
                 {
                     return "item";
                 }
             }
             else
             {
-                if (hunters[hunterIndex].numberOfEvents > 3)
+                if (Hunters[hunterIndex].NumberOfEvents > 3)
                 {
                     return "event";
                 }
-                if (hunters[hunterIndex].numberOfItems > 3)
+                if (Hunters[hunterIndex].NumberOfItems > 3)
                 {
                     return "item";
                 }
@@ -3890,7 +4007,7 @@ namespace DraculaSimulator
         {
             try
             {
-                return itemDeck[itemDeck.FindIndex(card => card.name.ToLower().StartsWith(argument2.ToLower()))];
+                return ItemDeck[ItemDeck.FindIndex(card => card.name.ToLower().StartsWith(argument2.ToLower()))];
             }
             catch (ArgumentOutOfRangeException)
             {
@@ -3901,29 +4018,29 @@ namespace DraculaSimulator
         internal void DiscardItemFromHunterAtIndex(string itemName, int hunterIndex, UserInterface ui)
         {
             Item itemToDiscard;
-            if (hunters[hunterIndex].itemsKnownToDracula.FindIndex(i => i.name == itemName) > -1)
+            if (Hunters[hunterIndex].ItemsKnownToDracula.FindIndex(i => i.name == itemName) > -1)
             {
-                itemToDiscard = hunters[hunterIndex].itemsKnownToDracula.Find(i => i.name == itemName);
-                hunters[hunterIndex].itemsKnownToDracula.Remove(itemToDiscard);
+                itemToDiscard = Hunters[hunterIndex].ItemsKnownToDracula.Find(i => i.name == itemName);
+                Hunters[hunterIndex].ItemsKnownToDracula.Remove(itemToDiscard);
             }
             else
             {
                 itemToDiscard = GetItemByNameFromItemDeck(itemName);
-                itemDeck.Remove(itemToDiscard);
+                ItemDeck.Remove(itemToDiscard);
             }
-            if (hunters[hunterIndex].itemShownToDraculaForBeingBitten == itemToDiscard)
+            if (Hunters[hunterIndex].ItemShownToDraculaForBeingBitten == itemToDiscard)
             {
-                hunters[hunterIndex].itemShownToDraculaForBeingBitten = null;
+                Hunters[hunterIndex].ItemShownToDraculaForBeingBitten = null;
                 CheckBittenHunterCards(ui);
             }
-            itemDiscard.Add(itemToDiscard);
-            hunters[hunterIndex].numberOfItems--;
+            ItemDiscard.Add(itemToDiscard);
+            Hunters[hunterIndex].NumberOfItems--;
             if (itemName == "Dogs")
             {
-                hunters[hunterIndex].hasDogsFaceUp = false;
+                Hunters[hunterIndex].HasDogsFaceUp = false;
             }
-            Logger.WriteToDebugLog(hunters[hunterIndex].name + " discarded " + itemName + " down to " + hunters[hunterIndex].numberOfEvents);
-            Logger.WriteToGameLog(hunters[hunterIndex].name + " discarded " + itemName + " down to " + hunters[hunterIndex].numberOfEvents);
+            Logger.WriteToDebugLog(Hunters[hunterIndex].Name + " discarded " + itemName + " down to " + Hunters[hunterIndex].NumberOfEvents);
+            Logger.WriteToGameLog(Hunters[hunterIndex].Name + " discarded " + itemName + " down to " + Hunters[hunterIndex].NumberOfEvents);
         }
 
         internal string ResolveCombat(int hunterIndex, int enemyInCombat, bool hunterMoved, UserInterface ui)
@@ -3933,16 +4050,16 @@ namespace DraculaSimulator
             List<Hunter> huntersInCombat = new List<Hunter>();
             if (hunterMoved)
             {
-                foreach (Hunter h in hunters[hunterIndex].huntersInGroup)
+                foreach (int ind in Hunters[hunterIndex].HuntersInGroup)
                 {
-                    huntersInCombat.Add(h);
+                    huntersInCombat.Add(Hunters[ind]);
                 }
             }
             else
             {
-                foreach (Hunter h in hunters)
+                foreach (Hunter h in Hunters)
                 {
-                    if (h.currentLocation == hunters[hunterIndex].currentLocation)
+                    if (h.CurrentLocation == Hunters[hunterIndex].CurrentLocation)
                     {
                         huntersInCombat.Add(h);
                     }
@@ -3960,7 +4077,7 @@ namespace DraculaSimulator
                         enemyName = "Dracula";
                         enemyCombatCards.Add(new Item("Claws"));
                         enemyCombatCards.Add(new Item("Escape (Man)"));
-                        if (time > 2)
+                        if (TimeIndex > 2)
                         {
                             enemyCombatCards.Add(new Item("Strength"));
                             enemyCombatCards.Add(new Item("Escape (Bat)"));
@@ -4007,7 +4124,7 @@ namespace DraculaSimulator
                         enemyName = "New Vampire";
                         enemyCombatCards.Add(new Item("Claws"));
                         enemyCombatCards.Add(new Item("Escape (Man)"));
-                        if (time > 2)
+                        if (TimeIndex > 2)
                         {
                             enemyCombatCards.Add(new Item("Strength"));
                             enemyCombatCards.Add(new Item("Escape (Bat)"));
@@ -4019,11 +4136,11 @@ namespace DraculaSimulator
                     }
 
             }
-            ui.TellUser(hunters[hunterIndex].name + " is entering combat against " + enemyName + (huntersInCombat.Count() > 1 ? " with " + huntersInCombat[1].name : "") + (huntersInCombat.Count() > 2 ? " and " + huntersInCombat[2].name : "") + (huntersInCombat.Count() > 3 ? " and " + huntersInCombat[3].name : ""));
+            ui.TellUser(Hunters[hunterIndex].Name + " is entering combat against " + enemyName + (huntersInCombat.Count() > 1 ? " with " + huntersInCombat[1].Name : "") + (huntersInCombat.Count() > 2 ? " and " + huntersInCombat[2].Name : "") + (huntersInCombat.Count() > 3 ? " and " + huntersInCombat[3].Name : ""));
             Event draculaEventCard = null;
             do
             {
-                draculaEventCard = dracula.PlayEventCardAtStartOfCombat(this, trapPlayed, hunterMoved, enemyInCombat);
+                draculaEventCard = Dracula.PlayEventCardAtStartOfCombat(this, trapPlayed, hunterMoved, enemyInCombat);
                 if (draculaEventCard != null)
                 {
                     DiscardEventFromDracula(draculaEventCard.name);
@@ -4043,7 +4160,7 @@ namespace DraculaSimulator
                             }
                             break;
                         case "Rage":
-                            PlayRage(hunters[hunterIndex].huntersInGroup, ui);
+                            PlayRage(huntersInCombat, ui);
                             int hunterPlayingGoodluckB = ui.AskWhichHunterIsUsingGoodLuckToCancelEvent();
                             if (hunterPlayingGoodluckB > -1)
                             {
@@ -4070,7 +4187,7 @@ namespace DraculaSimulator
                             }
                             break;
 
-                        case "Wild Horses": PlayWildHorses(hunters[hunterIndex].huntersInGroup, ui); return "Wild Horses";
+                        case "Wild Horses": PlayWildHorses(huntersInCombat, ui); return "Wild Horses";
                     }
                 }
             } while (draculaEventCard != null);
@@ -4078,12 +4195,12 @@ namespace DraculaSimulator
             int hunterPlayingCard = 0;
             while (hunterPlayedCard[0] || hunterPlayedCard[1] || hunterPlayedCard[2] || hunterPlayedCard[3])
             {
-                if (ui.GetHunterPlayingCard(hunters[hunterPlayingCard].name))
+                if (ui.GetHunterPlayingCard(Hunters[hunterPlayingCard].Name))
                 {
                     string cardName = "";
                     do
                     {
-                        cardName = ui.GetNameOfHunterCardPlayedAtStartOfCombat(hunters[hunterPlayingCard].name);
+                        cardName = ui.GetNameOfHunterCardPlayedAtStartOfCombat(Hunters[hunterPlayingCard].Name);
                     } while (GetEventByNameFromEventDeck(cardName).name == "Unknown event" && GetItemByNameFromItemDeck(cardName).name == "Unknown item" && cardName.ToLower() != "cancel");
                     if (cardName != "cancel")
                     {
@@ -4092,7 +4209,7 @@ namespace DraculaSimulator
                         {
                             case "Advance Planning":
                                 DiscardEventFromHunterAtIndex(cardName, hunterPlayingCard, ui);
-                                draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                                draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
                                 bool eventIsCancelled = false;
                                 if (draculaEventCard != null)
                                 {
@@ -4121,7 +4238,7 @@ namespace DraculaSimulator
                                 break;
                             case "Escape Route":
                                 DiscardEventFromHunterAtIndex(cardName, hunterPlayingCard, ui);
-                                draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                                draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
                                 bool eventIsCancelledB = false;
                                 if (draculaEventCard != null)
                                 {
@@ -4151,7 +4268,7 @@ namespace DraculaSimulator
                                 break;
                             case "Heroic Leap":
                                 DiscardEventFromHunterAtIndex(cardName, hunterPlayingCard, ui);
-                                draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                                draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
                                 bool eventIsCancelledC = false;
                                 if (draculaEventCard != null)
                                 {
@@ -4210,7 +4327,7 @@ namespace DraculaSimulator
             if (rageRounds == 0)
             {
                 enemyCombatCards.Add(new Item("Escape (Man)"));
-                if (time > 2)
+                if (TimeIndex > 2)
                 {
                     enemyCombatCards.Add(new Item("Escape (Bat)"));
                     enemyCombatCards.Add(new Item("Escape (Mist)"));
@@ -4225,8 +4342,8 @@ namespace DraculaSimulator
                 {
                     if (ui.AskIfHunterIsUsingGreatStrengthToCancelDamage(roundResult.hunterTargeted))
                     {
-                        DiscardEventFromHunterAtIndex("Great Strength", Array.FindIndex(hunters, h => h.name == roundResult.hunterTargeted), ui);
-                        draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                        DiscardEventFromHunterAtIndex("Great Strength", Array.FindIndex(Hunters, h => h.Name == roundResult.hunterTargeted), ui);
+                        draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
                         if (draculaEventCard != null)
                         {
                             switch (draculaEventCard.name)
@@ -4248,11 +4365,11 @@ namespace DraculaSimulator
             }
             foreach (Hunter h in huntersInCombat)
             {
-                h.health -= ui.GetHunterHealthLost(h.name);
+                h.Health -= ui.GetHunterHealthLost(h.Name);
             }
             if (enemyInCombat == 1)
             {
-                dracula.blood -= ui.GetDraculaBloodLost();
+                Dracula.Blood -= ui.GetDraculaBloodLost();
             }
             ui.TellUser("Be sure to discard any items that were destroyed/consumed in this combat");
             if (roundResult.outcome == "Bite" || roundResult.outcome == "Enemy killed" || roundResult.outcome == "Hunter killed" || roundResult.outcome == "End")
@@ -4260,11 +4377,11 @@ namespace DraculaSimulator
                 switch (roundResult.outcome)
                 {
                     case "Bite":
-                        ApplyBiteToHunter(Array.FindIndex(hunters, hunt => hunt.name == roundResult.hunterTargeted), ui);
+                        ApplyBiteToHunter(Array.FindIndex(Hunters, hunt => hunt.Name == roundResult.hunterTargeted), ui);
                         HandleDraculaEscape(ui);
                         break;
                     case "End":
-                        if (time > 2)
+                        if (TimeIndex > 2)
                         {
                             HandleDraculaEscape(ui);
                         }
@@ -4280,16 +4397,18 @@ namespace DraculaSimulator
             ui.TellUser("First roll a die for you and then roll a die for Dracula and tell me the results");
             int hunterHealthLost = ui.GetDieRoll();
             int draculaBloodLost = ui.GetDieRoll();
-            hunters[hunterIndex].health -= hunterHealthLost;
-            dracula.blood -= draculaBloodLost;
+            Hunters[hunterIndex].Health -= hunterHealthLost;
+            Dracula.Blood -= draculaBloodLost;
             HandlePossibleHunterDeath(ui);
         }
 
+        // remove
         private void PlayEscapeRouteInCombat(int hunterIndex, UserInterface ui)
         {
             ui.TellUser("Combat is cancelled");
         }
 
+        // remove
         private void PlayAdvancePlanningInCombat(UserInterface ui)
         {
             ui.TellUser("Add 1 to all dice rolls for that hunter");
@@ -4305,19 +4424,19 @@ namespace DraculaSimulator
             }
             else
             {
-                Location locationToMoveHuntersToWithWildHorses = dracula.ChooseLocationToSendHuntersToWithWildHorses(this, huntersBeingMoved);
-                ui.TellUser("Dracula moved you to " + locationToMoveHuntersToWithWildHorses.name);
+                LocationDetail locationToMoveHuntersToWithWildHorses = Dracula.ChooseLocationToSendHuntersToWithWildHorses(this, huntersBeingMoved);
+                ui.TellUser("Dracula moved you to " + locationToMoveHuntersToWithWildHorses.Name);
                 foreach (Hunter h in huntersBeingMoved)
                 {
-                    h.currentLocation = locationToMoveHuntersToWithWildHorses;
+                    h.CurrentLocation = locationToMoveHuntersToWithWildHorses;
                 }
             }
         }
 
         private void PlayRage(List<Hunter> huntersInCombat, UserInterface ui)
         {
-            Hunter ragedHunter = dracula.ChooseHunterToRage(huntersInCombat);
-            ui.TellUser(ragedHunter.name + " must show me all items and I will discard one");
+            Hunter ragedHunter = Dracula.ChooseHunterToRage(huntersInCombat);
+            ui.TellUser(ragedHunter.Name + " must show me all items and I will discard one");
             List<Item> itemsInHunterHand = new List<Item>();
             string cardInRagedHunterHand;
             do
@@ -4328,11 +4447,12 @@ namespace DraculaSimulator
                     itemsInHunterHand.Add(GetItemByNameFromItemDeck(cardInRagedHunterHand));
                 }
             } while (GetItemByNameFromItemDeck(cardInRagedHunterHand).name == "Unknown item" && cardInRagedHunterHand.ToLower() != "none");
-            Item itemToDiscard = dracula.ChooseItemCardToDiscard(itemsInHunterHand);
+            Item itemToDiscard = Dracula.ChooseItemCardToDiscard(itemsInHunterHand);
             ui.TellUser("Discarding " + itemToDiscard.name);
-            DiscardItemFromHunterAtIndex(itemToDiscard.name, Array.FindIndex(hunters, h => h.name == huntersInCombat.First().name), ui);
+            DiscardItemFromHunterAtIndex(itemToDiscard.name, Array.FindIndex(Hunters, h => h.Name == huntersInCombat.First().Name), ui);
         }
 
+        // remove
         private void PlayTrap(UserInterface ui)
         {
             ui.TellUser("Dracula played Trap");
@@ -4341,13 +4461,13 @@ namespace DraculaSimulator
         private CombatRoundResult ResolveRoundOfCombat(List<Hunter> huntersFighting, List<Item> combatCards, List<Item> hunterBasicCards, CombatRoundResult result, bool hunterMoved, int enemyType, UserInterface ui)
         {
             string targetHunterName;
-            string newEnemyCardUsed = dracula.ChooseCombatCardAndTarget(huntersFighting, combatCards, result, NameOfHunterAlly(), out targetHunterName).name;
+            string newEnemyCardUsed = Dracula.ChooseCombatCardAndTarget(huntersFighting, combatCards, result, NameOfHunterAlly(), out targetHunterName).name;
             string newHunterCardUsed = "nothing";
             foreach (Hunter h in huntersFighting)
             {
                 do
                 {
-                    newHunterCardUsed = ui.GetCombatCardFromHunter(h.name);
+                    newHunterCardUsed = ui.GetCombatCardFromHunter(h.Name);
                     if (GetItemByNameFromItemDeck(newHunterCardUsed).name == "Unknown item")
                     {
                         if (GetItemByNameFromList(newHunterCardUsed, hunterBasicCards).name == "Unknown item")
@@ -4358,21 +4478,21 @@ namespace DraculaSimulator
                 } while (GetItemByNameFromItemDeck(newHunterCardUsed).name == "Unknown item" && GetItemByNameFromList(newHunterCardUsed, hunterBasicCards).name == "Unknown item");
                 if (newHunterCardUsed != "Punch" && newHunterCardUsed != "Dodge" && newHunterCardUsed != "Escape")
                 {
-                    if (h.itemsKnownToDracula.FindIndex(it => it.name == newHunterCardUsed) == -1)
+                    if (h.ItemsKnownToDracula.FindIndex(it => it.name == newHunterCardUsed) == -1)
                     {
-                        h.itemsKnownToDracula.Add(GetItemByNameFromItemDeck(newHunterCardUsed));
+                        h.ItemsKnownToDracula.Add(GetItemByNameFromItemDeck(newHunterCardUsed));
                     }
-                    else if (newHunterCardUsed == h.lastItemUsedInCombat)
+                    else if (newHunterCardUsed == h.LastItemUsedInCombat)
                     {
                         List<Item> copyOfHunterItemsKnown = new List<Item>();
-                        copyOfHunterItemsKnown.AddRange(h.itemsKnownToDracula);
+                        copyOfHunterItemsKnown.AddRange(h.ItemsKnownToDracula);
                         copyOfHunterItemsKnown.Remove(copyOfHunterItemsKnown.Find(it => it.name == newHunterCardUsed));
                         if (copyOfHunterItemsKnown.FindIndex(it => it.name == newHunterCardUsed) == -1)
                         {
-                            h.itemsKnownToDracula.Add(GetItemByNameFromItemDeck(newHunterCardUsed));
+                            h.ItemsKnownToDracula.Add(GetItemByNameFromItemDeck(newHunterCardUsed));
                         }
                     }
-                    h.lastItemUsedInCombat = newHunterCardUsed;
+                    h.LastItemUsedInCombat = newHunterCardUsed;
                 }
             }
             ui.TellUser("Enemy chose " + newEnemyCardUsed + " against " + targetHunterName);
@@ -4381,7 +4501,7 @@ namespace DraculaSimulator
                 if (newEnemyCardUsed == "Fangs" || newEnemyCardUsed == "Escape (Man)" || newEnemyCardUsed == "Escape (Bat)" || newEnemyCardUsed == "Escape (Mist)")
                 {
                     ui.TellUser("Dracula spent two blood to play his card");
-                    dracula.blood -= 2;
+                    Dracula.Blood -= 2;
                 }
             }
             string newOutcome = ui.GetCombatRoundOutcome();
@@ -4392,6 +4512,7 @@ namespace DraculaSimulator
             return newResult;
         }
 
+        // remove
         private Item GetItemByNameFromList(string itemName, List<Item> itemList)
         {
             try
@@ -4406,23 +4527,23 @@ namespace DraculaSimulator
 
         internal void PerformBatsMoveForHunter(int hunterIndex, UserInterface ui)
         {
-            Location locationToMoveTo = dracula.DecideWhereToSendHunterWithBats(this, hunters[hunterIndex], ui);
+            LocationDetail locationToMoveTo = Dracula.DecideWhereToSendHunterWithBats(this, Hunters[hunterIndex], ui);
             MoveHunterToLocationAtHunterIndex(hunterIndex, locationToMoveTo, ui);
-            ui.TellUser(hunters[hunterIndex].name + (hunters[hunterIndex].huntersInGroup.Count() > 0 ? " and group" : "") + " moved to " + locationToMoveTo.name + " by Bats");
+            ui.TellUser(Hunters[hunterIndex].Name + (Hunters[hunterIndex].HuntersInGroup.Count() > 0 ? " and group" : "") + " moved to " + locationToMoveTo.Name + " by Bats");
         }
 
         internal void TradeBetweenHunters(int hunterIndexA, int hunterIndexB, UserInterface ui)
         {
-            int hunterAGiven = ui.GetNumberOfCardsGivenByHunter(hunters[hunterIndexA].name);
-            int hunterBGiven = ui.GetNumberOfCardsGivenByHunter(hunters[hunterIndexB].name);
-            hunters[hunterIndexA].numberOfItems = hunters[hunterIndexA].numberOfItems + hunterBGiven - hunterAGiven;
-            hunters[hunterIndexB].numberOfItems = hunters[hunterIndexB].numberOfItems + hunterAGiven - hunterBGiven;
-            ui.TellUser(hunters[hunterIndexA].name + " now has " + hunters[hunterIndexA].numberOfItems + " items and " + hunters[hunterIndexB].name + " now has " + hunters[hunterIndexB].numberOfItems + " items");
+            int hunterAGiven = ui.GetNumberOfCardsGivenByHunter(Hunters[hunterIndexA].Name);
+            int hunterBGiven = ui.GetNumberOfCardsGivenByHunter(Hunters[hunterIndexB].Name);
+            Hunters[hunterIndexA].NumberOfItems = Hunters[hunterIndexA].NumberOfItems + hunterBGiven - hunterAGiven;
+            Hunters[hunterIndexB].NumberOfItems = Hunters[hunterIndexB].NumberOfItems + hunterAGiven - hunterBGiven;
+            ui.TellUser(Hunters[hunterIndexA].Name + " now has " + Hunters[hunterIndexA].NumberOfItems + " items and " + Hunters[hunterIndexB].Name + " now has " + Hunters[hunterIndexB].NumberOfItems + " items");
         }
 
         internal void UseItemByHunterAtHunterIndex(string itemName, int hunterIndex, UserInterface ui)
         {
-            ui.TellUser(hunters[hunterIndex].name + " used " + itemName);
+            ui.TellUser(Hunters[hunterIndex].Name + " used " + itemName);
             switch (itemName)
             {
                 case "Local Rumors": PlayLocalRumors(hunterIndex, ui); break;
@@ -4436,10 +4557,10 @@ namespace DraculaSimulator
 
         private void PlayDogs(int hunterIndex, UserInterface ui)
         {
-            hunters[hunterIndex].hasDogsFaceUp = true;
-            if (hunters[hunterIndex].itemsKnownToDracula.FindIndex(item => item.name == "Dogs") == -1)
+            Hunters[hunterIndex].HasDogsFaceUp = true;
+            if (Hunters[hunterIndex].ItemsKnownToDracula.FindIndex(item => item.name == "Dogs") == -1)
             {
-                hunters[hunterIndex].itemsKnownToDracula.Add(GetItemByNameFromItemDeck("Dogs"));
+                Hunters[hunterIndex].ItemsKnownToDracula.Add(GetItemByNameFromItemDeck("Dogs"));
             }
         }
 
@@ -4448,7 +4569,7 @@ namespace DraculaSimulator
             List<Hunter> huntersWithBitesAtThisLocation = new List<Hunter>();
             for (int i = 0; i < 3; i++)
             {
-                if (hunters[i].currentLocation == hunters[hunterIndex].currentLocation && hunters[i].numberOfBites > 0)
+                if (Hunters[i].CurrentLocation == Hunters[hunterIndex].CurrentLocation && Hunters[i].NumberOfBites > 0)
                 {
                     huntersWithBitesAtThisLocation.Add(huntersWithBitesAtThisLocation[i]);
                 }
@@ -4460,11 +4581,11 @@ namespace DraculaSimulator
                 {
                     for (int i = 0; i < 3; i++)
                     {
-                        if (huntersWithBitesAtThisLocation.Contains(hunters[i]))
+                        if (huntersWithBitesAtThisLocation.Contains(Hunters[i]))
                         {
-                            if (ui.GetHunterHeal(hunters[hunterIndex].name))
+                            if (ui.GetHunterHeal(Hunters[hunterIndex].Name))
                             {
-                                hunterToHeal = hunters[i];
+                                hunterToHeal = Hunters[i];
                             }
                         }
                     }
@@ -4477,15 +4598,15 @@ namespace DraculaSimulator
             switch (ui.GetHolyWaterResult())
             {
                 case 1:
-                    hunterToHeal.health -= 2;
+                    hunterToHeal.Health -= 2;
                     HandlePossibleHunterDeath(ui); break;
                 case 2: break;
                 case 3:
-                    hunterToHeal.numberOfBites--;
-                    if (hunterToHeal.numberOfBites < 1)
+                    hunterToHeal.NumberOfBites--;
+                    if (hunterToHeal.NumberOfBites < 1)
                     {
-                        hunterToHeal.itemShownToDraculaForBeingBitten = null;
-                        hunterToHeal.eventShownToDraculaForBeingBitten = null;
+                        hunterToHeal.ItemShownToDraculaForBeingBitten = null;
+                        hunterToHeal.EventShownToDraculaForBeingBitten = null;
                     }
                     break;
             }
@@ -4494,7 +4615,7 @@ namespace DraculaSimulator
 
         private void PlayHeavenlyHost(int hunterIndex, UserInterface ui)
         {
-            hunters[hunterIndex].currentLocation.hasHost = true;
+            Hunters[hunterIndex].CurrentLocation.HasHost = true;
             DiscardItemFromHunterAtIndex("Heavenly Host", hunterIndex, ui);
         }
 
@@ -4505,36 +4626,37 @@ namespace DraculaSimulator
             {
                 locationIndex = ui.GetLocationIndexOfEncounterToReveal();
             }
-            while (dracula.trail[locationIndex] == null && (locationIndex > 5 ? dracula.catacombs[locationIndex - 6] == null : true));
-            Location locationWhereEncounterIsBeingRevealed;
+            while (Dracula.Trail[locationIndex] == null && (locationIndex > 5 ? Dracula.Catacombs[locationIndex - 6] == null : true));
+            LocationDetail locationWhereEncounterIsBeingRevealed;
             if (locationIndex < 6)
             {
-                locationWhereEncounterIsBeingRevealed = dracula.trail[locationIndex];
+                locationWhereEncounterIsBeingRevealed = Dracula.Trail[locationIndex];
             }
             else
             {
-                locationWhereEncounterIsBeingRevealed = dracula.catacombs[locationIndex - 6];
+                locationWhereEncounterIsBeingRevealed = Dracula.Catacombs[locationIndex - 6];
             }
             int encounterToReveal = 0;
-            if (locationWhereEncounterIsBeingRevealed.encounters.Count() > 0)
+            if (locationWhereEncounterIsBeingRevealed.Encounters.Count() > 0)
             {
                 encounterToReveal = ui.GetIndexOfEncounterToReveal();
             }
-            locationWhereEncounterIsBeingRevealed.encounters[encounterToReveal].isRevealed = true;
+            locationWhereEncounterIsBeingRevealed.Encounters[encounterToReveal].isRevealed = true;
             DiscardItemFromHunterAtIndex("Local Rumors", hunterIndex, ui);
         }
 
+        // remove
         internal bool HunterHasGroupAtHunterIndex(int hunterIndex)
         {
-            return hunters[hunterIndex].huntersInGroup.Count() > 1;
+            return Hunters[hunterIndex].HuntersInGroup.Count() > 1;
         }
 
         internal void ApplyBiteToHunter(int hunterIndex, UserInterface ui)
         {
-            if (ui.AskIfHunterIsUsingGreatStrengthToCancelBite(hunters[hunterIndex].name))
+            if (ui.AskIfHunterIsUsingGreatStrengthToCancelBite(Hunters[hunterIndex].Name))
             {
                 DiscardEventFromHunterAtIndex("Great Strength", hunterIndex, ui);
-                Event draculaEventCard = dracula.WillPlayDevilishPower(this, ui);
+                Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
                 bool eventIsCancelled = false;
                 if (draculaEventCard != null)
                 {
@@ -4562,8 +4684,8 @@ namespace DraculaSimulator
                     return;
                 }
             }
-            hunters[hunterIndex].numberOfBites++;
-            ui.TellUser(hunters[hunterIndex].name + " was bitten");
+            Hunters[hunterIndex].NumberOfBites++;
+            ui.TellUser(Hunters[hunterIndex].Name + " was bitten");
         }
 
         internal void ApplyBiteToOneOfMultipleHunters(int hunterIndex, UserInterface ui)
@@ -4572,26 +4694,27 @@ namespace DraculaSimulator
             do
             {
                 hunterIndexBitten = ui.GetIndexOfHunterBitten();
-                if (hunters[hunterIndexBitten].currentLocation != hunters[hunterIndex].currentLocation)
+                if (Hunters[hunterIndexBitten].CurrentLocation != Hunters[hunterIndex].CurrentLocation)
                 {
-                    ui.TellUser(hunters[hunterIndexBitten].name + " is not at the same location as " + hunters[hunterIndex].name);
+                    ui.TellUser(Hunters[hunterIndexBitten].Name + " is not at the same location as " + Hunters[hunterIndex].Name);
                 }
-            } while (hunters[hunterIndexBitten].currentLocation != hunters[hunterIndex].currentLocation);
+            } while (Hunters[hunterIndexBitten].CurrentLocation != Hunters[hunterIndex].CurrentLocation);
             ApplyBiteToHunter(hunterIndexBitten, ui);
         }
 
+        // remove
         internal string LocationOfHunterAtHunterIndex(int hunterIndex)
         {
-            return hunters[hunterIndex].currentLocation.name;
+            return Hunters[hunterIndex].CurrentLocation.Name;
         }
 
         internal int NumberOfHuntersAtLocation(string locationName)
         {
-            Location location = GetLocationFromName(locationName);
+            LocationDetail location = GetLocationFromName(locationName);
             int total = 0;
-            foreach (Hunter h in hunters)
+            foreach (Hunter h in Hunters)
             {
-                if (h.currentLocation == location)
+                if (h.CurrentLocation == location)
                 {
                     total++;
                 }
@@ -4603,50 +4726,50 @@ namespace DraculaSimulator
         {
             if (ui.GetDidDraculaEscapeAsBat())
             {
-                dracula.DoEscapeAsBatsMove(this, ui);
+                Dracula.DoEscapeAsBatsMove(this, ui);
             }
         }
 
         internal bool HandlePossibleHunterDeath(UserInterface ui)
         {
             bool hunterDied = false;
-            foreach (Hunter h in hunters)
+            foreach (Hunter h in Hunters)
             {
-                if (h.health < 1 || (h.name != "Van Helsing" && h.numberOfBites > 1) || h.numberOfBites > 2)
+                if (h.Health < 1 || (h.Name != "Van Helsing" && h.NumberOfBites > 1) || h.NumberOfBites > 2)
                 {
                     hunterDied = true;
-                    ui.TellUser(h.name + " is defeated");
-                    h.currentLocation = GetLocationFromName("St. Joseph & St. Mary");
+                    ui.TellUser(h.Name + " is defeated");
+                    h.CurrentLocation = GetLocationFromName("St. Joseph & St. Mary");
                     int hunterIndex = 0;
-                    switch (h.name)
+                    switch (h.Name)
                     {
                         case "Lord Godalming":
-                            h.health = 12;
-                            h.numberOfBites = 0;
+                            h.Health = 12;
+                            h.NumberOfBites = 0;
                             hunterIndex = 0;
                             break;
                         case "Van Helsing":
-                            h.health = 8;
-                            h.numberOfBites = 0;
+                            h.Health = 8;
+                            h.NumberOfBites = 0;
                             hunterIndex = 1;
                             break;
                         case "Dr. Seward":
-                            h.health = 10;
-                            h.numberOfBites = 0;
+                            h.Health = 10;
+                            h.NumberOfBites = 0;
                             hunterIndex = 2;
                             break;
                         case "Mina Harker":
-                            h.health = 8;
-                            h.numberOfBites = 1;
+                            h.Health = 8;
+                            h.NumberOfBites = 1;
                             hunterIndex = 3;
                             break;
                     }
-                    while (h.numberOfEvents > 0)
+                    while (h.NumberOfEvents > 0)
                     {
                         string eventName = "Unknown event";
                         while (eventName == "Unknown event")
                         {
-                            eventName = GetEventByNameFromEventDeck(ui.GetNameOfEventDiscardedByHunter(h.name)).name;
+                            eventName = GetEventByNameFromEventDeck(ui.GetNameOfEventDiscardedByHunter(h.Name)).name;
                             if (eventName == "Unknown event")
                             {
                                 ui.TellUser("I can't find that event");
@@ -4654,12 +4777,12 @@ namespace DraculaSimulator
                         }
                         DiscardEventFromHunterAtIndex(eventName, hunterIndex, ui);
                     }
-                    while (h.numberOfItems > 0)
+                    while (h.NumberOfItems > 0)
                     {
                         string itemName = "Unknown item";
                         while (itemName == "Unknown item")
                         {
-                            itemName = GetItemByNameFromItemDeck(ui.GetNameOfItemDiscardedByHunter(h.name)).name;
+                            itemName = GetItemByNameFromItemDeck(ui.GetNameOfItemDiscardedByHunter(h.Name)).name;
                             if (itemName == "Unknown item")
                             {
                                 ui.TellUser("I can't find that item");
@@ -4675,7 +4798,7 @@ namespace DraculaSimulator
         internal void RestHunterAtHunterIndex(int hunterIndex, UserInterface ui)
         {
             int numberOfEvents = 2;
-            if (hunters[hunterIndex].currentLocation == hunters[1].currentLocation)
+            if (Hunters[hunterIndex].CurrentLocation == Hunters[1].CurrentLocation)
             {
                 numberOfEvents = 1;
             }
@@ -4702,8 +4825,8 @@ namespace DraculaSimulator
                     maxHealth = 10;
                     break;
             }
-            hunters[hunterIndex].health = Math.Min(maxHealth, hunters[hunterIndex].health + 2);
-            ui.TellUser(hunters[hunterIndex].name + " now has " + hunters[hunterIndex].health + " health");
+            Hunters[hunterIndex].Health = Math.Min(maxHealth, Hunters[hunterIndex].Health + 2);
+            ui.TellUser(Hunters[hunterIndex].Name + " now has " + Hunters[hunterIndex].Health + " health");
         }
 
         internal void BlessHunterAtHunterIndex(int hunterIndex, UserInterface ui)
@@ -4711,16 +4834,16 @@ namespace DraculaSimulator
             switch (ui.GetHolyWaterResult())
             {
                 case 1:
-                    hunters[hunterIndex].health -= 2;
+                    Hunters[hunterIndex].Health -= 2;
                     HandlePossibleHunterDeath(ui);
                     break;
                 case 2: break;
                 case 3:
-                    hunters[hunterIndex].numberOfBites--;
-                    if (hunters[hunterIndex].numberOfBites < 1)
+                    Hunters[hunterIndex].NumberOfBites--;
+                    if (Hunters[hunterIndex].NumberOfBites < 1)
                     {
-                        hunters[hunterIndex].itemShownToDraculaForBeingBitten = null;
-                        hunters[hunterIndex].eventShownToDraculaForBeingBitten = null;
+                        Hunters[hunterIndex].ItemShownToDraculaForBeingBitten = null;
+                        Hunters[hunterIndex].EventShownToDraculaForBeingBitten = null;
                     }
                     break;
             }
@@ -4729,7 +4852,7 @@ namespace DraculaSimulator
 
         internal void PerformNewspaperReportsFromResolve(UserInterface ui)
         {
-            resolve--;
+            Resolve--;
             int checkingLocationIndex = TrailLength();
             do
             {
@@ -4754,31 +4877,31 @@ namespace DraculaSimulator
 
         internal void PerformSenseOfEmergencyFromResolve(int hunterIndex, UserInterface ui)
         {
-            resolve--;
-            hunters[hunterIndex].health -= 6;
-            hunters[hunterIndex].health += vampireTracker;
-            ui.TellUser("Adjust " + hunters[hunterIndex].name + "'s health and then perform a move to any location");
+            Resolve--;
+            Hunters[hunterIndex].Health -= 6;
+            Hunters[hunterIndex].Health += VampirePointTracker;
+            ui.TellUser("Adjust " + Hunters[hunterIndex].Name + "'s health and then perform a move to any location");
         }
 
         internal void PerformInnerStrengthFromResolve(int hunterIndex, UserInterface ui)
         {
-            resolve--;
+            Resolve--;
             switch (hunterIndex)
             {
-                case 0: hunters[hunterIndex].health = Math.Min(hunters[hunterIndex].health + 4, 12); break;
-                case 1: hunters[hunterIndex].health = Math.Min(hunters[hunterIndex].health + 4, 8); break;
-                case 2: hunters[hunterIndex].health = Math.Min(hunters[hunterIndex].health + 4, 10); break;
-                case 3: hunters[hunterIndex].health = Math.Min(hunters[hunterIndex].health + 4, 8); break;
+                case 0: Hunters[hunterIndex].Health = Math.Min(Hunters[hunterIndex].Health + 4, 12); break;
+                case 1: Hunters[hunterIndex].Health = Math.Min(Hunters[hunterIndex].Health + 4, 8); break;
+                case 2: Hunters[hunterIndex].Health = Math.Min(Hunters[hunterIndex].Health + 4, 10); break;
+                case 3: Hunters[hunterIndex].Health = Math.Min(Hunters[hunterIndex].Health + 4, 8); break;
             }
-            hunters[hunterIndex].health += 4;
-            ui.TellUser("Adjust " + hunters[hunterIndex].name + "'s health");
+            Hunters[hunterIndex].Health += 4;
+            ui.TellUser("Adjust " + Hunters[hunterIndex].Name + "'s health");
         }
 
         internal bool DraculaWillPlayCustomsSearch(int hunterIndex, UserInterface ui)
         {
             Logger.WriteToDebugLog("Dracula is deciding whether to play Customs Search");
 
-            Event draculaEventCard = dracula.WillPlayCustomsSearch(this, hunters[hunterIndex]);
+            Event draculaEventCard = Dracula.WillPlayCustomsSearch(this, Hunters[hunterIndex]);
             if (draculaEventCard != null)
             {
                 switch (draculaEventCard.name)
@@ -4805,21 +4928,22 @@ namespace DraculaSimulator
         private void PlayCustomsSearch(int hunterIndex, UserInterface ui)
         {
             ui.TellUser("Dracula played Customs Search");
-            ui.TellUser(hunters[hunterIndex].name + " must discard all items, don't forget to tell me what they are");
+            ui.TellUser(Hunters[hunterIndex].Name + " must discard all items, don't forget to tell me what they are");
             DiscardEventFromDracula("Customs Search");
         }
 
-        internal List<Location> GetMap()
+        // remove
+        internal List<LocationDetail> GetMap()
         {
-            return map;
+            return Map;
         }
 
         internal List<Hunter> GetBittenHunters()
         {
             List<Hunter> huntersToReturn = new List<Hunter>();
-            foreach (Hunter h in hunters)
+            foreach (Hunter h in Hunters)
             {
-                if (h.numberOfBites > 0)
+                if (h.NumberOfBites > 0)
                 {
                     huntersToReturn.Add(h);
                 }
@@ -4827,11 +4951,12 @@ namespace DraculaSimulator
             return huntersToReturn;
         }
 
-        internal int IndexOfHunterAtLocation(Location location)
+        // remove
+        internal int IndexOfHunterAtLocation(LocationDetail location)
         {
             for (int i = 0; i < 4; i++)
             {
-                if (hunters[i].currentLocation == location)
+                if (Hunters[i].CurrentLocation == location)
                 {
                     return i;
                 }
@@ -4842,36 +4967,36 @@ namespace DraculaSimulator
         internal void ShowStateOfGame(UserInterface ui)
         {
             ui.TellUser("This is how I see things");
-            foreach (Hunter h in hunters)
+            foreach (Hunter h in Hunters)
             {
-                ui.TellUser(h.name + " is in " + h.currentLocation.name + " with " + h.health + " health, " + h.numberOfBites + " bites, " + h.numberOfItems + " item card(s), " + h.numberOfEvents + " event card(s)" + (h.hasDogsFaceUp ? " and has Dogs face up" : ""));
+                ui.TellUser(h.Name + " is in " + h.CurrentLocation.Name + " with " + h.Health + " health, " + h.NumberOfBites + " bites, " + h.NumberOfItems + " item card(s), " + h.NumberOfEvents + " event card(s)" + (h.HasDogsFaceUp ? " and has Dogs face up" : ""));
             }
-            foreach (Location loc in map)
+            foreach (LocationDetail loc in Map)
             {
-                if (loc.hasHost)
+                if (loc.HasHost)
                 {
-                    ui.TellUser("There is a Heavenly Host at " + loc.name);
+                    ui.TellUser("There is a Heavenly Host at " + loc.Name);
                 }
-                if (loc.isConsecrated)
+                if (loc.IsConsecrated)
                 {
-                    ui.TellUser(loc.name + " is consecrated");
+                    ui.TellUser(loc.Name + " is consecrated");
                 }
-                if (loc.turnsUntilStormSubsides > 0)
+                if (loc.TurnsUntilStormSubsides > 0)
                 {
-                    ui.TellUser("There will be a storm in " + loc.name + " for " + loc.turnsUntilStormSubsides + " more turn(s)");
+                    ui.TellUser("There will be a storm in " + loc.Name + " for " + loc.TurnsUntilStormSubsides + " more turn(s)");
                 }
             }
-            if (roadblockCounter.connectionType != null)
+            if (RoadblockCounter.connectionType != null)
             {
-                ui.TellUser("There is a roadblock on the " + roadblockCounter.connectionType + " between " + roadblockCounter.firstLocation.name + " and " + roadblockCounter.secondLocation.name);
+                ui.TellUser("There is a roadblock on the " + RoadblockCounter.connectionType + " between " + RoadblockCounter.firstLocation.Name + " and " + RoadblockCounter.secondLocation.Name);
             }
             ui.TellUser("These things are in the item discard");
-            foreach (Item i in itemDiscard)
+            foreach (Item i in ItemDiscard)
             {
                 ui.TellUser(i.name);
             }
             ui.TellUser("These things are in the event discard");
-            foreach (Event e in eventDiscard)
+            foreach (Event e in EventDiscard)
             {
                 try
                 {
@@ -4887,9 +5012,9 @@ namespace DraculaSimulator
 
         internal bool HeavenlyHostIsInPlay()
         {
-            foreach (Location loc in map)
+            foreach (LocationDetail loc in Map)
             {
-                if (loc.hasHost)
+                if (loc.HasHost)
                 {
                     return true;
                 }
@@ -4900,106 +5025,90 @@ namespace DraculaSimulator
         internal void TellMeWhatYouKnow(UserInterface ui)
         {
             ui.TellUser("This is what I know");
-            foreach (Hunter h in hunters)
+            foreach (Hunter h in Hunters)
             {
-                ui.TellUser(h.name + " has:");
-                foreach (Item i in h.itemsKnownToDracula)
+                ui.TellUser(h.Name + " has:");
+                foreach (Item i in h.ItemsKnownToDracula)
                 {
                     ui.TellUser(i.name);
                 }
-                foreach (Event e in h.eventsKnownToDracula)
+                foreach (Event e in h.EventsKnownToDracula)
                 {
                     ui.TellUser(e.name);
                 }
-                if (h.destination != null)
+                if (h.Destination != null)
                 {
-                    ui.TellUser(h.name + " will move to " + h.destination + " by " + h.travelType + " next turn");
+                    ui.TellUser(h.Name + " will move to " + h.Destination + " by " + h.TravelType + " next turn");
                 }
             }
         }
 
         internal void CheckBittenHunterCards(UserInterface ui)
         {
-            foreach (Hunter h in hunters)
+            foreach (Hunter h in Hunters)
             {
-                if (h.numberOfBites > 0)
+                if (h.NumberOfBites > 0)
                 {
-                    if (h.numberOfItems > 0 && h.itemShownToDraculaForBeingBitten == null)
+                    if (h.NumberOfItems > 0 && h.ItemShownToDraculaForBeingBitten == null)
                     {
                         string line;
                         do
                         {
-                            line = ui.AskHunterToRevealItemForBeingBitten(h.name);
+                            line = ui.AskHunterToRevealItemForBeingBitten(h.Name);
                             ui.TellUser(GetItemByNameFromItemDeck(line).name);
-                        } while (GetItemByNameFromItemDeck(line).name == "Unknown item" && h.itemsKnownToDracula.FindIndex(itm => itm.name == line) == -1);
-                        if (h.itemsKnownToDracula.FindIndex(itm => itm.name == line) == -1)
+                        } while (GetItemByNameFromItemDeck(line).name == "Unknown item" && h.ItemsKnownToDracula.FindIndex(itm => itm.name == line) == -1);
+                        if (h.ItemsKnownToDracula.FindIndex(itm => itm.name == line) == -1)
                         {
-                            h.itemsKnownToDracula.Add(GetItemByNameFromItemDeck(line));
+                            h.ItemsKnownToDracula.Add(GetItemByNameFromItemDeck(line));
                         }
-                        h.itemShownToDraculaForBeingBitten = GetItemByNameFromItemDeck(line);
+                        h.ItemShownToDraculaForBeingBitten = GetItemByNameFromItemDeck(line);
                     }
-                    if (h.numberOfEvents > 0 && h.eventShownToDraculaForBeingBitten == null)
+                    if (h.NumberOfEvents > 0 && h.EventShownToDraculaForBeingBitten == null)
                     {
                         string line;
                         do
                         {
-                            line = ui.AskHunterToRevealEvent(h.name);
+                            line = ui.AskHunterToRevealEvent(h.Name);
                             ui.TellUser(GetEventByNameFromEventDeck(line).name);
-                        } while (GetEventByNameFromEventDeck(line).name == "Unknown event" && h.eventsKnownToDracula.FindIndex(ev => ev.name == line) == -1);
-                        if (h.eventsKnownToDracula.FindIndex(ev => ev.name == line) == -1)
+                        } while (GetEventByNameFromEventDeck(line).name == "Unknown event" && h.EventsKnownToDracula.FindIndex(ev => ev.name == line) == -1);
+                        if (h.EventsKnownToDracula.FindIndex(ev => ev.name == line) == -1)
                         {
-                            h.eventsKnownToDracula.Add(GetEventByNameFromEventDeck(line));
+                            h.EventsKnownToDracula.Add(GetEventByNameFromEventDeck(line));
                         }
-                        h.eventShownToDraculaForBeingBitten = GetEventByNameFromEventDeck(line);
+                        h.EventShownToDraculaForBeingBitten = GetEventByNameFromEventDeck(line);
                     }
                 }
             }
         }
 
-        internal void SetupForTesting(UserInterface ui)
-        {
-            dracula.currentLocation = map.Find(l => l.name == "Paris");
-            hunters[0].currentLocation = map.Find(l => l.name == "Nantes");
-            hunters[1].currentLocation = map.Find(l => l.name == "Nantes");
-            hunters[2].currentLocation = map.Find(l => l.name == "Nantes");
-            hunters[3].currentLocation = map.Find(l => l.name == "Nantes");
-            dracula.trail.Add(dracula.currentLocation);
-            dracula.DrawEncounters(this, dracula.encounterHandSize);
-            hunters[0].numberOfItems = 1;
-            roadblockCounter.connectionType = "rail";
-            roadblockCounter.firstLocation = map.Find(l => l.name == "Paris");
-            roadblockCounter.secondLocation = map.Find(l => l.name == "Nantes");
-            map.Find(l => l.name == "Le Havre").hasHost = true;
-            map.Find(l => l.name == "Plymouth").isConsecrated = true;
-            draculaAlly = eventDeck.Find(e => e.name == "Dracula's Brides");
-            eventDeck.Remove(draculaAlly);
-            dracula.PlayAlly(this, eventDeck.Find(e => e.name == "Immanuel Hildesheim"), ui);
-        }
-
+        // remove
         internal void RemoveDraculaAlly()
         {
-            eventDiscard.Add(draculaAlly);
-            draculaAlly = null;
+            EventDiscard.Add(DraculaAlly);
+            DraculaAlly = null;
         }
 
+        // remove
         internal void AdjustHealthOfHunterAtIndex(int hunterIndex, int p)
         {
-            hunters[hunterIndex].health += p;
+            Hunters[hunterIndex].Health += p;
         }
 
+        // remove
         internal bool HunterHasItemKnownToDracula(int hunterIndex, string itemName)
         {
-            if (hunters[hunterIndex].itemsKnownToDracula.FindIndex(card => card.name == itemName) > -1)
+            if (Hunters[hunterIndex].ItemsKnownToDracula.FindIndex(card => card.name == itemName) > -1)
             {
                 return true;
             }
             return false;
         }
 
+        // remove
         internal void AddToHunterItemsKnownToDracula(Hunter hunter, string p)
         {
-            hunter.itemsKnownToDracula.Add(GetItemByNameFromItemDeck(p));
-            itemDeck.Remove(GetItemByNameFromItemDeck(p));
+            hunter.ItemsKnownToDracula.Add(GetItemByNameFromItemDeck(p));
+            ItemDeck.Remove(GetItemByNameFromItemDeck(p));
         }
     }
 }

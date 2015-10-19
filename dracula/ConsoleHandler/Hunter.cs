@@ -4,39 +4,78 @@ using LocationHandler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace HunterHandler
 {
+    [DataContract]
     public class Hunter
     {
-        public string name;
-        public int health;
-        public Location currentLocation;
-        public int numberOfEvents;
-        public int numberOfItems;
-        public int numberOfBites;
-        public int bitesRequiredToKill;
-        public bool hasDogsFaceUp;
-        public List<Hunter> huntersInGroup = new List<Hunter>();
-        public string lastItemUsedInCombat;
-        public List<Event> eventsKnownToDracula = new List<Event>();
-        public List<Item> itemsKnownToDracula = new List<Item>();
-        public string travelType = null;
-        public Location destination = null;
-        public Item itemShownToDraculaForBeingBitten = null;
-        public Event eventShownToDraculaForBeingBitten = null;
+        [DataMember]
+        public string Name { get; set; }
+        [DataMember]
+        public int Health { get; set; }
+        [DataMember]
+        public Location CurrentLocation { get; set; }
+        [DataMember]
+        public int NumberOfEvents { get; set; }
+        [DataMember]
+        public int NumberOfItems { get; set; }
+        [DataMember]
+        public int NumberOfBites { get; set; }
+        [DataMember]
+        public int NumberOfBitesRequiredToKill { get; set; }
+        [DataMember]
+        public bool HasDogsFaceUp { get; set; }
+        [DataMember]
+        public List<int> HuntersInGroup { get; set; }
+        [DataMember]
+        public string LastItemUsedInCombat { get; set; }
+        [DataMember]
+        public List<Event> EventsKnownToDracula { get; set; }
+        [DataMember]
+        public List<Item> ItemsKnownToDracula { get; set; }
+        [DataMember]
+        public string TravelType { get; set; }
+        [DataMember]
+        public LocationDetail Destination { get; set; }
+        [DataMember]
+        public Item ItemShownToDraculaForBeingBitten { get; set; }
+        [DataMember]
+        public Event EventShownToDraculaForBeingBitten { get; set; }
+        [DataMember]
+        public int Index { get; set; }
 
-        public Hunter(string newName, int newHealth, int newNumberOfBites, int newBitesRequiredToKill)
+        public Hunter(int newIndex, string newName, int newHealth, int newNumberOfBites, int newBitesRequiredToKill)
         {
-            name = newName;
-            health = newHealth;
-            numberOfBites = newNumberOfBites;
-            bitesRequiredToKill = newBitesRequiredToKill;
-            hasDogsFaceUp = false;
-            huntersInGroup.Add(this);
+            Index = newIndex;
+            Name = newName;
+            Health = newHealth;
+            NumberOfEvents = 0;
+            NumberOfItems = 0;
+            NumberOfBites = newNumberOfBites;
+            NumberOfBitesRequiredToKill = newBitesRequiredToKill;
+            HasDogsFaceUp = false;
+            HuntersInGroup = new List<int>();
+            HuntersInGroup.Add(Index);
+            LastItemUsedInCombat = null;
+            EventsKnownToDracula = new List<Event>();
+            ItemsKnownToDracula = new List<Item>();
+            TravelType = null;
+            Destination = null;
+            ItemShownToDraculaForBeingBitten = null;
+            EventShownToDraculaForBeingBitten = null;
         }
+    }
+
+    public enum HunterName
+    {
+        LordGodalming,
+        DrSeward,
+        VanHelsing,
+        MinaHarker
     }
 
 }

@@ -2,7 +2,9 @@
 using LocationHandler;
 using LogHandler;
 using System;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace DraculaSimulator
 {
@@ -12,13 +14,11 @@ namespace DraculaSimulator
         static void Main(string[] args)
         {
             UserInterface ui = new UserInterface();
+            Map m = new Map();
             GameState g = new GameState();
             Logger.ClearLogs(ui);
 
-
-//#if DEBUG
-//            g.SetupForTesting(ui);
-//#elif RELEASE
+//            PerformLoad(g, "lol", ui);
 
             g.SetLocationForHunterAt(0, ui.GetHunterStartLocation(g, 0));
             g.SetLocationForHunterAt(1, ui.GetHunterStartLocation(g, 1));
@@ -29,7 +29,8 @@ namespace DraculaSimulator
             g.DrawEncountersUpToHandSize();
             PerformDraculaTurn(g, ui);
 
-//#endif
+            PerformSave(g, "lol", ui);
+
             CommandSet commandSet = new CommandSet();
 
             do
@@ -39,7 +40,7 @@ namespace DraculaSimulator
 
                 switch (commandSet.command.ToLower())
                 {
-#if DEBUG                    
+#if DEBUG
                     case "rl": PerformRevealLocation(g, commandSet.argument1, ui); break;
                     case "re": PerformRevealEncounter(g, commandSet.argument1, ui); break;
                     case "clear": PerformTrailClear(g, commandSet.argument1, ui); break;
@@ -63,17 +64,61 @@ namespace DraculaSimulator
                     case "h": PerformHospital(g, commandSet.argument1, ui); break;
                     case "s": PerformResolve(g, commandSet.argument1, commandSet.argument2, ui); break;
                     case "help": ui.ShowHelp(); break;
-                    case "save": PerformSave(g, ui); break;
+                    case "save": PerformSave(g, commandSet.argument1, ui); break;
                     case "state": ShowKnownState(g, ui); break;
+                    case "load": PerformLoad(g, commandSet.argument1, ui); break;
                     case "exit": break;
                     default: Console.WriteLine("I don't know what you're talking about, 'help' for help"); break;
                 }
             } while (commandSet.command != "exit");
         }
 
-        private static void PerformSave(GameState g, UserInterface ui)
+        private static void PerformSave(GameState g, string fileName, UserInterface ui)
         {
-            ui.TellUser("This isn't implemented yet");
+            try
+            {
+                string invalid = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+                foreach (char c in invalid)
+                {
+                    fileName = fileName.Replace(c.ToString(), ""); 
+                }
+                fileName = fileName + ".sav";
+                DataContractSerializer fileWriter = new DataContractSerializer(typeof(GameState));
+                FileStream writeStream = File.OpenWrite(fileName);
+
+                fileWriter.WriteObject(writeStream, g);
+                writeStream.Close();
+                ui.TellUser(fileName + " saved");
+            }
+            catch (Exception e)
+            {
+                ui.TellUser("File could not be saved because " + e.Message);
+            }
+
+        }
+
+        private static void PerformLoad(GameState g, string fileName, UserInterface ui)
+        {
+            try
+            {
+                string invalid = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+                foreach (char c in invalid)
+                {
+                    fileName = fileName.Replace(c.ToString(), "");
+                }
+                fileName = fileName + ".sav";
+                DataContractSerializer fileReader = new DataContractSerializer(typeof(GameState));
+                FileStream readStream = File.OpenRead(fileName);
+
+                g = (GameState)fileReader.ReadObject(readStream);
+                readStream.Close();
+                ui.TellUser(fileName + " loaded");
+            }
+            catch (Exception e)
+            {
+                ui.TellUser("File could not be loaded because " + e.Message);
+            }
+
         }
 
         private static void ShowKnownState(GameState g, UserInterface ui)
@@ -219,16 +264,22 @@ namespace DraculaSimulator
             do
             {
                 ui.ShowGroupMembersAtHunterIndex(g, hunterIndex);
-                hunterToAdd = g.GetHunterToAddToGroup(g, hunterIndex, ui);
+
+                hunterToAdd = ui.GetHunterToAddToGroup(g.Hunters[hunterIndex].Name);
+                if (hunterToAdd != -2 && hunterToAdd < hunterIndex)
+                {
+                    ui.TellUser(g.Hunters[hunterToAdd].Name + " cannot join " + g.Hunters[hunterIndex].Name + "'s group, instead " + g.Hunters[hunterIndex].Name + " should be added to " + g.Hunters[hunterToAdd].Name + "'s group");
+                    hunterToAdd = -2;
+                }
                 if (hunterToAdd != -2 && hunterToAdd != hunterIndex)
                 {
-                    if (g.HunterAIsInHunterBGroup(hunterToAdd, hunterIndex))
+                    if (g.Hunters[hunterIndex].HuntersInGroup.Contains(hunterToAdd))
                     {
-                        g.RemoveHunterAFromHunterBGroup(hunterToAdd, hunterIndex);
+                        g.Hunters[hunterIndex].HuntersInGroup.Remove(hunterToAdd);
                     }
                     else
                     {
-                        g.AddHunterAToHunterBGroup(hunterToAdd, hunterIndex);
+                        g.Hunters[hunterIndex].HuntersInGroup.Add(hunterToAdd);
                     }
                 }
             } while (hunterToAdd != -2);
@@ -361,11 +412,11 @@ namespace DraculaSimulator
             {
                 return;
             }
-            Location locationToMoveTo = g.GetLocationFromName(argument2);
-            while (locationToMoveTo.name == "Unknown location")
+            LocationDetail locationToMoveTo = g.GetLocationFromName(argument2);
+            while (locationToMoveTo.Name == "Unknown location" || locationToMoveTo.Name == "Multiple locations")
             {
                 locationToMoveTo = g.GetLocationFromName(ui.GetNameOfLocationWhereHunterIsMoving(g.NameOfHunterAtIndex(hunterIndex)));
-                ui.TellUser(locationToMoveTo.name);
+                ui.TellUser(locationToMoveTo.Name);
             }
             g.MoveHunterToLocationAtHunterIndex(hunterIndex, locationToMoveTo, ui);
             if (!g.DraculaWillPlayCustomsSearch(hunterIndex, ui))
