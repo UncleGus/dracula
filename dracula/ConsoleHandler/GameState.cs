@@ -21,232 +21,197 @@ namespace DraculaSimulator
         public Dracula Dracula { get; set; }
         [DataMember]
         public Hunter[] Hunters { get; set; }
-        //private List<LocationDetail> map;
-        //public List<LocationDetail> Map
-        //{
-        //    get
-        //    {
-        //        if (map == null)
-        //        {
-        //            map = CreateMap();
-        //        }
-        //        return map;
-        //    }
-        //}
         [DataMember]
         public List<Encounter> EncounterPool { get; set; }
         [DataMember]
         public List<Encounter> EncounterLimbo { get; set; }
-        [DataMember]
-        public List<Event> EventDeck { get; set; }
+
+        internal void SetHunterStartLocations(Map map, UserInterface ui)
+        {
+            foreach (Hunter h in Hunters)
+            {
+                string line;
+                do
+                {
+                    line = ui.GetHunterStartLocation(h.Name);
+                    ui.TellUser(map.LocationName(map.GetLocationFromString(line)));
+                } while (map.GetLocationFromString(line) == Location.Nowhere);
+            }
+        }
+
         [DataMember]
         public List<Event> EventDiscard { get; set; }
         [DataMember]
-        public List<Item> ItemDeck { get; set; }
-        [DataMember]
         public List<Item> ItemDiscard { get; set; }
         [DataMember]
-        public Event DraculaAlly { get; set; }
+        public EventDetail DraculaAlly { get; set; }
         [DataMember]
-        public Event HunterAlly { get; set; }
+        public EventDetail HunterAlly { get; set; }
         [DataMember]
         public int TimeIndex { get; set; }
-        [DataMember]
-        public string[] TimesOfDay { get; set; }
+        public string[] TimesOfDay = new string[6] { "Dawn", "Noon", "Dusk", "Twilight", "Midnight", "Small Hours" };
         [DataMember]
         public int Resolve { get; set; }
         [DataMember]
         public int VampirePointTracker { get; set; }
-        [DataMember]
-        public Roadblock RoadblockCounter { get; set; }
         [DataMember]
         public Location HeavenlyHostLocationA { get; set; }
         [DataMember]
         public Location HeavenlyHostLocationB { get; set; }
         [DataMember]
         public List<Location> RevealedLocations { get; set; }
+        [DataMember]
+        public List<Encounter> RevealedEncounters { get; set; }
+        [DataMember]
+        public Location RoadblockLocation1 { get; set; }
+        [DataMember]
+        public Location RoadblockLocation2 { get; set; }
+        [DataMember]
+        public LocationType RoadblockType { get; set; }
 
         public GameState()
         {
             Hunters = new Hunter[4];
-            Hunters[0] = new Hunter(0, "Lord Godalming", 12, 0, 2);
-            Hunters[1] = new Hunter(1, "Dr. Seward", 10, 0, 2);
-            Hunters[2] = new Hunter(2, "Van Helsing", 8, 0, 3);
-            Hunters[3] = new Hunter(3, "Mina Harker", 8, 1, 2);
+            Hunters[(int)HunterName.LordGodalming] = new Hunter((int)HunterName.LordGodalming, "Lord Godalming", 12, 0, 2);
+            Hunters[(int)HunterName.DrSeward] = new Hunter((int)HunterName.DrSeward, "Dr. Seward", 10, 0, 2);
+            Hunters[(int)HunterName.VanHelsing] = new Hunter((int)HunterName.VanHelsing, "Van Helsing", 8, 0, 3);
+            Hunters[(int)HunterName.MinaHarker] = new Hunter((int)HunterName.MinaHarker, "Mina Harker", 8, 1, 2);
 
             Resolve = -1;
             VampirePointTracker = -1;
 
             TimeIndex = -1;
-            TimesOfDay = new string[6] { "Dawn", "Noon", "Dusk", "Twilight", "Midnight", "Small Hours" };
 
-            EncounterPool = new List<Encounter>();
+            RevealedLocations = new List<Location>();
             EncounterLimbo = new List<Encounter>();
-            SetUpEncounters();
-
-            EventDeck = new List<Event>();
+            RevealedEncounters = new List<Encounter>();
             EventDiscard = new List<Event>();
-            SetUpEvents();
-
-            ItemDeck = new List<Item>();
             ItemDiscard = new List<Item>();
-            SetUpItems();
-
             Dracula = new Dracula();
         }
 
-        private void SetUpItems()
-        {
-            ItemDeck.Add(new Item("Crucifix"));
-            ItemDeck.Add(new Item("Crucifix"));
-            ItemDeck.Add(new Item("Crucifix"));
-            ItemDeck.Add(new Item("Dogs"));
-            ItemDeck.Add(new Item("Dogs"));
-            ItemDeck.Add(new Item("Fast Horse"));
-            ItemDeck.Add(new Item("Fast Horse"));
-            ItemDeck.Add(new Item("Fast Horse"));
-            ItemDeck.Add(new Item("Garlic"));
-            ItemDeck.Add(new Item("Garlic"));
-            ItemDeck.Add(new Item("Garlic"));
-            ItemDeck.Add(new Item("Garlic"));
-            ItemDeck.Add(new Item("Heavenly Host"));
-            ItemDeck.Add(new Item("Heavenly Host"));
-            ItemDeck.Add(new Item("Holy Water"));
-            ItemDeck.Add(new Item("Holy Water"));
-            ItemDeck.Add(new Item("Holy Water"));
-            ItemDeck.Add(new Item("Knife"));
-            ItemDeck.Add(new Item("Knife"));
-            ItemDeck.Add(new Item("Knife"));
-            ItemDeck.Add(new Item("Knife"));
-            ItemDeck.Add(new Item("Knife"));
-            ItemDeck.Add(new Item("Local Rumours"));
-            ItemDeck.Add(new Item("Local Rumours"));
-            ItemDeck.Add(new Item("Pistol"));
-            ItemDeck.Add(new Item("Pistol"));
-            ItemDeck.Add(new Item("Pistol"));
-            ItemDeck.Add(new Item("Pistol"));
-            ItemDeck.Add(new Item("Pistol"));
-            ItemDeck.Add(new Item("Sacred Bullets"));
-            ItemDeck.Add(new Item("Sacred Bullets"));
-            ItemDeck.Add(new Item("Sacred Bullets"));
-            ItemDeck.Add(new Item("Stake"));
-            ItemDeck.Add(new Item("Stake"));
-            ItemDeck.Add(new Item("Stake"));
-            ItemDeck.Add(new Item("Stake"));
-            ItemDeck.Add(new Item("Rifle"));
-            ItemDeck.Add(new Item("Rifle"));
-            ItemDeck.Add(new Item("Rifle"));
-            ItemDeck.Add(new Item("Rifle"));
-        }
-
-        // remove
-        //internal void AddHunterAToHunterBGroup(int hunterToAdd, int hunterIndex)
+        //private void SetUpItems()
         //{
-        //    Hunters[hunterIndex].HuntersInGroup.Add(Hunters[hunterToAdd]);
+        //    ItemDeck.Add(new ItemDetail("Crucifix"));
+        //    ItemDeck.Add(new ItemDetail("Crucifix"));
+        //    ItemDeck.Add(new ItemDetail("Crucifix"));
+        //    ItemDeck.Add(new ItemDetail("Dogs"));
+        //    ItemDeck.Add(new ItemDetail("Dogs"));
+        //    ItemDeck.Add(new ItemDetail("Fast Horse"));
+        //    ItemDeck.Add(new ItemDetail("Fast Horse"));
+        //    ItemDeck.Add(new ItemDetail("Fast Horse"));
+        //    ItemDeck.Add(new ItemDetail("Garlic"));
+        //    ItemDeck.Add(new ItemDetail("Garlic"));
+        //    ItemDeck.Add(new ItemDetail("Garlic"));
+        //    ItemDeck.Add(new ItemDetail("Garlic"));
+        //    ItemDeck.Add(new ItemDetail("Heavenly Host"));
+        //    ItemDeck.Add(new ItemDetail("Heavenly Host"));
+        //    ItemDeck.Add(new ItemDetail("Holy Water"));
+        //    ItemDeck.Add(new ItemDetail("Holy Water"));
+        //    ItemDeck.Add(new ItemDetail("Holy Water"));
+        //    ItemDeck.Add(new ItemDetail("Knife"));
+        //    ItemDeck.Add(new ItemDetail("Knife"));
+        //    ItemDeck.Add(new ItemDetail("Knife"));
+        //    ItemDeck.Add(new ItemDetail("Knife"));
+        //    ItemDeck.Add(new ItemDetail("Knife"));
+        //    ItemDeck.Add(new ItemDetail("Local Rumours"));
+        //    ItemDeck.Add(new ItemDetail("Local Rumours"));
+        //    ItemDeck.Add(new ItemDetail("Pistol"));
+        //    ItemDeck.Add(new ItemDetail("Pistol"));
+        //    ItemDeck.Add(new ItemDetail("Pistol"));
+        //    ItemDeck.Add(new ItemDetail("Pistol"));
+        //    ItemDeck.Add(new ItemDetail("Pistol"));
+        //    ItemDeck.Add(new ItemDetail("Sacred Bullets"));
+        //    ItemDeck.Add(new ItemDetail("Sacred Bullets"));
+        //    ItemDeck.Add(new ItemDetail("Sacred Bullets"));
+        //    ItemDeck.Add(new ItemDetail("Stake"));
+        //    ItemDeck.Add(new ItemDetail("Stake"));
+        //    ItemDeck.Add(new ItemDetail("Stake"));
+        //    ItemDeck.Add(new ItemDetail("Stake"));
+        //    ItemDeck.Add(new ItemDetail("Rifle"));
+        //    ItemDeck.Add(new ItemDetail("Rifle"));
+        //    ItemDeck.Add(new ItemDetail("Rifle"));
+        //    ItemDeck.Add(new ItemDetail("Rifle"));
         //}
 
-        // remove
-        //internal void RemoveHunterAFromHunterBGroup(int hunterToAdd, int hunterIndex)
+        //private void SetUpEvents()
         //{
-        //    Hunters[hunterIndex].HuntersInGroup.Remove(Hunters[hunterToAdd]);
+        //    EventDeck.Add(new EventDetail("Rufus Smith", false, EventType.Ally));
+        //    EventDeck.Add(new EventDetail("Jonathan Harker", false, EventType.Ally));
+        //    EventDeck.Add(new EventDetail("Sister Agatha", false, EventType.Ally));
+        //    EventDeck.Add(new EventDetail("Heroic Leap", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Great Strength", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Money Trail", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Sense of Emergency", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Sense of Emergency", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Vampire Lair", false, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Long Day", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Long Day", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Mystic Research", false, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Mystic Research", false, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Advance Planning", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Advance Planning", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Advance Planning", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Newspaper Reports", false, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Newspaper Reports", false, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Newspaper Reports", false, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Newspaper Reports", false, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Newspaper Reports", false, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Re-Equip", false, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Re-Equip", false, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Re-Equip", false, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Consecrated Ground", false, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Telegraph Ahead", false, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Telegraph Ahead", false, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Hypnosis", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Hypnosis", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Stormy Seas", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Surprising Return", false, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Surprising Return", false, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Good Luck", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Good Luck", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Blood Transfusion", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Secret Weapon", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Secret Weapon", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Forewarned", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Forewarned", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Forewarned", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Chartered Carriage", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Chartered Carriage", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Chartered Carriage", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Excellent Weather", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Excellent Weather", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Escape Route", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Escape Route", false, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Hired Scouts", false, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Hired Scouts", false, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Hired Scouts", false, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Dracula's Brides", true, EventType.Ally));
+        //    EventDeck.Add(new EventDetail("Immanuel Hildesheim", true, EventType.Ally));
+        //    EventDeck.Add(new EventDetail("Quincey P. Morris", true, EventType.Ally));
+        //    EventDeck.Add(new EventDetail("Roadblock", true, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Unearthly Swiftness", true, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Time Runs Short", true, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Customs Search", true, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Devilish Power", true, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Devilish Power", true, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Vampiric Influence", true, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Vampiric Influence", true, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Night Visit", true, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Evasion", true, EventType.PlayImmediately));
+        //    EventDeck.Add(new EventDetail("Wild Horses", true, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("False Tip-off", true, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("False Tip-off", true, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Sensationalist Press", true, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Rage", true, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Seduction", true, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Control Storms", true, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Relentless Minion", true, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Relentless Minion", true, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Trap", true, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Trap", true, EventType.Keep));
+        //    EventDeck.Add(new EventDetail("Trap", true, EventType.Keep));
         //}
-
-        // remove
-        //internal bool HunterAIsInHunterBGroup(int hunterToAdd, int hunterIndex)
-        //{
-        //    return Hunters[hunterIndex].HuntersInGroup.Contains(Hunters[hunterToAdd]);
-        //}
-
-        // remove
-        //internal int GetHunterToAddToGroup(GameState g, int hunterIndex, UserInterface ui)
-        //{
-        //    int hunterToAdd = ui.GetHunterToAddToGroup(Hunters[hunterIndex].Name);
-        //    if (hunterToAdd != -2 && hunterToAdd < hunterIndex)
-        //    {
-        //        ui.TellUser(Hunters[hunterToAdd].Name + " cannot join " + Hunters[hunterIndex].Name + "'s group, instead " + Hunters[hunterIndex].Name + " should be added to " + Hunters[hunterToAdd].Name + "'s group");
-        //        return -2;
-        //    }
-        //    return hunterToAdd;
-        //}
-
-        private void SetUpEvents()
-        {
-            EventDeck.Add(new Event("Rufus Smith", false, EventType.Ally));
-            EventDeck.Add(new Event("Jonathan Harker", false, EventType.Ally));
-            EventDeck.Add(new Event("Sister Agatha", false, EventType.Ally));
-            EventDeck.Add(new Event("Heroic Leap", false, EventType.Keep));
-            EventDeck.Add(new Event("Great Strength", false, EventType.Keep));
-            EventDeck.Add(new Event("Money Trail", false, EventType.Keep));
-            EventDeck.Add(new Event("Sense of Emergency", false, EventType.Keep));
-            EventDeck.Add(new Event("Sense of Emergency", false, EventType.Keep));
-            EventDeck.Add(new Event("Vampire Lair", false, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Long Day", false, EventType.Keep));
-            EventDeck.Add(new Event("Long Day", false, EventType.Keep));
-            EventDeck.Add(new Event("Mystic Research", false, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Mystic Research", false, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Advance Planning", false, EventType.Keep));
-            EventDeck.Add(new Event("Advance Planning", false, EventType.Keep));
-            EventDeck.Add(new Event("Advance Planning", false, EventType.Keep));
-            EventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Newspaper Reports", false, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Re-Equip", false, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Re-Equip", false, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Re-Equip", false, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Consecrated Ground", false, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Telegraph Ahead", false, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Telegraph Ahead", false, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Hypnosis", false, EventType.Keep));
-            EventDeck.Add(new Event("Hypnosis", false, EventType.Keep));
-            EventDeck.Add(new Event("Stormy Seas", false, EventType.Keep));
-            EventDeck.Add(new Event("Surprising Return", false, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Surprising Return", false, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Good Luck", false, EventType.Keep));
-            EventDeck.Add(new Event("Good Luck", false, EventType.Keep));
-            EventDeck.Add(new Event("Blood Transfusion", false, EventType.Keep));
-            EventDeck.Add(new Event("Secret Weapon", false, EventType.Keep));
-            EventDeck.Add(new Event("Secret Weapon", false, EventType.Keep));
-            EventDeck.Add(new Event("Forewarned", false, EventType.Keep));
-            EventDeck.Add(new Event("Forewarned", false, EventType.Keep));
-            EventDeck.Add(new Event("Forewarned", false, EventType.Keep));
-            EventDeck.Add(new Event("Chartered Carriage", false, EventType.Keep));
-            EventDeck.Add(new Event("Chartered Carriage", false, EventType.Keep));
-            EventDeck.Add(new Event("Chartered Carriage", false, EventType.Keep));
-            EventDeck.Add(new Event("Excellent Weather", false, EventType.Keep));
-            EventDeck.Add(new Event("Excellent Weather", false, EventType.Keep));
-            EventDeck.Add(new Event("Escape Route", false, EventType.Keep));
-            EventDeck.Add(new Event("Escape Route", false, EventType.Keep));
-            EventDeck.Add(new Event("Hired Scouts", false, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Hired Scouts", false, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Hired Scouts", false, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Dracula's Brides", true, EventType.Ally));
-            EventDeck.Add(new Event("Immanuel Hildesheim", true, EventType.Ally));
-            EventDeck.Add(new Event("Quincey P. Morris", true, EventType.Ally));
-            EventDeck.Add(new Event("Roadblock", true, EventType.Keep));
-            EventDeck.Add(new Event("Unearthly Swiftness", true, EventType.Keep));
-            EventDeck.Add(new Event("Time Runs Short", true, EventType.Keep));
-            EventDeck.Add(new Event("Customs Search", true, EventType.Keep));
-            EventDeck.Add(new Event("Devilish Power", true, EventType.Keep));
-            EventDeck.Add(new Event("Devilish Power", true, EventType.Keep));
-            EventDeck.Add(new Event("Vampiric Influence", true, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Vampiric Influence", true, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Night Visit", true, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Evasion", true, EventType.PlayImmediately));
-            EventDeck.Add(new Event("Wild Horses", true, EventType.Keep));
-            EventDeck.Add(new Event("False Tip-off", true, EventType.Keep));
-            EventDeck.Add(new Event("False Tip-off", true, EventType.Keep));
-            EventDeck.Add(new Event("Sensationalist Press", true, EventType.Keep));
-            EventDeck.Add(new Event("Rage", true, EventType.Keep));
-            EventDeck.Add(new Event("Seduction", true, EventType.Keep));
-            EventDeck.Add(new Event("Control Storms", true, EventType.Keep));
-            EventDeck.Add(new Event("Relentless Minion", true, EventType.Keep));
-            EventDeck.Add(new Event("Relentless Minion", true, EventType.Keep));
-            EventDeck.Add(new Event("Trap", true, EventType.Keep));
-            EventDeck.Add(new Event("Trap", true, EventType.Keep));
-            EventDeck.Add(new Event("Trap", true, EventType.Keep));
-        }
 
         // remove
         //internal void MoveEventFromEventDeckToKnownEvents(Hunter hunterToInfluence, Event e)
@@ -285,9 +250,9 @@ namespace DraculaSimulator
         //    }
         //}
 
-        internal void SearchWithHunterAtIndex(Hunter hunter, Map map, Location location, UserInterface ui)
+        internal void SearchWithHunter(Hunter hunter, Map map, Location location, UserInterface ui)
         {
-            if ((Dracula.LocationIsInTrail(location) || Dracula.LocationIsInCatacombs(location)) && map.LocationDetails(location).Type != LocationType.Sea)
+            if ((Dracula.LocationIsInTrail(location) || Dracula.LocationIsInCatacombs(location)) && map.TypeOfLocation(location) != LocationType.Sea)
             {
                 Logger.WriteToDebugLog("Hunter moved to a location that Dracula has visited");
                 if (location == Dracula.CurrentLocation)
@@ -299,10 +264,10 @@ namespace DraculaSimulator
                     ui.TellUser("Search reveals evidence of Dracula's visit");
                 }
                 RevealedLocations.Add(location);
-                bool canFightDracula = ResolveEncountersAtLocation(hunter, location, ui);
+                bool canFightDracula = ResolveEncountersAtLocation(hunter, map, location, ui);
                 if (location == Dracula.CurrentLocation && canFightDracula)
                 {
-                    ResolveCombat(hunterIndex, 1, true, ui);
+                    ResolveCombat(hunter, 1, true, ui);
                 }
             }
             else if (location.Type != LocationType.Hospital && location.Type != LocationType.Sea && location.Type != LocationType.Castle)
@@ -314,7 +279,7 @@ namespace DraculaSimulator
         private bool ResolveEncountersAtLocation(Hunter hunter, Map map, Location location, UserInterface ui)
         {
             Dracula.OrderEncounters(hunter, location);
-            foreach (Encounter enc in map.LocationDetails(location).Encounters)
+            foreach (EncounterDetail enc in map.LocationDetails(location).Encounters)
             {
                 enc.isRevealed = true;
                 ui.TellUser(enc.name + " is revealed");
@@ -322,9 +287,9 @@ namespace DraculaSimulator
             ui.drawGameState(this);
             bool resolveNextEncounter = true;
             bool discardEncounter = true;
-            List<Encounter> encountersBeingDiscarded = new List<Encounter>();
-            Encounter firstEncounter = null;
-            Encounter secondEncounter = null;
+            List<EncounterDetail> encountersBeingDiscarded = new List<EncounterDetail>();
+            EncounterDetail firstEncounter = null;
+            EncounterDetail secondEncounter = null;
 
 
             if (map.LocationDetails(location).Encounters.Count() > 0)
@@ -349,7 +314,7 @@ namespace DraculaSimulator
                             DiscardEventFromHunterAtIndex("Secret Weapon", hunterIndex, ui);
                             Logger.WriteToDebugLog(h.Name + " played Secret Weapon");
                             Logger.WriteToGameLog(h.Name + " played Secret Weapon");
-                            Event draculaEventCardA = Dracula.WillPlayDevilishPower(this, ui);
+                            EventDetail draculaEventCardA = Dracula.WillPlayDevilishPower(this, ui);
                             bool eventIsCancelled = false;
                             if (draculaEventCardA != null)
                             {
@@ -376,7 +341,7 @@ namespace DraculaSimulator
                                 PlaySecretWeaponBeforeEncounter(hunterIndex, ui);
                             }
                         }
-                        Event draculaEventCard;
+                        EventDetail draculaEventCard;
                         if (ui.AskIfHunterIsPlayingForeWarned(h.Name))
                         {
                             draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
@@ -444,7 +409,7 @@ namespace DraculaSimulator
                             DiscardEventFromHunterAtIndex("Secret Weapon", hunterIndex, ui);
                             Logger.WriteToDebugLog(h.Name + " played Secret Weapon");
                             Logger.WriteToGameLog(h.Name + " played Secret Weapon");
-                            Event draculaEventCardA = Dracula.WillPlayDevilishPower(this, ui);
+                            EventDetail draculaEventCardA = Dracula.WillPlayDevilishPower(this, ui);
                             bool eventIsCancelled = false;
                             if (draculaEventCardA != null)
                             {
@@ -471,7 +436,7 @@ namespace DraculaSimulator
                                 PlaySecretWeaponBeforeEncounter(hunterIndex, ui);
                             }
                         }
-                        Event draculaEventCard;
+                        EventDetail draculaEventCard;
                         if (ui.AskIfHunterIsPlayingForeWarned(h.Name))
                         {
                             draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
@@ -546,31 +511,31 @@ namespace DraculaSimulator
             do
             {
                 line = ui.GetNameOfItemDiscardedByHunter(Hunters[hunterIndex].Name);
-            } while (GetItemByNameFromItemDeck(line).name == "Unknown item");
+            } while (GetItemByNameFromItemDeck(line).Name == "Unknown item");
             DiscardItemFromHunterAtIndex(line, hunterIndex, ui);
             do
             {
                 line = ui.GetNameOfItemRetrievedFromDiscardByHunter(Hunters[hunterIndex].Name);
-            } while (GetItemByNameFromItemDiscard(line).name == "Unknown item");
+            } while (GetItemByNameFromItemDiscard(line).Name == "Unknown item");
             Hunters[hunterIndex].ItemsKnownToDracula.Add(GetItemByNameFromItemDiscard(line));
             ItemDiscard.Remove(GetItemByNameFromItemDiscard(line));
             Hunters[hunterIndex].NumberOfItems++;
 
         }
 
-        private Item GetItemByNameFromItemDiscard(string line)
+        private ItemDetail GetItemByNameFromItemDiscard(string line)
         {
             try
             {
-                return ItemDiscard[ItemDiscard.FindIndex(card => card.name.ToLower().StartsWith(line.ToLower()))];
+                return ItemDiscard[ItemDiscard.FindIndex(card => card.Name.ToLower().StartsWith(line.ToLower()))];
             }
             catch (ArgumentOutOfRangeException)
             {
-                return new Item("Unknown item");
+                return new ItemDetail("Unknown item");
             }
         }
 
-        private bool ResolveEncounter(Encounter enc, Hunter hunter, out bool discard, UserInterface ui)
+        private bool ResolveEncounter(EncounterDetail enc, Hunter hunter, out bool discard, UserInterface ui)
         {
             bool resolveNextEncounter = true;
             discard = true;
@@ -648,7 +613,7 @@ namespace DraculaSimulator
 
         internal bool DraculaWillPlayControlStorms(int hunterIndex, UserInterface ui)
         {
-            Event draculaEventCard = Dracula.PlayControlStorms(this);
+            EventDetail draculaEventCard = Dracula.PlayControlStorms(this);
             if (draculaEventCard != null)
             {
                 switch (draculaEventCard.name)
@@ -699,14 +664,14 @@ namespace DraculaSimulator
 
         internal void DiscardEventCard(string cardName)
         {
-            Event playedCard = GetEventByNameFromEventDeck(cardName);
+            EventDetail playedCard = GetEventByNameFromEventDeck(cardName);
             AddEventToEventDiscard(playedCard);
             RemoveEventFromEventDeck(playedCard);
         }
 
         internal void PlayHiredScouts(UserInterface ui)
         {
-            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
+            EventDetail draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -809,7 +774,7 @@ namespace DraculaSimulator
 
         internal void PlayExcellentWeather(UserInterface ui)
         {
-            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
+            EventDetail draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -838,7 +803,7 @@ namespace DraculaSimulator
 
         internal void PlayCharteredCarriage(UserInterface ui)
         {
-            Event draculaEventCard = Dracula.WillPlayCardToCancelCharteredCarriage(this);
+            EventDetail draculaEventCard = Dracula.WillPlayCardToCancelCharteredCarriage(this);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -890,7 +855,7 @@ namespace DraculaSimulator
 
         internal void PlayBloodTransfusion(UserInterface ui)
         {
-            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
+            EventDetail draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -947,7 +912,7 @@ namespace DraculaSimulator
 
         internal void PlaySurprisingReturn(int hunterIndex, UserInterface ui)
         {
-            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
+            EventDetail draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -982,7 +947,7 @@ namespace DraculaSimulator
             }
         }
 
-        private Event GetEventByNameFromEventDiscard(string cardToReclaim)
+        private EventDetail GetEventByNameFromEventDiscard(string cardToReclaim)
         {
             try
             {
@@ -990,13 +955,13 @@ namespace DraculaSimulator
             }
             catch (ArgumentOutOfRangeException)
             {
-                return new Event("Unknown event", false, EventType.Keep);
+                return new EventDetail("Unknown event", false, EventType.Keep);
             }
         }
 
         internal void PlayStormySeas(UserInterface ui)
         {
-            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
+            EventDetail draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -1057,7 +1022,7 @@ namespace DraculaSimulator
                     }
                     if (revealing)
                     {
-                        Dracula.Trail[0].IsRevealed = true;
+                        Dracula.LocationTrail[0].IsRevealed = true;
                     }
                     Dracula.HandleDroppedOffLocations(this, ui);
                     Dracula.MatureEncounters(this, ui);
@@ -1073,7 +1038,7 @@ namespace DraculaSimulator
 
         internal void PlayHypnosis(UserInterface ui)
         {
-            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
+            EventDetail draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -1132,9 +1097,9 @@ namespace DraculaSimulator
                         ui.TellUser("Dracula's current location is " + Dracula.CurrentLocation.Name);
                         Dracula.CurrentLocation.IsRevealed = true;
                     }
-                    foreach (LocationDetail l in Dracula.Trail)
+                    foreach (LocationDetail l in Dracula.LocationTrail)
                     {
-                        foreach (Encounter e in l.Encounters)
+                        foreach (EncounterDetail e in l.Encounters)
                         {
                             if (e.name == "New Vampire")
                             {
@@ -1146,7 +1111,7 @@ namespace DraculaSimulator
                     }
                     foreach (LocationDetail l in Dracula.Catacombs)
                     {
-                        foreach (Encounter e in l.Encounters)
+                        foreach (EncounterDetail e in l.Encounters)
                         {
                             if (e.name == "New Vampire")
                             {
@@ -1188,7 +1153,7 @@ namespace DraculaSimulator
 
         internal void PlayTelegraphAhead(int hunterIndex, UserInterface ui)
         {
-            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
+            EventDetail draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -1251,7 +1216,7 @@ namespace DraculaSimulator
 
         internal void PlayConsecratedGround(int hunterIndex, UserInterface ui)
         {
-            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
+            EventDetail draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -1294,15 +1259,15 @@ namespace DraculaSimulator
                 if (locationToConsecrate == Dracula.CurrentLocation)
                 {
                     locationToConsecrate.IsRevealed = true;
-                    List<Encounter> encountersToDiscard = new List<Encounter>();
-                    foreach (Encounter e in locationToConsecrate.Encounters)
+                    List<EncounterDetail> encountersToDiscard = new List<EncounterDetail>();
+                    foreach (EncounterDetail e in locationToConsecrate.Encounters)
                     {
                         ui.TellUser(e.name + " was discarded");
                         encountersToDiscard.Add(e);
                         e.isRevealed = false;
                         EncounterPool.Add(e);
                     }
-                    foreach (Encounter e in encountersToDiscard)
+                    foreach (EncounterDetail e in encountersToDiscard)
                     {
                         locationToConsecrate.Encounters.Remove(e);
                     }
@@ -1312,7 +1277,7 @@ namespace DraculaSimulator
 
         internal void PlayReEquip(UserInterface ui)
         {
-            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
+            EventDetail draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -1342,7 +1307,7 @@ namespace DraculaSimulator
 
         internal void PlayNewspaperReports(UserInterface ui)
         {
-            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
+            EventDetail draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -1420,7 +1385,7 @@ namespace DraculaSimulator
 
         internal void PlayMysticResearch(UserInterface ui)
         {
-            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
+            EventDetail draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -1445,7 +1410,7 @@ namespace DraculaSimulator
             if (!eventIsCancelled)
             {
                 ui.TellUser("These are Draculas cards:");
-                foreach (Event card in Dracula.EventCardsInHand)
+                foreach (EventDetail card in Dracula.EventCardsInHand)
                 {
                     ui.TellUser(card.name);
                 }
@@ -1455,7 +1420,7 @@ namespace DraculaSimulator
         internal void PlayLongDay(UserInterface ui)
         {
             {
-                Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
+                EventDetail draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
                 bool eventIsCancelled = false;
                 if (draculaEventCard != null)
                 {
@@ -1486,7 +1451,7 @@ namespace DraculaSimulator
 
         internal void PlayVampireLair(int hunterIndex, UserInterface ui)
         {
-            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
+            EventDetail draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -1538,7 +1503,7 @@ namespace DraculaSimulator
 
         internal void PlaySenseOfEmergency(int hunterIndex, UserInterface ui)
         {
-            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
+            EventDetail draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -1570,7 +1535,7 @@ namespace DraculaSimulator
 
         internal void PlayMoneyTrail(UserInterface ui)
         {
-            Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
+            EventDetail draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
             bool eventIsCancelled = false;
             if (draculaEventCard != null)
             {
@@ -1659,61 +1624,61 @@ namespace DraculaSimulator
             RemoveEventFromEventDeck(GetEventByNameFromEventDeck(NameOfHunterAlly()));
         }
 
-        private void SetUpEncounters()
-        {
-            EncounterPool.Add(new Encounter("Ambush", "AMB"));
-            EncounterPool.Add(new Encounter("Ambush", "AMB"));
-            EncounterPool.Add(new Encounter("Ambush", "AMB"));
-            EncounterPool.Add(new Encounter("Assasin", "ASS"));
-            EncounterPool.Add(new Encounter("Bats", "BAT"));
-            EncounterPool.Add(new Encounter("Bats", "BAT"));
-            EncounterPool.Add(new Encounter("Bats", "BAT"));
-            EncounterPool.Add(new Encounter("Desecrated Soil", "DES"));
-            EncounterPool.Add(new Encounter("Desecrated Soil", "DES"));
-            EncounterPool.Add(new Encounter("Desecrated Soil", "DES"));
-            EncounterPool.Add(new Encounter("Fog", "FOG"));
-            EncounterPool.Add(new Encounter("Fog", "FOG"));
-            EncounterPool.Add(new Encounter("Fog", "FOG"));
-            EncounterPool.Add(new Encounter("Fog", "FOG"));
-            EncounterPool.Add(new Encounter("Minion with Knife", "MIK"));
-            EncounterPool.Add(new Encounter("Minion with Knife", "MIK"));
-            EncounterPool.Add(new Encounter("Minion with Knife", "MIK"));
-            EncounterPool.Add(new Encounter("Minion with Knife and Pistol", "MIP"));
-            EncounterPool.Add(new Encounter("Minion with Knife and Pistol", "MIP"));
-            EncounterPool.Add(new Encounter("Minion with Knife and Rifle", "MIR"));
-            EncounterPool.Add(new Encounter("Minion with Knife and Rifle", "MIR"));
-            EncounterPool.Add(new Encounter("Hoax", "HOA"));
-            EncounterPool.Add(new Encounter("Hoax", "HOA"));
-            EncounterPool.Add(new Encounter("Lightning", "LIG"));
-            EncounterPool.Add(new Encounter("Lightning", "LIG"));
-            EncounterPool.Add(new Encounter("Peasants", "PEA"));
-            EncounterPool.Add(new Encounter("Peasants", "PEA"));
-            EncounterPool.Add(new Encounter("Plague", "PLA"));
-            EncounterPool.Add(new Encounter("Rats", "RAT"));
-            EncounterPool.Add(new Encounter("Rats", "RAT"));
-            EncounterPool.Add(new Encounter("Saboteur", "SAB"));
-            EncounterPool.Add(new Encounter("Saboteur", "SAB"));
-            EncounterPool.Add(new Encounter("Spy", "SPY"));
-            EncounterPool.Add(new Encounter("Spy", "SPY"));
-            EncounterPool.Add(new Encounter("Thief", "THI"));
-            EncounterPool.Add(new Encounter("Thief", "THI"));
-            EncounterPool.Add(new Encounter("New Vampire", "VAM"));
-            EncounterPool.Add(new Encounter("New Vampire", "VAM"));
-            EncounterPool.Add(new Encounter("New Vampire", "VAM"));
-            EncounterPool.Add(new Encounter("New Vampire", "VAM"));
-            EncounterPool.Add(new Encounter("New Vampire", "VAM"));
-            EncounterPool.Add(new Encounter("New Vampire", "VAM"));
-            EncounterPool.Add(new Encounter("Wolves", "WOL"));
-            EncounterPool.Add(new Encounter("Wolves", "WOL"));
-            EncounterPool.Add(new Encounter("Wolves", "WOL"));
-        }
+        //private void SetUpEncounters()
+        //{
+        //    EncounterPool.Add(new EncounterDetail("Ambush", "AMB"));
+        //    EncounterPool.Add(new EncounterDetail("Ambush", "AMB"));
+        //    EncounterPool.Add(new EncounterDetail("Ambush", "AMB"));
+        //    EncounterPool.Add(new EncounterDetail("Assasin", "ASS"));
+        //    EncounterPool.Add(new EncounterDetail("Bats", "BAT"));
+        //    EncounterPool.Add(new EncounterDetail("Bats", "BAT"));
+        //    EncounterPool.Add(new EncounterDetail("Bats", "BAT"));
+        //    EncounterPool.Add(new EncounterDetail("Desecrated Soil", "DES"));
+        //    EncounterPool.Add(new EncounterDetail("Desecrated Soil", "DES"));
+        //    EncounterPool.Add(new EncounterDetail("Desecrated Soil", "DES"));
+        //    EncounterPool.Add(new EncounterDetail("Fog", "FOG"));
+        //    EncounterPool.Add(new EncounterDetail("Fog", "FOG"));
+        //    EncounterPool.Add(new EncounterDetail("Fog", "FOG"));
+        //    EncounterPool.Add(new EncounterDetail("Fog", "FOG"));
+        //    EncounterPool.Add(new EncounterDetail("Minion with Knife", "MIK"));
+        //    EncounterPool.Add(new EncounterDetail("Minion with Knife", "MIK"));
+        //    EncounterPool.Add(new EncounterDetail("Minion with Knife", "MIK"));
+        //    EncounterPool.Add(new EncounterDetail("Minion with Knife and Pistol", "MIP"));
+        //    EncounterPool.Add(new EncounterDetail("Minion with Knife and Pistol", "MIP"));
+        //    EncounterPool.Add(new EncounterDetail("Minion with Knife and Rifle", "MIR"));
+        //    EncounterPool.Add(new EncounterDetail("Minion with Knife and Rifle", "MIR"));
+        //    EncounterPool.Add(new EncounterDetail("Hoax", "HOA"));
+        //    EncounterPool.Add(new EncounterDetail("Hoax", "HOA"));
+        //    EncounterPool.Add(new EncounterDetail("Lightning", "LIG"));
+        //    EncounterPool.Add(new EncounterDetail("Lightning", "LIG"));
+        //    EncounterPool.Add(new EncounterDetail("Peasants", "PEA"));
+        //    EncounterPool.Add(new EncounterDetail("Peasants", "PEA"));
+        //    EncounterPool.Add(new EncounterDetail("Plague", "PLA"));
+        //    EncounterPool.Add(new EncounterDetail("Rats", "RAT"));
+        //    EncounterPool.Add(new EncounterDetail("Rats", "RAT"));
+        //    EncounterPool.Add(new EncounterDetail("Saboteur", "SAB"));
+        //    EncounterPool.Add(new EncounterDetail("Saboteur", "SAB"));
+        //    EncounterPool.Add(new EncounterDetail("Spy", "SPY"));
+        //    EncounterPool.Add(new EncounterDetail("Spy", "SPY"));
+        //    EncounterPool.Add(new EncounterDetail("Thief", "THI"));
+        //    EncounterPool.Add(new EncounterDetail("Thief", "THI"));
+        //    EncounterPool.Add(new EncounterDetail("New Vampire", "VAM"));
+        //    EncounterPool.Add(new EncounterDetail("New Vampire", "VAM"));
+        //    EncounterPool.Add(new EncounterDetail("New Vampire", "VAM"));
+        //    EncounterPool.Add(new EncounterDetail("New Vampire", "VAM"));
+        //    EncounterPool.Add(new EncounterDetail("New Vampire", "VAM"));
+        //    EncounterPool.Add(new EncounterDetail("New Vampire", "VAM"));
+        //    EncounterPool.Add(new EncounterDetail("Wolves", "WOL"));
+        //    EncounterPool.Add(new EncounterDetail("Wolves", "WOL"));
+        //    EncounterPool.Add(new EncounterDetail("Wolves", "WOL"));
+        //}
 
         // remove
-        internal void RemoveHunterAlly()
-        {
-            EventDiscard.Add(HunterAlly);
-            HunterAlly = null;
-        }
+        //internal void RemoveHunterAlly()
+        //{
+        //    EventDiscard.Add(HunterAlly);
+        //    HunterAlly = null;
+        //}
 
         //private List<LocationDetail> CreateMap()
         //{
@@ -2630,8 +2595,8 @@ namespace DraculaSimulator
 
         internal void PlaceDraculaAtStartLocation()
         {
-            Dracula.CurrentLocation = Dracula.ChooseStartLocation(this);
-            Dracula.Trail.Add(Dracula.CurrentLocation);
+            Dracula.CurrentLocation = Dracula.ChooseStartLocation(map, Hunters);
+            Dracula.LocationTrail.Add(Dracula.CurrentLocation);
             Logger.WriteToDebugLog("Dracula started in " + Dracula.CurrentLocation.Name);
             Logger.WriteToGameLog("Dracula started in " + Dracula.CurrentLocation.Name);
         }
@@ -2690,7 +2655,7 @@ namespace DraculaSimulator
         }
 
         // remove
-        internal void SetDraculaAlly(Event allyDrawn)
+        internal void SetDraculaAlly(EventDetail allyDrawn)
         {
             DraculaAlly = allyDrawn;
         }
@@ -2702,12 +2667,12 @@ namespace DraculaSimulator
         }
 
         // remove
-        internal void AddEventToEventDiscard(Event allyDiscarded)
+        internal void AddEventToEventDiscard(EventDetail allyDiscarded)
         {
             EventDiscard.Add(allyDiscarded);
         }
 
-        internal Event GetEventByNameFromEventDeck(string v)
+        internal EventDetail GetEventByNameFromEventDeck(string v)
         {
             try
             {
@@ -2715,7 +2680,7 @@ namespace DraculaSimulator
             }
             catch (ArgumentOutOfRangeException)
             {
-                return new Event("Unknown event", false, EventType.Keep);
+                return new EventDetail("Unknown event", false, EventType.Keep);
             }
         }
 
@@ -2738,29 +2703,29 @@ namespace DraculaSimulator
         }
 
         // remove
-        internal void RemoveEventFromEventDeck(Event eventCardDrawn)
+        internal void RemoveEventFromEventDeck(EventDetail eventCardDrawn)
         {
             EventDeck.Remove(eventCardDrawn);
         }
 
-        internal Event DrawEventCard()
+        internal EventDetail DrawEventCard()
         {
             return EventDeck[new Random().Next(0, EventDeck.Count())];
         }
 
         // remove
-        internal void RemoveEncounterFromEncounterPool(Encounter tempEncounter)
+        internal void RemoveEncounterFromEncounterPool(EncounterDetail tempEncounter)
         {
             EncounterPool.Remove(tempEncounter);
         }
 
-        internal Encounter DrawEncounterFromEncounterPool()
+        internal EncounterDetail DrawEncounterFromEncounterPool()
         {
             return EncounterPool[new Random().Next(0, EncounterPool.Count())];
         }
 
         // remove
-        internal void AddEncounterToEncounterPool(Encounter encounterToDiscard)
+        internal void AddEncounterToEncounterPool(EncounterDetail encounterToDiscard)
         {
             EncounterPool.Add(encounterToDiscard);
         }
@@ -2832,7 +2797,7 @@ namespace DraculaSimulator
 
         public void DiscardEventFromDracula(string cardName)
         {
-            Event cardToDiscard = Dracula.EventCardsInHand.Find(card => card.name == cardName);
+            EventDetail cardToDiscard = Dracula.EventCardsInHand.Find(card => card.name == cardName);
             EventDiscard.Add(cardToDiscard);
             Dracula.EventCardsInHand.Remove(cardToDiscard);
         }
@@ -2852,7 +2817,7 @@ namespace DraculaSimulator
         // remove
         internal void DrawEncounterAtTrailIndex(int i)
         {
-            Dracula.Trail[i].DrawEncounter();
+            Dracula.LocationTrail[i].DrawEncounter();
         }
 
         // remove
@@ -2924,13 +2889,13 @@ namespace DraculaSimulator
         // remove
         internal void DrawLocationAtTrailIndex(int i)
         {
-            Dracula.Trail[i].DrawLocation();
+            Dracula.LocationTrail[i].DrawLocation();
         }
 
         // remove
         internal string NameOfLocationAtTrailIndex(int checkingLocationIndex)
         {
-            return Dracula.Trail[checkingLocationIndex].Name;
+            return Dracula.LocationTrail[checkingLocationIndex].Name;
         }
 
         // remove
@@ -2948,31 +2913,31 @@ namespace DraculaSimulator
         // remove
         internal bool DraculaCurrentLocationIsAtTrailIndex(int checkingLocationIndex)
         {
-            return Dracula.Trail[checkingLocationIndex] == Dracula.CurrentLocation;
+            return Dracula.LocationTrail[checkingLocationIndex] == Dracula.CurrentLocation;
         }
 
         // remove
         internal bool LocationIsRevealedAtTrailIndex(int checkingLocationIndex)
         {
-            return Dracula.Trail[checkingLocationIndex].IsRevealed;
+            return Dracula.LocationTrail[checkingLocationIndex].IsRevealed;
         }
 
         // remove
         internal LocationType TypeOfLocationAtTrailIndex(int checkingLocationIndex)
         {
-            return Dracula.Trail[checkingLocationIndex].Type;
+            return Dracula.LocationTrail[checkingLocationIndex].Type;
         }
 
         // remove
         internal int TrailLength()
         {
-            return Dracula.Trail.Count();
+            return Dracula.LocationTrail.Count();
         }
 
         // remove
         internal bool LocationIsInTrail(Map map, Location locationToReveal)
         {
-            return Dracula.Trail.Contains(locationToReveal);
+            return Dracula.LocationTrail.Contains(locationToReveal);
         }
 
         internal void PerformDraculaTurn(UserInterface ui)
@@ -2998,7 +2963,7 @@ namespace DraculaSimulator
             {
                 Logger.WriteToDebugLog("Dracula is at sea, skipping Timekeeping phase so time remains " + TimesOfDay[Math.Max(0, TimeIndex)]);
             }
-            Event draculaEventCard = null;
+            EventDetail draculaEventCard = null;
             do
             {
                 draculaEventCard = Dracula.PlayEventCardAtStartOfDraculaTurn(this);
@@ -3060,7 +3025,7 @@ namespace DraculaSimulator
             Dracula.DoActionPhase(this, ui);
             Dracula.MatureEncounters(this, ui);
             Dracula.DrawEncounters(this, Dracula.EncounterHandSize);
-            foreach (Encounter enc in EncounterLimbo)
+            foreach (EncounterDetail enc in EncounterLimbo)
             {
                 EncounterPool.Add(enc);
                 enc.isRevealed = false;
@@ -3070,9 +3035,9 @@ namespace DraculaSimulator
             {
                 if (HunterAlly.name == "Jonathan Harker")
                 {
-                    if (Dracula.Trail.Count() > 5)
+                    if (Dracula.LocationTrail.Count() > 5)
                     {
-                        Dracula.Trail[5].IsRevealed = true;
+                        Dracula.LocationTrail[5].IsRevealed = true;
                     }
                 }
             }
@@ -3081,7 +3046,7 @@ namespace DraculaSimulator
         // remove
         internal void RevealEncounterInTrail(int v)
         {
-            foreach (Encounter enc in Dracula.Trail[v].Encounters)
+            foreach (EncounterDetail enc in Dracula.LocationTrail[v].Encounters)
             {
                 enc.isRevealed = true;
             }
@@ -3107,13 +3072,13 @@ namespace DraculaSimulator
 
         internal void RevealLocationAtTrailIndex(int trailIndex, UserInterface ui)
         {
-            if (Dracula.Trail[trailIndex].Name == "Hide")
+            if (Dracula.LocationTrail[trailIndex].Name == "Hide")
             {
                 Dracula.RevealHide(ui);
             }
             else
             {
-                Dracula.Trail[trailIndex].IsRevealed = true;
+                Dracula.LocationTrail[trailIndex].IsRevealed = true;
             }
         }
 
@@ -3269,7 +3234,7 @@ namespace DraculaSimulator
             ui.TellUser("Dracula matured Desecrated Soil");
             for (int i = 0; i < 2; i++)
             {
-                Event cardDrawn;
+                EventDetail cardDrawn;
                 string line;
                 do
                 {
@@ -3380,7 +3345,7 @@ namespace DraculaSimulator
                 ui.TellUser("and " + huntersEncountered[i].Name + " ");
             }
             ui.TellUser("encountered Desecrated Soil");
-            Event cardDrawn;
+            EventDetail cardDrawn;
             string line;
             do
             {
@@ -3433,7 +3398,7 @@ namespace DraculaSimulator
             string combatResult = ResolveCombat(hunterIndex, 2, true, ui);
             if (combatResult == "Enemy killed" || combatResult == "End")
             {
-                Event draculaEventCard = Dracula.WillPlayRelentlessMinion(this, huntersEncountered, "Minion with Knife");
+                EventDetail draculaEventCard = Dracula.WillPlayRelentlessMinion(this, huntersEncountered, "Minion with Knife");
                 if (draculaEventCard != null)
                 {
                     switch (draculaEventCard.name)
@@ -3475,7 +3440,7 @@ namespace DraculaSimulator
             string combatResult = ResolveCombat(hunterIndex, 3, true, ui);
             if (combatResult == "Enemy killed" || combatResult == "End")
             {
-                Event draculaEventCard = Dracula.WillPlayRelentlessMinion(this, huntersEncountered, "Minion with Knife and Pistol");
+                EventDetail draculaEventCard = Dracula.WillPlayRelentlessMinion(this, huntersEncountered, "Minion with Knife and Pistol");
                 if (draculaEventCard != null)
                 {
                     switch (draculaEventCard.name)
@@ -3508,7 +3473,7 @@ namespace DraculaSimulator
             string combatResult = ResolveCombat(hunterIndex, 4, true, ui);
             if (combatResult == "Enemy killed" || combatResult == "End")
             {
-                Event draculaEventCard = Dracula.WillPlayRelentlessMinion(this, huntersEncountered, "Minion with Knife and Rifle");
+                EventDetail draculaEventCard = Dracula.WillPlayRelentlessMinion(this, huntersEncountered, "Minion with Knife and Rifle");
                 if (draculaEventCard != null)
                 {
                     switch (draculaEventCard.name)
@@ -3678,20 +3643,20 @@ namespace DraculaSimulator
                     do
                     {
                         line = ui.GetNameOfItemInHandFromHunter(h.Name);
-                        if (GetItemByNameFromItemDeck(line).name == "Unknown item" && h.ItemsKnownToDracula.FindIndex(item => item.name == line) == -1)
+                        if (GetItemByNameFromItemDeck(line).Name == "Unknown item" && h.ItemsKnownToDracula.FindIndex(item => item.Name == line) == -1)
                         {
                             ui.TellUser("I didn't recognise that card name");
                         }
-                    } while (GetItemByNameFromItemDeck(line).name == "Unknown item" && h.ItemsKnownToDracula.FindIndex(item => item.name == line) == -1);
+                    } while (GetItemByNameFromItemDeck(line).Name == "Unknown item" && h.ItemsKnownToDracula.FindIndex(item => item.Name == line) == -1);
                     itemsAlreadyKnownToDracula.Add(line);
                 }
-                List<Item> itemsToAddToKnownItems = new List<Item>();
+                List<ItemDetail> itemsToAddToKnownItems = new List<ItemDetail>();
                 itemsToAddToKnownItems.AddRange(h.ItemsKnownToDracula);
                 foreach (string name in itemsAlreadyKnownToDracula)
                 {
-                    if (itemsToAddToKnownItems.FindIndex(it => it.name == name) > -1)
+                    if (itemsToAddToKnownItems.FindIndex(it => it.Name == name) > -1)
                     {
-                        itemsToAddToKnownItems.Remove(itemsToAddToKnownItems.Find(it => it.name == name));
+                        itemsToAddToKnownItems.Remove(itemsToAddToKnownItems.Find(it => it.Name == name));
                     }
                     else
                     {
@@ -3712,7 +3677,7 @@ namespace DraculaSimulator
                     } while (GetEventByNameFromEventDeck(line).name == "Unknown event" && h.EventsKnownToDracula.FindIndex(ev => ev.name == line) == -1);
                     eventsAlreadyKnownToDracula.Add(line);
                 }
-                List<Event> eventsToAddToKnownEvents = new List<Event>();
+                List<EventDetail> eventsToAddToKnownEvents = new List<EventDetail>();
                 eventsToAddToKnownEvents.AddRange(h.EventsKnownToDracula);
                 foreach (string name in eventsAlreadyKnownToDracula)
                 {
@@ -3773,7 +3738,7 @@ namespace DraculaSimulator
             }
             else
             {
-                Event draculaEventCard = Dracula.PlaySeductionCard(this);
+                EventDetail draculaEventCard = Dracula.PlaySeductionCard(this);
                 DiscardEventFromDracula("Seduction");
                 ui.TellUser("Dracula played Seduction");
                 int dieRoll;
@@ -3947,7 +3912,7 @@ namespace DraculaSimulator
 
         internal void DiscardEventFromHunterAtIndex(string eventName, int hunterIndex, UserInterface ui)
         {
-            Event eventToDiscard = GetEventByNameFromEventDeck(eventName);
+            EventDetail eventToDiscard = GetEventByNameFromEventDeck(eventName);
             EventDeck.Remove(eventToDiscard);
             if (Hunters[hunterIndex].EventShownToDraculaForBeingBitten == eventToDiscard)
             {
@@ -4003,24 +3968,24 @@ namespace DraculaSimulator
             return "I don't know, bro";
         }
 
-        internal Item GetItemByNameFromItemDeck(string argument2)
+        internal ItemDetail GetItemByNameFromItemDeck(string argument2)
         {
             try
             {
-                return ItemDeck[ItemDeck.FindIndex(card => card.name.ToLower().StartsWith(argument2.ToLower()))];
+                return ItemDeck[ItemDeck.FindIndex(card => card.Name.ToLower().StartsWith(argument2.ToLower()))];
             }
             catch (ArgumentOutOfRangeException)
             {
-                return new Item("Unknown item");
+                return new ItemDetail("Unknown item");
             }
         }
 
         internal void DiscardItemFromHunterAtIndex(string itemName, int hunterIndex, UserInterface ui)
         {
-            Item itemToDiscard;
-            if (Hunters[hunterIndex].ItemsKnownToDracula.FindIndex(i => i.name == itemName) > -1)
+            ItemDetail itemToDiscard;
+            if (Hunters[hunterIndex].ItemsKnownToDracula.FindIndex(i => i.Name == itemName) > -1)
             {
-                itemToDiscard = Hunters[hunterIndex].ItemsKnownToDracula.Find(i => i.name == itemName);
+                itemToDiscard = Hunters[hunterIndex].ItemsKnownToDracula.Find(i => i.Name == itemName);
                 Hunters[hunterIndex].ItemsKnownToDracula.Remove(itemToDiscard);
             }
             else
@@ -4043,16 +4008,16 @@ namespace DraculaSimulator
             Logger.WriteToGameLog(Hunters[hunterIndex].Name + " discarded " + itemName + " down to " + Hunters[hunterIndex].NumberOfEvents);
         }
 
-        internal string ResolveCombat(int hunterIndex, int enemyInCombat, bool hunterMoved, UserInterface ui)
+        internal string ResolveCombat(Hunter hunter, int enemyInCombat, bool hunterMoved, UserInterface ui)
         {
-            List<Item> enemyCombatCards = new List<Item>();
-            List<Item> hunterBasicCards = new List<Item>();
+            List<ItemDetail> enemyCombatCards = new List<ItemDetail>();
+            List<ItemDetail> hunterBasicCards = new List<ItemDetail>();
             List<Hunter> huntersInCombat = new List<Hunter>();
             if (hunterMoved)
             {
-                foreach (int ind in Hunters[hunterIndex].HuntersInGroup)
+                foreach (HunterName h in hunter.HuntersInGroup)
                 {
-                    huntersInCombat.Add(Hunters[ind]);
+                    huntersInCombat.Add(Hunters[(int)h]);
                 }
             }
             else
@@ -4065,8 +4030,8 @@ namespace DraculaSimulator
                     }
                 }
             }
-            hunterBasicCards.Add(new Item("Punch"));
-            hunterBasicCards.Add(new Item("Escape"));
+            hunterBasicCards.Add(new ItemDetail("Punch"));
+            hunterBasicCards.Add(new ItemDetail("Escape"));
             bool trapPlayed = false;
             int rageRounds = 0;
             string enemyName = "nobody";
@@ -4075,69 +4040,69 @@ namespace DraculaSimulator
                 case 1:
                     {
                         enemyName = "Dracula";
-                        enemyCombatCards.Add(new Item("Claws"));
-                        enemyCombatCards.Add(new Item("Escape (Man)"));
+                        enemyCombatCards.Add(new ItemDetail("Claws"));
+                        enemyCombatCards.Add(new ItemDetail("Escape (Man)"));
                         if (TimeIndex > 2)
                         {
-                            enemyCombatCards.Add(new Item("Strength"));
-                            enemyCombatCards.Add(new Item("Escape (Bat)"));
-                            enemyCombatCards.Add(new Item("Escape (Mist)"));
-                            enemyCombatCards.Add(new Item("Fangs"));
-                            enemyCombatCards.Add(new Item("Mesmerize"));
+                            enemyCombatCards.Add(new ItemDetail("Strength"));
+                            enemyCombatCards.Add(new ItemDetail("Escape (Bat)"));
+                            enemyCombatCards.Add(new ItemDetail("Escape (Mist)"));
+                            enemyCombatCards.Add(new ItemDetail("Fangs"));
+                            enemyCombatCards.Add(new ItemDetail("Mesmerize"));
                         }
                         break;
                     }
                 case 2:
                     {
                         enemyName = "Minion with Knife";
-                        enemyCombatCards.Add(new Item("Punch"));
-                        enemyCombatCards.Add(new Item("Knife"));
+                        enemyCombatCards.Add(new ItemDetail("Punch"));
+                        enemyCombatCards.Add(new ItemDetail("Knife"));
                         break;
                     }
                 case 3:
                     {
                         enemyName = "Minion with Knife and Pistol";
-                        enemyCombatCards.Add(new Item("Punch"));
-                        enemyCombatCards.Add(new Item("Knife"));
-                        enemyCombatCards.Add(new Item("Pistol"));
+                        enemyCombatCards.Add(new ItemDetail("Punch"));
+                        enemyCombatCards.Add(new ItemDetail("Knife"));
+                        enemyCombatCards.Add(new ItemDetail("Pistol"));
                         break;
                     }
                 case 4:
                     {
                         enemyName = "Minion with Knife and Rifle";
-                        enemyCombatCards.Add(new Item("Punch"));
-                        enemyCombatCards.Add(new Item("Knife"));
-                        enemyCombatCards.Add(new Item("Rifle"));
+                        enemyCombatCards.Add(new ItemDetail("Punch"));
+                        enemyCombatCards.Add(new ItemDetail("Knife"));
+                        enemyCombatCards.Add(new ItemDetail("Rifle"));
                         break;
                     }
                 case 5:
                     {
                         enemyName = "Assassin";
-                        enemyCombatCards.Add(new Item("Punch"));
-                        enemyCombatCards.Add(new Item("Knife"));
-                        enemyCombatCards.Add(new Item("Pistol"));
-                        enemyCombatCards.Add(new Item("Rifle"));
+                        enemyCombatCards.Add(new ItemDetail("Punch"));
+                        enemyCombatCards.Add(new ItemDetail("Knife"));
+                        enemyCombatCards.Add(new ItemDetail("Pistol"));
+                        enemyCombatCards.Add(new ItemDetail("Rifle"));
                         break;
                     }
                 case 6:
                     {
                         enemyName = "New Vampire";
-                        enemyCombatCards.Add(new Item("Claws"));
-                        enemyCombatCards.Add(new Item("Escape (Man)"));
+                        enemyCombatCards.Add(new ItemDetail("Claws"));
+                        enemyCombatCards.Add(new ItemDetail("Escape (Man)"));
                         if (TimeIndex > 2)
                         {
-                            enemyCombatCards.Add(new Item("Strength"));
-                            enemyCombatCards.Add(new Item("Escape (Bat)"));
-                            enemyCombatCards.Add(new Item("Escape (Mist)"));
-                            enemyCombatCards.Add(new Item("Fangs"));
-                            enemyCombatCards.Add(new Item("Mesmerize"));
+                            enemyCombatCards.Add(new ItemDetail("Strength"));
+                            enemyCombatCards.Add(new ItemDetail("Escape (Bat)"));
+                            enemyCombatCards.Add(new ItemDetail("Escape (Mist)"));
+                            enemyCombatCards.Add(new ItemDetail("Fangs"));
+                            enemyCombatCards.Add(new ItemDetail("Mesmerize"));
                         }
                         break;
                     }
 
             }
             ui.TellUser(Hunters[hunterIndex].Name + " is entering combat against " + enemyName + (huntersInCombat.Count() > 1 ? " with " + huntersInCombat[1].Name : "") + (huntersInCombat.Count() > 2 ? " and " + huntersInCombat[2].Name : "") + (huntersInCombat.Count() > 3 ? " and " + huntersInCombat[3].Name : ""));
-            Event draculaEventCard = null;
+            EventDetail draculaEventCard = null;
             do
             {
                 draculaEventCard = Dracula.PlayEventCardAtStartOfCombat(this, trapPlayed, hunterMoved, enemyInCombat);
@@ -4171,17 +4136,17 @@ namespace DraculaSimulator
                                 rageRounds = 3;
                                 try
                                 {
-                                    enemyCombatCards.Remove(enemyCombatCards.Find(card => card.name == "Escape (Man)"));
+                                    enemyCombatCards.Remove(enemyCombatCards.Find(card => card.Name == "Escape (Man)"));
                                 }
                                 catch (Exception e) { }
                                 try
                                 {
-                                    enemyCombatCards.Remove(enemyCombatCards.Find(card => card.name == "Escape (Bat)"));
+                                    enemyCombatCards.Remove(enemyCombatCards.Find(card => card.Name == "Escape (Bat)"));
                                 }
                                 catch (Exception e) { }
                                 try
                                 {
-                                    enemyCombatCards.Remove(enemyCombatCards.Find(card => card.name == "Escape (Mist)"));
+                                    enemyCombatCards.Remove(enemyCombatCards.Find(card => card.Name == "Escape (Mist)"));
                                 }
                                 catch (Exception e) { }
                             }
@@ -4201,7 +4166,7 @@ namespace DraculaSimulator
                     do
                     {
                         cardName = ui.GetNameOfHunterCardPlayedAtStartOfCombat(Hunters[hunterPlayingCard].Name);
-                    } while (GetEventByNameFromEventDeck(cardName).name == "Unknown event" && GetItemByNameFromItemDeck(cardName).name == "Unknown item" && cardName.ToLower() != "cancel");
+                    } while (GetEventByNameFromEventDeck(cardName).name == "Unknown event" && GetItemByNameFromItemDeck(cardName).Name == "Unknown item" && cardName.ToLower() != "cancel");
                     if (cardName != "cancel")
                     {
                         hunterPlayedCard[hunterPlayingCard] = true;
@@ -4297,17 +4262,17 @@ namespace DraculaSimulator
                                 break;
                             case "Garlic":
                                 rageRounds = 3;
-                                if (enemyCombatCards.FindIndex(card => card.name == "Escape (Man)") > -1)
+                                if (enemyCombatCards.FindIndex(card => card.Name == "Escape (Man)") > -1)
                                 {
-                                    enemyCombatCards.Remove(enemyCombatCards.Find(card => card.name == "Escape (Man)"));
+                                    enemyCombatCards.Remove(enemyCombatCards.Find(card => card.Name == "Escape (Man)"));
                                 }
-                                if (enemyCombatCards.FindIndex(card => card.name == "Escape (Bat)") > -1)
+                                if (enemyCombatCards.FindIndex(card => card.Name == "Escape (Bat)") > -1)
                                 {
-                                    enemyCombatCards.Remove(enemyCombatCards.Find(card => card.name == "Escape (Bat)"));
+                                    enemyCombatCards.Remove(enemyCombatCards.Find(card => card.Name == "Escape (Bat)"));
                                 }
-                                if (enemyCombatCards.FindIndex(card => card.name == "Escape (Mist)") > -1)
+                                if (enemyCombatCards.FindIndex(card => card.Name == "Escape (Mist)") > -1)
                                 {
-                                    enemyCombatCards.Remove(enemyCombatCards.Find(card => card.name == "Escape (Mist)"));
+                                    enemyCombatCards.Remove(enemyCombatCards.Find(card => card.Name == "Escape (Mist)"));
                                 }
                                 DiscardItemFromHunterAtIndex(cardName, hunterPlayingCard, ui);
                                 break;
@@ -4326,15 +4291,15 @@ namespace DraculaSimulator
             rageRounds--;
             if (rageRounds == 0)
             {
-                enemyCombatCards.Add(new Item("Escape (Man)"));
+                enemyCombatCards.Add(new ItemDetail("Escape (Man)"));
                 if (TimeIndex > 2)
                 {
-                    enemyCombatCards.Add(new Item("Escape (Bat)"));
-                    enemyCombatCards.Add(new Item("Escape (Mist)"));
+                    enemyCombatCards.Add(new ItemDetail("Escape (Bat)"));
+                    enemyCombatCards.Add(new ItemDetail("Escape (Mist)"));
                 }
             }
-            enemyCombatCards.Add(new Item("Dodge"));
-            hunterBasicCards.Add(new Item("Dodge"));
+            enemyCombatCards.Add(new ItemDetail("Dodge"));
+            hunterBasicCards.Add(new ItemDetail("Dodge"));
 
             while (roundResult.outcome != "Bite" && roundResult.outcome != "Enemy killed" && roundResult.outcome != "Hunter killed" && roundResult.outcome != "End")
             {
@@ -4437,19 +4402,19 @@ namespace DraculaSimulator
         {
             Hunter ragedHunter = Dracula.ChooseHunterToRage(huntersInCombat);
             ui.TellUser(ragedHunter.Name + " must show me all items and I will discard one");
-            List<Item> itemsInHunterHand = new List<Item>();
+            List<ItemDetail> itemsInHunterHand = new List<ItemDetail>();
             string cardInRagedHunterHand;
             do
             {
                 cardInRagedHunterHand = ui.GetNameOfCardInRagedHunterHand();
-                if (GetItemByNameFromItemDeck(cardInRagedHunterHand).name != "Unknown item")
+                if (GetItemByNameFromItemDeck(cardInRagedHunterHand).Name != "Unknown item")
                 {
                     itemsInHunterHand.Add(GetItemByNameFromItemDeck(cardInRagedHunterHand));
                 }
-            } while (GetItemByNameFromItemDeck(cardInRagedHunterHand).name == "Unknown item" && cardInRagedHunterHand.ToLower() != "none");
-            Item itemToDiscard = Dracula.ChooseItemCardToDiscard(itemsInHunterHand);
-            ui.TellUser("Discarding " + itemToDiscard.name);
-            DiscardItemFromHunterAtIndex(itemToDiscard.name, Array.FindIndex(Hunters, h => h.Name == huntersInCombat.First().Name), ui);
+            } while (GetItemByNameFromItemDeck(cardInRagedHunterHand).Name == "Unknown item" && cardInRagedHunterHand.ToLower() != "none");
+            ItemDetail itemToDiscard = Dracula.ChooseItemCardToDiscard(itemsInHunterHand);
+            ui.TellUser("Discarding " + itemToDiscard.Name);
+            DiscardItemFromHunterAtIndex(itemToDiscard.Name, Array.FindIndex(Hunters, h => h.Name == huntersInCombat.First().Name), ui);
         }
 
         // remove
@@ -4458,36 +4423,36 @@ namespace DraculaSimulator
             ui.TellUser("Dracula played Trap");
         }
 
-        private CombatRoundResult ResolveRoundOfCombat(List<Hunter> huntersFighting, List<Item> combatCards, List<Item> hunterBasicCards, CombatRoundResult result, bool hunterMoved, int enemyType, UserInterface ui)
+        private CombatRoundResult ResolveRoundOfCombat(List<Hunter> huntersFighting, List<ItemDetail> combatCards, List<ItemDetail> hunterBasicCards, CombatRoundResult result, bool hunterMoved, int enemyType, UserInterface ui)
         {
             string targetHunterName;
-            string newEnemyCardUsed = Dracula.ChooseCombatCardAndTarget(huntersFighting, combatCards, result, NameOfHunterAlly(), out targetHunterName).name;
+            string newEnemyCardUsed = Dracula.ChooseCombatCardAndTarget(huntersFighting, combatCards, result, NameOfHunterAlly(), out targetHunterName).Name;
             string newHunterCardUsed = "nothing";
             foreach (Hunter h in huntersFighting)
             {
                 do
                 {
                     newHunterCardUsed = ui.GetCombatCardFromHunter(h.Name);
-                    if (GetItemByNameFromItemDeck(newHunterCardUsed).name == "Unknown item")
+                    if (GetItemByNameFromItemDeck(newHunterCardUsed).Name == "Unknown item")
                     {
-                        if (GetItemByNameFromList(newHunterCardUsed, hunterBasicCards).name == "Unknown item")
+                        if (GetItemByNameFromList(newHunterCardUsed, hunterBasicCards).Name == "Unknown item")
                         {
                             ui.TellUser("I didn't recognise that item name");
                         }
                     }
-                } while (GetItemByNameFromItemDeck(newHunterCardUsed).name == "Unknown item" && GetItemByNameFromList(newHunterCardUsed, hunterBasicCards).name == "Unknown item");
+                } while (GetItemByNameFromItemDeck(newHunterCardUsed).Name == "Unknown item" && GetItemByNameFromList(newHunterCardUsed, hunterBasicCards).Name == "Unknown item");
                 if (newHunterCardUsed != "Punch" && newHunterCardUsed != "Dodge" && newHunterCardUsed != "Escape")
                 {
-                    if (h.ItemsKnownToDracula.FindIndex(it => it.name == newHunterCardUsed) == -1)
+                    if (h.ItemsKnownToDracula.FindIndex(it => it.Name == newHunterCardUsed) == -1)
                     {
                         h.ItemsKnownToDracula.Add(GetItemByNameFromItemDeck(newHunterCardUsed));
                     }
                     else if (newHunterCardUsed == h.LastItemUsedInCombat)
                     {
-                        List<Item> copyOfHunterItemsKnown = new List<Item>();
+                        List<ItemDetail> copyOfHunterItemsKnown = new List<ItemDetail>();
                         copyOfHunterItemsKnown.AddRange(h.ItemsKnownToDracula);
-                        copyOfHunterItemsKnown.Remove(copyOfHunterItemsKnown.Find(it => it.name == newHunterCardUsed));
-                        if (copyOfHunterItemsKnown.FindIndex(it => it.name == newHunterCardUsed) == -1)
+                        copyOfHunterItemsKnown.Remove(copyOfHunterItemsKnown.Find(it => it.Name == newHunterCardUsed));
+                        if (copyOfHunterItemsKnown.FindIndex(it => it.Name == newHunterCardUsed) == -1)
                         {
                             h.ItemsKnownToDracula.Add(GetItemByNameFromItemDeck(newHunterCardUsed));
                         }
@@ -4513,15 +4478,15 @@ namespace DraculaSimulator
         }
 
         // remove
-        private Item GetItemByNameFromList(string itemName, List<Item> itemList)
+        private ItemDetail GetItemByNameFromList(string itemName, List<ItemDetail> itemList)
         {
             try
             {
-                return itemList[itemList.FindIndex(card => card.name.ToLower().StartsWith(itemName.ToLower()))];
+                return itemList[itemList.FindIndex(card => card.Name.ToLower().StartsWith(itemName.ToLower()))];
             }
             catch (ArgumentOutOfRangeException)
             {
-                return new Item("Unknown item");
+                return new ItemDetail("Unknown item");
             }
         }
 
@@ -4558,7 +4523,7 @@ namespace DraculaSimulator
         private void PlayDogs(int hunterIndex, UserInterface ui)
         {
             Hunters[hunterIndex].HasDogsFaceUp = true;
-            if (Hunters[hunterIndex].ItemsKnownToDracula.FindIndex(item => item.name == "Dogs") == -1)
+            if (Hunters[hunterIndex].ItemsKnownToDracula.FindIndex(item => item.Name == "Dogs") == -1)
             {
                 Hunters[hunterIndex].ItemsKnownToDracula.Add(GetItemByNameFromItemDeck("Dogs"));
             }
@@ -4626,11 +4591,11 @@ namespace DraculaSimulator
             {
                 locationIndex = ui.GetLocationIndexOfEncounterToReveal();
             }
-            while (Dracula.Trail[locationIndex] == null && (locationIndex > 5 ? Dracula.Catacombs[locationIndex - 6] == null : true));
+            while (Dracula.LocationTrail[locationIndex] == null && (locationIndex > 5 ? Dracula.Catacombs[locationIndex - 6] == null : true));
             LocationDetail locationWhereEncounterIsBeingRevealed;
             if (locationIndex < 6)
             {
-                locationWhereEncounterIsBeingRevealed = Dracula.Trail[locationIndex];
+                locationWhereEncounterIsBeingRevealed = Dracula.LocationTrail[locationIndex];
             }
             else
             {
@@ -4656,7 +4621,7 @@ namespace DraculaSimulator
             if (ui.AskIfHunterIsUsingGreatStrengthToCancelBite(Hunters[hunterIndex].Name))
             {
                 DiscardEventFromHunterAtIndex("Great Strength", hunterIndex, ui);
-                Event draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
+                EventDetail draculaEventCard = Dracula.WillPlayDevilishPower(this, ui);
                 bool eventIsCancelled = false;
                 if (draculaEventCard != null)
                 {
@@ -4782,7 +4747,7 @@ namespace DraculaSimulator
                         string itemName = "Unknown item";
                         while (itemName == "Unknown item")
                         {
-                            itemName = GetItemByNameFromItemDeck(ui.GetNameOfItemDiscardedByHunter(h.Name)).name;
+                            itemName = GetItemByNameFromItemDeck(ui.GetNameOfItemDiscardedByHunter(h.Name)).Name;
                             if (itemName == "Unknown item")
                             {
                                 ui.TellUser("I can't find that item");
@@ -4901,7 +4866,7 @@ namespace DraculaSimulator
         {
             Logger.WriteToDebugLog("Dracula is deciding whether to play Customs Search");
 
-            Event draculaEventCard = Dracula.WillPlayCustomsSearch(this, Hunters[hunterIndex]);
+            EventDetail draculaEventCard = Dracula.WillPlayCustomsSearch(this, Hunters[hunterIndex]);
             if (draculaEventCard != null)
             {
                 switch (draculaEventCard.name)
@@ -4991,12 +4956,12 @@ namespace DraculaSimulator
                 ui.TellUser("There is a roadblock on the " + RoadblockCounter.connectionType + " between " + RoadblockCounter.firstLocation.Name + " and " + RoadblockCounter.secondLocation.Name);
             }
             ui.TellUser("These things are in the item discard");
-            foreach (Item i in ItemDiscard)
+            foreach (ItemDetail i in ItemDiscard)
             {
-                ui.TellUser(i.name);
+                ui.TellUser(i.Name);
             }
             ui.TellUser("These things are in the event discard");
-            foreach (Event e in EventDiscard)
+            foreach (EventDetail e in EventDiscard)
             {
                 try
                 {
@@ -5028,11 +4993,11 @@ namespace DraculaSimulator
             foreach (Hunter h in Hunters)
             {
                 ui.TellUser(h.Name + " has:");
-                foreach (Item i in h.ItemsKnownToDracula)
+                foreach (ItemDetail i in h.ItemsKnownToDracula)
                 {
-                    ui.TellUser(i.name);
+                    ui.TellUser(i.Name);
                 }
-                foreach (Event e in h.EventsKnownToDracula)
+                foreach (EventDetail e in h.EventsKnownToDracula)
                 {
                     ui.TellUser(e.name);
                 }
@@ -5055,9 +5020,9 @@ namespace DraculaSimulator
                         do
                         {
                             line = ui.AskHunterToRevealItemForBeingBitten(h.Name);
-                            ui.TellUser(GetItemByNameFromItemDeck(line).name);
-                        } while (GetItemByNameFromItemDeck(line).name == "Unknown item" && h.ItemsKnownToDracula.FindIndex(itm => itm.name == line) == -1);
-                        if (h.ItemsKnownToDracula.FindIndex(itm => itm.name == line) == -1)
+                            ui.TellUser(GetItemByNameFromItemDeck(line).Name);
+                        } while (GetItemByNameFromItemDeck(line).Name == "Unknown item" && h.ItemsKnownToDracula.FindIndex(itm => itm.Name == line) == -1);
+                        if (h.ItemsKnownToDracula.FindIndex(itm => itm.Name == line) == -1)
                         {
                             h.ItemsKnownToDracula.Add(GetItemByNameFromItemDeck(line));
                         }
@@ -5097,7 +5062,7 @@ namespace DraculaSimulator
         // remove
         internal bool HunterHasItemKnownToDracula(int hunterIndex, string itemName)
         {
-            if (Hunters[hunterIndex].ItemsKnownToDracula.FindIndex(card => card.name == itemName) > -1)
+            if (Hunters[hunterIndex].ItemsKnownToDracula.FindIndex(card => card.Name == itemName) > -1)
             {
                 return true;
             }

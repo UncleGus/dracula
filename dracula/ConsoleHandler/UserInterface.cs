@@ -14,18 +14,10 @@ namespace DraculaSimulator
             Console.WriteLine(v);
         }
 
-        internal LocationDetail GetHunterStartLocation(GameState g, int v)
+        internal string GetHunterStartLocation(string name)
         {
-            string line;
-            LocationDetail hunterStartLocation;
-            do
-            {
-                TellUser("Where is " + g.NameOfHunterAtIndex(v) + "?");
-                line = AskUser();
-                hunterStartLocation = g.GetLocationFromName(line);
-                TellUser(hunterStartLocation.Name);
-            } while (hunterStartLocation.Name == "Unknown location" || hunterStartLocation.Name == "Multiple locations");
-            return hunterStartLocation;
+            TellUser("Where is " + name + "?");
+            return AskUser();
         }
 
         internal void drawGameState(GameState g)
@@ -212,7 +204,7 @@ namespace DraculaSimulator
         internal void ShowGroupMembersAtHunterIndex(GameState g, int hunterIndex)
         {
             TellUser("Members of " + g.Hunters[hunterIndex] + "'s group, other than himself:");
-            foreach(int ind in g.Hunters[hunterIndex].HuntersInGroup)
+            foreach (int ind in g.Hunters[hunterIndex].HuntersInGroup)
             {
                 if (ind != hunterIndex)
                 {
@@ -894,7 +886,7 @@ namespace DraculaSimulator
                 line = AskUser();
             } while (!int.TryParse(line, out response) || response < 0 || response > 2);
             return response;
-            
+
         }
 
         internal string GetNameOfItemInHandFromHunter(string p)

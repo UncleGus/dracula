@@ -1,4 +1,5 @@
-﻿using EventHandler;
+﻿using DraculaHandler;
+using EventHandler;
 using LocationHandler;
 using LogHandler;
 using System;
@@ -10,23 +11,21 @@ namespace DraculaSimulator
 {
     class Program
     {
-
         static void Main(string[] args)
         {
             UserInterface ui = new UserInterface();
-            Map m = new Map();
+            Map map = new Map();
+            ItemSet itemDeck = new ItemSet();
+            EventSet eventDeck = new EventSet();
+            EncounterSet encounterDeck = new EncounterSet();
             GameState g = new GameState();
             Logger.ClearLogs(ui);
 
-//            PerformLoad(g, "lol", ui);
+            //            PerformLoad(g, "lol", ui);
 
-            g.SetLocationForHunterAt(0, ui.GetHunterStartLocation(g, 0));
-            g.SetLocationForHunterAt(1, ui.GetHunterStartLocation(g, 1));
-            g.SetLocationForHunterAt(2, ui.GetHunterStartLocation(g, 2));
-            g.SetLocationForHunterAt(3, ui.GetHunterStartLocation(g, 3));
-
-            g.PlaceDraculaAtStartLocation();
-            g.DrawEncountersUpToHandSize();
+            g.SetHunterStartLocations(map, ui);
+            g.Dracula.ChooseStartLocation(map, g.Hunters);
+            g.Dracula.DrawEncounters(g, g.Dracula.EncounterHandSize, encounterDeck);
             PerformDraculaTurn(g, ui);
 
             PerformSave(g, "lol", ui);
@@ -195,11 +194,11 @@ namespace DraculaSimulator
             {
                 hunterIndex--;
             }
-            string itemName = g.GetItemByNameFromItemDeck(argument2).name;
+            string itemName = g.GetItemByNameFromItemDeck(argument2).Name;
             while (itemName == "Unknown item")
             {
                 string line = ui.GetNameOfItemUsedByHunter(g.NameOfHunterAtIndex(hunterIndex));
-                itemName = g.GetItemByNameFromItemDeck(line).name;
+                itemName = g.GetItemByNameFromItemDeck(line).Name;
                 if (itemName == "Unknown item")
                 {
                     if (line.ToLower() == "cancel")
@@ -326,10 +325,10 @@ namespace DraculaSimulator
             {
                 hunterIndex--;
             }
-            string itemName = g.GetItemByNameFromItemDeck(argument2).name;
+            string itemName = g.GetItemByNameFromItemDeck(argument2).Name;
             while (itemName == "Unknown item")
             {
-                itemName = g.GetItemByNameFromItemDeck(ui.GetNameOfItemDiscardedByHunter(g.NameOfHunterAtIndex(hunterIndex))).name;
+                itemName = g.GetItemByNameFromItemDeck(ui.GetNameOfItemDiscardedByHunter(g.NameOfHunterAtIndex(hunterIndex))).Name;
                 if (itemName == "Unknown item")
                 {
                     ui.TellUser("I can't find that item");

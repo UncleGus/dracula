@@ -34,17 +34,17 @@ namespace HunterHandler
         [DataMember]
         public string LastItemUsedInCombat { get; set; }
         [DataMember]
-        public List<Event> EventsKnownToDracula { get; set; }
+        public List<EventDetail> EventsKnownToDracula { get; set; }
         [DataMember]
-        public List<Item> ItemsKnownToDracula { get; set; }
+        public List<ItemDetail> ItemsKnownToDracula { get; set; }
         [DataMember]
         public string TravelType { get; set; }
         [DataMember]
         public LocationDetail Destination { get; set; }
         [DataMember]
-        public Item ItemShownToDraculaForBeingBitten { get; set; }
+        public ItemDetail ItemShownToDraculaForBeingBitten { get; set; }
         [DataMember]
-        public Event EventShownToDraculaForBeingBitten { get; set; }
+        public EventDetail EventShownToDraculaForBeingBitten { get; set; }
         [DataMember]
         public int Index { get; set; }
 
@@ -61,8 +61,8 @@ namespace HunterHandler
             HuntersInGroup = new List<int>();
             HuntersInGroup.Add(Index);
             LastItemUsedInCombat = null;
-            EventsKnownToDracula = new List<Event>();
-            ItemsKnownToDracula = new List<Item>();
+            EventsKnownToDracula = new List<EventDetail>();
+            ItemsKnownToDracula = new List<ItemDetail>();
             TravelType = null;
             Destination = null;
             ItemShownToDraculaForBeingBitten = null;
