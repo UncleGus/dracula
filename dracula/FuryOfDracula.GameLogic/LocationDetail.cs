@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,108 +9,18 @@ namespace FuryOfDracula.GameLogic
 {
     public class LocationDetail
     {
-        public Location Index;
-        public string Name;
+        public Location Location;
         public string Abbreviation;
-        public LocationType Type;
+        public LocationType LocationType;
         public bool IsEastern;
-        public List<Location> ByRoad;
-        public List<Location> ByTrain;
-        public List<Location> BySea;
+        public List<Location> ByRoad = new List<Location>();
+        public List<Location> ByTrain = new List<Location>();
+        public List<Location> BySea = new List<Location>();
 
-        public LocationDetail()
+        public LocationDetail(Location location)
         {
-            ByRoad = new List<Location>();
-            ByTrain = new List<Location>();
-            BySea = new List<Location>();
+            Location = location;
         }
-    }
-
-    public enum LocationType
-    {
-        None,
-        Town,
-        City,
-        Sea,
-        Castle,
-        Hospital,
-        Power
-    }
-
-    public enum Location
-    {
-        Nowhere,
-        AdriaticSea,
-        Alicante,
-        Amsterdam,
-        Athens,
-        AtlanticOcean,
-        Barcelona,
-        Bari,
-        BayOfBiscay,
-        Belgrade,
-        Berlin,
-        BlackSea,
-        Bordeaux,
-        Brussels,
-        Bucharest,
-        Budapest,
-        Cadiz,
-        Cagliari,
-        CastleDracula,
-        ClermontFerrand,
-        Cologne,
-        Constanta,
-        Dublin,
-        Edinburgh,
-        EnglishChannel,
-        Florence,
-        Frankfurt,
-        Galatz,
-        Galway,
-        Geneva,
-        Genoa,
-        Granada,
-        Hamburg,
-        IonianSea,
-        IrishSea,
-        Klausenburg,
-        LeHavre,
-        Leipzig,
-        Lisbon,
-        Liverpool,
-        London,
-        Madrid,
-        Manchester,
-        Marseilles,
-        MediterraneanSea,
-        Milan,
-        Munich,
-        Nantes,
-        Naples,
-        NorthSea,
-        Nuremburg,
-        Paris,
-        Plymouth,
-        Prague,
-        Rome,
-        Salonica,
-        Santander,
-        Saragossa,
-        Sarajevo,
-        Sofia,
-        StJosephAndStMary,
-        Strasbourg,
-        Swansea,
-        Szeged,
-        Toulouse,
-        TyrrhenianSea,
-        Valona,
-        Varna,
-        Venice,
-        Vienna,
-        Zagreb,
-        Zurich
     }
 }
 

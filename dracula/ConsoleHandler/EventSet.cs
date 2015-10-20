@@ -17,7 +17,7 @@ namespace DraculaSimulator
 
         private EventDetail[] CreateEventDeck()
         {
-            EventDetail[] tempEventDeck = new EventDetail[75];
+            EventDetail[] tempEventDeck = new EventDetail[76];
             tempEventDeck[(int)Event.None] = new EventDetail("None", false, EventType.None);
             tempEventDeck[(int)Event.AdvancePlanning1] = new EventDetail("Advance Planning", false, EventType.Keep);
             tempEventDeck[(int)Event.AdvancePlanning2] = new EventDetail("Advance Planning", false, EventType.Keep);

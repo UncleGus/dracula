@@ -5,6 +5,10 @@ VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DraculAI", "ConsoleHandler\DraculAI.csproj", "{331FAD45-5DF2-4ED2-B23A-B486DF9D4C32}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FuryOfDracula.GameLogic", "FuryOfDracula.GameLogic\FuryOfDracula.GameLogic.csproj", "{389BE045-DCBF-4FFA-9B6E-182183C0BEF0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FuryOfDracula.UnitTests", "FuryOfDracula.UnitTests\FuryOfDracula.UnitTests.csproj", "{067456C0-086C-46A8-B37F-1405717B7BFC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{331FAD45-5DF2-4ED2-B23A-B486DF9D4C32}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{331FAD45-5DF2-4ED2-B23A-B486DF9D4C32}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{331FAD45-5DF2-4ED2-B23A-B486DF9D4C32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{389BE045-DCBF-4FFA-9B6E-182183C0BEF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{389BE045-DCBF-4FFA-9B6E-182183C0BEF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{389BE045-DCBF-4FFA-9B6E-182183C0BEF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{389BE045-DCBF-4FFA-9B6E-182183C0BEF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{067456C0-086C-46A8-B37F-1405717B7BFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{067456C0-086C-46A8-B37F-1405717B7BFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{067456C0-086C-46A8-B37F-1405717B7BFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{067456C0-086C-46A8-B37F-1405717B7BFC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

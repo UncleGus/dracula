@@ -12,108 +12,104 @@ namespace FuryOfDracula.GameLogic
 
         public LocationSet()
         {
-            map = Map();
+            map = CreateMap();
         }
 
-        private LocationDetail[] Map()
+        private LocationDetail[] CreateMap()
         {
             LocationDetail[] tempMap = new LocationDetail[72];
-            LocationDetail nowhere = new LocationDetail();
-            LocationDetail galway = new LocationDetail();
-            LocationDetail dublin = new LocationDetail();
-            LocationDetail liverpool = new LocationDetail();
-            LocationDetail edinburgh = new LocationDetail();
-            LocationDetail manchester = new LocationDetail();
-            LocationDetail swansea = new LocationDetail();
-            LocationDetail plymouth = new LocationDetail();
-            LocationDetail nantes = new LocationDetail();
-            LocationDetail lehavre = new LocationDetail();
-            LocationDetail london = new LocationDetail();
-            LocationDetail paris = new LocationDetail();
-            LocationDetail brussels = new LocationDetail();
-            LocationDetail amsterdam = new LocationDetail();
-            LocationDetail strasbourg = new LocationDetail();
-            LocationDetail cologne = new LocationDetail();
-            LocationDetail hamburg = new LocationDetail();
-            LocationDetail frankfurt = new LocationDetail();
-            LocationDetail nuremburg = new LocationDetail();
-            LocationDetail leipzig = new LocationDetail();
-            LocationDetail berlin = new LocationDetail();
-            LocationDetail prague = new LocationDetail();
-            LocationDetail castledracula = new LocationDetail();
-            LocationDetail santander = new LocationDetail();
-            LocationDetail saragossa = new LocationDetail();
-            LocationDetail bordeaux = new LocationDetail();
-            LocationDetail toulouse = new LocationDetail();
-            LocationDetail barcelona = new LocationDetail();
-            LocationDetail clermontferrand = new LocationDetail();
-            LocationDetail marseilles = new LocationDetail();
-            LocationDetail geneva = new LocationDetail();
-            LocationDetail genoa = new LocationDetail();
-            LocationDetail milan = new LocationDetail();
-            LocationDetail zurich = new LocationDetail();
-            LocationDetail florence = new LocationDetail();
-            LocationDetail venice = new LocationDetail();
-            LocationDetail munich = new LocationDetail();
-            LocationDetail zagreb = new LocationDetail();
-            LocationDetail vienna = new LocationDetail();
-            LocationDetail stjosephandstmary = new LocationDetail();
-            LocationDetail sarajevo = new LocationDetail();
-            LocationDetail szeged = new LocationDetail();
-            LocationDetail budapest = new LocationDetail();
-            LocationDetail belgrade = new LocationDetail();
-            LocationDetail klausenburg = new LocationDetail();
-            LocationDetail sofia = new LocationDetail();
-            LocationDetail bucharest = new LocationDetail();
-            LocationDetail galatz = new LocationDetail();
-            LocationDetail varna = new LocationDetail();
-            LocationDetail constanta = new LocationDetail();
-            LocationDetail lisbon = new LocationDetail();
-            LocationDetail cadiz = new LocationDetail();
-            LocationDetail madrid = new LocationDetail();
-            LocationDetail granada = new LocationDetail();
-            LocationDetail alicante = new LocationDetail();
-            LocationDetail cagliari = new LocationDetail();
-            LocationDetail rome = new LocationDetail();
-            LocationDetail naples = new LocationDetail();
-            LocationDetail bari = new LocationDetail();
-            LocationDetail valona = new LocationDetail();
-            LocationDetail salonica = new LocationDetail();
-            LocationDetail athens = new LocationDetail();
-            LocationDetail atlanticocean = new LocationDetail();
-            LocationDetail irishsea = new LocationDetail();
-            LocationDetail englishchannel = new LocationDetail();
-            LocationDetail northsea = new LocationDetail();
-            LocationDetail bayofbiscay = new LocationDetail();
-            LocationDetail mediterraneansea = new LocationDetail();
-            LocationDetail tyrrheniansea = new LocationDetail();
-            LocationDetail adriaticsea = new LocationDetail();
-            LocationDetail ioniansea = new LocationDetail();
-            LocationDetail blacksea = new LocationDetail();
+            LocationDetail nowhere = new LocationDetail(Location.Nowhere);
+            LocationDetail galway = new LocationDetail(Location.Galway);
+            LocationDetail dublin = new LocationDetail(Location.Dublin);
+            LocationDetail liverpool = new LocationDetail(Location.Liverpool);
+            LocationDetail edinburgh = new LocationDetail(Location.Edinburgh);
+            LocationDetail manchester = new LocationDetail(Location.Manchester);
+            LocationDetail swansea = new LocationDetail(Location.Swansea);
+            LocationDetail plymouth = new LocationDetail(Location.Plymouth);
+            LocationDetail nantes = new LocationDetail(Location.Nantes);
+            LocationDetail lehavre = new LocationDetail(Location.LeHavre);
+            LocationDetail london = new LocationDetail(Location.London);
+            LocationDetail paris = new LocationDetail(Location.Paris);
+            LocationDetail brussels = new LocationDetail(Location.Brussels);
+            LocationDetail amsterdam = new LocationDetail(Location.Amsterdam);
+            LocationDetail strasbourg = new LocationDetail(Location.Strasbourg);
+            LocationDetail cologne = new LocationDetail(Location.Cologne);
+            LocationDetail hamburg = new LocationDetail(Location.Hamburg);
+            LocationDetail frankfurt = new LocationDetail(Location.Frankfurt);
+            LocationDetail nuremburg = new LocationDetail(Location.Nuremburg);
+            LocationDetail leipzig = new LocationDetail(Location.Leipzig);
+            LocationDetail berlin = new LocationDetail(Location.Berlin);
+            LocationDetail prague = new LocationDetail(Location.Prague);
+            LocationDetail castledracula = new LocationDetail(Location.CastleDracula);
+            LocationDetail santander = new LocationDetail(Location.Santander);
+            LocationDetail saragossa = new LocationDetail(Location.Saragossa);
+            LocationDetail bordeaux = new LocationDetail(Location.Bordeaux);
+            LocationDetail toulouse = new LocationDetail(Location.Toulouse);
+            LocationDetail barcelona = new LocationDetail(Location.Barcelona);
+            LocationDetail clermontferrand = new LocationDetail(Location.ClermontFerrand);
+            LocationDetail marseilles = new LocationDetail(Location.Marseilles);
+            LocationDetail geneva = new LocationDetail(Location.Geneva);
+            LocationDetail genoa = new LocationDetail(Location.Genoa);
+            LocationDetail milan = new LocationDetail(Location.Milan);
+            LocationDetail zurich = new LocationDetail(Location.Zurich);
+            LocationDetail florence = new LocationDetail(Location.Florence);
+            LocationDetail venice = new LocationDetail(Location.Venice);
+            LocationDetail munich = new LocationDetail(Location.Munich);
+            LocationDetail zagreb = new LocationDetail(Location.Zagreb);
+            LocationDetail vienna = new LocationDetail(Location.Vienna);
+            LocationDetail stjosephandstmary = new LocationDetail(Location.StJosephAndStMary);
+            LocationDetail sarajevo = new LocationDetail(Location.Sarajevo);
+            LocationDetail szeged = new LocationDetail(Location.Szeged);
+            LocationDetail budapest = new LocationDetail(Location.Budapest);
+            LocationDetail belgrade = new LocationDetail(Location.Belgrade);
+            LocationDetail klausenburg = new LocationDetail(Location.Klausenburg);
+            LocationDetail sofia = new LocationDetail(Location.Sofia);
+            LocationDetail bucharest = new LocationDetail(Location.Bucharest);
+            LocationDetail galatz = new LocationDetail(Location.Galatz);
+            LocationDetail varna = new LocationDetail(Location.Varna);
+            LocationDetail constanta = new LocationDetail(Location.Constanta);
+            LocationDetail lisbon = new LocationDetail(Location.Lisbon);
+            LocationDetail cadiz = new LocationDetail(Location.Cadiz);
+            LocationDetail madrid = new LocationDetail(Location.Madrid);
+            LocationDetail granada = new LocationDetail(Location.Granada);
+            LocationDetail alicante = new LocationDetail(Location.Alicante);
+            LocationDetail cagliari = new LocationDetail(Location.Cagliari);
+            LocationDetail rome = new LocationDetail(Location.Rome);
+            LocationDetail naples = new LocationDetail(Location.Naples);
+            LocationDetail bari = new LocationDetail(Location.Bari);
+            LocationDetail valona = new LocationDetail(Location.Valona);
+            LocationDetail salonica = new LocationDetail(Location.Salonica);
+            LocationDetail athens = new LocationDetail(Location.Athens);
+            LocationDetail atlanticocean = new LocationDetail(Location.AtlanticOcean);
+            LocationDetail irishsea = new LocationDetail(Location.IrishSea);
+            LocationDetail englishchannel = new LocationDetail(Location.EnglishChannel);
+            LocationDetail northsea = new LocationDetail(Location.NorthSea);
+            LocationDetail bayofbiscay = new LocationDetail(Location.BayOfBiscay);
+            LocationDetail mediterraneansea = new LocationDetail(Location.MediterraneanSea);
+            LocationDetail tyrrheniansea = new LocationDetail(Location.TyrrhenianSea);
+            LocationDetail adriaticsea = new LocationDetail(Location.AdriaticSea);
+            LocationDetail ioniansea = new LocationDetail(Location.IonianSea);
+            LocationDetail blacksea = new LocationDetail(Location.BlackSea);
 
-            nowhere.Name = "Nowhere";
             nowhere.Abbreviation = "NOW";
             tempMap[(int)Location.Nowhere] = nowhere;
 
-            galway.Name = "Galway";
             galway.Abbreviation = "GAW";
-            galway.Type = LocationType.Town;
+            galway.LocationType = LocationType.SmallCity;
             galway.IsEastern = false;
             galway.ByRoad.Add(Location.Dublin);
             galway.BySea.Add(Location.AtlanticOcean);
             tempMap[(int)Location.Galway] = galway;
 
-            dublin.Name = "Dublin";
             dublin.Abbreviation = "DUB";
-            dublin.Type = LocationType.Town;
+            dublin.LocationType = LocationType.SmallCity;
             dublin.IsEastern = false;
             dublin.ByRoad.Add(Location.Galway);
             dublin.BySea.Add(Location.IrishSea);
             tempMap[(int)Location.Dublin] = dublin;
 
-            liverpool.Name = "Liverpool";
             liverpool.Abbreviation = "LIV";
-            liverpool.Type = LocationType.City;
+            liverpool.LocationType = LocationType.LargeCity;
             liverpool.IsEastern = false;
             liverpool.ByRoad.Add(Location.Manchester);
             liverpool.ByRoad.Add(Location.Swansea);
@@ -121,18 +117,16 @@ namespace FuryOfDracula.GameLogic
             liverpool.BySea.Add(Location.IrishSea);
             tempMap[(int)Location.Liverpool] = liverpool;
 
-            edinburgh.Name = "Edinburgh";
             edinburgh.Abbreviation = "EDI";
-            edinburgh.Type = LocationType.City;
+            edinburgh.LocationType = LocationType.LargeCity;
             edinburgh.IsEastern = false;
             edinburgh.ByRoad.Add(Location.Manchester);
             edinburgh.ByTrain.Add(Location.Manchester);
             edinburgh.BySea.Add(Location.NorthSea);
             tempMap[(int)Location.Edinburgh] = edinburgh;
 
-            manchester.Name = "Manchester";
             manchester.Abbreviation = "MAN";
-            manchester.Type = LocationType.City;
+            manchester.LocationType = LocationType.LargeCity;
             manchester.IsEastern = false;
             manchester.ByRoad.Add(Location.Edinburgh);
             manchester.ByRoad.Add(Location.Liverpool);
@@ -142,9 +136,8 @@ namespace FuryOfDracula.GameLogic
             manchester.ByTrain.Add(Location.London);
             tempMap[(int)Location.Manchester] = manchester;
 
-            swansea.Name = "Swansea";
             swansea.Abbreviation = "SWA";
-            swansea.Type = LocationType.Town;
+            swansea.LocationType = LocationType.SmallCity;
             swansea.IsEastern = false;
             swansea.ByRoad.Add(Location.Liverpool);
             swansea.ByRoad.Add(Location.London);
@@ -152,17 +145,15 @@ namespace FuryOfDracula.GameLogic
             swansea.BySea.Add(Location.IrishSea);
             tempMap[(int)Location.Swansea] = swansea;
 
-            plymouth.Name = "Plymouth";
             plymouth.Abbreviation = "PLY";
-            plymouth.Type = LocationType.Town;
+            plymouth.LocationType = LocationType.SmallCity;
             plymouth.IsEastern = false;
             plymouth.ByRoad.Add(Location.London);
             plymouth.BySea.Add(Location.EnglishChannel);
             tempMap[(int)Location.Plymouth] = plymouth;
 
-            nantes.Name = "Nantes";
             nantes.Abbreviation = "NAN";
-            nantes.Type = LocationType.City;
+            nantes.LocationType = LocationType.LargeCity;
             nantes.IsEastern = false;
             nantes.ByRoad.Add(Location.LeHavre);
             nantes.ByRoad.Add(Location.Paris);
@@ -171,9 +162,8 @@ namespace FuryOfDracula.GameLogic
             nantes.BySea.Add(Location.BayOfBiscay);
             tempMap[(int)Location.Nantes] = nantes;
 
-            lehavre.Name = "Le Havre";
             lehavre.Abbreviation = "LEH";
-            lehavre.Type = LocationType.Town;
+            lehavre.LocationType = LocationType.SmallCity;
             lehavre.IsEastern = false;
             lehavre.ByRoad.Add(Location.Nantes);
             lehavre.ByRoad.Add(Location.Paris);
@@ -182,9 +172,8 @@ namespace FuryOfDracula.GameLogic
             lehavre.BySea.Add(Location.EnglishChannel);
             tempMap[(int)Location.LeHavre] = lehavre;
 
-            london.Name = "London";
             london.Abbreviation = "LON";
-            london.Type = LocationType.City;
+            london.LocationType = LocationType.LargeCity;
             london.IsEastern = false;
             london.ByRoad.Add(Location.Manchester);
             london.ByRoad.Add(Location.Swansea);
@@ -194,9 +183,8 @@ namespace FuryOfDracula.GameLogic
             london.BySea.Add(Location.EnglishChannel);
             tempMap[(int)Location.London] = london;
 
-            paris.Name = "Paris";
             paris.Abbreviation = "PAR";
-            paris.Type = LocationType.City;
+            paris.LocationType = LocationType.LargeCity;
             paris.IsEastern = false;
             paris.ByRoad.Add(Location.Nantes);
             paris.ByRoad.Add(Location.LeHavre);
@@ -210,9 +198,8 @@ namespace FuryOfDracula.GameLogic
             paris.ByTrain.Add(Location.Bordeaux);
             tempMap[(int)Location.Paris] = paris;
 
-            brussels.Name = "Brussels";
             brussels.Abbreviation = "BRU";
-            brussels.Type = LocationType.City;
+            brussels.LocationType = LocationType.LargeCity;
             brussels.IsEastern = false;
             brussels.ByRoad.Add(Location.LeHavre);
             brussels.ByRoad.Add(Location.Amsterdam);
@@ -223,18 +210,16 @@ namespace FuryOfDracula.GameLogic
             brussels.ByTrain.Add(Location.Paris);
             tempMap[(int)Location.Brussels] = brussels;
 
-            amsterdam.Name = "Amsterdam";
             amsterdam.Abbreviation = "AMS";
-            amsterdam.Type = LocationType.City;
+            amsterdam.LocationType = LocationType.LargeCity;
             amsterdam.IsEastern = false;
             amsterdam.ByRoad.Add(Location.Brussels);
             amsterdam.ByRoad.Add(Location.Cologne);
             amsterdam.BySea.Add(Location.NorthSea);
             tempMap[(int)Location.Amsterdam] = amsterdam;
 
-            strasbourg.Name = "Strasbourg";
             strasbourg.Abbreviation = "STR";
-            strasbourg.Type = LocationType.Town;
+            strasbourg.LocationType = LocationType.SmallCity;
             strasbourg.IsEastern = false;
             strasbourg.ByRoad.Add(Location.Paris);
             strasbourg.ByRoad.Add(Location.Brussels);
@@ -248,9 +233,8 @@ namespace FuryOfDracula.GameLogic
             strasbourg.ByTrain.Add(Location.Zurich);
             tempMap[(int)Location.Strasbourg] = strasbourg;
 
-            cologne.Name = "Cologne";
             cologne.Abbreviation = "COL";
-            cologne.Type = LocationType.City;
+            cologne.LocationType = LocationType.LargeCity;
             cologne.IsEastern = false;
             cologne.ByRoad.Add(Location.Brussels);
             cologne.ByRoad.Add(Location.Amsterdam);
@@ -262,9 +246,8 @@ namespace FuryOfDracula.GameLogic
             cologne.ByTrain.Add(Location.Frankfurt);
             tempMap[(int)Location.Cologne] = cologne;
 
-            hamburg.Name = "Hamburg";
             hamburg.Abbreviation = "HAM";
-            hamburg.Type = LocationType.City;
+            hamburg.LocationType = LocationType.LargeCity;
             hamburg.IsEastern = false;
             hamburg.ByRoad.Add(Location.Cologne);
             hamburg.ByRoad.Add(Location.Berlin);
@@ -273,9 +256,8 @@ namespace FuryOfDracula.GameLogic
             hamburg.BySea.Add(Location.NorthSea);
             tempMap[(int)Location.Hamburg] = hamburg;
 
-            frankfurt.Name = "Frankfurt";
             frankfurt.Abbreviation = "FRA";
-            frankfurt.Type = LocationType.Town;
+            frankfurt.LocationType = LocationType.SmallCity;
             frankfurt.IsEastern = false;
             frankfurt.ByRoad.Add(Location.Strasbourg);
             frankfurt.ByRoad.Add(Location.Cologne);
@@ -286,9 +268,8 @@ namespace FuryOfDracula.GameLogic
             frankfurt.ByTrain.Add(Location.Leipzig);
             tempMap[(int)Location.Frankfurt] = frankfurt;
 
-            nuremburg.Name = "Nuremburg";
             nuremburg.Abbreviation = "NUR";
-            nuremburg.Type = LocationType.Town;
+            nuremburg.LocationType = LocationType.SmallCity;
             nuremburg.IsEastern = false;
             nuremburg.ByRoad.Add(Location.Strasbourg);
             nuremburg.ByRoad.Add(Location.Frankfurt);
@@ -299,9 +280,8 @@ namespace FuryOfDracula.GameLogic
             nuremburg.ByTrain.Add(Location.Munich);
             tempMap[(int)Location.Nuremburg] = nuremburg;
 
-            leipzig.Name = "Leipzig";
             leipzig.Abbreviation = "LEI";
-            leipzig.Type = LocationType.City;
+            leipzig.LocationType = LocationType.LargeCity;
             leipzig.IsEastern = false;
             leipzig.ByRoad.Add(Location.Cologne);
             leipzig.ByRoad.Add(Location.Hamburg);
@@ -313,9 +293,8 @@ namespace FuryOfDracula.GameLogic
             leipzig.ByTrain.Add(Location.Nuremburg);
             tempMap[(int)Location.Leipzig] = leipzig;
 
-            berlin.Name = "Berlin";
             berlin.Abbreviation = "BER";
-            berlin.Type = LocationType.City;
+            berlin.LocationType = LocationType.LargeCity;
             berlin.IsEastern = false;
             berlin.ByRoad.Add(Location.Hamburg);
             berlin.ByRoad.Add(Location.Prague);
@@ -325,9 +304,8 @@ namespace FuryOfDracula.GameLogic
             berlin.ByTrain.Add(Location.Prague);
             tempMap[(int)Location.Berlin] = berlin;
 
-            prague.Name = "Prague";
             prague.Abbreviation = "PRA";
-            prague.Type = LocationType.City;
+            prague.LocationType = LocationType.LargeCity;
             prague.IsEastern = true;
             prague.ByRoad.Add(Location.Berlin);
             prague.ByRoad.Add(Location.Vienna);
@@ -336,17 +314,15 @@ namespace FuryOfDracula.GameLogic
             prague.ByTrain.Add(Location.Vienna);
             tempMap[(int)Location.Prague] = prague;
 
-            castledracula.Name = "Castle Dracula";
             castledracula.Abbreviation = "CAS";
-            castledracula.Type = LocationType.Castle;
+            castledracula.LocationType = LocationType.Castle;
             castledracula.IsEastern = true;
             castledracula.ByRoad.Add(Location.Klausenburg);
             castledracula.ByRoad.Add(Location.Galatz);
             tempMap[(int)Location.CastleDracula] = castledracula;
 
-            santander.Name = "Santander";
             santander.Abbreviation = "SAN";
-            santander.Type = LocationType.Town;
+            santander.LocationType = LocationType.SmallCity;
             santander.IsEastern = false;
             santander.ByRoad.Add(Location.Lisbon);
             santander.ByRoad.Add(Location.Madrid);
@@ -355,9 +331,8 @@ namespace FuryOfDracula.GameLogic
             santander.BySea.Add(Location.BayOfBiscay);
             tempMap[(int)Location.Santander] = santander;
 
-            saragossa.Name = "Saragossa";
             saragossa.Abbreviation = "SAG";
-            saragossa.Type = LocationType.Town;
+            saragossa.LocationType = LocationType.SmallCity;
             saragossa.IsEastern = false;
             saragossa.ByRoad.Add(Location.Madrid);
             saragossa.ByRoad.Add(Location.Santander);
@@ -370,9 +345,8 @@ namespace FuryOfDracula.GameLogic
             saragossa.ByTrain.Add(Location.Barcelona);
             tempMap[(int)Location.Saragossa] = saragossa;
 
-            bordeaux.Name = "Bordeaux";
             bordeaux.Abbreviation = "BOR";
-            bordeaux.Type = LocationType.City;
+            bordeaux.LocationType = LocationType.LargeCity;
             bordeaux.IsEastern = false;
             bordeaux.ByRoad.Add(Location.Saragossa);
             bordeaux.ByRoad.Add(Location.Nantes);
@@ -383,9 +357,8 @@ namespace FuryOfDracula.GameLogic
             bordeaux.BySea.Add(Location.BayOfBiscay);
             tempMap[(int)Location.Bordeaux] = bordeaux;
 
-            toulouse.Name = "Toulouse";
             toulouse.Abbreviation = "TOU";
-            toulouse.Type = LocationType.Town;
+            toulouse.LocationType = LocationType.SmallCity;
             toulouse.IsEastern = false;
             toulouse.ByRoad.Add(Location.Saragossa);
             toulouse.ByRoad.Add(Location.Bordeaux);
@@ -394,9 +367,8 @@ namespace FuryOfDracula.GameLogic
             toulouse.ByRoad.Add(Location.Barcelona);
             tempMap[(int)Location.Toulouse] = toulouse;
 
-            barcelona.Name = "Barcelona";
             barcelona.Abbreviation = "BAC";
-            barcelona.Type = LocationType.City;
+            barcelona.LocationType = LocationType.LargeCity;
             barcelona.IsEastern = false;
             barcelona.ByRoad.Add(Location.Saragossa);
             barcelona.ByRoad.Add(Location.Toulouse);
@@ -405,9 +377,8 @@ namespace FuryOfDracula.GameLogic
             barcelona.BySea.Add(Location.MediterraneanSea);
             tempMap[(int)Location.Barcelona] = barcelona;
 
-            clermontferrand.Name = "Clermont Ferrand";
             clermontferrand.Abbreviation = "CLE";
-            clermontferrand.Type = LocationType.Town;
+            clermontferrand.LocationType = LocationType.SmallCity;
             clermontferrand.IsEastern = false;
             clermontferrand.ByRoad.Add(Location.Bordeaux);
             clermontferrand.ByRoad.Add(Location.Nantes);
@@ -417,9 +388,8 @@ namespace FuryOfDracula.GameLogic
             clermontferrand.ByRoad.Add(Location.Toulouse);
             tempMap[(int)Location.ClermontFerrand] = clermontferrand;
 
-            marseilles.Name = "Marseilles";
             marseilles.Abbreviation = "MAR";
-            marseilles.Type = LocationType.City;
+            marseilles.LocationType = LocationType.LargeCity;
             marseilles.IsEastern = false;
             marseilles.ByRoad.Add(Location.Toulouse);
             marseilles.ByRoad.Add(Location.ClermontFerrand);
@@ -431,9 +401,8 @@ namespace FuryOfDracula.GameLogic
             marseilles.BySea.Add(Location.MediterraneanSea);
             tempMap[(int)Location.Marseilles] = marseilles;
 
-            geneva.Name = "Geneva";
             geneva.Abbreviation = "GEV";
-            geneva.Type = LocationType.Town;
+            geneva.LocationType = LocationType.SmallCity;
             geneva.IsEastern = false;
             geneva.ByRoad.Add(Location.Marseilles);
             geneva.ByRoad.Add(Location.ClermontFerrand);
@@ -443,9 +412,8 @@ namespace FuryOfDracula.GameLogic
             geneva.ByTrain.Add(Location.Milan);
             tempMap[(int)Location.Geneva] = geneva;
 
-            genoa.Name = "Genoa";
             genoa.Abbreviation = "GEO";
-            genoa.Type = LocationType.City;
+            genoa.LocationType = LocationType.LargeCity;
             genoa.IsEastern = true;
             genoa.ByRoad.Add(Location.Marseilles);
             genoa.ByRoad.Add(Location.Milan);
@@ -455,9 +423,8 @@ namespace FuryOfDracula.GameLogic
             genoa.BySea.Add(Location.TyrrhenianSea);
             tempMap[(int)Location.Genoa] = genoa;
 
-            milan.Name = "Milan";
             milan.Abbreviation = "MIL";
-            milan.Type = LocationType.City;
+            milan.LocationType = LocationType.LargeCity;
             milan.IsEastern = true;
             milan.ByRoad.Add(Location.Marseilles);
             milan.ByRoad.Add(Location.Zurich);
@@ -470,9 +437,8 @@ namespace FuryOfDracula.GameLogic
             milan.ByTrain.Add(Location.Genoa);
             tempMap[(int)Location.Milan] = milan;
 
-            zurich.Name = "Zurich";
             zurich.Abbreviation = "ZUR";
-            zurich.Type = LocationType.Town;
+            zurich.LocationType = LocationType.SmallCity;
             zurich.IsEastern = false;
             zurich.ByRoad.Add(Location.Marseilles);
             zurich.ByRoad.Add(Location.Geneva);
@@ -483,9 +449,8 @@ namespace FuryOfDracula.GameLogic
             zurich.ByTrain.Add(Location.Milan);
             tempMap[(int)Location.Zurich] = zurich;
 
-            florence.Name = "Florence";
             florence.Abbreviation = "FLO";
-            florence.Type = LocationType.Town;
+            florence.LocationType = LocationType.SmallCity;
             florence.IsEastern = true;
             florence.ByRoad.Add(Location.Genoa);
             florence.ByRoad.Add(Location.Venice);
@@ -494,9 +459,8 @@ namespace FuryOfDracula.GameLogic
             florence.ByTrain.Add(Location.Rome);
             tempMap[(int)Location.Florence] = florence;
 
-            venice.Name = "Venice";
             venice.Abbreviation = "VEN";
-            venice.Type = LocationType.Town;
+            venice.LocationType = LocationType.SmallCity;
             venice.IsEastern = true;
             venice.ByRoad.Add(Location.Florence);
             venice.ByRoad.Add(Location.Genoa);
@@ -506,9 +470,8 @@ namespace FuryOfDracula.GameLogic
             venice.BySea.Add(Location.AdriaticSea);
             tempMap[(int)Location.Venice] = venice;
 
-            munich.Name = "Munich";
             munich.Abbreviation = "MUN";
-            munich.Type = LocationType.City;
+            munich.LocationType = LocationType.LargeCity;
             munich.IsEastern = false;
             munich.ByRoad.Add(Location.Milan);
             munich.ByRoad.Add(Location.Zurich);
@@ -520,9 +483,8 @@ namespace FuryOfDracula.GameLogic
             munich.ByTrain.Add(Location.Nuremburg);
             tempMap[(int)Location.Munich] = munich;
 
-            zagreb.Name = "Zagreb";
             zagreb.Abbreviation = "ZAG";
-            zagreb.Type = LocationType.Town;
+            zagreb.LocationType = LocationType.SmallCity;
             zagreb.IsEastern = true;
             zagreb.ByRoad.Add(Location.Munich);
             zagreb.ByRoad.Add(Location.Vienna);
@@ -532,9 +494,8 @@ namespace FuryOfDracula.GameLogic
             zagreb.ByRoad.Add(Location.Sarajevo);
             tempMap[(int)Location.Zagreb] = zagreb;
 
-            vienna.Name = "Vienna";
             vienna.Abbreviation = "VIE";
-            vienna.Type = LocationType.City;
+            vienna.LocationType = LocationType.LargeCity;
             vienna.IsEastern = true;
             vienna.ByRoad.Add(Location.Munich);
             vienna.ByRoad.Add(Location.Prague);
@@ -545,9 +506,8 @@ namespace FuryOfDracula.GameLogic
             vienna.ByTrain.Add(Location.Budapest);
             tempMap[(int)Location.Vienna] = vienna;
 
-            stjosephandstmary.Name = "St. Joseph & St. Mary";
             stjosephandstmary.Abbreviation = "STJ";
-            stjosephandstmary.Type = LocationType.Hospital;
+            stjosephandstmary.LocationType = LocationType.Hospital;
             stjosephandstmary.IsEastern = true;
             stjosephandstmary.ByRoad.Add(Location.Zagreb);
             stjosephandstmary.ByRoad.Add(Location.Szeged);
@@ -555,9 +515,8 @@ namespace FuryOfDracula.GameLogic
             stjosephandstmary.ByRoad.Add(Location.Sarajevo);
             tempMap[(int)Location.StJosephAndStMary] = stjosephandstmary;
 
-            sarajevo.Name = "Sarajevo";
             sarajevo.Abbreviation = "SAJ";
-            sarajevo.Type = LocationType.Town;
+            sarajevo.LocationType = LocationType.SmallCity;
             sarajevo.IsEastern = true;
             sarajevo.ByRoad.Add(Location.Zagreb);
             sarajevo.ByRoad.Add(Location.StJosephAndStMary);
@@ -566,9 +525,8 @@ namespace FuryOfDracula.GameLogic
             sarajevo.ByRoad.Add(Location.Valona);
             tempMap[(int)Location.Sarajevo] = sarajevo;
 
-            szeged.Name = "Szeged";
             szeged.Abbreviation = "SZE";
-            szeged.Type = LocationType.Town;
+            szeged.LocationType = LocationType.SmallCity;
             szeged.IsEastern = true;
             szeged.ByRoad.Add(Location.Zagreb);
             szeged.ByRoad.Add(Location.Budapest);
@@ -580,9 +538,8 @@ namespace FuryOfDracula.GameLogic
             szeged.ByTrain.Add(Location.Belgrade);
             tempMap[(int)Location.Szeged] = szeged;
 
-            budapest.Name = "Budapest";
             budapest.Abbreviation = "BUD";
-            budapest.Type = LocationType.City;
+            budapest.LocationType = LocationType.LargeCity;
             budapest.IsEastern = true;
             budapest.ByRoad.Add(Location.Vienna);
             budapest.ByRoad.Add(Location.Klausenburg);
@@ -592,9 +549,8 @@ namespace FuryOfDracula.GameLogic
             budapest.ByTrain.Add(Location.Szeged);
             tempMap[(int)Location.Budapest] = budapest;
 
-            belgrade.Name = "Belgrade";
             belgrade.Abbreviation = "BEL";
-            belgrade.Type = LocationType.Town;
+            belgrade.LocationType = LocationType.SmallCity;
             belgrade.IsEastern = true;
             belgrade.ByRoad.Add(Location.StJosephAndStMary);
             belgrade.ByRoad.Add(Location.Szeged);
@@ -606,9 +562,8 @@ namespace FuryOfDracula.GameLogic
             belgrade.ByTrain.Add(Location.Sofia);
             tempMap[(int)Location.Belgrade] = belgrade;
 
-            klausenburg.Name = "Klausenburg";
             klausenburg.Abbreviation = "KLA";
-            klausenburg.Type = LocationType.Town;
+            klausenburg.LocationType = LocationType.SmallCity;
             klausenburg.IsEastern = true;
             klausenburg.ByRoad.Add(Location.Budapest);
             klausenburg.ByRoad.Add(Location.CastleDracula);
@@ -618,9 +573,8 @@ namespace FuryOfDracula.GameLogic
             klausenburg.ByRoad.Add(Location.Szeged);
             tempMap[(int)Location.Klausenburg] = klausenburg;
 
-            sofia.Name = "Sofia";
             sofia.Abbreviation = "SOF";
-            sofia.Type = LocationType.Town;
+            sofia.LocationType = LocationType.SmallCity;
             sofia.IsEastern = true;
             sofia.ByRoad.Add(Location.Sarajevo);
             sofia.ByRoad.Add(Location.Belgrade);
@@ -632,9 +586,8 @@ namespace FuryOfDracula.GameLogic
             sofia.ByTrain.Add(Location.Salonica);
             tempMap[(int)Location.Sofia] = sofia;
 
-            bucharest.Name = "Bucharest";
             bucharest.Abbreviation = "BUC";
-            bucharest.Type = LocationType.City;
+            bucharest.LocationType = LocationType.LargeCity;
             bucharest.IsEastern = true;
             bucharest.ByRoad.Add(Location.Belgrade);
             bucharest.ByRoad.Add(Location.Klausenburg);
@@ -646,9 +599,8 @@ namespace FuryOfDracula.GameLogic
             bucharest.ByTrain.Add(Location.Constanta);
             tempMap[(int)Location.Bucharest] = bucharest;
 
-            galatz.Name = "Galatz";
             galatz.Abbreviation = "GAT";
-            galatz.Type = LocationType.Town;
+            galatz.LocationType = LocationType.SmallCity;
             galatz.IsEastern = true;
             galatz.ByRoad.Add(Location.Klausenburg);
             galatz.ByRoad.Add(Location.CastleDracula);
@@ -657,9 +609,8 @@ namespace FuryOfDracula.GameLogic
             galatz.ByTrain.Add(Location.Bucharest);
             tempMap[(int)Location.Galatz] = galatz;
 
-            varna.Name = "Varna";
             varna.Abbreviation = "VAR";
-            varna.Type = LocationType.City;
+            varna.LocationType = LocationType.LargeCity;
             varna.IsEastern = true;
             varna.ByRoad.Add(Location.Sofia);
             varna.ByRoad.Add(Location.Constanta);
@@ -667,9 +618,8 @@ namespace FuryOfDracula.GameLogic
             varna.BySea.Add(Location.BlackSea);
             tempMap[(int)Location.Varna] = varna;
 
-            constanta.Name = "Constanta";
             constanta.Abbreviation = "CON";
-            constanta.Type = LocationType.City;
+            constanta.LocationType = LocationType.LargeCity;
             constanta.IsEastern = true;
             constanta.ByRoad.Add(Location.Galatz);
             constanta.ByRoad.Add(Location.Varna);
@@ -678,9 +628,8 @@ namespace FuryOfDracula.GameLogic
             constanta.BySea.Add(Location.BlackSea);
             tempMap[(int)Location.Constanta] = constanta;
 
-            lisbon.Name = "Lisbon";
             lisbon.Abbreviation = "LIS";
-            lisbon.Type = LocationType.City;
+            lisbon.LocationType = LocationType.LargeCity;
             lisbon.IsEastern = false;
             lisbon.ByRoad.Add(Location.Santander);
             lisbon.ByRoad.Add(Location.Madrid);
@@ -689,9 +638,8 @@ namespace FuryOfDracula.GameLogic
             lisbon.BySea.Add(Location.AtlanticOcean);
             tempMap[(int)Location.Lisbon] = lisbon;
 
-            cadiz.Name = "Cadiz";
             cadiz.Abbreviation = "CAD";
-            cadiz.Type = LocationType.City;
+            cadiz.LocationType = LocationType.LargeCity;
             cadiz.IsEastern = false;
             cadiz.ByRoad.Add(Location.Lisbon);
             cadiz.ByRoad.Add(Location.Madrid);
@@ -699,9 +647,8 @@ namespace FuryOfDracula.GameLogic
             cadiz.BySea.Add(Location.AtlanticOcean);
             tempMap[(int)Location.Cadiz] = cadiz;
 
-            madrid.Name = "Madrid";
             madrid.Abbreviation = "MAD";
-            madrid.Type = LocationType.City;
+            madrid.LocationType = LocationType.LargeCity;
             madrid.IsEastern = false;
             madrid.ByRoad.Add(Location.Lisbon);
             madrid.ByRoad.Add(Location.Santander);
@@ -715,18 +662,16 @@ namespace FuryOfDracula.GameLogic
             madrid.ByTrain.Add(Location.Alicante);
             tempMap[(int)Location.Madrid] = madrid;
 
-            granada.Name = "Granada";
             granada.Abbreviation = "GRA";
-            granada.Type = LocationType.Town;
+            granada.LocationType = LocationType.SmallCity;
             granada.IsEastern = false;
             granada.ByRoad.Add(Location.Cadiz);
             granada.ByRoad.Add(Location.Madrid);
             granada.ByRoad.Add(Location.Alicante);
             tempMap[(int)Location.Granada] = granada;
 
-            alicante.Name = "Alicante";
             alicante.Abbreviation = "ALI";
-            alicante.Type = LocationType.Town;
+            alicante.LocationType = LocationType.SmallCity;
             alicante.IsEastern = false;
             alicante.ByRoad.Add(Location.Granada);
             alicante.ByRoad.Add(Location.Madrid);
@@ -736,17 +681,15 @@ namespace FuryOfDracula.GameLogic
             alicante.BySea.Add(Location.MediterraneanSea);
             tempMap[(int)Location.Alicante] = alicante;
 
-            cagliari.Name = "Cagliari";
             cagliari.Abbreviation = "CAG";
-            cagliari.Type = LocationType.Town;
+            cagliari.LocationType = LocationType.SmallCity;
             cagliari.IsEastern = true;
             cagliari.BySea.Add(Location.MediterraneanSea);
             cagliari.BySea.Add(Location.TyrrhenianSea);
             tempMap[(int)Location.Cagliari] = cagliari;
 
-            rome.Name = "Rome";
             rome.Abbreviation = "ROM";
-            rome.Type = LocationType.City;
+            rome.LocationType = LocationType.LargeCity;
             rome.IsEastern = true;
             rome.ByRoad.Add(Location.Florence);
             rome.ByRoad.Add(Location.Bari);
@@ -756,9 +699,8 @@ namespace FuryOfDracula.GameLogic
             rome.BySea.Add(Location.TyrrhenianSea);
             tempMap[(int)Location.Rome] = rome;
 
-            naples.Name = "Naples";
             naples.Abbreviation = "NAP";
-            naples.Type = LocationType.City;
+            naples.LocationType = LocationType.LargeCity;
             naples.IsEastern = true;
             naples.ByRoad.Add(Location.Rome);
             naples.ByRoad.Add(Location.Bari);
@@ -767,9 +709,8 @@ namespace FuryOfDracula.GameLogic
             naples.BySea.Add(Location.TyrrhenianSea);
             tempMap[(int)Location.Naples] = naples;
 
-            bari.Name = "Bari";
             bari.Abbreviation = "BAI";
-            bari.Type = LocationType.Town;
+            bari.LocationType = LocationType.SmallCity;
             bari.IsEastern = true;
             bari.ByRoad.Add(Location.Naples);
             bari.ByRoad.Add(Location.Rome);
@@ -777,9 +718,8 @@ namespace FuryOfDracula.GameLogic
             bari.BySea.Add(Location.AdriaticSea);
             tempMap[(int)Location.Bari] = bari;
 
-            valona.Name = "Valona";
             valona.Abbreviation = "VAL";
-            valona.Type = LocationType.Town;
+            valona.LocationType = LocationType.SmallCity;
             valona.IsEastern = true;
             valona.ByRoad.Add(Location.Sarajevo);
             valona.ByRoad.Add(Location.Sofia);
@@ -788,9 +728,8 @@ namespace FuryOfDracula.GameLogic
             valona.BySea.Add(Location.IonianSea);
             tempMap[(int)Location.Valona] = valona;
 
-            salonica.Name = "Salonica";
             salonica.Abbreviation = "SAL";
-            salonica.Type = LocationType.Town;
+            salonica.LocationType = LocationType.SmallCity;
             salonica.IsEastern = true;
             salonica.ByRoad.Add(Location.Valona);
             salonica.ByRoad.Add(Location.Sofia);
@@ -798,17 +737,15 @@ namespace FuryOfDracula.GameLogic
             salonica.BySea.Add(Location.IonianSea);
             tempMap[(int)Location.Salonica] = salonica;
 
-            athens.Name = "Athens";
             athens.Abbreviation = "ATH";
-            athens.Type = LocationType.City;
+            athens.LocationType = LocationType.LargeCity;
             athens.IsEastern = true;
             athens.ByRoad.Add(Location.Valona);
             athens.BySea.Add(Location.IonianSea);
             tempMap[(int)Location.Athens] = athens;
 
-            atlanticocean.Name = "Atlantic Ocean";
             atlanticocean.Abbreviation = "ATL";
-            atlanticocean.Type = LocationType.Sea;
+            atlanticocean.LocationType = LocationType.Sea;
             atlanticocean.IsEastern = false;
             atlanticocean.BySea.Add(Location.NorthSea);
             atlanticocean.BySea.Add(Location.IrishSea);
@@ -820,9 +757,8 @@ namespace FuryOfDracula.GameLogic
             atlanticocean.BySea.Add(Location.Cadiz);
             tempMap[(int)Location.AtlanticOcean] = atlanticocean;
 
-            irishsea.Name = "Irish Sea";
             irishsea.Abbreviation = "IRI";
-            irishsea.Type = LocationType.Sea;
+            irishsea.LocationType = LocationType.Sea;
             irishsea.IsEastern = false;
             irishsea.BySea.Add(Location.AtlanticOcean);
             irishsea.BySea.Add(Location.Dublin);
@@ -830,9 +766,8 @@ namespace FuryOfDracula.GameLogic
             irishsea.BySea.Add(Location.Swansea);
             tempMap[(int)Location.IrishSea] = irishsea;
 
-            englishchannel.Name = "English Channel";
             englishchannel.Abbreviation = "ENG";
-            englishchannel.Type = LocationType.Sea;
+            englishchannel.LocationType = LocationType.Sea;
             englishchannel.IsEastern = false;
             englishchannel.BySea.Add(Location.AtlanticOcean);
             englishchannel.BySea.Add(Location.NorthSea);
@@ -841,9 +776,8 @@ namespace FuryOfDracula.GameLogic
             englishchannel.BySea.Add(Location.LeHavre);
             tempMap[(int)Location.EnglishChannel] = englishchannel;
 
-            northsea.Name = "North Sea";
             northsea.Abbreviation = "NOR";
-            northsea.Type = LocationType.Sea;
+            northsea.LocationType = LocationType.Sea;
             northsea.IsEastern = false;
             northsea.BySea.Add(Location.AtlanticOcean);
             northsea.BySea.Add(Location.EnglishChannel);
@@ -852,9 +786,8 @@ namespace FuryOfDracula.GameLogic
             northsea.BySea.Add(Location.Hamburg);
             tempMap[(int)Location.NorthSea] = northsea;
 
-            bayofbiscay.Name = "Bay of Biscay";
             bayofbiscay.Abbreviation = "BAY";
-            bayofbiscay.Type = LocationType.Sea;
+            bayofbiscay.LocationType = LocationType.Sea;
             bayofbiscay.IsEastern = false;
             bayofbiscay.BySea.Add(Location.AtlanticOcean);
             bayofbiscay.BySea.Add(Location.Nantes);
@@ -862,9 +795,8 @@ namespace FuryOfDracula.GameLogic
             bayofbiscay.BySea.Add(Location.Santander);
             tempMap[(int)Location.BayOfBiscay] = bayofbiscay;
 
-            mediterraneansea.Name = "Mediterranean Sea";
             mediterraneansea.Abbreviation = "MED";
-            mediterraneansea.Type = LocationType.Sea;
+            mediterraneansea.LocationType = LocationType.Sea;
             mediterraneansea.IsEastern = true;
             mediterraneansea.BySea.Add(Location.AtlanticOcean);
             mediterraneansea.BySea.Add(Location.TyrrhenianSea);
@@ -874,9 +806,8 @@ namespace FuryOfDracula.GameLogic
             mediterraneansea.BySea.Add(Location.Cagliari);
             tempMap[(int)Location.MediterraneanSea] = mediterraneansea;
 
-            tyrrheniansea.Name = "Tyrrhenian Sea";
             tyrrheniansea.Abbreviation = "TYR";
-            tyrrheniansea.Type = LocationType.Sea;
+            tyrrheniansea.LocationType = LocationType.Sea;
             tyrrheniansea.IsEastern = false;
             tyrrheniansea.BySea.Add(Location.MediterraneanSea);
             tyrrheniansea.BySea.Add(Location.IonianSea);
@@ -886,18 +817,16 @@ namespace FuryOfDracula.GameLogic
             tyrrheniansea.BySea.Add(Location.Naples);
             tempMap[(int)Location.TyrrhenianSea] = tyrrheniansea;
 
-            adriaticsea.Name = "Adriatic Sea";
             adriaticsea.Abbreviation = "ADR";
-            adriaticsea.Type = LocationType.Sea;
+            adriaticsea.LocationType = LocationType.Sea;
             adriaticsea.IsEastern = false;
             adriaticsea.BySea.Add(Location.IonianSea);
             adriaticsea.BySea.Add(Location.Bari);
             adriaticsea.BySea.Add(Location.Venice);
             tempMap[(int)Location.AdriaticSea] = adriaticsea;
 
-            ioniansea.Name = "Ionian Sea";
             ioniansea.Abbreviation = "ION";
-            ioniansea.Type = LocationType.Sea;
+            ioniansea.LocationType = LocationType.Sea;
             ioniansea.IsEastern = false;
             ioniansea.BySea.Add(Location.MediterraneanSea);
             ioniansea.BySea.Add(Location.AdriaticSea);
@@ -907,9 +836,8 @@ namespace FuryOfDracula.GameLogic
             ioniansea.BySea.Add(Location.Salonica);
             tempMap[(int)Location.IonianSea] = ioniansea;
 
-            blacksea.Name = "Black Sea";
             blacksea.Abbreviation = "BLA";
-            blacksea.Type = LocationType.Sea;
+            blacksea.LocationType = LocationType.Sea;
             blacksea.IsEastern = false;
             blacksea.BySea.Add(Location.IonianSea);
             blacksea.BySea.Add(Location.Varna);
@@ -925,12 +853,12 @@ namespace FuryOfDracula.GameLogic
             int countOfMatches = 0;
             foreach (LocationDetail loc in map)
             {
-                if (loc.Name.StartsWith(line.ToLower()))
+                if (loc.Location.Name().ToLower().StartsWith(line.ToLower()))
                 {
                     countOfMatches++;
                     if (tempLocation == Location.Nowhere)
                     {
-                        tempLocation = loc.Index;
+                        tempLocation = loc.Location;
                     }
                 }
             }
@@ -943,11 +871,6 @@ namespace FuryOfDracula.GameLogic
             }
         }
 
-        public string LocationName(Location location)
-        {
-            return map[(int)location].Name;
-        }
-
         public string LocationAbbreviation(Location location)
         {
             return map[(int)location].Abbreviation;
@@ -955,7 +878,7 @@ namespace FuryOfDracula.GameLogic
 
         public LocationType TypeOfLocation(Location location)
         {
-            return map[(int)location].Type;
+            return map[(int)location].LocationType;
         }
 
         public bool IsEastern(Location location)
