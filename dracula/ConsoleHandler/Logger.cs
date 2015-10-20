@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DraculaSimulator;
 
-namespace LogHandler
+namespace DraculaSimulator
 {
     public class Logger
     {

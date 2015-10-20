@@ -1,8 +1,4 @@
-﻿using DraculaHandler;
-using EventHandler;
-using LocationHandler;
-using LogHandler;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -18,54 +14,50 @@ namespace DraculaSimulator
             ItemSet itemDeck = new ItemSet();
             EventSet eventDeck = new EventSet();
             EncounterSet encounterDeck = new EncounterSet();
-            GameState g = new GameState();
+            GameState game = new GameState();
             Logger.ClearLogs(ui);
 
-            //            PerformLoad(g, "lol", ui);
-
-            g.SetHunterStartLocations(map, ui);
-            g.Dracula.ChooseStartLocation(map, g.Hunters);
-            g.Dracula.DrawEncounters(g, g.Dracula.EncounterHandSize, encounterDeck);
-            PerformDraculaTurn(g, ui);
-
-            PerformSave(g, "lol", ui);
+            game.SetHunterStartLocations(map, ui);
+            game.Dracula.ChooseStartLocation(map, game.Hunters);
+            game.Dracula.DrawEncounters(game, game.Dracula.EncounterHandSize, encounterDeck);
+            PerformDraculaTurn(game, ui);
 
             CommandSet commandSet = new CommandSet();
 
             do
             {
-                ui.drawGameState(g);
+                ui.drawGameState(game);
                 commandSet = ui.GetCommandSet();
 
                 switch (commandSet.command.ToLower())
                 {
 #if DEBUG
-                    case "rl": PerformRevealLocation(g, commandSet.argument1, ui); break;
-                    case "re": PerformRevealEncounter(g, commandSet.argument1, ui); break;
-                    case "clear": PerformTrailClear(g, commandSet.argument1, ui); break;
-                    case "known": g.TellMeWhatYouKnow(ui); break;
+                    case "rl": PerformRevealLocation(game, commandSet.argument1, ui); break;
+                    case "re": PerformRevealEncounter(game, commandSet.argument1, ui); break;
+                    case "clear": PerformTrailClear(game, commandSet.argument1, ui); break;
+                    case "known": game.TellMeWhatYouKnow(ui); break;
 #endif
 
-                    case "m": PerformHunterMove(g, commandSet.argument1, commandSet.argument2, ui); break;
-                    case "t": PerformCatchTrain(g, commandSet.argument1, ui); break;
-                    case "e": PerformPlayEventCard(g, commandSet.argument1, commandSet.argument2, ui); break;
-                    case "d": PerformDraculaDrawCards(g, ui); break;
-                    case "v": PerformHunterDrawEvent(g, commandSet.argument1, ui); break;
-                    case "i": PerformHunterDrawItem(g, commandSet.argument1, ui); break;
-                    case "a": PerformHunterDiscardEvent(g, commandSet.argument1, commandSet.argument2, ui); break;
-                    case "c": PerformHunterDiscardItem(g, commandSet.argument1, commandSet.argument2, ui); break;
-                    case "z": PerformDraculaTurn(g, ui); break;
-                    case "g": SetUpGroups(g, commandSet.argument1, ui); break;
-                    case "b": PerformBatsMove(g, commandSet.argument1, ui); break;
-                    case "r": PerformTrade(g, commandSet.argument1, commandSet.argument2, ui); break;
-                    case "u": PerformUseItem(g, commandSet.argument1, commandSet.argument2, ui); break;
-                    case "o": PerformRest(g, commandSet.argument1, ui); break;
-                    case "h": PerformHospital(g, commandSet.argument1, ui); break;
-                    case "s": PerformResolve(g, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "m": PerformHunterMove(game, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "t": PerformCatchTrain(game, commandSet.argument1, ui); break;
+                    case "e": PerformPlayEventCard(game, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "d": PerformDraculaDrawCards(game, ui); break;
+                    case "v": PerformHunterDrawEvent(game, commandSet.argument1, ui); break;
+                    case "i": PerformHunterDrawItem(game, commandSet.argument1, ui); break;
+                    case "a": PerformHunterDiscardEvent(game, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "c": PerformHunterDiscardItem(game, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "z": PerformDraculaTurn(game, ui); break;
+                    case "g": SetUpGroups(game, commandSet.argument1, ui); break;
+                    case "b": PerformBatsMove(game, commandSet.argument1, ui); break;
+                    case "r": PerformTrade(game, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "u": PerformUseItem(game, commandSet.argument1, commandSet.argument2, ui); break;
+                    case "o": PerformRest(game, commandSet.argument1, ui); break;
+                    case "h": PerformHospital(game, commandSet.argument1, ui); break;
+                    case "s": PerformResolve(game, commandSet.argument1, commandSet.argument2, ui); break;
                     case "help": ui.ShowHelp(); break;
-                    case "save": PerformSave(g, commandSet.argument1, ui); break;
-                    case "state": ShowKnownState(g, ui); break;
-                    case "load": PerformLoad(g, commandSet.argument1, ui); break;
+                    case "save": PerformSave(game, commandSet.argument1, ui); break;
+                    case "state": ShowKnownState(game, ui); break;
+                    case "load": PerformLoad(game, commandSet.argument1, ui); break;
                     case "exit": break;
                     default: Console.WriteLine("I don't know what you're talking about, 'help' for help"); break;
                 }

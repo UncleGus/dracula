@@ -4,18 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DraculaSimulator
+namespace FuryOfDracula.GameLogic
 {
-    public class Map
+    public class LocationSet
     {
-        private LocationDetail[] network;
+        private LocationDetail[] map;
 
-        public Map()
+        public LocationSet()
         {
-            network = CreateNetwork();
+            map = Map();
         }
 
-        private LocationDetail[] CreateNetwork()
+        private LocationDetail[] Map()
         {
             LocationDetail[] tempMap = new LocationDetail[72];
             LocationDetail nowhere = new LocationDetail();
@@ -429,7 +429,7 @@ namespace DraculaSimulator
             marseilles.ByRoad.Add(Location.Genoa);
             marseilles.ByTrain.Add(Location.Paris);
             marseilles.BySea.Add(Location.MediterraneanSea);
-            tempMap[(int)Location.Marseilles] = marseilles);
+            tempMap[(int)Location.Marseilles] = marseilles;
 
             geneva.Name = "Geneva";
             geneva.Abbreviation = "GEV";
@@ -453,7 +453,7 @@ namespace DraculaSimulator
             genoa.ByRoad.Add(Location.Florence);
             genoa.ByTrain.Add(Location.Milan);
             genoa.BySea.Add(Location.TyrrhenianSea);
-            tempMap[(int)Location.Genoa = genoa;
+            tempMap[(int)Location.Genoa] = genoa;
 
             milan.Name = "Milan";
             milan.Abbreviation = "MIL";
@@ -923,7 +923,7 @@ namespace DraculaSimulator
         {
             Location tempLocation = Location.Nowhere;
             int countOfMatches = 0;
-            foreach (LocationDetail loc in network)
+            foreach (LocationDetail loc in map)
             {
                 if (loc.Name.StartsWith(line.ToLower()))
                 {
@@ -945,29 +945,29 @@ namespace DraculaSimulator
 
         public string LocationName(Location location)
         {
-            return network[(int)location].Name;
+            return map[(int)location].Name;
         }
 
         public string LocationAbbreviation(Location location)
         {
-            return network[(int)location].Abbreviation;
+            return map[(int)location].Abbreviation;
         }
 
         public LocationType TypeOfLocation(Location location)
         {
-            return network[(int)location].Type;
+            return map[(int)location].Type;
         }
 
         public bool IsEastern(Location location)
         {
-            return network[(int)location].IsEastern;
+            return map[(int)location].IsEastern;
         }
 
         public List<Location> LocationsConnectedByRoadOrSeaTo(Location location)
         {
             List<Location> tempList = new List<Location>();
-            tempList.AddRange(network[(int)location].ByRoad);
-            tempList.AddRange(network[(int)location].BySea);
+            tempList.AddRange(map[(int)location].ByRoad);
+            tempList.AddRange(map[(int)location].BySea);
             return tempList;
         }
     }

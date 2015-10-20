@@ -3,15 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LocationHandler;
-using LogHandler;
-using EncounterHandler;
-using DraculaSimulator;
-using EventHandler;
-using HunterHandler;
 using System.Runtime.Serialization;
 
-namespace DraculaHandler
+namespace DraculaSimulator
 {
     [DataContract]
     public class Dracula

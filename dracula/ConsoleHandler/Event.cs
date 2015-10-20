@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EventHandler
+namespace DraculaSimulator
 {
     public class EventDetail
     {
