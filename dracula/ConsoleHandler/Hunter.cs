@@ -31,17 +31,17 @@ namespace DraculaSimulator
         [DataMember]
         public string LastItemUsedInCombat { get; set; }
         [DataMember]
-        public List<EventDetail> EventsKnownToDracula { get; set; }
+        public List<Event> EventsKnownToDracula { get; set; }
         [DataMember]
-        public List<ItemDetail> ItemsKnownToDracula { get; set; }
+        public List<Item> ItemsKnownToDracula { get; set; }
         [DataMember]
         public string TravelType { get; set; }
         [DataMember]
-        public LocationDetail Destination { get; set; }
+        public Location Destination { get; set; }
         [DataMember]
-        public ItemDetail ItemShownToDraculaForBeingBitten { get; set; }
+        public Item ItemShownToDraculaForBeingBitten { get; set; }
         [DataMember]
-        public EventDetail EventShownToDraculaForBeingBitten { get; set; }
+        public Event EventShownToDraculaForBeingBitten { get; set; }
         [DataMember]
         public int Index { get; set; }
 

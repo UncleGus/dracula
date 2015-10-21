@@ -9,7 +9,7 @@ namespace FuryOfDracula.GameLogic
 {
     public class ItemDetail
     {
-        Item Item;
+        public Item Item;
 
         public ItemDetail(Item item)
         {

@@ -63,5 +63,25 @@ namespace FuryOfDracula.GameLogic
 
             return tempItemDeck;
         }
+
+        public List<Item> GetItemsFromString(string line)
+        {
+            List<Item> tempItemList = new List<Item>();
+            foreach (ItemDetail idet in itemDeck)
+            {
+                if (idet.Item.Name().ToLower().StartsWith(line.ToLower()))
+                {
+                    tempItemList.Add(idet.Item);
+                }
+            }
+            foreach (Item i in tempItemList)
+            {
+                if (i.Name() != tempItemList.First().Name())
+                {
+                    return new List<Item>();
+                }
+            }
+            return tempItemList;
+        }
     }
 }

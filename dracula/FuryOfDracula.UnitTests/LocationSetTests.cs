@@ -9,7 +9,7 @@ using FuryOfDracula.GameLogic;
 namespace FuryOfDracula.UnitTests
 {
     [TestFixture]
-    public class LocationTests
+    public class LocationSetTests
     {
         LocationSet map;
 
@@ -19,68 +19,44 @@ namespace FuryOfDracula.UnitTests
             map = new LocationSet();
         }
 
-        [TestFixtureTearDown]
-        public void AfterAll()
-        {
-
-        }
-
-        [SetUp]
-        public void BeforeEach()
-        {
-
-        }
-
-        [TearDown]
-        public void AfterEach()
-        {
-
-        }
-
         [Test]
-        public void GetParisName()
-        {
-            NUnitFramework.Assert.AreEqual("Paris", Location.Paris.Name());
-        }
-
-        [Test]
-        public void GetMilanType()
+        public void TypeOfLocation_Milan_ReturnsLargeCity()
         {
             NUnitFramework.Assert.AreEqual(LocationType.LargeCity, map.TypeOfLocation(Location.Milan));
         }
 
         [Test]
-        public void GetBrusselsFromString()
+        public void GetLocationFromString_Bru_ReturnsBrussels()
         {
             NUnitFramework.Assert.AreEqual(Location.Brussels, map.GetLocationFromString("Bru"));
         }
 
         [Test]
-        public void GetNowhereFromAmbiguousString()
+        public void GetLocationFromString_AmbiguousStringBar_ReturnsNowhere()
         {
             NUnitFramework.Assert.AreEqual(Location.Nowhere, map.GetLocationFromString("BAR"));
         }
 
         [Test]
-        public void GetNowhereFromMismatchingString()
+        public void GetLocationFromString_MismatchingString_ReturnsNowhere()
         {
             NUnitFramework.Assert.AreEqual(Location.Nowhere, map.GetLocationFromString("#"));
         }
 
         [Test]
-        public void GetToulouseAbbreviation()
+        public void LocationAbbreviation_Toulouse_ReturnsTOU()
         {
             NUnitFramework.Assert.AreEqual("TOU", map.LocationAbbreviation(Location.Toulouse));
         }
 
         [Test]
-        public void GetWesternFromMadrid()
+        public void IsEastern_Madrid_ReturnsFalse()
         {
             NUnitFramework.Assert.AreEqual(false, map.IsEastern(Location.Madrid));
         }
 
         [Test]
-        public void GetLocationsConnectedByRoadOrSeaToBordeaux()
+        public void LocationsConnectedByRoadOrSeaTo_Bordeaux_ReturnsCorrectList()
         {
             List<Location> locationsConnectedToFrankfurt = map.LocationsConnectedByRoadOrSeaTo(Location.Bordeaux);
             NUnitFramework.Assert.AreEqual(true, locationsConnectedToFrankfurt.Contains(Location.Nantes));

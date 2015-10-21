@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{389BE045-DCBF-4FFA-9B6E-182183C0BEF0}</ProjectGuid>
+    <ProjectGuid>{BE48163A-E0CD-4CF3-BD9B-F20CA21A6C56}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>FuryOfDracula.GameLogic</RootNamespace>
@@ -39,9 +39,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EncounterDetail.cs" />
+    <Compile Include="EncounterSet.cs" />
     <Compile Include="Enumerations.cs" />
     <Compile Include="EventDetail.cs" />
     <Compile Include="EventSet.cs" />
+    <Compile Include="GameState.cs" />
     <Compile Include="ItemDetail.cs" />
     <Compile Include="ItemSet.cs" />
     <Compile Include="LocationDetail.cs" />

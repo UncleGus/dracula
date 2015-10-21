@@ -486,6 +486,19 @@ namespace DraculaSimulator
             return resolveNextEncounter;
         }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
         // remove
         private int IndexOfHunter(Hunter h)
         {

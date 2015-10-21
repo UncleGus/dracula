@@ -96,5 +96,26 @@ namespace FuryOfDracula.GameLogic
             tempEventDeck[(int)Event.WildHorses] = new EventDetail(Event.WildHorses, true, EventType.Keep);
             return tempEventDeck;
         }
+
+        public List<Event> GetEventsFromString(string line)
+        {
+            List<Event> tempEventList = new List<Event>();
+            foreach (EventDetail e in eventDeck)
+            {
+                if (e.Event.Name().ToLower().StartsWith(line.ToLower()))
+                {
+                    tempEventList.Add(e.Event);
+                }
+            }
+            foreach (Event e in tempEventList)
+            {
+                if (e.Name() != tempEventList.First().Name())
+                {
+                    return new List<Event>();
+                }
+            }
+            return tempEventList;
+        }
+
     }
 }
