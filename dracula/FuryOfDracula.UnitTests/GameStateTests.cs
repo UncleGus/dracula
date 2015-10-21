@@ -42,5 +42,11 @@ namespace FuryOfDracula.UnitTests
         {
             Assert.AreEqual(3, game.Encounters.GetEncountersFromString("Dese").Count());
         }
+
+        [Test]
+        public void GameState_HuntersInitialisation()
+        {
+            Assert.AreEqual(10, game.Hunters[(int)Hunter.VanHelsing].Health);
+        }
     }
 }

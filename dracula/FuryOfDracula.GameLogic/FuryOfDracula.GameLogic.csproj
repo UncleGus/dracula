@@ -32,6 +32,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -39,12 +40,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Dracula.cs" />
+    <Compile Include="DraculaCard.cs" />
     <Compile Include="EncounterDetail.cs" />
     <Compile Include="EncounterSet.cs" />
     <Compile Include="Enumerations.cs" />
     <Compile Include="EventDetail.cs" />
     <Compile Include="EventSet.cs" />
     <Compile Include="GameState.cs" />
+    <Compile Include="HunterPlayer.cs" />
     <Compile Include="ItemDetail.cs" />
     <Compile Include="ItemSet.cs" />
     <Compile Include="LocationDetail.cs" />

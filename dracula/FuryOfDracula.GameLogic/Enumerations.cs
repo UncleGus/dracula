@@ -44,6 +44,15 @@ namespace FuryOfDracula.GameLogic
         PlayImmediately
     }
 
+    public enum ConnectionType
+    {
+        None,
+        Road,
+        Rail,
+        Sea,
+        SenseOfEmergency
+    }
+
     public enum Event
     {
         None,
@@ -173,7 +182,10 @@ namespace FuryOfDracula.GameLogic
         Stake1,
         Stake2,
         Stake3,
-        Stake4
+        Stake4,
+        Punch,
+        Dodge,
+        Escape
     }
 
     public enum LocationType
@@ -312,5 +324,34 @@ namespace FuryOfDracula.GameLogic
         Wolves1,
         Wolves2,
         Wolves3
+    }
+
+    public enum Hunter
+    {
+        Nobody,
+        LordGodalming,
+        [Description("Dr. Seward")]
+        DrSeward,
+        VanHelsing,
+        MinaHarker
+    }
+
+    public enum EnemyCombatCards
+    {
+        None,
+        Punch,
+        Knife,
+        Rifle,
+        Dodge,
+        Claws,
+        [Description("Escape (Man)")]
+        EscapeMan,
+        [Description("Escape (Bat)")]
+        EscapeBat,
+        [Description("Escape (Mist)")]
+        EscapeMist,
+        Fangs,
+        Mesmerize,
+        Strength
     }
 }

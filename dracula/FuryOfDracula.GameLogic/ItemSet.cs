@@ -18,7 +18,7 @@ namespace FuryOfDracula.GameLogic
 
         private ItemDetail[] CreateItemDeck()
         {
-            ItemDetail[] tempItemDeck = new ItemDetail[41];
+            ItemDetail[] tempItemDeck = new ItemDetail[44];
             tempItemDeck[(int)Item.None] = new ItemDetail((int)Item.None);
             tempItemDeck[(int)Item.Crucifix1] = new ItemDetail(Item.Crucifix1);
             tempItemDeck[(int)Item.Crucifix2] = new ItemDetail(Item.Crucifix2);
@@ -60,6 +60,9 @@ namespace FuryOfDracula.GameLogic
             tempItemDeck[(int)Item.Stake2] = new ItemDetail(Item.Stake2);
             tempItemDeck[(int)Item.Stake3] = new ItemDetail(Item.Stake3);
             tempItemDeck[(int)Item.Stake4] = new ItemDetail(Item.Stake4);
+            tempItemDeck[(int)Item.Punch] = new ItemDetail(Item.Punch);
+            tempItemDeck[(int)Item.Dodge] = new ItemDetail(Item.Dodge);
+            tempItemDeck[(int)Item.Escape] = new ItemDetail(Item.Escape);
 
             return tempItemDeck;
         }
