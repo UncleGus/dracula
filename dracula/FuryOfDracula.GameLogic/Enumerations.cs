@@ -336,7 +336,7 @@ namespace FuryOfDracula.GameLogic
         MinaHarker
     }
 
-    public enum EnemyCombatCards
+    public enum EnemyCombatCard
     {
         None,
         Punch,
@@ -353,5 +353,15 @@ namespace FuryOfDracula.GameLogic
         Fangs,
         Mesmerize,
         Strength
+    }
+
+    public enum Power
+    {
+        None,
+        Hide,
+        DarkCall,
+        Feed,
+        WolfForm,
+        DoubleBack
     }
 }

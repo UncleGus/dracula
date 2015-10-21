@@ -8,6 +8,15 @@ namespace FuryOfDracula.GameLogic
 {
     public class DraculaCard
     {
+        public string Abbreviation;
+        public Location Location;
+        public Power Power;
 
+        public DraculaCard(string abbreviation, Location location, Power power)
+        {
+            Abbreviation = abbreviation;
+            Location = location;
+            Power = power;
+        }
     }
 }
