@@ -11,41 +11,63 @@ namespace FuryOfDracula.GameLogic
     public class HunterPlayer
     {
         [DataMember]
-        public Hunter Hunter;
+        public Hunter Hunter { get; }
         [DataMember]
-        public int Health;
+        private int _health;
+        public int Health
+        {
+            get
+            {
+                return _health;
+            }
+            private set
+            {
+                if (value > MaxHealth)
+                {
+                    _health = MaxHealth;
+                }
+                else if (value < 0)
+                {
+                    _health = 0;
+                }
+            }
+        }
+        public int MaxHealth { get; }
         [DataMember]
-        public int BiteCount;
+        public int BiteCount { get; private set; }
         [DataMember]
-        public int BitesRequiredToKill;
+        public int BitesRequiredToKill { get; }
         [DataMember]
-        public int ItemCount;
+        public int ItemCount { get; private set; }
         [DataMember]
-        public int EventCount;
+        public int EventCount { get; private set; }
         [DataMember]
-        public Location CurrentLocation;
+        public Location CurrentLocation { get; private set; }
         [DataMember]
-        public List<Item> ItemsKnownToDracula;
+        public List<Item> ItemsKnownToDracula { get; set; }
         [DataMember]
-        public List<Event> EventsKnownToDracula;
+        public List<Event> EventsKnownToDracula { get; set; }
         [DataMember]
-        public Item ItemShownToDraculaForBeingBitten;
+        public Item ItemShownToDraculaForBeingBitten { get; private set; }
         [DataMember]
-        public Event EventShownToDraculaForBeingBitten;
+        public Event EventShownToDraculaForBeingBitten { get; private set; }
         [DataMember]
-        public bool HasDogsFaceUp;
-        public Item LastCombatCardChosen;
+        public bool HasDogsFaceUp { get; private set; }
+        public Item LastCombatCardChosen { get; private set; }
         [DataMember]
-        public ConnectionType NextMoveConnectionType;
+        public ConnectionType NextMoveConnectionType { get; private set; }
         [DataMember]
-        public Location NextMoveDestination;
+        public Location NextMoveDestination { get; private set; }
         [DataMember]
-        public List<Hunter> HuntersInGroup;
+        public List<Hunter> HuntersInGroup { get; private set; }
+        [DataMember]
+        public List<Encounter> EncountersInFrontOfPlayer { get; set; }
 
         public HunterPlayer(Hunter hunter, int health, int numberOfBites, int bitesRequiredToKill)
         {
             Hunter = hunter;
             Health = health;
+            MaxHealth = health;
             BiteCount = numberOfBites;
             BitesRequiredToKill = bitesRequiredToKill;
             ItemCount = 0;
@@ -53,7 +75,37 @@ namespace FuryOfDracula.GameLogic
             ItemsKnownToDracula = new List<Item>();
             EventsKnownToDracula = new List<Event>();
             HasDogsFaceUp = false;
+            HuntersInGroup = new List<Hunter>();
             HuntersInGroup.Add(Hunter);
+        }
+
+        public void MoveTo(Location location)
+        {
+            CurrentLocation = location;
+        }
+
+        public void DrawItemCard()
+        {
+            ItemCount++;
+        }
+
+        public void DrawEventCard()
+        {
+            EventCount++;
+        }
+
+        public void DiscardItem(Item item, List<Item> itemDiscard)
+        {
+            ItemsKnownToDracula.Remove(item);
+            itemDiscard.Add(item);
+            ItemCount--;
+        }
+
+        public void DiscardEvent(Event e, List<Event> eventDiscard)
+        {
+            EventsKnownToDracula.Remove(e);
+            eventDiscard.Add(e);
+            EventCount--;
         }
     }
 }

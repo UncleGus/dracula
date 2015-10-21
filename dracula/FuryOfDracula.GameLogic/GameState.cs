@@ -10,7 +10,6 @@ namespace FuryOfDracula.GameLogic
     [DataContract]
     public class GameState
     {
-        [DataMember]
         private LocationSet _map;
         public LocationSet Map
         {
@@ -23,7 +22,6 @@ namespace FuryOfDracula.GameLogic
                 return _map;
             }
         }
-        [DataMember]
         private ItemSet _items;
         public ItemSet Items
         {
@@ -36,7 +34,6 @@ namespace FuryOfDracula.GameLogic
                 return _items;
             }
         }
-        [DataMember]
         private EventSet _events;
         public EventSet Events
         {
@@ -49,7 +46,6 @@ namespace FuryOfDracula.GameLogic
                 return _events;
             }
         }
-        [DataMember]
         private EncounterSet _encounters;
         public EncounterSet Encounters
         {
@@ -60,6 +56,18 @@ namespace FuryOfDracula.GameLogic
                     _encounters = new EncounterSet();
                 }
                 return _encounters;
+            }
+        }
+        private DraculaCardSet _draculaCardDeck;
+        public DraculaCardSet DraculaCardDeck
+        {
+            get
+            {
+                if (_draculaCardDeck == null)
+                {
+                    _draculaCardDeck = new DraculaCardSet();
+                }
+                return _draculaCardDeck;
             }
         }
         [DataMember]
@@ -76,12 +84,31 @@ namespace FuryOfDracula.GameLogic
         public List<Item> ItemDiscard;
         [DataMember]
         public List<Encounter> EncounterPool;
+        [DataMember]
+        public DraculaCardSlot[] Trail;
+        [DataMember]
+        public DraculaCardSlot[] Catacombs;
+        [DataMember]
+        public Event DraculaAlly;
+        [DataMember]
+        public Event HunterAlly;
+        [DataMember]
+        public TimeOfDay TimeOfDay;
+        [DataMember]
+        public int Resolve;
+        [DataMember]
+        public int Vampires;
 
         public GameState()
         {
             Hunters = new HunterPlayer[5] { new HunterPlayer(Hunter.Nobody, 0, 0, 0), new HunterPlayer(Hunter.LordGodalming, 12, 0, 2), new HunterPlayer(Hunter.DrSeward, 8, 0, 2), new HunterPlayer(Hunter.VanHelsing, 10, 0, 3), new HunterPlayer(Hunter.MinaHarker, 8, 1, 2) };
             Dracula = new Dracula();
-            for (int i = 1; i < 41; i++ )
+            ItemDeck = new List<Item>();
+            ItemDiscard = new List<Item>();
+            EventDeck = new List<Event>();
+            EventDiscard = new List<Event>();
+            EncounterPool = new List<Encounter>();
+            for (int i = 1; i < 41; i++)
             {
                 ItemDeck.Add((Item)i);
             }
@@ -93,6 +120,10 @@ namespace FuryOfDracula.GameLogic
             {
                 EncounterPool.Add((Encounter)i);
             }
+            Trail = new DraculaCardSlot[6];
+            Catacombs = new DraculaCardSlot[3];
+            Resolve = 0;
+            Vampires = 0;
         }
     }
 }

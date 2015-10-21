@@ -44,12 +44,6 @@ namespace FuryOfDracula.UnitTests
         }
 
         [Test]
-        public void LocationAbbreviation_Toulouse_ReturnsTOU()
-        {
-            NUnitFramework.Assert.AreEqual("TOU", map.LocationAbbreviation(Location.Toulouse));
-        }
-
-        [Test]
         public void IsEastern_Madrid_ReturnsFalse()
         {
             NUnitFramework.Assert.AreEqual(false, map.IsEastern(Location.Madrid));

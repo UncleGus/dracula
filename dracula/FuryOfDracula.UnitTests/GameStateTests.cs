@@ -46,7 +46,13 @@ namespace FuryOfDracula.UnitTests
         [Test]
         public void GameState_HuntersInitialisation()
         {
-            Assert.AreEqual(10, game.Hunters[(int)Hunter.VanHelsing].Health);
+            Assert.AreEqual(3, game.Hunters[(int)Hunter.VanHelsing].BitesRequiredToKill);
+        }
+
+        [Test]
+        public void GameState_DraculaInitialisation()
+        {
+            Assert.AreEqual(4, game.Dracula.EventHandSize);
         }
     }
 }

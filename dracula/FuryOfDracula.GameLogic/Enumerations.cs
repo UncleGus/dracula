@@ -364,4 +364,15 @@ namespace FuryOfDracula.GameLogic
         WolfForm,
         DoubleBack
     }
+
+    public enum TimeOfDay
+    {
+        None,
+        Dawn,
+        Noon,
+        Dusk,
+        Twilight,
+        Midnight,
+        SmallHours
+    }
 }

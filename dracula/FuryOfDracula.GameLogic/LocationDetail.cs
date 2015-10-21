@@ -10,7 +10,6 @@ namespace FuryOfDracula.GameLogic
     public class LocationDetail
     {
         public Location Location;
-        public string Abbreviation;
         public LocationType LocationType;
         public bool IsEastern;
         public List<Location> ByRoad = new List<Location>();

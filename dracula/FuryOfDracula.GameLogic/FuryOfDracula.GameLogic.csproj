@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="Dracula.cs" />
     <Compile Include="DraculaCard.cs" />
+    <Compile Include="DraculaCardSet.cs" />
     <Compile Include="EncounterDetail.cs" />
     <Compile Include="EncounterSet.cs" />
     <Compile Include="Enumerations.cs" />
@@ -54,6 +55,7 @@
     <Compile Include="LocationDetail.cs" />
     <Compile Include="LocationSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="DraculaCardSlot.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

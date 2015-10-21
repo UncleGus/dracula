@@ -56,10 +56,12 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DraculaCardSetTests.cs" />
     <Compile Include="EncounterSetTests.cs" />
     <Compile Include="EnumerationsTests.cs" />
     <Compile Include="EventSetTests.cs" />
     <Compile Include="GameStateTests.cs" />
+    <Compile Include="HunterPlayerTests.cs" />
     <Compile Include="ItemSetTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="LocationSetTests.cs" />
