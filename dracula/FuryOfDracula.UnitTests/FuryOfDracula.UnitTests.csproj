@@ -56,7 +56,9 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DecisionMakerTests.cs" />
     <Compile Include="DraculaCardSetTests.cs" />
+    <Compile Include="DraculaTests.cs" />
     <Compile Include="EncounterSetTests.cs" />
     <Compile Include="EnumerationsTests.cs" />
     <Compile Include="EventSetTests.cs" />
@@ -70,6 +72,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\FuryOfDracula.ArtificialIntelligence\FuryOfDracula.ArtificialIntelligence.csproj">
+      <Project>{91589497-7e36-4c77-b7f1-31acc060acdc}</Project>
+      <Name>FuryOfDracula.ArtificialIntelligence</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FuryOfDracula.GameLogic\FuryOfDracula.GameLogic.csproj">
       <Project>{be48163a-e0cd-4cf3-bd9b-f20ca21a6c56}</Project>
       <Name>FuryOfDracula.GameLogic</Name>

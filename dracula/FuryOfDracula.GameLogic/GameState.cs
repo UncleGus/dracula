@@ -85,10 +85,6 @@ namespace FuryOfDracula.GameLogic
         [DataMember]
         public List<Encounter> EncounterPool;
         [DataMember]
-        public DraculaCardSlot[] Trail;
-        [DataMember]
-        public DraculaCardSlot[] Catacombs;
-        [DataMember]
         public Event DraculaAlly;
         [DataMember]
         public Event HunterAlly;
@@ -101,7 +97,7 @@ namespace FuryOfDracula.GameLogic
 
         public GameState()
         {
-            Hunters = new HunterPlayer[5] { new HunterPlayer(Hunter.Nobody, 0, 0, 0), new HunterPlayer(Hunter.LordGodalming, 12, 0, 2), new HunterPlayer(Hunter.DrSeward, 8, 0, 2), new HunterPlayer(Hunter.VanHelsing, 10, 0, 3), new HunterPlayer(Hunter.MinaHarker, 8, 1, 2) };
+            Hunters = new HunterPlayer[5] {null, new HunterPlayer(Hunter.LordGodalming, 12, 0, 2), new HunterPlayer(Hunter.DrSeward, 8, 0, 2), new HunterPlayer(Hunter.VanHelsing, 10, 0, 3), new HunterPlayer(Hunter.MinaHarker, 8, 1, 2) };
             Dracula = new Dracula();
             ItemDeck = new List<Item>();
             ItemDiscard = new List<Item>();
@@ -120,15 +116,13 @@ namespace FuryOfDracula.GameLogic
             {
                 EncounterPool.Add((Encounter)i);
             }
-            Trail = new DraculaCardSlot[6];
-            Catacombs = new DraculaCardSlot[3];
             Resolve = 0;
             Vampires = 0;
         }
 
         public Hunter GetHunterFromString(string hunterName)
         {
-            for (int i = 0; i < 5; i++)
+            for (int i = 1; i < 5; i++)
             {
                 if (Hunters[i].Hunter.Name().ToLower().StartsWith(hunterName.ToLower()))
                 {

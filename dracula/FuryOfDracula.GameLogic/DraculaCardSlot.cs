@@ -10,5 +10,10 @@ namespace FuryOfDracula.GameLogic
     {
         public DraculaCard[] DraculaCards = new DraculaCard[2];
         public Encounter[] Encounters = new Encounter[2];
+
+        public DraculaCardSlot(DraculaCard card)
+        {
+            DraculaCards[0] = card;
+        }
     }
 }

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DraculAI", "ConsoleHandler\DraculAI.csproj", "{331FAD45-5DF2-4ED2-B23A-B486DF9D4C32}"
 EndProject
@@ -15,6 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{67129E
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FuryOfDracula.ConsoleInterface", "FuryOfDracula.ConsoleInterface\FuryOfDracula.ConsoleInterface.csproj", "{0E2A016B-C539-474B-9F92-1B0939243518}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FuryOfDracula.ArtificialIntelligence", "FuryOfDracula.ArtificialIntelligence\FuryOfDracula.ArtificialIntelligence.csproj", "{91589497-7E36-4C77-B7F1-31ACC060ACDC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,6 +39,10 @@ Global
 		{0E2A016B-C539-474B-9F92-1B0939243518}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E2A016B-C539-474B-9F92-1B0939243518}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E2A016B-C539-474B-9F92-1B0939243518}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91589497-7E36-4C77-B7F1-31ACC060ACDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91589497-7E36-4C77-B7F1-31ACC060ACDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91589497-7E36-4C77-B7F1-31ACC060ACDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91589497-7E36-4C77-B7F1-31ACC060ACDC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

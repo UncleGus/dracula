@@ -1,4 +1,5 @@
-﻿using FuryOfDracula.GameLogic;
+﻿using FuryOfDracula.ArtificialIntelligence;
+using FuryOfDracula.GameLogic;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -38,15 +39,22 @@ namespace FuryOfDracula.ConsoleInterface
                     game.Hunters[i].MoveTo(destination);
                 }
             }
+
+            DecisionMaker logic = new DecisionMaker();
+            game.Dracula.MoveTo(logic.ChooseStartLocation(game));
             CommandSet commandSet = new CommandSet();
 
 
             do
             {
+                DrawGameState(game);
                 commandSet = GetCommandSet();
 
                 switch (commandSet.command)
                 {
+                    case "reveal": RevealCardInTrailAtPosition(game, commandSet.argument1); break;
+                    case "end": EndHunterTurn(game, logic); break;
+                    case "state": DisplayState(game); break;
                     case "discard": DiscardCard(game, commandSet.argument1, commandSet.argument2); break;
                     case "draw": DrawCard(game, commandSet.argument1, commandSet.argument2); break;
                     case "save": SaveGameState(game, commandSet.argument1); break;
@@ -55,6 +63,72 @@ namespace FuryOfDracula.ConsoleInterface
                     case "exit": Console.WriteLine("Fare well"); break;
                 }
             } while (commandSet.command != "exit");
+        }
+
+        private static void RevealCardInTrailAtPosition(GameState game, string position)
+        {
+            int index;
+            if (Int32.TryParse(position, out index))
+            {
+                if (!game.Dracula.RevealCardAtPosition(index - 1))
+                {
+                    Console.WriteLine("Cannot reveal card at position {0}", index);
+                }
+            } else
+            {
+                string line = "";
+                Console.WriteLine("What position do you want to reveal?");
+                bool successful = false;
+                do
+                {
+                    line = Console.ReadLine();
+                    successful = Int32.TryParse(line, out index);
+                } while (!successful);
+                if (!game.Dracula.RevealCardAtPosition(index - 1))
+                {
+                    Console.WriteLine("Cannot reveal card at position {0}", index);
+                }
+            }
+        }
+
+        private static void EndHunterTurn(GameState game, DecisionMaker logic)
+        {
+            game.Dracula.MoveTo(logic.ChooseDestination(game));
+        }
+
+        private static void DrawGameState(GameState game)
+        {
+            Console.WriteLine("Trail");
+            for (int i = 5; i >= 0; i--)
+            {
+                if (game.Dracula.Trail[i] != null)
+                {
+                    if (game.Dracula.Trail[i].DraculaCards[0].IsRevealed)
+                    {
+                        Console.Write(game.Dracula.Trail[i].DraculaCards[0].Abbreviation + " ");
+                    } else
+                    {
+                        Console.Write("### ");
+                    }
+                } else
+                {
+                    Console.Write("    ");
+                }
+            }
+            Console.WriteLine("");
+        }
+
+        private static void DisplayState(GameState game)
+        {
+            Console.WriteLine("The state of the game:");
+            foreach (HunterPlayer h in game.Hunters)
+            {
+                if (h != null)
+                {
+                    Console.WriteLine("{0} is in {1} with {2} Items and {3} Events, on {4} health with {5} bites", h.Hunter.Name(), h.CurrentLocation.Name(), h.ItemCount, h.EventCount, h.Health, h.BiteCount);
+                }
+            }
+            Console.WriteLine("Dracula is in {0} with {1} blood and has {2} Events", game.Dracula.CurrentLocation.Name(), game.Dracula.Blood, game.Dracula.EventHand.Count());
         }
 
         private static void DiscardCard(GameState game, string cardName, string hunterIndex)

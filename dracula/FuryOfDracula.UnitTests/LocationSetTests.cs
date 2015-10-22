@@ -1,10 +1,10 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FuryOfDracula.GameLogic;
 using NUnit.Framework;
-using NUnit.Core;
-using FuryOfDracula.GameLogic;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace FuryOfDracula.UnitTests
 {
@@ -22,43 +22,49 @@ namespace FuryOfDracula.UnitTests
         [Test]
         public void TypeOfLocation_Milan_ReturnsLargeCity()
         {
-            NUnitFramework.Assert.AreEqual(LocationType.LargeCity, map.TypeOfLocation(Location.Milan));
+            Assert.AreEqual(LocationType.LargeCity, map.TypeOfLocation(Location.Milan));
         }
 
         [Test]
         public void GetLocationFromString_Bru_ReturnsBrussels()
         {
-            NUnitFramework.Assert.AreEqual(Location.Brussels, map.GetLocationFromString("Bru"));
+            Assert.AreEqual(Location.Brussels, map.GetLocationFromString("Bru"));
         }
 
         [Test]
         public void GetLocationFromString_AmbiguousStringBar_ReturnsNowhere()
         {
-            NUnitFramework.Assert.AreEqual(Location.Nowhere, map.GetLocationFromString("BAR"));
+            Assert.AreEqual(Location.Nowhere, map.GetLocationFromString("BAR"));
         }
 
         [Test]
         public void GetLocationFromString_MismatchingString_ReturnsNowhere()
         {
-            NUnitFramework.Assert.AreEqual(Location.Nowhere, map.GetLocationFromString("#"));
+            Assert.AreEqual(Location.Nowhere, map.GetLocationFromString("#"));
         }
 
         [Test]
         public void IsEastern_Madrid_ReturnsFalse()
         {
-            NUnitFramework.Assert.AreEqual(false, map.IsEastern(Location.Madrid));
+            Assert.AreEqual(false, map.IsEastern(Location.Madrid));
         }
 
         [Test]
         public void LocationsConnectedByRoadOrSeaTo_Bordeaux_ReturnsCorrectList()
         {
             List<Location> locationsConnectedToFrankfurt = map.LocationsConnectedByRoadOrSeaTo(Location.Bordeaux);
-            NUnitFramework.Assert.AreEqual(true, locationsConnectedToFrankfurt.Contains(Location.Nantes));
-            NUnitFramework.Assert.AreEqual(true, locationsConnectedToFrankfurt.Contains(Location.ClermontFerrand));
-            NUnitFramework.Assert.AreEqual(true, locationsConnectedToFrankfurt.Contains(Location.Toulouse));
-            NUnitFramework.Assert.AreEqual(true, locationsConnectedToFrankfurt.Contains(Location.Saragossa));
-            NUnitFramework.Assert.AreEqual(true, locationsConnectedToFrankfurt.Contains(Location.BayOfBiscay));
-            NUnitFramework.Assert.AreEqual(false, locationsConnectedToFrankfurt.Contains(Location.Paris));
+            Assert.AreEqual(true, locationsConnectedToFrankfurt.Contains(Location.Nantes));
+            Assert.AreEqual(true, locationsConnectedToFrankfurt.Contains(Location.ClermontFerrand));
+            Assert.AreEqual(true, locationsConnectedToFrankfurt.Contains(Location.Toulouse));
+            Assert.AreEqual(true, locationsConnectedToFrankfurt.Contains(Location.Saragossa));
+            Assert.AreEqual(true, locationsConnectedToFrankfurt.Contains(Location.BayOfBiscay));
+            Assert.AreEqual(false, locationsConnectedToFrankfurt.Contains(Location.Paris));
+        }
+
+        [Test]
+        public void GetAllLocations_ReturnsListOfCount72()
+        {
+            Assert.AreEqual(72, map.GetAllLocations().Count());
         }
     }
 }

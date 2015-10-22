@@ -816,5 +816,15 @@ namespace FuryOfDracula.GameLogic
             tempList.AddRange(map[(int)location].BySea);
             return tempList;
         }
+
+        public List<Location> GetAllLocations()
+        {
+            List<Location> allLocations = new List<Location>();
+            foreach (LocationDetail loc in map)
+            {
+                allLocations.Add(loc.Location);
+            }
+            return allLocations;
+        }
     }
 }

@@ -11,12 +11,14 @@ namespace FuryOfDracula.GameLogic
         public string Abbreviation;
         public Location Location;
         public Power Power;
+        public bool IsRevealed;
 
         public DraculaCard(string abbreviation, Location location, Power power)
         {
             Abbreviation = abbreviation;
             Location = location;
             Power = power;
+            IsRevealed = false;
         }
     }
 }
