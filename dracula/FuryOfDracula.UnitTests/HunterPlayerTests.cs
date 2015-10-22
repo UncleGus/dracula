@@ -47,7 +47,9 @@ namespace FuryOfDracula.UnitTests
             vanHelsing.DrawItemCard();
             int cardCountBefore = vanHelsing.ItemCount;
             List<Item> itemDiscard = new List<Item>();
-            vanHelsing.DiscardItem(Item.Knife1, itemDiscard);
+            List<Item> possibleItems = new List<Item>();
+            possibleItems.Add(Item.Knife1);
+            vanHelsing.DiscardItem(possibleItems, itemDiscard);
             Assert.AreEqual(cardCountBefore - 1, vanHelsing.ItemCount);
             Assert.AreEqual(false, vanHelsing.ItemsKnownToDracula.Contains(Item.Knife1));
         }
@@ -59,9 +61,32 @@ namespace FuryOfDracula.UnitTests
             vanHelsing.DrawEventCard();
             int cardCountBefore = vanHelsing.EventCount;
             List<Event> eventDiscard = new List<Event>();
-            vanHelsing.DiscardEvent(Event.GoodLuck1, eventDiscard);
+            List<Event> possibleEvents = new List<Event>();
+            possibleEvents.Add(Event.GoodLuck1);
+            vanHelsing.DiscardEvent(possibleEvents, eventDiscard);
             Assert.AreEqual(cardCountBefore - 1, vanHelsing.EventCount);
             Assert.AreEqual(false, vanHelsing.EventsKnownToDracula.Contains(Event.GoodLuck1));
+        }
+
+        [Test]
+        public void AdjustHealth_Minus1_HealthReturns9()
+        {
+            vanHelsing.AdjustHealth(-1);
+            Assert.AreEqual(9, vanHelsing.Health);
+        }
+
+        [Test]
+        public void AdjustHealth_Minus20_HealthReturns0()
+        {
+            vanHelsing.AdjustHealth(-20);
+            Assert.AreEqual(0, vanHelsing.Health);
+        }
+
+        [Test]
+        public void AdjustHealth_Plus20_HealthReturns10()
+        {
+            vanHelsing.AdjustHealth(20);
+            Assert.AreEqual(10, vanHelsing.Health);
         }
 
     }

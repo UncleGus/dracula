@@ -125,5 +125,29 @@ namespace FuryOfDracula.GameLogic
             Resolve = 0;
             Vampires = 0;
         }
+
+        public Hunter GetHunterFromString(string hunterName)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                if (Hunters[i].Hunter.Name().ToLower().StartsWith(hunterName.ToLower()))
+                {
+                    return Hunters[i].Hunter;
+                }
+            }
+            return Hunter.Nobody;
+        }
+
+        public Hunter GetHunterFromInt(int index)
+        {
+            try
+            {
+                return Hunters[index].Hunter;
+            }
+            catch (IndexOutOfRangeException)
+            {
+                return Hunter.Nobody;
+            }
+        }
     }
 }

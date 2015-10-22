@@ -54,5 +54,30 @@ namespace FuryOfDracula.UnitTests
         {
             Assert.AreEqual(4, game.Dracula.EventHandSize);
         }
+
+        [Test]
+        public void GetHunterFromString_Van_ReturnsVanHelsing()
+        {
+            Assert.AreEqual(Hunter.VanHelsing, game.GetHunterFromString("van"));
+        }
+
+        [Test]
+        public void GetHunterFromString_Bob_ReturnsNobody()
+        {
+            Assert.AreEqual(Hunter.Nobody, game.GetHunterFromString("Bob"));
+        }
+
+        [Test]
+        public void GetHunterFromInt_1_ReturnsLordGodalming()
+        {
+            Assert.AreEqual(Hunter.LordGodalming, game.GetHunterFromInt(1));
+        }
+
+        [Test]
+        public void GetHunterFromInt_5_ReturnsNobody()
+        {
+            Assert.AreEqual(Hunter.Nobody, game.GetHunterFromInt(5));
+        }
+
     }
 }
