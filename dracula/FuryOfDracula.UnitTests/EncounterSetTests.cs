@@ -43,5 +43,11 @@ namespace FuryOfDracula.UnitTests
         {
             Assert.AreEqual(0, encounterDeck.GetEncountersFromString("Minion").Count());
         }
+
+        [Test]
+        public void GetAllEncounters_ReturnsListOfCount45()
+        {
+            Assert.AreEqual(45, encounterDeck.GetAllEncounters().Count());
+        }
     }
 }

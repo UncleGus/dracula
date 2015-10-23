@@ -41,7 +41,13 @@ namespace FuryOfDracula.ConsoleInterface
             }
 
             DecisionMaker logic = new DecisionMaker();
-            game.Dracula.MoveTo(logic.ChooseStartLocation(game));
+            game.Dracula.MoveTo(logic.ChooseStartLocation(game), Power.None);
+            while (game.Dracula.EncounterHand.Count() < game.Dracula.EncounterHandSize)
+            {
+                game.Dracula.DrawEncounter(game.EncounterPool);
+            }
+            EndHunterTurn(game, logic);
+
             CommandSet commandSet = new CommandSet();
 
 
@@ -70,7 +76,7 @@ namespace FuryOfDracula.ConsoleInterface
             int index;
             if (Int32.TryParse(position, out index))
             {
-                if (!game.Dracula.RevealCardAtPosition(index - 1))
+                if (!game.Dracula.RevealCardAtPosition(game, index - 1))
                 {
                     Console.WriteLine("Cannot reveal card at position {0}", index);
                 }
@@ -84,7 +90,7 @@ namespace FuryOfDracula.ConsoleInterface
                     line = Console.ReadLine();
                     successful = Int32.TryParse(line, out index);
                 } while (!successful);
-                if (!game.Dracula.RevealCardAtPosition(index - 1))
+                if (!game.Dracula.RevealCardAtPosition(game, index - 1))
                 {
                     Console.WriteLine("Cannot reveal card at position {0}", index);
                 }
@@ -93,7 +99,34 @@ namespace FuryOfDracula.ConsoleInterface
 
         private static void EndHunterTurn(GameState game, DecisionMaker logic)
         {
-            game.Dracula.MoveTo(logic.ChooseDestination(game));
+            if (game.Map.TypeOfLocation(game.Dracula.CurrentLocation) != LocationType.Sea)
+            {
+                game.TimeOfDay = game.TimeOfDay + 1 % 6;
+                if (game.TimeOfDay == TimeOfDay.Dawn)
+                {
+                    game.Vampires++;
+                    game.Resolve++;
+                }
+            }
+            Power power;
+            DraculaCardSlot cardDroppedOffTrail = game.Dracula.MoveTo(logic.ChooseDestinationAndPower(game, out power), power);
+            game.Dracula.PlaceEncounterOnCard(logic.ChooseEncounterToPlaceOnDraculaCardSlot(game, game.Dracula.Trail[0]), game.Dracula.Trail[0]);
+            if (cardDroppedOffTrail != null)
+            {
+                cardDroppedOffTrail.DraculaCards[0].IsRevealed = false;
+                if (cardDroppedOffTrail.DraculaCards[1] != null)
+                {
+                    cardDroppedOffTrail.DraculaCards[1].IsRevealed = false;
+                }
+                if (cardDroppedOffTrail.Encounters[0] != Encounter.None)
+                {
+                    game.Encounters.GetEncounterDetail(cardDroppedOffTrail.Encounters[0]).IsRevealed = false;
+                }
+                if (cardDroppedOffTrail.Encounters[1] != Encounter.None)
+                {
+                    game.Encounters.GetEncounterDetail(cardDroppedOffTrail.Encounters[1]).IsRevealed = false;
+                }
+            }            
         }
 
         private static void DrawGameState(GameState game)
@@ -103,6 +136,7 @@ namespace FuryOfDracula.ConsoleInterface
             {
                 if (game.Dracula.Trail[i] != null)
                 {
+                    Console.ForegroundColor = game.Dracula.Trail[i].DraculaCards[0].Color;
                     if (game.Dracula.Trail[i].DraculaCards[0].IsRevealed)
                     {
                         Console.Write(game.Dracula.Trail[i].DraculaCards[0].Abbreviation + " ");
@@ -116,6 +150,48 @@ namespace FuryOfDracula.ConsoleInterface
                 }
             }
             Console.WriteLine("");
+            for (int i = 5; i >= 0; i--)
+            {
+                if (game.Dracula.Trail[i] != null && game.Dracula.Trail[i].DraculaCards[1] != null)
+                {
+                    Console.ForegroundColor = game.Dracula.Trail[i].DraculaCards[1].Color;
+                    if (game.Dracula.Trail[i].DraculaCards[1].IsRevealed)
+                    {
+                        Console.Write(game.Dracula.Trail[i].DraculaCards[1].Abbreviation + " ");
+                    }
+                    else
+                    {
+                        Console.Write("### ");
+                    }
+                }
+                else
+                {
+                    Console.Write("    ");
+                }
+            }
+            Console.WriteLine("");
+            for (int i = 5; i >= 0; i--)
+            {
+                if (game.Dracula.Trail[i] != null && game.Dracula.Trail[i].Encounters[0] != Encounter.None)
+                {
+                    if (game.Encounters.GetEncounterDetail(game.Dracula.Trail[i].Encounters[0]).IsRevealed)
+                    {
+                        Console.ResetColor();
+                        Console.Write(game.Dracula.Trail[i].Encounters[0].Name().Substring(0, 3).ToUpper() + " ");
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        Console.Write(" ■  ");
+                    }
+                }
+                else
+                {
+                    Console.Write("    ");
+                }
+            }
+            Console.ResetColor();
+            Console.WriteLine();
         }
 
         private static void DisplayState(GameState game)

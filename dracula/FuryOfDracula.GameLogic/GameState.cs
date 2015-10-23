@@ -103,7 +103,7 @@ namespace FuryOfDracula.GameLogic
             ItemDiscard = new List<Item>();
             EventDeck = new List<Event>();
             EventDiscard = new List<Event>();
-            EncounterPool = new List<Encounter>();
+            EncounterPool = Encounters.GetAllEncounters();
             for (int i = 1; i < 41; i++)
             {
                 ItemDeck.Add((Item)i);
@@ -111,10 +111,6 @@ namespace FuryOfDracula.GameLogic
             for (int i = 1; i < 76; i++)
             {
                 EventDeck.Add((Event)i);
-            }
-            for (int i = 1; i < 46; i++)
-            {
-                EncounterPool.Add((Encounter)i);
             }
             Resolve = 0;
             Vampires = 0;

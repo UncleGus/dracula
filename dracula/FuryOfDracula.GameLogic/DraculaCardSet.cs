@@ -19,17 +19,17 @@ namespace FuryOfDracula.GameLogic
         {
             DraculaCard[] tempDraculaCardDeck = new DraculaCard[77];
             tempDraculaCardDeck[0] = new DraculaCard("NOW", Location.Nowhere, Power.None);
-            tempDraculaCardDeck[1] = new DraculaCard("ADR", Location.AdriaticSea, Power.None);
+            tempDraculaCardDeck[1] = new DraculaCard("ADR", Location.AdriaticSea, Power.None, ConsoleColor.Cyan);
             tempDraculaCardDeck[2] = new DraculaCard("ALI", Location.Alicante, Power.None);
             tempDraculaCardDeck[3] = new DraculaCard("AMS", Location.Amsterdam, Power.None);
             tempDraculaCardDeck[4] = new DraculaCard("ATH", Location.Athens, Power.None);
-            tempDraculaCardDeck[5] = new DraculaCard("ATL", Location.AtlanticOcean, Power.None);
+            tempDraculaCardDeck[5] = new DraculaCard("ATL", Location.AtlanticOcean, Power.None, ConsoleColor.Cyan);
             tempDraculaCardDeck[6] = new DraculaCard("BAC", Location.Barcelona, Power.None);
             tempDraculaCardDeck[7] = new DraculaCard("BAI", Location.Bari, Power.None);
-            tempDraculaCardDeck[8] = new DraculaCard("BAY", Location.BayOfBiscay, Power.None);
+            tempDraculaCardDeck[8] = new DraculaCard("BAY", Location.BayOfBiscay, Power.None, ConsoleColor.Cyan);
             tempDraculaCardDeck[9] = new DraculaCard("BEL", Location.Belgrade, Power.None);
             tempDraculaCardDeck[10] = new DraculaCard("BER", Location.Berlin, Power.None);
-            tempDraculaCardDeck[11] = new DraculaCard("BLA", Location.BlackSea, Power.None);
+            tempDraculaCardDeck[11] = new DraculaCard("BLA", Location.BlackSea, Power.None, ConsoleColor.Cyan);
             tempDraculaCardDeck[12] = new DraculaCard("BOR", Location.Bordeaux, Power.None);
             tempDraculaCardDeck[13] = new DraculaCard("BRU", Location.Brussels, Power.None);
             tempDraculaCardDeck[14] = new DraculaCard("BUC", Location.Bucharest, Power.None);
@@ -42,7 +42,7 @@ namespace FuryOfDracula.GameLogic
             tempDraculaCardDeck[21] = new DraculaCard("CON", Location.Constanta, Power.None);
             tempDraculaCardDeck[22] = new DraculaCard("DUB", Location.Dublin, Power.None);
             tempDraculaCardDeck[23] = new DraculaCard("EDI", Location.Edinburgh, Power.None);
-            tempDraculaCardDeck[24] = new DraculaCard("ENG", Location.EnglishChannel, Power.None);
+            tempDraculaCardDeck[24] = new DraculaCard("ENG", Location.EnglishChannel, Power.None, ConsoleColor.Cyan);
             tempDraculaCardDeck[25] = new DraculaCard("FLO", Location.Florence, Power.None);
             tempDraculaCardDeck[26] = new DraculaCard("FRA", Location.Frankfurt, Power.None);
             tempDraculaCardDeck[27] = new DraculaCard("GAT", Location.Galatz, Power.None);
@@ -51,8 +51,8 @@ namespace FuryOfDracula.GameLogic
             tempDraculaCardDeck[30] = new DraculaCard("GEO", Location.Genoa, Power.None);
             tempDraculaCardDeck[31] = new DraculaCard("GRA", Location.Granada, Power.None);
             tempDraculaCardDeck[32] = new DraculaCard("HAM", Location.Hamburg, Power.None);
-            tempDraculaCardDeck[33] = new DraculaCard("ION", Location.IonianSea, Power.None);
-            tempDraculaCardDeck[34] = new DraculaCard("IRI", Location.IrishSea, Power.None);
+            tempDraculaCardDeck[33] = new DraculaCard("ION", Location.IonianSea, Power.None, ConsoleColor.Cyan);
+            tempDraculaCardDeck[34] = new DraculaCard("IRI", Location.IrishSea, Power.None, ConsoleColor.Cyan);
             tempDraculaCardDeck[35] = new DraculaCard("KLA", Location.Klausenburg, Power.None);
             tempDraculaCardDeck[36] = new DraculaCard("LEH", Location.LeHavre, Power.None);
             tempDraculaCardDeck[37] = new DraculaCard("LEI", Location.Leipzig, Power.None);
@@ -62,12 +62,12 @@ namespace FuryOfDracula.GameLogic
             tempDraculaCardDeck[41] = new DraculaCard("MAD", Location.Madrid, Power.None);
             tempDraculaCardDeck[42] = new DraculaCard("MAN", Location.Manchester, Power.None);
             tempDraculaCardDeck[43] = new DraculaCard("MAR", Location.Marseilles, Power.None);
-            tempDraculaCardDeck[44] = new DraculaCard("MED", Location.MediterraneanSea, Power.None);
+            tempDraculaCardDeck[44] = new DraculaCard("MED", Location.MediterraneanSea, Power.None, ConsoleColor.Cyan);
             tempDraculaCardDeck[45] = new DraculaCard("MIL", Location.Milan, Power.None);
             tempDraculaCardDeck[46] = new DraculaCard("MUN", Location.Munich, Power.None);
             tempDraculaCardDeck[47] = new DraculaCard("NAN", Location.Nantes, Power.None);
             tempDraculaCardDeck[48] = new DraculaCard("NAP", Location.Naples, Power.None);
-            tempDraculaCardDeck[49] = new DraculaCard("NOR", Location.NorthSea, Power.None);
+            tempDraculaCardDeck[49] = new DraculaCard("NOR", Location.NorthSea, Power.None, ConsoleColor.Cyan);
             tempDraculaCardDeck[50] = new DraculaCard("NUR", Location.Nuremburg, Power.None);
             tempDraculaCardDeck[51] = new DraculaCard("PAR", Location.Paris, Power.None);
             tempDraculaCardDeck[52] = new DraculaCard("PLY", Location.Plymouth, Power.None);
@@ -82,18 +82,18 @@ namespace FuryOfDracula.GameLogic
             tempDraculaCardDeck[62] = new DraculaCard("SWA", Location.Swansea, Power.None);
             tempDraculaCardDeck[63] = new DraculaCard("SZE", Location.Szeged, Power.None);
             tempDraculaCardDeck[64] = new DraculaCard("TOU", Location.Toulouse, Power.None);
-            tempDraculaCardDeck[65] = new DraculaCard("TYR", Location.TyrrhenianSea, Power.None);
+            tempDraculaCardDeck[65] = new DraculaCard("TYR", Location.TyrrhenianSea, Power.None, ConsoleColor.Cyan);
             tempDraculaCardDeck[66] = new DraculaCard("VAL", Location.Valona, Power.None);
             tempDraculaCardDeck[67] = new DraculaCard("VAR", Location.Varna, Power.None);
             tempDraculaCardDeck[68] = new DraculaCard("VEN", Location.Venice, Power.None);
             tempDraculaCardDeck[69] = new DraculaCard("VIE", Location.Vienna, Power.None);
             tempDraculaCardDeck[70] = new DraculaCard("ZAG", Location.Zagreb, Power.None);
             tempDraculaCardDeck[71] = new DraculaCard("ZUR", Location.Zurich, Power.None);
-            tempDraculaCardDeck[72] = new DraculaCard("HID", Location.Nowhere, Power.Hide);
-            tempDraculaCardDeck[73] = new DraculaCard("DAR", Location.Nowhere, Power.DarkCall);
-            tempDraculaCardDeck[74] = new DraculaCard("FEE", Location.Nowhere, Power.Feed);
-            tempDraculaCardDeck[75] = new DraculaCard("WOL", Location.Nowhere, Power.WolfForm);
-            tempDraculaCardDeck[76] = new DraculaCard("DOU", Location.Nowhere, Power.DoubleBack);
+            tempDraculaCardDeck[72] = new DraculaCard("HID", Location.Nowhere, Power.Hide, ConsoleColor.DarkGreen);
+            tempDraculaCardDeck[73] = new DraculaCard("DAR", Location.Nowhere, Power.DarkCall, ConsoleColor.DarkGreen);
+            tempDraculaCardDeck[74] = new DraculaCard("FEE", Location.Nowhere, Power.Feed, ConsoleColor.DarkGreen);
+            tempDraculaCardDeck[75] = new DraculaCard("WOL", Location.Nowhere, Power.WolfForm, ConsoleColor.DarkGreen);
+            tempDraculaCardDeck[76] = new DraculaCard("DOU", Location.Nowhere, Power.DoubleBack, ConsoleColor.DarkGreen);
             return tempDraculaCardDeck;
         }
 
@@ -112,6 +112,20 @@ namespace FuryOfDracula.GameLogic
                 }
             }
             return null;
+        }
+
+        public List<Power> GetAvailablePowers(TimeOfDay timeOfDay)
+        {
+            List<Power> availablePowers = new List<Power>();
+            availablePowers.Add(Power.Hide);
+            availablePowers.Add(Power.DoubleBack);
+            if ((int)timeOfDay > 2)
+            {
+                availablePowers.Add(Power.DarkCall);
+                availablePowers.Add(Power.Feed);
+                availablePowers.Add(Power.WolfForm);
+            }
+            return availablePowers;
         }
     }
 }

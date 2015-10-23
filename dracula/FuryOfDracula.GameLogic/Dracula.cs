@@ -40,21 +40,61 @@ namespace FuryOfDracula.GameLogic
             DraculaCardDeck = new DraculaCardSet();
         }
 
-        public void MoveTo(Location destination)
+        public DraculaCardSlot MoveTo(Location destination, Power power)
         {
-            CurrentLocation = destination;
-            if (Trail[5] != null && Trail[5].DraculaCards[0] != null)
+            if (power == Power.DoubleBack)
             {
-                Trail[5].DraculaCards[0].IsRevealed = false;
+                for (int i = 0; i < 6; i++)
+                {
+                    if (Trail[i].DraculaCards[0].Location == destination)
+                    {
+                        DraculaCardSlot doubleBackedCard = Trail[i];
+                        for (int j = i; j > 0; j--)
+                        {
+                            Trail[j] = Trail[j - 1];
+                        }
+                        Trail[0] = doubleBackedCard;
+                        if (Trail[0].DraculaCards[1] == null)
+                        {
+                            Trail[0].DraculaCards[1] = DraculaCardDeck.GetDraculaCardForPower(Power.DoubleBack);
+                        }
+                        else
+                        {
+                            Trail[0].DraculaCards[2] = DraculaCardDeck.GetDraculaCardForPower(Power.DoubleBack);
+                        }
+                        return null;
+                    }
+                }
+                return null;
             }
-            for (int i = 5; i > 0; i--)
+            else
             {
-                Trail[i] = Trail[i - 1];
+                DraculaCardSlot cardSlotDroppedOffTrail = Trail[5];
+                for (int i = 5; i > 0; i--)
+                {
+                    Trail[i] = Trail[i - 1];
+                }
+                if (destination != Location.Nowhere)
+                {
+                    CurrentLocation = destination;
+                    Trail[0] = new DraculaCardSlot(DraculaCardDeck.GetDraculaCardForLocation(destination));
+                }
+                if (power != Power.None)
+                {
+                    if (Trail[0] == null)
+                    {
+                        Trail[0] = new DraculaCardSlot(DraculaCardDeck.GetDraculaCardForPower(power));
+                    }
+                    else
+                    {
+                        Trail[0].DraculaCards[1] = DraculaCardDeck.GetDraculaCardForPower(power);
+                    }
+                }
+                return cardSlotDroppedOffTrail;
             }
-            Trail[0] = new DraculaCardSlot(DraculaCardDeck.GetDraculaCardForLocation(destination));
         }
 
-        public bool RevealCardAtPosition(int position)
+        public bool RevealCardAtPosition(GameState game, int position)
         {
             if (position < 0 || position > 5)
             {
@@ -63,9 +103,41 @@ namespace FuryOfDracula.GameLogic
             if (Trail[position] != null)
             {
                 Trail[position].DraculaCards[0].IsRevealed = true;
+                if (Trail[position].DraculaCards[1] != null)
+                {
+                    Trail[position].DraculaCards[1].IsRevealed = true;
+                }
+                if (Trail[position].Encounters[0] != null)
+                {
+                    game.Encounters.GetEncounterDetail(Trail[position].Encounters[0]).IsRevealed = true;
+                }
+                if (Trail[position].Encounters[1] != null)
+                {
+                    game.Encounters.GetEncounterDetail(Trail[position].Encounters[1]).IsRevealed = true;
+                }
                 return true;
             }
             return false;
+        }
+
+        public void DrawEncounter(List<Encounter> encounterPool)
+        {
+            Encounter encounterDrawn = encounterPool[new Random().Next(0, encounterPool.Count())];
+            EncounterHand.Add(encounterDrawn);
+            encounterPool.Remove(encounterDrawn);
+        }
+
+        public void PlaceEncounterOnCard(Encounter encounterToPlace, DraculaCardSlot card)
+        {
+            if (card.Encounters[0] == Encounter.None)
+            {
+                card.Encounters[0] = encounterToPlace;
+            }
+            else
+            {
+                card.Encounters[1] = encounterToPlace;
+            }
+            EncounterHand.Remove(encounterToPlace);
         }
     }
 }

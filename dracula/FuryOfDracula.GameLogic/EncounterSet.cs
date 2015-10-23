@@ -87,5 +87,21 @@ namespace FuryOfDracula.GameLogic
             return tempEncounterList;
         }
 
+        public List<Encounter> GetAllEncounters()
+        {
+            List<Encounter> allEncounters = new List<Encounter>();
+            foreach (EncounterDetail ed in encounterDeck) {
+                if (ed.Encounter != Encounter.None)
+                {
+                    allEncounters.Add(ed.Encounter);
+                }
+            }
+            return allEncounters;
+        }
+
+        public EncounterDetail GetEncounterDetail(Encounter encounter)
+        {
+            return encounterDeck[(int)encounter];
+        }
     }
 }
