@@ -84,5 +84,51 @@ namespace FuryOfDracula.UnitTests
             dracula.PlaceEncounterOnCard(Encounter.Rats2, dracula.Trail[0]);
             Assert.AreEqual(Encounter.Rats2, dracula.Trail[0].Encounters[1]);
         }
+
+        [Test]
+        public void TakeEvent_ListOfEvents_ListGetsShorterAndEventHandGetsLonger()
+        {
+            List<Event> cards = new List<Event> { Event.DevilishPower1 };
+            int cardCountBefore = dracula.EventHand.Count();
+            dracula.TakeEvent(cards, new EventSet());
+            Assert.AreEqual(false, cards.Contains(Event.DevilishPower1));
+            Assert.AreEqual(true, dracula.EventHand.Contains(Event.DevilishPower1));
+            Assert.AreEqual(cardCountBefore + 1, dracula.EventHand.Count());
+        }
+
+        [Test]
+        public void DiscardEvent_EventCard_EventHandGetsShorterAndDiscardGetsLonger()
+        {
+            List<Event> cards = new List<Event> { Event.DevilishPower2 };
+            List<Event> discard = new List<Event>();
+            dracula.TakeEvent(cards, new EventSet());
+            int cardCountBefore = dracula.EventHand.Count();
+            dracula.DiscardEvent(Event.DevilishPower2, discard);
+            Assert.AreEqual(false, dracula.EventHand.Contains(Event.DevilishPower2));
+            Assert.AreEqual(true, discard.Contains(Event.DevilishPower2));
+            Assert.AreEqual(cardCountBefore - 1, dracula.EventHand.Count());
+        }
+
+        [Test]
+        public void DiscardEncounterFromCardSlot_EncounterInSlot1_EncounterIsMovedToEncounterPool()
+        {
+            List<Encounter> encounterPool = new List<Encounter>();
+            dracula.Trail[0] = new DraculaCardSlot();
+            dracula.Trail[0].Encounters[0] = Encounter.Bats1;
+            dracula.DiscardEncounterFromCardSlot(Encounter.Bats1, dracula.Trail[0], encounterPool);
+            Assert.AreEqual(Encounter.None, dracula.Trail[0].Encounters[0]);
+            Assert.AreEqual(true, encounterPool.Contains(Encounter.Bats1));
+        }
+
+        [Test]
+        public void DiscardEncounterFromCardSlot_EncounterInSlot2_EncounterIsMovedToEncounterPool()
+        {
+            List<Encounter> encounterPool = new List<Encounter>();
+            dracula.Trail[0] = new DraculaCardSlot();
+            dracula.Trail[0].Encounters[1] = Encounter.Bats2;
+            dracula.DiscardEncounterFromCardSlot(Encounter.Bats2, dracula.Trail[0], encounterPool);
+            Assert.AreEqual(Encounter.None, dracula.Trail[0].Encounters[1]);
+            Assert.AreEqual(true, encounterPool.Contains(Encounter.Bats2));
+        }
     }
 }

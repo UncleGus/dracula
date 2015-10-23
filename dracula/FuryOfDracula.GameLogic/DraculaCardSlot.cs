@@ -15,5 +15,10 @@ namespace FuryOfDracula.GameLogic
         {
             DraculaCards[0] = card;
         }
+
+        public DraculaCardSlot()
+        {
+
+        }
     }
 }

@@ -97,6 +97,11 @@ namespace FuryOfDracula.GameLogic
             return tempEventDeck;
         }
 
+        public EventDetail EventDetail(Event eventIndex)
+        {
+            return eventDeck[(int)eventIndex];
+        }
+
         public List<Event> GetEventsFromString(string line)
         {
             List<Event> tempEventList = new List<Event>();

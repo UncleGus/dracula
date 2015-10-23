@@ -89,7 +89,7 @@ namespace FuryOfDracula.GameLogic
             tempDraculaCardDeck[69] = new DraculaCard("VIE", Location.Vienna, Power.None);
             tempDraculaCardDeck[70] = new DraculaCard("ZAG", Location.Zagreb, Power.None);
             tempDraculaCardDeck[71] = new DraculaCard("ZUR", Location.Zurich, Power.None);
-            tempDraculaCardDeck[72] = new DraculaCard("HID", Location.Nowhere, Power.Hide, ConsoleColor.DarkGreen);
+            tempDraculaCardDeck[72] = new DraculaCard("HID", Location.Nowhere, Power.Hide);
             tempDraculaCardDeck[73] = new DraculaCard("DAR", Location.Nowhere, Power.DarkCall, ConsoleColor.DarkGreen);
             tempDraculaCardDeck[74] = new DraculaCard("FEE", Location.Nowhere, Power.Feed, ConsoleColor.DarkGreen);
             tempDraculaCardDeck[75] = new DraculaCard("WOL", Location.Nowhere, Power.WolfForm, ConsoleColor.DarkGreen);

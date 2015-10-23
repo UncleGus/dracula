@@ -50,7 +50,6 @@ namespace FuryOfDracula.ConsoleInterface
 
             CommandSet commandSet = new CommandSet();
 
-
             do
             {
                 DrawGameState(game);
@@ -58,15 +57,26 @@ namespace FuryOfDracula.ConsoleInterface
 
                 switch (commandSet.command)
                 {
+                    case "t":
+                    case "take":
+                        if (game.Dracula.TakeEvent(game.EventDeck, game.Events))
+                        {
+                            game.Dracula.DiscardEvent(logic.ChooseEventToDiscard(game), game.EventDiscard);
+                        }; break;
+                    case "r":
                     case "reveal": RevealCardInTrailAtPosition(game, commandSet.argument1); break;
+                    case "z":
                     case "end": EndHunterTurn(game, logic); break;
                     case "state": DisplayState(game); break;
                     case "discard": DiscardCard(game, commandSet.argument1, commandSet.argument2); break;
+                    case "d":
                     case "draw": DrawCard(game, commandSet.argument1, commandSet.argument2); break;
                     case "save": SaveGameState(game, commandSet.argument1); break;
                     case "load": game = (new Program()).LoadGameState(commandSet.argument1); break;
+                    case "m":
                     case "move": MoveHunter(game, commandSet.argument1, commandSet.argument2); break;
                     case "exit": Console.WriteLine("Fare well"); break;
+                    default: Console.WriteLine("I didn't understand that"); break;
                 }
             } while (commandSet.command != "exit");
         }
@@ -80,7 +90,8 @@ namespace FuryOfDracula.ConsoleInterface
                 {
                     Console.WriteLine("Cannot reveal card at position {0}", index);
                 }
-            } else
+            }
+            else
             {
                 string line = "";
                 Console.WriteLine("What position do you want to reveal?");
@@ -99,39 +110,69 @@ namespace FuryOfDracula.ConsoleInterface
 
         private static void EndHunterTurn(GameState game, DecisionMaker logic)
         {
-            if (game.Map.TypeOfLocation(game.Dracula.CurrentLocation) != LocationType.Sea)
+            game.AdvanceTimeTracker();
+            List<int> catacombsSlotsCleared = logic.ChooseWhichCatacombsCardsToDiscard(game);
+            if (catacombsSlotsCleared.Count() > 0)
             {
-                game.TimeOfDay = game.TimeOfDay + 1 % 6;
-                if (game.TimeOfDay == TimeOfDay.Dawn)
+                Console.Write("Dracula discarded cards from Catacombs positions: ");
+                foreach (int i in catacombsSlotsCleared)
                 {
-                    game.Vampires++;
-                    game.Resolve++;
+                    Console.Write("{0} ", i + 1);
+                }
+                Console.WriteLine("");
+                List<Encounter> encountersToReturnToEncounterPool = game.Dracula.DiscardCatacombsCards(catacombsSlotsCleared);
+                foreach (Encounter enc in encountersToReturnToEncounterPool)
+                {
+                    game.Encounters.GetEncounterDetail(enc).IsRevealed = false;
+                    game.EncounterPool.Add(enc);
                 }
             }
             Power power;
             DraculaCardSlot cardDroppedOffTrail = game.Dracula.MoveTo(logic.ChooseDestinationAndPower(game, out power), power);
-            game.Dracula.PlaceEncounterOnCard(logic.ChooseEncounterToPlaceOnDraculaCardSlot(game, game.Dracula.Trail[0]), game.Dracula.Trail[0]);
+            switch (power)
+            {
+                case Power.None:
+                case Power.Hide:
+                case Power.WolfForm:
+                    game.Dracula.PlaceEncounterOnCard(logic.ChooseEncounterToPlaceOnDraculaCardSlot(game, game.Dracula.Trail[0]), game.Dracula.Trail[0]); break;
+                case Power.DoubleBack: game.Dracula.DiscardEncounterFromCardSlot(logic.ChooseEncounterToDiscardFromDoubleBackedCatacomnbsLocation(game), game.Dracula.Trail[0], game.EncounterPool); break;
+            }
             if (cardDroppedOffTrail != null)
             {
-                cardDroppedOffTrail.DraculaCards[0].IsRevealed = false;
-                if (cardDroppedOffTrail.DraculaCards[1] != null)
+                cardDroppedOffTrail.DraculaCards[1] = null;
+                int index = logic.PutDroppedOffCardInCatacombs(game, cardDroppedOffTrail);
+                if (index > -1)
                 {
-                    cardDroppedOffTrail.DraculaCards[1].IsRevealed = false;
+                    game.Dracula.Catacombs[index] = cardDroppedOffTrail;
+                    game.Dracula.PlaceEncounterOnCard(logic.ChooseEncounterToPlaceOnDraculaCardSlot(game, game.Dracula.Catacombs[index]), cardDroppedOffTrail);
                 }
-                if (cardDroppedOffTrail.Encounters[0] != Encounter.None)
+                else
                 {
-                    game.Encounters.GetEncounterDetail(cardDroppedOffTrail.Encounters[0]).IsRevealed = false;
+                    cardDroppedOffTrail.DraculaCards[0].IsRevealed = false;
+                    if (cardDroppedOffTrail.Encounters[0] != Encounter.None)
+                    {
+                        game.Encounters.GetEncounterDetail(cardDroppedOffTrail.Encounters[0]).IsRevealed = false;
+                        game.EncounterPool.Add(cardDroppedOffTrail.Encounters[0]);
+                        cardDroppedOffTrail.Encounters[0] = Encounter.None;
+                    }
+                    if (cardDroppedOffTrail.Encounters[1] != Encounter.None)
+                    {
+                        game.Encounters.GetEncounterDetail(cardDroppedOffTrail.Encounters[1]).IsRevealed = false;
+                        game.EncounterPool.Add(cardDroppedOffTrail.Encounters[1]);
+                        cardDroppedOffTrail.Encounters[1] = Encounter.None;
+                    }
                 }
-                if (cardDroppedOffTrail.Encounters[1] != Encounter.None)
-                {
-                    game.Encounters.GetEncounterDetail(cardDroppedOffTrail.Encounters[1]).IsRevealed = false;
-                }
-            }            
+            }
+            while (game.Dracula.EncounterHand.Count() < game.Dracula.EncounterHandSize)
+            {
+                game.Dracula.DrawEncounter(game.EncounterPool);
+            }
         }
 
         private static void DrawGameState(GameState game)
         {
-            Console.WriteLine("Trail");
+            // line 1
+            Console.WriteLine("Trail                       Catacombs");
             for (int i = 5; i >= 0; i--)
             {
                 if (game.Dracula.Trail[i] != null)
@@ -140,16 +181,39 @@ namespace FuryOfDracula.ConsoleInterface
                     if (game.Dracula.Trail[i].DraculaCards[0].IsRevealed)
                     {
                         Console.Write(game.Dracula.Trail[i].DraculaCards[0].Abbreviation + " ");
-                    } else
+                    }
+                    else
                     {
                         Console.Write("### ");
                     }
-                } else
+                }
+                else
+                {
+                    Console.Write("    ");
+                }
+            }
+            Console.Write("    ");
+            for (int i = 0; i < 3; i++)
+            {
+                if (game.Dracula.Catacombs[i] != null)
+                {
+                    Console.ForegroundColor = game.Dracula.Catacombs[i].DraculaCards[0].Color;
+                    if (game.Dracula.Catacombs[i].DraculaCards[0].IsRevealed)
+                    {
+                        Console.Write(game.Dracula.Catacombs[i].DraculaCards[0].Abbreviation + " ");
+                    }
+                    else
+                    {
+                        Console.Write("### ");
+                    }
+                }
+                else
                 {
                     Console.Write("    ");
                 }
             }
             Console.WriteLine("");
+            // line 2
             for (int i = 5; i >= 0; i--)
             {
                 if (game.Dracula.Trail[i] != null && game.Dracula.Trail[i].DraculaCards[1] != null)
@@ -169,7 +233,29 @@ namespace FuryOfDracula.ConsoleInterface
                     Console.Write("    ");
                 }
             }
+            Console.Write("    ");
+            for (int i = 0; i < 3; i++)
+            {
+                if (game.Dracula.Catacombs[i] != null && game.Dracula.Catacombs[i].Encounters[0] != Encounter.None)
+                {
+                    if (game.Encounters.GetEncounterDetail(game.Dracula.Catacombs[i].Encounters[0]).IsRevealed)
+                    {
+                        Console.ResetColor();
+                        Console.Write(game.Dracula.Catacombs[i].Encounters[0].Name().Substring(0, 3).ToUpper() + " ");
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        Console.Write(" ■  ");
+                    }
+                }
+                else
+                {
+                    Console.Write("    ");
+                }
+            }
             Console.WriteLine("");
+            // line 3
             for (int i = 5; i >= 0; i--)
             {
                 if (game.Dracula.Trail[i] != null && game.Dracula.Trail[i].Encounters[0] != Encounter.None)
@@ -178,6 +264,49 @@ namespace FuryOfDracula.ConsoleInterface
                     {
                         Console.ResetColor();
                         Console.Write(game.Dracula.Trail[i].Encounters[0].Name().Substring(0, 3).ToUpper() + " ");
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        Console.Write(" ■  ");
+                    }
+                }
+                else
+                {
+                    Console.Write("    ");
+                }
+            }
+            Console.Write("    ");
+            for (int i = 0; i < 3; i++)
+            {
+                if (game.Dracula.Catacombs[i] != null && game.Dracula.Catacombs[i].Encounters[1] != Encounter.None)
+                {
+                    if (game.Encounters.GetEncounterDetail(game.Dracula.Catacombs[i].Encounters[1]).IsRevealed)
+                    {
+                        Console.ResetColor();
+                        Console.Write(game.Dracula.Catacombs[i].Encounters[1].Name().Substring(0, 3).ToUpper() + " ");
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        Console.Write(" ■  ");
+                    }
+                }
+                else
+                {
+                    Console.Write("    ");
+                }
+            }
+            Console.WriteLine();
+            // line 4
+            for (int i = 5; i >= 0; i--)
+            {
+                if (game.Dracula.Trail[i] != null && game.Dracula.Trail[i].Encounters[1] != Encounter.None)
+                {
+                    if (game.Encounters.GetEncounterDetail(game.Dracula.Trail[i].Encounters[1]).IsRevealed)
+                    {
+                        Console.ResetColor();
+                        Console.Write(game.Dracula.Trail[i].Encounters[1].Name().Substring(0, 3).ToUpper() + " ");
                     }
                     else
                     {

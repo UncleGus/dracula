@@ -21,6 +21,10 @@ namespace FuryOfDracula.GameLogic
                 }
                 return _map;
             }
+            private set
+            {
+                _map = value;
+            }
         }
         private ItemSet _items;
         public ItemSet Items
@@ -32,6 +36,10 @@ namespace FuryOfDracula.GameLogic
                     _items = new ItemSet();
                 }
                 return _items;
+            }
+            private set
+            {
+                _items = value;
             }
         }
         private EventSet _events;
@@ -45,6 +53,10 @@ namespace FuryOfDracula.GameLogic
                 }
                 return _events;
             }
+            private set
+            {
+                _events = value;
+            }
         }
         private EncounterSet _encounters;
         public EncounterSet Encounters
@@ -56,6 +68,10 @@ namespace FuryOfDracula.GameLogic
                     _encounters = new EncounterSet();
                 }
                 return _encounters;
+            }
+            private set
+            {
+                _encounters = value;
             }
         }
         private DraculaCardSet _draculaCardDeck;
@@ -69,31 +85,35 @@ namespace FuryOfDracula.GameLogic
                 }
                 return _draculaCardDeck;
             }
+            private set
+            {
+                _draculaCardDeck = value;
+            }
         }
         [DataMember]
-        public HunterPlayer[] Hunters;
+        public HunterPlayer[] Hunters { get; private set; }
         [DataMember]
-        public Dracula Dracula;
+        public Dracula Dracula { get; private set; }
         [DataMember]
-        public List<Event> EventDeck;
+        public List<Event> EventDeck { get; private set; }
         [DataMember]
-        public List<Event> EventDiscard;
+        public List<Event> EventDiscard { get; private set; }
         [DataMember]
-        public List<Item> ItemDeck;
+        public List<Item> ItemDeck { get; private set; }
         [DataMember]
-        public List<Item> ItemDiscard;
+        public List<Item> ItemDiscard { get; private set; }
         [DataMember]
-        public List<Encounter> EncounterPool;
+        public List<Encounter> EncounterPool { get; private set; }
         [DataMember]
-        public Event DraculaAlly;
+        public Event DraculaAlly { get; private set; }
         [DataMember]
-        public Event HunterAlly;
+        public Event HunterAlly { get; private set; }
         [DataMember]
-        public TimeOfDay TimeOfDay;
+        public TimeOfDay TimeOfDay { get; private set; }
         [DataMember]
-        public int Resolve;
+        public int Resolve { get; private set; }
         [DataMember]
-        public int Vampires;
+        public int Vampires { get; private set; }
 
         public GameState()
         {
@@ -138,6 +158,21 @@ namespace FuryOfDracula.GameLogic
             {
                 return Hunter.Nobody;
             }
+        }
+
+        public void AdvanceTimeTracker()
+        {
+            if (Map.TypeOfLocation(Dracula.CurrentLocation) != LocationType.Sea)
+            {
+
+                TimeOfDay = TimeOfDay + 1 % 6;
+                if (TimeOfDay == TimeOfDay.Dawn)
+                {
+                    Vampires++;
+                    Resolve++;
+                }
+            }
+
         }
     }
 }
