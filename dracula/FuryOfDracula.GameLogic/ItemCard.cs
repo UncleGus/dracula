@@ -2,16 +2,19 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace FuryOfDracula.GameLogic
 {
-    public class ItemDetail
+    [DataContract]
+    public class ItemCard
     {
-        public Item Item;
+        [DataMember]
+        public Item Item { get; private set; }
 
-        public ItemDetail(Item item)
+        public ItemCard(Item item)
         {
             Item = item;
         }

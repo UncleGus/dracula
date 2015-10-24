@@ -112,6 +112,11 @@ namespace FuryOfDracula.ArtificialIntelligence
             }
         }
 
+        public Encounter ChooseEncounterToResolveOnSearchingHunter(GameState game, List<Encounter> encountersToResolve)
+        {
+            return encountersToResolve[new Random().Next(0, encountersToResolve.Count())];
+        }
+
         public List<int> ChooseWhichCatacombsCardsToDiscard(GameState game)
         {
             List<int> cardsToDiscard = new List<int>();
@@ -143,7 +148,7 @@ namespace FuryOfDracula.ArtificialIntelligence
             return Encounter.None;
         }
 
-        public Event ChooseEventToDiscard(GameState game)
+        public EventCard ChooseEventToDiscard(GameState game)
         {
             return game.Dracula.EventHand[new Random().Next(0, game.Dracula.EventHand.Count())];
         }

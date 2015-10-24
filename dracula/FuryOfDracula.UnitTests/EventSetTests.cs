@@ -22,13 +22,13 @@ namespace FuryOfDracula.UnitTests
         [Test]
         public void GetEventsFromString_NewspaperReports_ReturnsAllNewspaperReportsEvents()
         {
-            List<Event> newspaperEvents = eventDeck.GetEventsFromString("Newspaper");
-            Assert.AreEqual(true, newspaperEvents.Contains(Event.NewspaperReports1));
-            Assert.AreEqual(true, newspaperEvents.Contains(Event.NewspaperReports2));
-            Assert.AreEqual(true, newspaperEvents.Contains(Event.NewspaperReports3));
-            Assert.AreEqual(true, newspaperEvents.Contains(Event.NewspaperReports4));
-            Assert.AreEqual(true, newspaperEvents.Contains(Event.NewspaperReports5));
-            Assert.AreEqual(false, newspaperEvents.Contains(Event.NightVisit));
+            List<EventCard> newspaperEvents = eventDeck.GetEventsFromString("Newspaper");
+            Assert.AreEqual(true, newspaperEvents.Contains(EventCard.NewspaperReports1));
+            Assert.AreEqual(true, newspaperEvents.Contains(EventCard.NewspaperReports2));
+            Assert.AreEqual(true, newspaperEvents.Contains(EventCard.NewspaperReports3));
+            Assert.AreEqual(true, newspaperEvents.Contains(EventCard.NewspaperReports4));
+            Assert.AreEqual(true, newspaperEvents.Contains(EventCard.NewspaperReports5));
+            Assert.AreEqual(false, newspaperEvents.Contains(EventCard.NightVisit));
         }
 
         [Test]

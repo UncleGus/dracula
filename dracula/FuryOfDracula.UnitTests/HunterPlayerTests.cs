@@ -57,15 +57,15 @@ namespace FuryOfDracula.UnitTests
         [Test]
         public void DiscardEvent_EventRemovedFromEventsKnownToDraculaAndEventCountDecreased()
         {
-            vanHelsing.EventsKnownToDracula.Add(Event.GoodLuck1);
+            vanHelsing.EventsKnownToDracula.Add(EventCard.GoodLuck1);
             vanHelsing.DrawEventCard();
             int cardCountBefore = vanHelsing.EventCount;
-            List<Event> eventDiscard = new List<Event>();
-            List<Event> possibleEvents = new List<Event>();
-            possibleEvents.Add(Event.GoodLuck1);
+            List<EventCard> eventDiscard = new List<EventCard>();
+            List<EventCard> possibleEvents = new List<EventCard>();
+            possibleEvents.Add(EventCard.GoodLuck1);
             vanHelsing.DiscardEvent(possibleEvents, eventDiscard);
             Assert.AreEqual(cardCountBefore - 1, vanHelsing.EventCount);
-            Assert.AreEqual(false, vanHelsing.EventsKnownToDracula.Contains(Event.GoodLuck1));
+            Assert.AreEqual(false, vanHelsing.EventsKnownToDracula.Contains(EventCard.GoodLuck1));
         }
 
         [Test]

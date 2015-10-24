@@ -50,11 +50,11 @@ namespace FuryOfDracula.GameLogic
         [DataMember]
         public List<Item> ItemsKnownToDracula { get; set; }
         [DataMember]
-        public List<Event> EventsKnownToDracula { get; set; }
+        public List<EventCard> EventsKnownToDracula { get; set; }
         [DataMember]
         public Item ItemShownToDraculaForBeingBitten { get; private set; }
         [DataMember]
-        public Event EventShownToDraculaForBeingBitten { get; private set; }
+        public EventCard EventShownToDraculaForBeingBitten { get; private set; }
         [DataMember]
         public bool HasDogsFaceUp { get; private set; }
         public Item LastCombatCardChosen { get; private set; }
@@ -77,7 +77,7 @@ namespace FuryOfDracula.GameLogic
             ItemCount = 0;
             EventCount = 0;
             ItemsKnownToDracula = new List<Item>();
-            EventsKnownToDracula = new List<Event>();
+            EventsKnownToDracula = new List<EventCard>();
             HasDogsFaceUp = false;
             HuntersInGroup = new List<Hunter>();
             HuntersInGroup.Add(Hunter);
@@ -98,34 +98,16 @@ namespace FuryOfDracula.GameLogic
             EventCount++;
         }
 
-        public void DiscardItem(List<Item> possibleItems, List<Item> itemDiscard)
+        public void DiscardItem(string itemToDiscard, List<Item> itemDiscard)
         {
             ItemCount--;
-            foreach (Item i in possibleItems)
-            {
-                if (ItemsKnownToDracula.Contains(i))
-                {
-                    ItemsKnownToDracula.Remove(i);
-                    itemDiscard.Add(i);
-                    return;
-                }
-            }            
-            itemDiscard.Add(possibleItems.First());
+            ItemsKnownToDracula.Remove(ItemsKnownToDracula.Find(card => card.Name == itemToDiscard));
         }
 
-        public void DiscardEvent(List<Event> possibleEvents, List<Event> eventDiscard)
+        public void DiscardEvent(string eventToDiscard, List<EventCard> eventDiscard)
         {
             EventCount--;
-            foreach (Event e in possibleEvents)
-            {
-                if (EventsKnownToDracula.Contains(e))
-                {
-                    EventsKnownToDracula.Remove(e);
-                    eventDiscard.Add(e);
-                    return;
-                }
-            }
-            eventDiscard.Add(possibleEvents.First());
+            EventsKnownToDracula.Remove(EventsKnownToDracula.Find(card => card.Name == eventToDiscard));
         }
 
         public void AdjustHealth(int amount)

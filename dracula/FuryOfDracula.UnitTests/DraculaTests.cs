@@ -36,7 +36,7 @@ namespace FuryOfDracula.UnitTests
         public void RevealCardAtPosition0_CardIsRevealed()
         {
             dracula.MoveTo(Location.Belgrade, Power.None);
-            dracula.RevealCardAtPosition(new GameState(), 0);
+            dracula.RevealCardAtPosition(0);
             Assert.AreEqual(true, dracula.Trail[0].DraculaCards[0].IsRevealed);
         }
 
@@ -88,24 +88,24 @@ namespace FuryOfDracula.UnitTests
         [Test]
         public void TakeEvent_ListOfEvents_ListGetsShorterAndEventHandGetsLonger()
         {
-            List<Event> cards = new List<Event> { Event.DevilishPower1 };
+            List<EventCard> cards = new List<EventCard> { EventCard.DevilishPower1 };
             int cardCountBefore = dracula.EventHand.Count();
             dracula.TakeEvent(cards, new EventSet());
-            Assert.AreEqual(false, cards.Contains(Event.DevilishPower1));
-            Assert.AreEqual(true, dracula.EventHand.Contains(Event.DevilishPower1));
+            Assert.AreEqual(false, cards.Contains(EventCard.DevilishPower1));
+            Assert.AreEqual(true, dracula.EventHand.Contains(EventCard.DevilishPower1));
             Assert.AreEqual(cardCountBefore + 1, dracula.EventHand.Count());
         }
 
         [Test]
         public void DiscardEvent_EventCard_EventHandGetsShorterAndDiscardGetsLonger()
         {
-            List<Event> cards = new List<Event> { Event.DevilishPower2 };
-            List<Event> discard = new List<Event>();
+            List<EventCard> cards = new List<EventCard> { EventCard.DevilishPower2 };
+            List<EventCard> discard = new List<EventCard>();
             dracula.TakeEvent(cards, new EventSet());
             int cardCountBefore = dracula.EventHand.Count();
-            dracula.DiscardEvent(Event.DevilishPower2, discard);
-            Assert.AreEqual(false, dracula.EventHand.Contains(Event.DevilishPower2));
-            Assert.AreEqual(true, discard.Contains(Event.DevilishPower2));
+            dracula.DiscardEvent(EventCard.DevilishPower2, discard);
+            Assert.AreEqual(false, dracula.EventHand.Contains(EventCard.DevilishPower2));
+            Assert.AreEqual(true, discard.Contains(EventCard.DevilishPower2));
             Assert.AreEqual(cardCountBefore - 1, dracula.EventHand.Count());
         }
 
@@ -156,6 +156,21 @@ namespace FuryOfDracula.UnitTests
             Assert.AreEqual(null, dracula.Trail[5]);
             Assert.AreEqual(1, discardedEncounters.Count());
             Assert.AreEqual(true, discardedEncounters.Contains(Encounter.Hoax1));
+        }
+
+        [Test]
+        public void RevealCardInTrailWithLocation_TrailWithLocationInIt_RevealsCardAndReturnsCorrectInt()
+        {
+            dracula.Trail[0] = new DraculaCardSlot();
+            dracula.Trail[1] = new DraculaCardSlot();
+            dracula.Trail[2] = new DraculaCardSlot();
+            dracula.Trail[0].DraculaCards[0] = dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.ClermontFerrand);
+            dracula.Trail[1].DraculaCards[0] = dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Madrid);
+            dracula.Trail[2].DraculaCards[0] = dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Santander);
+            dracula.Trail[1].Encounters[0] = Encounter.MinionWithKnife1;
+            int output = dracula.RevealCardInTrailWithLocation(Location.Madrid);
+            Assert.AreEqual(1, output);
+            Assert.AreEqual(true, dracula.Trail[1].DraculaCards[0].IsRevealed);
         }
     }
 }
