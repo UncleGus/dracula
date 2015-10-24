@@ -1,5 +1,4 @@
 ﻿using FuryOfDracula.GameLogic;
-using NUnit.Core;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;

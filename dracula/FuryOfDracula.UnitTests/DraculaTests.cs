@@ -130,5 +130,32 @@ namespace FuryOfDracula.UnitTests
             Assert.AreEqual(Encounter.None, dracula.Trail[0].Encounters[1]);
             Assert.AreEqual(true, encounterPool.Contains(Encounter.Bats2));
         }
+
+        [Test]
+        public void DiscardHide_TrailHasHideInMiddle_TrailIsShortenedAndCompactedAndEncountersReturned()
+        {
+            dracula.Trail[0] = new DraculaCardSlot();
+            dracula.Trail[1] = new DraculaCardSlot();
+            dracula.Trail[2] = new DraculaCardSlot();
+            dracula.Trail[3] = new DraculaCardSlot();
+            dracula.Trail[4] = new DraculaCardSlot();
+            dracula.Trail[5] = new DraculaCardSlot();
+            dracula.Trail[0].DraculaCards[0] = dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Bari);
+            dracula.Trail[1].DraculaCards[0] = dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Naples);
+            dracula.Trail[2].DraculaCards[0] = dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Rome);
+            dracula.Trail[3].DraculaCards[0] = dracula.DraculaCardDeck.GetDraculaCardForPower(Power.Hide);
+            dracula.Trail[3].Encounters[0] = Encounter.Hoax1;
+            dracula.Trail[4].DraculaCards[0] = dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Florence);
+            dracula.Trail[5].DraculaCards[0] = dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Milan);
+            List<Encounter> discardedEncounters = dracula.DiscardHide();
+            Assert.AreEqual(dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Bari), dracula.Trail[0].DraculaCards[0]);
+            Assert.AreEqual(dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Naples), dracula.Trail[1].DraculaCards[0]);
+            Assert.AreEqual(dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Rome), dracula.Trail[2].DraculaCards[0]);
+            Assert.AreEqual(dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Florence), dracula.Trail[3].DraculaCards[0]);
+            Assert.AreEqual(dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Milan), dracula.Trail[4].DraculaCards[0]);
+            Assert.AreEqual(null, dracula.Trail[5]);
+            Assert.AreEqual(1, discardedEncounters.Count());
+            Assert.AreEqual(true, discardedEncounters.Contains(Encounter.Hoax1));
+        }
     }
 }

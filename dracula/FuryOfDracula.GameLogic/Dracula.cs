@@ -27,6 +27,8 @@ namespace FuryOfDracula.GameLogic
         [DataMember]
         public DraculaCardSlot[] Catacombs { get; private set; }
         public DraculaCardSet DraculaCardDeck { get; private set; }
+        [DataMember]
+        public Location LocationWhereHideWasUsed { get; private set; }
 
         public Dracula()
         {
@@ -48,7 +50,7 @@ namespace FuryOfDracula.GameLogic
             {
                 for (int i = 0; i < 6; i++)
                 {
-                    if (Trail[i].DraculaCards[0].Location == destination)
+                    if (Trail[i] != null && Trail[i].DraculaCards[0].Location == destination)
                     {
                         doubleBackedCard = Trail[i];
                         for (int j = i; j > 0; j--)
@@ -66,6 +68,7 @@ namespace FuryOfDracula.GameLogic
                             Trail[0].DraculaCards[1] = DraculaCardDeck.GetDraculaCardForPower(Power.DoubleBack);
                             Trail[0].DraculaCards[1].IsRevealed = true;
                         }
+                        CurrentLocation = destination;
                         return null;
                     }
                 }
@@ -108,7 +111,7 @@ namespace FuryOfDracula.GameLogic
                 if (Trail[0].DraculaCards[0] == null)
                 {
                     Trail[0].DraculaCards[0] = DraculaCardDeck.GetDraculaCardForPower(power);
-                    if (power != Power.Hide)
+                    if (power != Power.Hide || CurrentLocation == Location.CastleDracula)
                     {
                         Trail[0].DraculaCards[0].IsRevealed = true;
                     }
@@ -121,6 +124,10 @@ namespace FuryOfDracula.GameLogic
                         Trail[0].DraculaCards[1].IsRevealed = true;
                     }
                 }
+            }
+            if (power == Power.Hide)
+            {
+                LocationWhereHideWasUsed = CurrentLocation;
             }
             return cardSlotDroppedOffTrail;
         }
@@ -151,24 +158,43 @@ namespace FuryOfDracula.GameLogic
 
         public bool RevealCardAtPosition(GameState game, int position)
         {
-            if (position < 0 || position > 5)
+            if (position < 0 || position > 8)
             {
                 return false;
             }
-            if (Trail[position] != null)
+            if (position < 6)
             {
-                Trail[position].DraculaCards[0].IsRevealed = true;
-                if (Trail[position].DraculaCards[1] != null)
+                if (Trail[position] != null)
                 {
-                    Trail[position].DraculaCards[1].IsRevealed = true;
+                    Trail[position].DraculaCards[0].IsRevealed = true;
+                    if (Trail[position].DraculaCards[1] != null)
+                    {
+                        Trail[position].DraculaCards[1].IsRevealed = true;
+                    }
+                    if (Trail[position].Encounters[0] != Encounter.None)
+                    {
+                        game.Encounters.GetEncounterDetail(Trail[position].Encounters[0]).IsRevealed = true;
+                    }
+                    if (Trail[position].Encounters[1] != Encounter.None)
+                    {
+                        game.Encounters.GetEncounterDetail(Trail[position].Encounters[1]).IsRevealed = true;
+                    }
+                    return true;
                 }
-                if (Trail[position].Encounters[0] != Encounter.None)
+            } else if (Catacombs[position - 6] != null)
+            {
+                Catacombs[position - 6].DraculaCards[0].IsRevealed = true;
+                if (Catacombs[position - 6].DraculaCards[1] != null)
                 {
-                    game.Encounters.GetEncounterDetail(Trail[position].Encounters[0]).IsRevealed = true;
+                    Catacombs[position - 6].DraculaCards[1].IsRevealed = true;
                 }
-                if (Trail[position].Encounters[1] != Encounter.None)
+                if (Catacombs[position - 6].Encounters[0] != Encounter.None)
                 {
-                    game.Encounters.GetEncounterDetail(Trail[position].Encounters[1]).IsRevealed = true;
+                    game.Encounters.GetEncounterDetail(Catacombs[position - 6].Encounters[0]).IsRevealed = true;
+                }
+                if (Catacombs[position - 6].Encounters[1] != Encounter.None)
+                {
+                    game.Encounters.GetEncounterDetail(Catacombs[position - 6].Encounters[1]).IsRevealed = true;
                 }
                 return true;
             }
@@ -205,6 +231,33 @@ namespace FuryOfDracula.GameLogic
             EncounterHand.Remove(encounterToPlace);
         }
 
+        public List<Encounter> DiscardHide()
+        {
+            List<Encounter> encountersDiscarded = new List<Encounter>();
+            for (int i = 0; i < 6; i++)
+            {
+                if (Trail[i].DraculaCards[0].Power == Power.Hide)
+                {
+                    LocationWhereHideWasUsed = Location.Nowhere;
+                    if (Trail[i].Encounters[0] != Encounter.None)
+                    {
+                        encountersDiscarded.Add(Trail[i].Encounters[0]);
+                    }
+                    if (Trail[i].Encounters[1] != Encounter.None)
+                    {
+                        encountersDiscarded.Add(Trail[i].Encounters[1]);
+                    }
+                    for (int j = i; j < 5; j++)
+                    {
+                        Trail[j] = Trail[j + 1];
+                    }
+                    Trail[5] = null;
+                    return encountersDiscarded;
+                }
+            }
+            return encountersDiscarded;
+        }
+
         public bool TakeEvent(List<Event> eventDeck, EventSet eventCards)
         {
             Event cardDrawn;
@@ -219,6 +272,16 @@ namespace FuryOfDracula.GameLogic
                 return true;
             }
             return false;
+        }
+
+        public void RevealHideCard()
+        {
+            for (int i = 0; i < 6; i++) {
+                if (Trail[i].DraculaCards[0].Power == Power.Hide)
+                {
+                    Trail[i].DraculaCards[0].IsRevealed = true;
+                }
+            }
         }
     }
 }

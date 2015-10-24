@@ -165,14 +165,13 @@ namespace FuryOfDracula.GameLogic
             if (Map.TypeOfLocation(Dracula.CurrentLocation) != LocationType.Sea)
             {
 
-                TimeOfDay = TimeOfDay + 1 % 6;
+                TimeOfDay = (TimeOfDay)((int)TimeOfDay % 6 + 1);
                 if (TimeOfDay == TimeOfDay.Dawn)
                 {
                     Vampires++;
                     Resolve++;
                 }
             }
-
         }
     }
 }

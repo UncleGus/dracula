@@ -176,7 +176,7 @@ namespace FuryOfDracula.ArtificialIntelligence
 
         public Encounter ChooseEncounterToPlaceOnDraculaCardSlot(GameState game, DraculaCardSlot slot)
         {
-            if (game.Map.TypeOfLocation(slot.DraculaCards[0].Location) != LocationType.SmallCity && game.Map.TypeOfLocation(slot.DraculaCards[0].Location) != LocationType.LargeCity && slot.DraculaCards[0].Power != Power.Hide)
+            if (game.Map.TypeOfLocation(slot.DraculaCards[0].Location) != LocationType.SmallCity && game.Map.TypeOfLocation(slot.DraculaCards[0].Location) != LocationType.LargeCity && (slot.DraculaCards[0].Power != Power.Hide || game.Dracula.CurrentLocation == Location.CastleDracula))
             {
                 return Encounter.None;
             }
