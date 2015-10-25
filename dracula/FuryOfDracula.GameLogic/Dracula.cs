@@ -62,7 +62,6 @@ namespace FuryOfDracula.GameLogic
 
         public DraculaCardSlot MoveTo(Location destination, Power power)
         {
-            find out why the wrong cards are being revealed
             DraculaCardSlot doubleBackedCard = null;
             int catacombsSlot = 0;
             if (power == Power.DoubleBack)
@@ -123,7 +122,7 @@ namespace FuryOfDracula.GameLogic
                 Trail[0].DraculaCards.Add(DraculaCardDeck.Find(card => card.Power == power));
                 if (power != Power.Hide || CurrentLocation == Location.CastleDracula)
                 {
-                    Trail[0].DraculaCards.First().IsRevealed = true;
+                    Trail[0].DraculaCards.Last().IsRevealed = true;
                 }
             }
             if (power == Power.Hide)
@@ -243,6 +242,7 @@ namespace FuryOfDracula.GameLogic
             {
                 if (Trail[i].DraculaCards.First().Power == Power.Hide)
                 {
+                    Trail[i].DraculaCards.First().IsRevealed = false;
                     LocationWhereHideWasUsed = Location.Nowhere;
                     foreach (EncounterTile enc in Trail[i].EncounterTiles)
                     {
@@ -373,6 +373,24 @@ namespace FuryOfDracula.GameLogic
         public void AdjustBlood(int adjustment)
         {
             Blood += adjustment;
+        }
+
+        public void EscapeAsBat(GameState game, Location destination)
+        {
+            foreach (DraculaCard card in Trail[0].DraculaCards)
+            {
+                card.IsRevealed = false;
+            }
+            foreach (EncounterTile enc in Trail[0].EncounterTiles)
+            {
+                enc.IsRevealed = false;
+                game.EncounterPool.Add(enc);
+            }
+            Trail[0] = new DraculaCardSlot(DraculaCardDeck.Find(card => card.Location == destination));
+            if (destination == Location.CastleDracula) {
+                Trail[0].DraculaCards.First().IsRevealed = true;
+            }
+            CurrentLocation = destination;
         }
     }
 }

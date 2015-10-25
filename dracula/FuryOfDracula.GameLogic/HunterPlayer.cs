@@ -141,5 +141,10 @@ namespace FuryOfDracula.GameLogic
         {
             Health += amount;
         }
+
+        public void AdjustBites(int amount)
+        {
+            BiteCount += amount;
+        }
     }
 }

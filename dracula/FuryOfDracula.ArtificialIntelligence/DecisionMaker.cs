@@ -133,7 +133,8 @@ namespace FuryOfDracula.ArtificialIntelligence
                 if (new Random().Next(0, 2) == 0)
                 {
                     return game.Dracula.Trail[0].EncounterTiles.First();
-                } else
+                }
+                else
                 {
                     return game.Dracula.Trail[0].EncounterTiles[1];
                 }
@@ -193,6 +194,57 @@ namespace FuryOfDracula.ArtificialIntelligence
             } while ((cardChosen == EnemyCombatCard.Dodge && firstRound) || cardChosen == cardUsedLastRound || (repelled && (cardChosen == EnemyCombatCard.Fangs || cardChosen == EnemyCombatCard.Mesmerize || cardChosen == EnemyCombatCard.Strength)));
             enemyTarget = huntersInvolved[new Random().Next(0, huntersInvolved.Count())].Hunter;
             return cardChosen;
+        }
+
+        public Location ChooseEscapeAsBatDestination(GameState game)
+        {
+            List<Location> possibleDestinations = game.Map.LocationsConnectedByRoadTo(game.Dracula.CurrentLocation);
+            List<Location> tempExtensionsList = new List<Location>();
+            foreach (Location loc in possibleDestinations)
+            {
+                foreach (Location ext in game.Map.LocationsConnectedByRoadTo(loc))
+                {
+                    if (!possibleDestinations.Contains(ext) && !tempExtensionsList.Contains(ext))
+                    {
+                        tempExtensionsList.Add(ext);
+                    }
+                }
+            }
+            possibleDestinations.AddRange(tempExtensionsList);
+            for (int i = 0; i < 6; i++)
+            {
+                if (game.Dracula.Trail[i] != null)
+                {
+                    foreach (DraculaCard card in game.Dracula.Trail[i].DraculaCards)
+                    {
+                        possibleDestinations.Remove(card.Location);
+                    }
+                }
+            }
+            for (int i = 0; i < 3; i++)
+            {
+                if (game.Dracula.Catacombs[i] != null)
+                {
+                    foreach (DraculaCard card in game.Dracula.Catacombs[i].DraculaCards)
+                    {
+                        possibleDestinations.Remove(card.Location);
+                    }
+                }
+            }
+            List<Location> hunterLocations = new List<Location>();
+            foreach (Location loc in possibleDestinations)
+            {
+                for (int i = 1; i < 5; i++)
+                    if (game.Hunters[i].CurrentLocation == loc)
+                    {
+                        hunterLocations.Add(loc);
+                    }
+            }
+            foreach (Location loc in hunterLocations)
+            {
+                possibleDestinations.Remove(loc);
+            }
+            return possibleDestinations[new Random().Next(0, possibleDestinations.Count())];
         }
     }
 }

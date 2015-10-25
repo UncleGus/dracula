@@ -206,12 +206,14 @@ namespace FuryOfDracula.ConsoleInterface
                     hunterCanContinueToResolveEncounters = ResolveEncounterTile(game, encounterTileBeingResolved, game.Hunters[(int)hunterMoved].HuntersInGroup, logic);
                     encounterTilesToResolve.Remove(encounterTileBeingResolved);
                 }
-                if (slotBeingRevealed.DraculaCards.First().Location == game.Dracula.CurrentLocation && hunterCanContinueToResolveEncounters) {
+                if (slotBeingRevealed.DraculaCards.First().Location == game.Dracula.CurrentLocation && hunterCanContinueToResolveEncounters)
+                {
                     List<HunterPlayer> huntersAttacking = new List<HunterPlayer>();
                     foreach (Hunter h in game.Hunters[(int)hunterMoved].HuntersInGroup)
                     {
                         huntersAttacking.Add(game.Hunters[(int)h]);
                     }
+                    Console.WriteLine("Entering combat with Dracula");
                     ResolveCombat(game, huntersAttacking, Opponent.Dracula, logic);
                 }
 
@@ -399,17 +401,32 @@ namespace FuryOfDracula.ConsoleInterface
 
         private static bool ResolveMinionWithKnifeAndRifle(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
         {
-            return true;
+            List<HunterPlayer> huntersInCombat = new List<HunterPlayer>();
+            foreach (Hunter h in huntersInvolved)
+            {
+                huntersInCombat.Add(game.Hunters[(int)h]);
+            }
+            return ResolveCombat(game, huntersInCombat, Opponent.MinionWithKnifeAndRifle, logic);
         }
 
         private static bool ResolveMinionWithKnifeAndPistol(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
         {
-            return true;
+            List<HunterPlayer> huntersInCombat = new List<HunterPlayer>();
+            foreach (Hunter h in huntersInvolved)
+            {
+                huntersInCombat.Add(game.Hunters[(int)h]);
+            }
+            return ResolveCombat(game, huntersInCombat, Opponent.MinionWithKnifeAndPistol, logic);
         }
 
         private static bool ResolveMinionWithKnife(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
         {
-            return true;
+            List<HunterPlayer> huntersInCombat = new List<HunterPlayer>();
+            foreach (Hunter h in huntersInvolved)
+            {
+                huntersInCombat.Add(game.Hunters[(int)h]);
+            }
+            return ResolveCombat(game, huntersInCombat, Opponent.MinionWithKnife, logic);
         }
 
         private static bool ResolveFog(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
@@ -429,7 +446,12 @@ namespace FuryOfDracula.ConsoleInterface
 
         private static bool ResolveAssassin(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
         {
-            return true;
+            List<HunterPlayer> huntersInCombat = new List<HunterPlayer>();
+            foreach (Hunter h in huntersInvolved)
+            {
+                huntersInCombat.Add(game.Hunters[(int)h]);
+            }
+            return ResolveCombat(game, huntersInCombat, Opponent.Assassin, logic);
         }
 
         private static bool ResolveAmbush(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
@@ -1080,6 +1102,14 @@ namespace FuryOfDracula.ConsoleInterface
             return new CommandSet(command.ToLower(), argument1.ToLower(), argument2.ToLower());
         }
 
+        /// <summary>
+        /// Resolves a combat between a group of hunters and an opponent
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="huntersInvolved">A list of HunterPlayers involved in the combat</param>
+        /// <param name="opponent">The opponent type</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        /// <returns>A bool of whether the HunterPlayers can continue resolving encounters or not</returns>
         private static bool ResolveCombat(GameState game, List<HunterPlayer> huntersInvolved, Opponent opponent, DecisionMaker logic)
         {
             List<ItemCard> basicHunterCombatCards = new List<ItemCard> { new ItemCard(Item.Punch), new ItemCard(Item.Dodge), new ItemCard(Item.Escape) };
@@ -1238,7 +1268,7 @@ namespace FuryOfDracula.ConsoleInterface
                 } while (health == -1);
                 game.Dracula.AdjustBlood(health - game.Dracula.Blood);
             }
-            Console.WriteLine("Did the Hunter{0} win?", huntersInvolved.Count() > 1 ? "s" : "");
+            Console.WriteLine("Did {0} win? (An end result is a no)", huntersInvolved.Count() > 1 ? "the Hunters" : huntersInvolved.First().Hunter.Name());
             string input;
             do
             {
@@ -1251,8 +1281,39 @@ namespace FuryOfDracula.ConsoleInterface
                     game.AdjustVampires(-1);
                 }
                 return true;
-            } else
+            }
+            else
             {
+                if (opponent == Opponent.Dracula)
+                {
+                    switch (enemyCombatCardChosen)
+                    {
+                        case EnemyCombatCard.Mesmerize:
+                            Console.WriteLine("{0} is bitten and must discard all Items!", enemyTarget.Name());
+                            game.Hunters[(int)enemyTarget].AdjustBites(1);
+                            while (game.Hunters[(int)enemyTarget].ItemCount > 0)
+                            {
+                                string line = "";
+                                Item itemDiscarded = Item.None;
+                                do
+                                {
+                                    Console.WriteLine("What is the name of the Item being discarded?");
+                                    line = Console.ReadLine();
+                                    itemDiscarded = Enumerations.GetItemFromString(line);
+                                } while (itemDiscarded == Item.None);
+                                game.Hunters[(int)enemyTarget].DiscardItem(game, itemDiscarded);
+                            }
+                            break;
+                        case EnemyCombatCard.Fangs:
+                            game.Hunters[(int)enemyTarget].AdjustBites(1);
+                            Console.WriteLine("{0} is bitten!", enemyTarget.Name());
+                            goto case EnemyCombatCard.EscapeBat;
+                        case EnemyCombatCard.EscapeBat:
+                            Console.WriteLine("Dracula escaped in the form of a bat");
+                            game.Dracula.EscapeAsBat(game, logic.ChooseEscapeAsBatDestination(game));
+                            break;
+                    }
+                }
                 return false;
             }
         }
