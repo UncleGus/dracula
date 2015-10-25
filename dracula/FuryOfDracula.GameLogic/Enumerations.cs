@@ -323,6 +323,7 @@ namespace FuryOfDracula.GameLogic
         None,
         Punch,
         Knife,
+        Pistol,
         Rifle,
         Dodge,
         Claws,
@@ -356,5 +357,16 @@ namespace FuryOfDracula.GameLogic
         Twilight,
         Midnight,
         SmallHours
+    }
+
+    public enum Opponent
+    {
+        None,
+        MinionWithKnife,
+        MinionWithKnifeAndPistol,
+        MinionWithKnifeAndRifle,
+        Assassin,
+        Dracula,
+        NewVampire
     }
 }

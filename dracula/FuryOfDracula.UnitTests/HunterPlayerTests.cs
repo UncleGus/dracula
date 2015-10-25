@@ -47,7 +47,7 @@ namespace FuryOfDracula.UnitTests
             vanHelsing.DrawItemCard();
             int cardCountBefore = vanHelsing.ItemCount;
             List<ItemCard> itemDiscard = new List<ItemCard>();
-            vanHelsing.DiscardItem(Item.Knife, itemDiscard);
+            vanHelsing.DiscardItem(new GameState(), Item.Knife);
             Assert.AreEqual(cardCountBefore - 1, vanHelsing.ItemCount);
             Assert.AreEqual(null, vanHelsing.ItemsKnownToDracula.Find(card => card.Item == Item.Knife));
         }
@@ -59,7 +59,7 @@ namespace FuryOfDracula.UnitTests
             vanHelsing.DrawEventCard();
             int cardCountBefore = vanHelsing.EventCount;
             List<EventCard> eventDiscard = new List<EventCard>();
-            vanHelsing.DiscardEvent(Event.GoodLuck, eventDiscard);
+            vanHelsing.DiscardEvent(new GameState(), Event.GoodLuck);
             Assert.AreEqual(cardCountBefore - 1, vanHelsing.EventCount);
             Assert.AreEqual(null, vanHelsing.EventsKnownToDracula.Find(card => card.Event == Event.GoodLuck));
         }

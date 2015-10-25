@@ -183,5 +183,16 @@ namespace FuryOfDracula.ArtificialIntelligence
             }
             return game.Dracula.EncounterHand[new Random().Next(0, game.Dracula.EncounterHand.Count())];
         }
+
+        public EnemyCombatCard ChooseCombatCardAndTarget(List<HunterPlayer> huntersInvolved, List<EnemyCombatCard> enemyCombatCards, bool firstRound, out Hunter enemyTarget, EnemyCombatCard cardUsedLastRound, bool repelled)
+        {
+            EnemyCombatCard cardChosen = EnemyCombatCard.None;
+            do
+            {
+                cardChosen = enemyCombatCards[new Random().Next(0, enemyCombatCards.Count())];
+            } while ((cardChosen == EnemyCombatCard.Dodge && firstRound) || cardChosen == cardUsedLastRound || (repelled && (cardChosen == EnemyCombatCard.Fangs || cardChosen == EnemyCombatCard.Mesmerize || cardChosen == EnemyCombatCard.Strength)));
+            enemyTarget = huntersInvolved[new Random().Next(0, huntersInvolved.Count())].Hunter;
+            return cardChosen;
+        }
     }
 }

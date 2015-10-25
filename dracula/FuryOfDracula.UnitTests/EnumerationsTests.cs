@@ -34,5 +34,17 @@ namespace FuryOfDracula.UnitTests
         {
             Assert.AreEqual("Advance Planning", Event.AdvancePlanning.Name());
         }
+
+        [Test]
+        public void GetItemFromString_PIS_ReturnsItemPistol()
+        {
+            Assert.AreEqual(Item.Pistol, Enumerations.GetItemFromString("PIS"));
+        }
+
+        [Test]
+        public void GetEventFromString_GOO_ReturnsEventGoodLuck()
+        {
+            Assert.AreEqual(Event.GoodLuck, Enumerations.GetEventFromString("GOO"));
+        }
     }
 }

@@ -62,6 +62,7 @@ namespace FuryOfDracula.GameLogic
 
         public DraculaCardSlot MoveTo(Location destination, Power power)
         {
+            find out why the wrong cards are being revealed
             DraculaCardSlot doubleBackedCard = null;
             int catacombsSlot = 0;
             if (power == Power.DoubleBack)
@@ -172,13 +173,13 @@ namespace FuryOfDracula.GameLogic
 
         public void DiscardCatacombsCards(GameState game, List<int> list)
         {
-            List<EncounterTile> encountersDiscarded = new List<EncounterTile>();
+            List<EncounterTile> encounterTilesDiscarded = new List<EncounterTile>();
             foreach (int i in list)
             {
-                encountersDiscarded.AddRange(Catacombs[i].EncounterTiles);
+                encounterTilesDiscarded.AddRange(Catacombs[i].EncounterTiles);
                 Catacombs[i] = null;
             }
-            foreach (EncounterTile enc in encountersDiscarded)
+            foreach (EncounterTile enc in encounterTilesDiscarded)
             {
                 enc.IsRevealed = false;
                 game.EncounterPool.Add(enc);
@@ -228,8 +229,11 @@ namespace FuryOfDracula.GameLogic
 
         public void PlaceEncounterTileOnCard(EncounterTile encounterToPlace, DraculaCardSlot card)
         {
-            card.EncounterTiles.Add(encounterToPlace);
-            EncounterHand.Remove(encounterToPlace);
+            if (encounterToPlace != null)
+            {
+                card.EncounterTiles.Add(encounterToPlace);
+                EncounterHand.Remove(encounterToPlace);
+            }
         }
 
         public List<EncounterTile> DiscardHide()
@@ -366,5 +370,9 @@ namespace FuryOfDracula.GameLogic
 
         }
 
+        public void AdjustBlood(int adjustment)
+        {
+            Blood += adjustment;
+        }
     }
 }

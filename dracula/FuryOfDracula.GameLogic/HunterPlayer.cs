@@ -57,7 +57,7 @@ namespace FuryOfDracula.GameLogic
         public EventCard EventShownToDraculaForBeingBitten { get; set; }
         [DataMember]
         public bool HasDogsFaceUp { get; private set; }
-        public ItemCard LastCombatCardChosen { get; private set; }
+        public Item LastCombatCardChosen { get; set; }
         [DataMember]
         public ConnectionType NextMoveConnectionType { get; private set; }
         [DataMember]
@@ -98,16 +98,43 @@ namespace FuryOfDracula.GameLogic
             EventCount++;
         }
 
-        public void DiscardItem(Item itemToDiscard, List<ItemCard> itemDiscard)
+        public void DiscardItem(GameState game, Item itemToDiscard)
         {
             ItemCount--;
-            ItemsKnownToDracula.Remove(ItemsKnownToDracula.Find(card => card.Item == itemToDiscard));
+            ItemCard ItemCardToDiscard = ItemsKnownToDracula.Find(card => card.Item == itemToDiscard);
+            if (ItemCardToDiscard != null)
+            {
+                ItemsKnownToDracula.Remove(ItemCardToDiscard);
+            }
+            else
+            {
+                ItemCardToDiscard = game.ItemDeck.Find(card => card.Item == itemToDiscard);
+                game.ItemDeck.Remove(ItemCardToDiscard);
+            }
+            game.ItemDiscard.Add(ItemCardToDiscard);
+            if (ItemShownToDraculaForBeingBitten != null && ItemShownToDraculaForBeingBitten.Item == itemToDiscard)
+            {
+                ItemShownToDraculaForBeingBitten = null;
+            }
         }
 
-        public void DiscardEvent(Event eventToDiscard, List<EventCard> eventDiscard)
+        public void DiscardEvent(GameState game, Event eventToDiscard)
         {
             EventCount--;
-            EventsKnownToDracula.Remove(EventsKnownToDracula.Find(card => card.Event == eventToDiscard));
+            EventCard eventCardToDiscard = EventsKnownToDracula.Find(card => card.Event == eventToDiscard);
+            if (eventCardToDiscard != null)
+            {
+                EventsKnownToDracula.Remove(eventCardToDiscard);
+            } else
+            {
+                eventCardToDiscard = game.EventDeck.Find(card => card.Event == eventToDiscard);
+                game.EventDeck.Remove(eventCardToDiscard);
+            }
+            game.EventDiscard.Add(eventCardToDiscard);
+            if (EventShownToDraculaForBeingBitten != null && EventShownToDraculaForBeingBitten.Event == eventToDiscard)
+            {
+                EventShownToDraculaForBeingBitten = null;
+            }
         }
 
         public void AdjustHealth(int amount)

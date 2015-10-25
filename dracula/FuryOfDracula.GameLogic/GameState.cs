@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -86,8 +87,6 @@ namespace FuryOfDracula.GameLogic
                 _encounterPool = value;
             }
         }
-
-
         [DataMember]
         public EventCard DraculaAlly { get; private set; }
         [DataMember]
@@ -327,5 +326,30 @@ namespace FuryOfDracula.GameLogic
 
         }
 
+        private void SaveState(string fileName) {
+            try
+            {
+                string invalid = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+                foreach (char c in invalid)
+                {
+                    fileName = fileName.Replace(c.ToString(), "");
+                }
+                fileName = fileName + ".sav";
+                DataContractSerializer fileWriter = new DataContractSerializer(typeof(GameState));
+                FileStream writeStream = File.OpenWrite(fileName);
+
+                fileWriter.WriteObject(writeStream, this);
+                writeStream.Close();
+            }
+            catch 
+            {
+                throw;
+            }
+        }
+
+        public void AdjustVampires(int adjustment)
+        {
+            Vampires += adjustment;
+        }
     }
 }
