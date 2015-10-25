@@ -30,28 +30,34 @@ namespace FuryOfDracula.ArtificialIntelligence
             possibleWolfFormDestinations.AddRange(tempWolfFormExtensionsList);
             for (int i = 0; i < 6; i++)
             {
-                foreach (DraculaCard card in game.Dracula.Trail[i].DraculaCards)
+                if (game.Dracula.Trail[i] != null)
                 {
-                    possibleDestinations.Remove(card.Location);
-                    if (card.Location != Location.Nowhere)
+                    foreach (DraculaCard card in game.Dracula.Trail[i].DraculaCards)
                     {
-                        possibleDoubleBackDestinations.Add(card.Location);
+                        possibleDestinations.Remove(card.Location);
+                        if (card.Location != Location.Nowhere)
+                        {
+                            possibleDoubleBackDestinations.Add(card.Location);
+                        }
+                        possibleWolfFormDestinations.Remove(card.Location);
+                        possiblePowers.Remove(card.Power);
                     }
-                    possibleWolfFormDestinations.Remove(card.Location);
-                    possiblePowers.Remove(card.Power);
                 }
             }
             for (int i = 0; i < 3; i++)
             {
-                foreach (DraculaCard card in game.Dracula.Catacombs[i].DraculaCards)
+                if (game.Dracula.Catacombs[i] != null)
                 {
-                    possibleDestinations.Remove(card.Location);
-                    if (card.Location != Location.Nowhere)
+                    foreach (DraculaCard card in game.Dracula.Catacombs[i].DraculaCards)
                     {
-                        possibleDoubleBackDestinations.Add(card.Location);
+                        possibleDestinations.Remove(card.Location);
+                        if (card.Location != Location.Nowhere)
+                        {
+                            possibleDoubleBackDestinations.Add(card.Location);
+                        }
+                        possibleWolfFormDestinations.Remove(card.Location);
+                        possiblePowers.Remove(card.Power);
                     }
-                    possibleWolfFormDestinations.Remove(card.Location);
-                    possiblePowers.Remove(card.Power);
                 }
             }
             possibleDoubleBackDestinations.Remove(game.Dracula.CurrentLocation);
