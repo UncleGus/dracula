@@ -20,30 +20,6 @@ namespace FuryOfDracula.UnitTests
         }
 
         [Test]
-        public void GameState_MapInitialisation()
-        {
-            Assert.AreEqual(Location.Paris, game.Map.GetLocationFromString("Par"));
-        }
-
-        [Test]
-        public void GameState_ItemsInitialisation()
-        {
-            Assert.AreEqual(3, game.Items.GetItemsFromString("Holy").Count());
-        }
-
-        [Test]
-        public void GameState_EventsInitialisation()
-        {
-            Assert.AreEqual(2, game.Events.GetEventsFromString("Mystic").Count());
-        }
-
-        [Test]
-        public void GameState_EncountersInitialisation()
-        {
-            Assert.AreEqual(3, game.Encounters.GetEncountersFromString("Dese").Count());
-        }
-
-        [Test]
         public void GameState_HuntersInitialisation()
         {
             Assert.AreEqual(3, game.Hunters[(int)Hunter.VanHelsing].BitesRequiredToKill);

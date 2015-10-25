@@ -1,19 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace FuryOfDracula.GameLogic
 {
+    [DataContract]
     public class DraculaCardSlot
     {
-        public DraculaCard[] DraculaCards = new DraculaCard[2];
-        public Encounter[] Encounters = new Encounter[2];
+        [DataMember]
+        public List<DraculaCard> DraculaCards = new List<DraculaCard>();
+        [DataMember]
+        public List<EncounterTile> EncounterTiles = new List<EncounterTile>();
 
         public DraculaCardSlot(DraculaCard card)
         {
-            DraculaCards[0] = card;
+            DraculaCards.Add(card);
         }
 
         public DraculaCardSlot()

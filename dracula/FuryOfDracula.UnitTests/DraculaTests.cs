@@ -50,85 +50,75 @@ namespace FuryOfDracula.UnitTests
             dracula.MoveTo(Location.Cadiz, Power.None);
             dracula.MoveTo(Location.Dublin, Power.None);
             dracula.MoveTo(Location.Frankfurt, Power.None);
-            Assert.AreEqual(false, dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Athens).IsRevealed);
+            Assert.AreEqual(false, dracula.DraculaCardDeck.Find(card => card.Location == Location.Athens).IsRevealed);
         }
 
         [Test]
         public void DrawEncounter_ReducesListBy1AndIncreasedEncounterHandBy1()
         {
-            List<Encounter> encounterPool = new EncounterSet().GetAllEncounters();
+            List<EncounterTile> encounterPool = new List<EncounterTile> { new EncounterTile(Encounter.DesecratedSoil), new EncounterTile(Encounter.NewVampire) };
             dracula.DrawEncounter(encounterPool);
-            Assert.AreEqual(44, encounterPool.Count());
+            Assert.AreEqual(1, encounterPool.Count());
             Assert.AreEqual(1, dracula.EncounterHand.Count());
         }
 
         [Test]
-        public void PlaceEncounterOnCard_Peasants_RemovesPeasantsFromEncounterHandAndAddsToTrail()
+        public void PlaceEncounterTileOnCard_Peasants_RemovesPeasantsFromEncounterHandAndAddsToTrail()
         {
             dracula.MoveTo(Location.Nuremburg, Power.None);
-            dracula.DrawEncounter(new List<Encounter> { Encounter.Peasants1 });
+            dracula.DrawEncounter(new List<EncounterTile> { new EncounterTile(Encounter.Peasants) });
             int countBefore = dracula.EncounterHand.Count();
-            dracula.PlaceEncounterOnCard(Encounter.Peasants1, dracula.Trail[0]);
+            dracula.PlaceEncounterTileOnCard(dracula.EncounterHand.First(), dracula.Trail[0]);
             Assert.AreEqual(countBefore - 1, dracula.EncounterHand.Count());
-            Assert.AreEqual(Encounter.Peasants1, dracula.Trail[0].Encounters[0]);
+            Assert.AreEqual(Encounter.Peasants, dracula.Trail[0].EncounterTiles.First().Encounter);
         }
 
         [Test]
-        public void PlaceEncounterOnCard_PerformedTwice_PutsEncounterInSecondEncounterSlot()
+        public void PlaceEncounterTileOnCard_PerformedTwice_PutsEncounterInSecondEncounterSlot()
         {
             dracula.MoveTo(Location.Edinburgh, Power.None);
-            List<Encounter> encounters = new List<Encounter> { Encounter.Rats1, Encounter.Rats2 };
-            dracula.DrawEncounter(encounters);
-            dracula.DrawEncounter(encounters);
-            dracula.PlaceEncounterOnCard(Encounter.Rats1, dracula.Trail[0]);
-            dracula.PlaceEncounterOnCard(Encounter.Rats2, dracula.Trail[0]);
-            Assert.AreEqual(Encounter.Rats2, dracula.Trail[0].Encounters[1]);
+            List<EncounterTile> encounterTiles = new List<EncounterTile> { new EncounterTile(Encounter.Rats), new EncounterTile(Encounter.Peasants) };
+            dracula.DrawEncounter(encounterTiles);
+            dracula.DrawEncounter(encounterTiles);
+            dracula.PlaceEncounterTileOnCard(dracula.EncounterHand.Find(tile => tile.Encounter == Encounter.Rats), dracula.Trail[0]);
+            dracula.PlaceEncounterTileOnCard(dracula.EncounterHand.Find(tile => tile.Encounter == Encounter.Peasants), dracula.Trail[0]);
+            Assert.AreEqual(Encounter.Peasants, dracula.Trail[0].EncounterTiles[1]);
         }
 
         [Test]
         public void TakeEvent_ListOfEvents_ListGetsShorterAndEventHandGetsLonger()
         {
-            List<EventCard> cards = new List<EventCard> { EventCard.DevilishPower1 };
+            List<EventCard> cards = new List<EventCard> { new EventCard(Event.DevilishPower, true, EventType.Keep) };
             int cardCountBefore = dracula.EventHand.Count();
-            dracula.TakeEvent(cards, new EventSet());
-            Assert.AreEqual(false, cards.Contains(EventCard.DevilishPower1));
-            Assert.AreEqual(true, dracula.EventHand.Contains(EventCard.DevilishPower1));
+            dracula.TakeEvent(cards);
+            Assert.AreEqual(null, cards.Find(card => card.Event == Event.DevilishPower));
+            Assert.AreNotEqual(null, dracula.EventHand.Find(card => card.Event == Event.DevilishPower));
             Assert.AreEqual(cardCountBefore + 1, dracula.EventHand.Count());
         }
 
         [Test]
         public void DiscardEvent_EventCard_EventHandGetsShorterAndDiscardGetsLonger()
         {
-            List<EventCard> cards = new List<EventCard> { EventCard.DevilishPower2 };
+            List<EventCard> cards = new List<EventCard> { new EventCard(Event.DevilishPower, true, EventType.Keep) };
             List<EventCard> discard = new List<EventCard>();
-            dracula.TakeEvent(cards, new EventSet());
+            dracula.TakeEvent(cards);
             int cardCountBefore = dracula.EventHand.Count();
-            dracula.DiscardEvent(EventCard.DevilishPower2, discard);
-            Assert.AreEqual(false, dracula.EventHand.Contains(EventCard.DevilishPower2));
-            Assert.AreEqual(true, discard.Contains(EventCard.DevilishPower2));
+            dracula.DiscardEvent(dracula.EventHand.Find(card => card.Event == Event.DevilishPower), discard);
+            Assert.AreEqual(null, dracula.EventHand.Find(card => card.Event == Event.DevilishPower));
+            Assert.AreNotEqual(null, discard.Find(card => card.Event == Event.DevilishPower));
             Assert.AreEqual(cardCountBefore - 1, dracula.EventHand.Count());
         }
 
         [Test]
-        public void DiscardEncounterFromCardSlot_EncounterInSlot1_EncounterIsMovedToEncounterPool()
+        public void DiscardEncounterFromCardSlot_EncounterInList_EncounterIsMovedToEncounterPool()
         {
-            List<Encounter> encounterPool = new List<Encounter>();
+            List<EncounterTile> encounterPool = new List<EncounterTile>();
             dracula.Trail[0] = new DraculaCardSlot();
-            dracula.Trail[0].Encounters[0] = Encounter.Bats1;
-            dracula.DiscardEncounterFromCardSlot(Encounter.Bats1, dracula.Trail[0], encounterPool);
-            Assert.AreEqual(Encounter.None, dracula.Trail[0].Encounters[0]);
-            Assert.AreEqual(true, encounterPool.Contains(Encounter.Bats1));
-        }
-
-        [Test]
-        public void DiscardEncounterFromCardSlot_EncounterInSlot2_EncounterIsMovedToEncounterPool()
-        {
-            List<Encounter> encounterPool = new List<Encounter>();
-            dracula.Trail[0] = new DraculaCardSlot();
-            dracula.Trail[0].Encounters[1] = Encounter.Bats2;
-            dracula.DiscardEncounterFromCardSlot(Encounter.Bats2, dracula.Trail[0], encounterPool);
-            Assert.AreEqual(Encounter.None, dracula.Trail[0].Encounters[1]);
-            Assert.AreEqual(true, encounterPool.Contains(Encounter.Bats2));
+            EncounterTile batsTile = new EncounterTile(Encounter.Bats);
+            dracula.Trail[0].EncounterTiles.Add(batsTile);
+            dracula.DiscardEncounterTileFromCardSlot(batsTile, dracula.Trail[0], encounterPool);
+            Assert.AreEqual(false, dracula.Trail[0].EncounterTiles.Contains(batsTile));
+            Assert.AreEqual(true, encounterPool.Contains(batsTile));
         }
 
         [Test]
@@ -140,22 +130,22 @@ namespace FuryOfDracula.UnitTests
             dracula.Trail[3] = new DraculaCardSlot();
             dracula.Trail[4] = new DraculaCardSlot();
             dracula.Trail[5] = new DraculaCardSlot();
-            dracula.Trail[0].DraculaCards[0] = dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Bari);
-            dracula.Trail[1].DraculaCards[0] = dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Naples);
-            dracula.Trail[2].DraculaCards[0] = dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Rome);
-            dracula.Trail[3].DraculaCards[0] = dracula.DraculaCardDeck.GetDraculaCardForPower(Power.Hide);
-            dracula.Trail[3].Encounters[0] = Encounter.Hoax1;
-            dracula.Trail[4].DraculaCards[0] = dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Florence);
-            dracula.Trail[5].DraculaCards[0] = dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Milan);
-            List<Encounter> discardedEncounters = dracula.DiscardHide();
-            Assert.AreEqual(dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Bari), dracula.Trail[0].DraculaCards[0]);
-            Assert.AreEqual(dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Naples), dracula.Trail[1].DraculaCards[0]);
-            Assert.AreEqual(dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Rome), dracula.Trail[2].DraculaCards[0]);
-            Assert.AreEqual(dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Florence), dracula.Trail[3].DraculaCards[0]);
-            Assert.AreEqual(dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Milan), dracula.Trail[4].DraculaCards[0]);
+            dracula.Trail[0].DraculaCards[0] = dracula.DraculaCardDeck.Find(card => card.Location == Location.Bari);
+            dracula.Trail[1].DraculaCards[0] = dracula.DraculaCardDeck.Find(card => card.Location == Location.Naples);
+            dracula.Trail[2].DraculaCards[0] = dracula.DraculaCardDeck.Find(card => card.Location == Location.Rome);
+            dracula.Trail[3].DraculaCards[0] = dracula.DraculaCardDeck.Find(card => card.Power == Power.Hide);
+            dracula.Trail[3].EncounterTiles.Add(new EncounterTile(Encounter.Hoax));
+            dracula.Trail[4].DraculaCards[0] = dracula.DraculaCardDeck.Find(card => card.Location == Location.Florence);
+            dracula.Trail[5].DraculaCards[0] = dracula.DraculaCardDeck.Find(card => card.Location == Location.Milan);
+            List<EncounterTile> discardedEncounters = dracula.DiscardHide();
+            Assert.AreEqual(Location.Bari, dracula.Trail[0].DraculaCards[0].Location);
+            Assert.AreEqual(Location.Naples, dracula.Trail[1].DraculaCards[0].Location);
+            Assert.AreEqual(Location.Rome, dracula.Trail[2].DraculaCards[0].Location);
+            Assert.AreEqual(Location.Florence, dracula.Trail[3].DraculaCards[0].Location);
+            Assert.AreEqual(Location.Milan, dracula.Trail[4].DraculaCards[0].Location);
             Assert.AreEqual(null, dracula.Trail[5]);
             Assert.AreEqual(1, discardedEncounters.Count());
-            Assert.AreEqual(true, discardedEncounters.Contains(Encounter.Hoax1));
+            Assert.AreNotEqual(null, discardedEncounters.Find(tile => tile.Encounter == Encounter.Hoax));
         }
 
         [Test]
@@ -164,13 +154,13 @@ namespace FuryOfDracula.UnitTests
             dracula.Trail[0] = new DraculaCardSlot();
             dracula.Trail[1] = new DraculaCardSlot();
             dracula.Trail[2] = new DraculaCardSlot();
-            dracula.Trail[0].DraculaCards[0] = dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.ClermontFerrand);
-            dracula.Trail[1].DraculaCards[0] = dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Madrid);
-            dracula.Trail[2].DraculaCards[0] = dracula.DraculaCardDeck.GetDraculaCardForLocation(Location.Santander);
-            dracula.Trail[1].Encounters[0] = Encounter.MinionWithKnife1;
+            dracula.Trail[0].DraculaCards[0] = dracula.DraculaCardDeck.Find(card => card.Location == Location.Saragossa);
+            dracula.Trail[1].DraculaCards[0] = dracula.DraculaCardDeck.Find(card => card.Location == Location.Madrid);
+            dracula.Trail[2].DraculaCards[0] = dracula.DraculaCardDeck.Find(card => card.Location == Location.Santander);
+            dracula.Trail[1].EncounterTiles.Add(new EncounterTile(Encounter.MinionWithKnife));
             int output = dracula.RevealCardInTrailWithLocation(Location.Madrid);
             Assert.AreEqual(1, output);
-            Assert.AreEqual(true, dracula.Trail[1].DraculaCards[0].IsRevealed);
+            Assert.AreEqual(true, dracula.Trail[1].DraculaCards.First().IsRevealed);
         }
     }
 }

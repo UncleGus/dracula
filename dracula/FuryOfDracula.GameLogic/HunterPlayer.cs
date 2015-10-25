@@ -48,16 +48,16 @@ namespace FuryOfDracula.GameLogic
         [DataMember]
         public Location CurrentLocation { get; private set; }
         [DataMember]
-        public List<Item> ItemsKnownToDracula { get; set; }
+        public List<ItemCard> ItemsKnownToDracula { get; set; }
         [DataMember]
         public List<EventCard> EventsKnownToDracula { get; set; }
         [DataMember]
-        public Item ItemShownToDraculaForBeingBitten { get; private set; }
+        public ItemCard ItemShownToDraculaForBeingBitten { get; set; }
         [DataMember]
-        public EventCard EventShownToDraculaForBeingBitten { get; private set; }
+        public EventCard EventShownToDraculaForBeingBitten { get; set; }
         [DataMember]
         public bool HasDogsFaceUp { get; private set; }
-        public Item LastCombatCardChosen { get; private set; }
+        public ItemCard LastCombatCardChosen { get; private set; }
         [DataMember]
         public ConnectionType NextMoveConnectionType { get; private set; }
         [DataMember]
@@ -65,7 +65,7 @@ namespace FuryOfDracula.GameLogic
         [DataMember]
         public List<Hunter> HuntersInGroup { get; private set; }
         [DataMember]
-        public List<Encounter> EncountersInFrontOfPlayer { get; set; }
+        public List<EncounterTile> EncountersInFrontOfPlayer { get; set; }
 
         public HunterPlayer(Hunter hunter, int health, int numberOfBites, int bitesRequiredToKill)
         {
@@ -76,7 +76,7 @@ namespace FuryOfDracula.GameLogic
             BitesRequiredToKill = bitesRequiredToKill;
             ItemCount = 0;
             EventCount = 0;
-            ItemsKnownToDracula = new List<Item>();
+            ItemsKnownToDracula = new List<ItemCard>();
             EventsKnownToDracula = new List<EventCard>();
             HasDogsFaceUp = false;
             HuntersInGroup = new List<Hunter>();
@@ -98,16 +98,16 @@ namespace FuryOfDracula.GameLogic
             EventCount++;
         }
 
-        public void DiscardItem(string itemToDiscard, List<Item> itemDiscard)
+        public void DiscardItem(Item itemToDiscard, List<ItemCard> itemDiscard)
         {
             ItemCount--;
-            ItemsKnownToDracula.Remove(ItemsKnownToDracula.Find(card => card.Name == itemToDiscard));
+            ItemsKnownToDracula.Remove(ItemsKnownToDracula.Find(card => card.Item == itemToDiscard));
         }
 
-        public void DiscardEvent(string eventToDiscard, List<EventCard> eventDiscard)
+        public void DiscardEvent(Event eventToDiscard, List<EventCard> eventDiscard)
         {
             EventCount--;
-            EventsKnownToDracula.Remove(EventsKnownToDracula.Find(card => card.Name == eventToDiscard));
+            EventsKnownToDracula.Remove(EventsKnownToDracula.Find(card => card.Event == eventToDiscard));
         }
 
         public void AdjustHealth(int amount)

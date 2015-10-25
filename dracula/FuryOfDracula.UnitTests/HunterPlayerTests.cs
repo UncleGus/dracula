@@ -43,29 +43,25 @@ namespace FuryOfDracula.UnitTests
         [Test]
         public void DiscardItem_ItemRemovedFromItemsKnownToDraculaAndItemCountDecreased()
         {
-            vanHelsing.ItemsKnownToDracula.Add(Item.Knife1);
+            vanHelsing.ItemsKnownToDracula.Add(new ItemCard(Item.Knife));
             vanHelsing.DrawItemCard();
             int cardCountBefore = vanHelsing.ItemCount;
-            List<Item> itemDiscard = new List<Item>();
-            List<Item> possibleItems = new List<Item>();
-            possibleItems.Add(Item.Knife1);
-            vanHelsing.DiscardItem(possibleItems, itemDiscard);
+            List<ItemCard> itemDiscard = new List<ItemCard>();
+            vanHelsing.DiscardItem(Item.Knife, itemDiscard);
             Assert.AreEqual(cardCountBefore - 1, vanHelsing.ItemCount);
-            Assert.AreEqual(false, vanHelsing.ItemsKnownToDracula.Contains(Item.Knife1));
+            Assert.AreEqual(null, vanHelsing.ItemsKnownToDracula.Find(card => card.Item == Item.Knife));
         }
 
         [Test]
         public void DiscardEvent_EventRemovedFromEventsKnownToDraculaAndEventCountDecreased()
         {
-            vanHelsing.EventsKnownToDracula.Add(EventCard.GoodLuck1);
+            vanHelsing.EventsKnownToDracula.Add(new EventCard(Event.GoodLuck, false, EventType.Keep));
             vanHelsing.DrawEventCard();
             int cardCountBefore = vanHelsing.EventCount;
             List<EventCard> eventDiscard = new List<EventCard>();
-            List<EventCard> possibleEvents = new List<EventCard>();
-            possibleEvents.Add(EventCard.GoodLuck1);
-            vanHelsing.DiscardEvent(possibleEvents, eventDiscard);
+            vanHelsing.DiscardEvent(Event.GoodLuck, eventDiscard);
             Assert.AreEqual(cardCountBefore - 1, vanHelsing.EventCount);
-            Assert.AreEqual(false, vanHelsing.EventsKnownToDracula.Contains(EventCard.GoodLuck1));
+            Assert.AreEqual(null, vanHelsing.EventsKnownToDracula.Find(card => card.Event == Event.GoodLuck));
         }
 
         [Test]

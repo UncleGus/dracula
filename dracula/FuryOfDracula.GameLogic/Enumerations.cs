@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace FuryOfDracula.GameLogic
 {
-    public static class Extensions
+    public static class Enumerations
     {
         public static string Name(this Enum e)
         {
@@ -33,6 +33,76 @@ namespace FuryOfDracula.GameLogic
                 description = Regex.Replace(description, "([0-9])", "", System.Text.RegularExpressions.RegexOptions.Compiled).Trim();
                 return description;
             }
+        }
+
+        public static List<Power> GetAvailablePowers(TimeOfDay timeOfDay)
+        {
+            List<Power> tempListOfPowers = new List<Power>() { Power.DoubleBack, Power.Hide };
+
+            if ((int)timeOfDay > 3) {
+                tempListOfPowers.Add(Power.DarkCall);
+                tempListOfPowers.Add(Power.Feed);
+                tempListOfPowers.Add(Power.WolfForm);
+            }
+            return tempListOfPowers;
+        }
+
+        public static Item GetItemFromString(string name)
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                if (((Item)i).Name().ToLower().StartsWith(name.ToLower()))
+                {
+                    return (Item)i;
+                }
+            }
+            return Item.None;
+        }
+
+        public static Event GetEventFromString(string name)
+        {
+            for (int i = 0; i < 46; i++)
+            {
+                if (((Event)i).Name().ToLower().StartsWith(name.ToLower()))
+                {
+                    return (Event)i;
+                }
+            }
+            return Event.None;
+        }
+
+        public static Location GetLocationFromString(string name)
+        {
+            Location tempLocation = Location.Nowhere;
+            int countOfMatches = 0;
+            for (int i = 0; i < 72; i ++)
+            {
+                if (((Location)i).Name().ToLower().StartsWith(name.ToLower()))
+                {
+                    countOfMatches++;
+                    if (tempLocation == Location.Nowhere)
+                    {
+                        tempLocation = (Location)i;
+                    }
+                }
+            }
+            if (countOfMatches == 1)
+            {
+                return tempLocation;
+            }
+            else
+            {
+                return Location.Nowhere;
+            }
+        }
+
+        public static List<Location> GetAllLocations()
+        {
+            List<Location> tempListOfLocations = new List<Location>();
+            for (int i = 1; i < 72; i++) {
+                tempListOfLocations.Add((Location)i);
+            }
+            return tempListOfLocations;
         }
     }
     

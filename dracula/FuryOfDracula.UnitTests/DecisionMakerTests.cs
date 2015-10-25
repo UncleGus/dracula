@@ -47,7 +47,7 @@ namespace FuryOfDracula.UnitTests
         {
             game.Dracula.MoveTo(Location.Toulouse, Power.None);
             game.Dracula.DrawEncounter(game.EncounterPool);
-            Assert.AreEqual(game.Dracula.EncounterHand.First(), logic.ChooseEncounterToPlaceOnDraculaCardSlot(game, game.Dracula.Trail[0]));
+            Assert.AreEqual(game.Dracula.EncounterHand.First(), logic.ChooseEncounterTileToPlaceOnDraculaCardSlot(game, game.Dracula.Trail[0]));
         }
 
         [Test]

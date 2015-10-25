@@ -26,22 +26,6 @@ namespace FuryOfDracula.GameLogic
                 _map = value;
             }
         }
-        private DraculaCardSet _draculaCardDeck;
-        public DraculaCardSet DraculaCardDeck
-        {
-            get
-            {
-                if (_draculaCardDeck == null)
-                {
-                    _draculaCardDeck = new DraculaCardSet();
-                }
-                return _draculaCardDeck;
-            }
-            private set
-            {
-                _draculaCardDeck = value;
-            }
-        }
         [DataMember]
         public HunterPlayer[] Hunters { get; private set; }
         [DataMember]

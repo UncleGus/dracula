@@ -26,24 +26,6 @@ namespace FuryOfDracula.UnitTests
         }
 
         [Test]
-        public void GetLocationFromString_Bru_ReturnsBrussels()
-        {
-            Assert.AreEqual(Location.Brussels, map.GetLocationFromString("Bru"));
-        }
-
-        [Test]
-        public void GetLocationFromString_AmbiguousStringBar_ReturnsNowhere()
-        {
-            Assert.AreEqual(Location.Nowhere, map.GetLocationFromString("BAR"));
-        }
-
-        [Test]
-        public void GetLocationFromString_MismatchingString_ReturnsNowhere()
-        {
-            Assert.AreEqual(Location.Nowhere, map.GetLocationFromString("#"));
-        }
-
-        [Test]
         public void IsEastern_Madrid_ReturnsFalse()
         {
             Assert.AreEqual(false, map.IsEastern(Location.Madrid));
@@ -59,12 +41,6 @@ namespace FuryOfDracula.UnitTests
             Assert.AreEqual(true, locationsConnectedToFrankfurt.Contains(Location.Saragossa));
             Assert.AreEqual(true, locationsConnectedToFrankfurt.Contains(Location.BayOfBiscay));
             Assert.AreEqual(false, locationsConnectedToFrankfurt.Contains(Location.Paris));
-        }
-
-        [Test]
-        public void GetAllLocations_ReturnsListOfCount72()
-        {
-            Assert.AreEqual(72, map.GetAllLocations().Count());
         }
     }
 }

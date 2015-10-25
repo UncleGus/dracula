@@ -32,7 +32,7 @@ namespace FuryOfDracula.UnitTests
         [Test]
         public void Name_EnumValueWithNumberWithoutDescription_ReturnsEnumValueWithoutNumber()
         {
-            Assert.AreEqual("Advance Planning", FuryOfDracula.GameLogic.EventCard.AdvancePlanning1.Name());
+            Assert.AreEqual("Advance Planning", Event.AdvancePlanning.Name());
         }
     }
 }

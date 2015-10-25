@@ -775,30 +775,6 @@ namespace FuryOfDracula.GameLogic
             return tempMap;
         }
 
-        public Location GetLocationFromString(string line)
-        {
-            Location tempLocation = Location.Nowhere;
-            int countOfMatches = 0;
-            foreach (LocationDetail loc in map)
-            {
-                if (loc.Location.Name().ToLower().StartsWith(line.ToLower()))
-                {
-                    countOfMatches++;
-                    if (tempLocation == Location.Nowhere)
-                    {
-                        tempLocation = loc.Location;
-                    }
-                }
-            }
-            if (countOfMatches == 1)
-            {
-                return tempLocation;
-            } else
-            {
-                return Location.Nowhere;
-            }
-        }
-
         public LocationType TypeOfLocation(Location location)
         {
             return map[(int)location].LocationType;
@@ -815,16 +791,6 @@ namespace FuryOfDracula.GameLogic
             tempList.AddRange(map[(int)location].ByRoad);
             tempList.AddRange(map[(int)location].BySea);
             return tempList;
-        }
-
-        public List<Location> GetAllLocations()
-        {
-            List<Location> allLocations = new List<Location>();
-            foreach (LocationDetail loc in map)
-            {
-                allLocations.Add(loc.Location);
-            }
-            return allLocations;
         }
 
         public List<Location> LocationsConnectedByRoadTo(Location location)

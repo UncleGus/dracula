@@ -42,7 +42,6 @@
   <ItemGroup>
     <Compile Include="Dracula.cs" />
     <Compile Include="DraculaCard.cs" />
-    <Compile Include="DraculaCardSet.cs" />
     <Compile Include="EncounterTile.cs" />
     <Compile Include="Enumerations.cs" />
     <Compile Include="EventCard.cs" />
