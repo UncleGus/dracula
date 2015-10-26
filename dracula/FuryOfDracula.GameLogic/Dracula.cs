@@ -392,5 +392,12 @@ namespace FuryOfDracula.GameLogic
             }
             CurrentLocation = destination;
         }
+
+        public void DiscardEncounterTile(List<EncounterTile> encounterPool)
+        {
+            EncounterTile encounterToDiscard = EncounterHand[new Random().Next(0, EncounterHand.Count())];
+            encounterPool.Add(encounterToDiscard);
+            EncounterHand.Remove(encounterToDiscard);
+        }
     }
 }
