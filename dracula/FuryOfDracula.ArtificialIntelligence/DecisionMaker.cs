@@ -12,7 +12,11 @@ namespace FuryOfDracula.ArtificialIntelligence
         public Location ChooseDestinationAndPower(GameState game, out Power power)
         {
             Location destination;
-            List<Power> possiblePowers = Enumerations.GetAvailablePowers(game.TimeOfDay);
+            List<Power> possiblePowers = new List<Power>();
+            if (game.Map.TypeOfLocation(game.Dracula.CurrentLocation) != LocationType.Sea)
+            {
+                possiblePowers = Enumerations.GetAvailablePowers(game.TimeOfDay);
+            }
             List<Location> possibleDestinations = game.Map.LocationsConnectedByRoadOrSeaTo(game.Dracula.CurrentLocation);
             List<Location> possibleDoubleBackDestinations = new List<Location>();
             List<Location> possibleWolfFormDestinations = game.Map.LocationsConnectedByRoadTo(game.Dracula.CurrentLocation);
@@ -161,7 +165,7 @@ namespace FuryOfDracula.ArtificialIntelligence
             return startLocation;
         }
 
-        public int PutDroppedOffCardInCatacombs(GameState game, DraculaCardSlot cardDroppedOffTrail)
+        public int ChooseToPutDroppedOffCardInCatacombs(GameState game, DraculaCardSlot cardDroppedOffTrail)
         {
             if (cardDroppedOffTrail.DraculaCards.First().Location != Location.Nowhere && game.Map.TypeOfLocation(cardDroppedOffTrail.DraculaCards.First().Location) != LocationType.Sea && game.Map.TypeOfLocation(cardDroppedOffTrail.DraculaCards.First().Location) != LocationType.Castle && new Random().Next(0, 5) == 0)
             {
@@ -245,6 +249,61 @@ namespace FuryOfDracula.ArtificialIntelligence
                 possibleDestinations.Remove(loc);
             }
             return possibleDestinations[new Random().Next(0, possibleDestinations.Count())];
+        }
+
+        public CardType ChooseToDiscardItemFromHunterInsteadOfEvent(HunterPlayer hunterDiscardingCard)
+        {
+            if (hunterDiscardingCard.ItemCount > 0)
+            {
+                if (hunterDiscardingCard.EventCount > 0)
+                {
+                    if (new Random().Next(0, 2) == 0)
+                    {
+                        return CardType.Item;
+                    } else
+                    {
+                        return CardType.Event;
+                    }
+                } else
+                {
+                    return CardType.Item;
+                }
+            } else if (hunterDiscardingCard.EventCount > 0)
+            {
+                return CardType.Event;
+            } else
+            {
+                return CardType.None;
+            }
+        }
+
+        public EncounterTile ChooseEncounterTileToDiscardFromEncounterHand(GameState game)
+        {
+            return game.Dracula.EncounterHand[new Random().Next(0, game.Dracula.EncounterHand.Count())];
+        }
+
+        public Hunter ChooseHunterToAmbush(GameState game)
+        {
+            List<Hunter> validHunters = new List<Hunter>();
+            foreach (HunterPlayer h in game.Hunters)
+            {
+                if (game.Map.TypeOfLocation(h.CurrentLocation) != LocationType.Hospital && game.Map.TypeOfLocation(h.CurrentLocation) != LocationType.Sea)
+                {
+                    validHunters.Add(h.Hunter);
+                }
+            }
+            if (validHunters.Count() == 0)
+            {
+                return Hunter.Nobody;
+            } else
+            {
+                return validHunters[new Random().Next(0, validHunters.Count())];
+            }
+        }
+
+        public EncounterTile ChooseEncounterTileToAmbushHunterWith(GameState game, Hunter hunterToAmbush)
+        {
+            return game.Dracula.EncounterHand[new Random().Next(0, game.Dracula.EncounterHand.Count())];
         }
     }
 }

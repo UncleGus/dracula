@@ -104,6 +104,18 @@ namespace FuryOfDracula.GameLogic
             }
             return tempListOfLocations;
         }
+
+        public static ConnectionType GetConnectionTypeFromString(string input)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                if (((ConnectionType)i).Name().ToLower().StartsWith(input.ToLower()))
+                {
+                    return (ConnectionType)i;
+                }
+            }
+            return ConnectionType.None;
+        }
     }
     
     public enum EventType
@@ -368,5 +380,12 @@ namespace FuryOfDracula.GameLogic
         Assassin,
         Dracula,
         NewVampire
+    }
+
+    public enum CardType
+    {
+        None,
+        Item,
+        Event
     }
 }

@@ -92,6 +92,110 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
+        /// Checks if a given item card is already known by Dracula to be in a given hunter's hand and adds it if not
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterRevealingCard">The Hunter revealing the card</param>
+        /// <param name="itemBeingRevealed">The Item being revealed</param>
+        /// <returns>The card corresponding to the Item revealed</returns>
+        private static ItemCard AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(GameState game, HunterPlayer hunterRevealingCard, Item itemBeingRevealed)
+        {
+            ItemCard itemCardBeingRevealed = hunterRevealingCard.ItemsKnownToDracula.Find(card => card.Item == itemBeingRevealed);
+            if (itemCardBeingRevealed == null)
+            {
+                itemCardBeingRevealed = game.ItemDeck.Find(card => card.Item == itemBeingRevealed);
+                game.ItemDeck.Remove(itemCardBeingRevealed);
+                hunterRevealingCard.ItemsKnownToDracula.Add(itemCardBeingRevealed);
+            }
+            return itemCardBeingRevealed;
+        }
+
+        /// <summary>
+        /// Checks if a given event card is already known by Dracula to be in a given hunter's hand and adds it if not
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterRevealingCard">The Hunter revealing the card</param>
+        /// <param name="eventBeingRevealed">The Event being revealed</param>
+        /// <returns>The card corresponding to the Event revealed</returns>
+        private static EventCard AddEventCardToDraculaKnownCardsIfNotAlreadyKnown(GameState game, HunterPlayer hunterRevealingCard, Event eventBeingRevealed)
+        {
+            EventCard eventCardBeingRevealed = hunterRevealingCard.EventsKnownToDracula.Find(card => card.Event == eventBeingRevealed);
+            if (eventCardBeingRevealed == null)
+            {
+                eventCardBeingRevealed = game.EventDeck.Find(card => card.Event == eventBeingRevealed);
+                game.EventDeck.Remove(eventCardBeingRevealed);
+                hunterRevealingCard.EventsKnownToDracula.Add(eventCardBeingRevealed);
+            }
+            return eventCardBeingRevealed;
+        }
+
+        /// <summary>
+        /// Checks all hunters to see if they are dead and adjusts them accordingly if they are
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <returns>True if a Hunter has died</returns>
+        private static bool CheckForHunterDeath(GameState game)
+        {
+            bool hunterDied = false;
+            foreach (HunterPlayer h in game.Hunters)
+            {
+                if (h != null && (h.Health == 0 || h.BiteCount == h.BitesRequiredToKill))
+                {
+                    Console.WriteLine("{0} has been defeated. All Items and Events discarded. Hunter moved to St. Joseph and St. Mary and must skip the next turn");
+                    while (h.ItemCount > 0)
+                    {
+                        DiscardUnknownItemFromHunter(game, h);
+                    }
+                    while (h.EventCount > 0)
+                    {
+                        DiscardUnknownEventFromHunter(game, h);
+                    }
+                    h.MoveTo(Location.StJosephAndStMary);
+                    h.AdjustHealth(h.MaxHealth);
+                    h.AdjustBites(-3);
+                    if (h.Hunter == Hunter.MinaHarker)
+                    {
+                        h.AdjustBites(1);
+                    }
+                    hunterDied = true;
+                }
+            }
+            return hunterDied;
+        }
+
+        /// <summary>
+        /// Asks the user to name an Item and then discards it from that hunter
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunter">The Hunter discarding an Item</param>
+        private static void DiscardUnknownItemFromHunter(GameState game, HunterPlayer hunter)
+        {
+            Console.WriteLine("Name the Item being discarded");
+            Item itemBeingDiscarded = Item.None;
+            while (itemBeingDiscarded == Item.None)
+            {
+                itemBeingDiscarded = Enumerations.GetItemFromString(Console.ReadLine());
+            }
+            hunter.DiscardItem(game, itemBeingDiscarded);
+        }
+
+        /// <summary>
+        /// Asks the user to name an Event and then discards it from that hunter
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunter">The Hunter discarding an Event</param>
+        private static void DiscardUnknownEventFromHunter(GameState game, HunterPlayer hunter)
+        {
+            Console.WriteLine("Name the Event being discarded");
+            Event eventBeingDiscarded = Event.None;
+            while (eventBeingDiscarded == Event.None)
+            {
+                eventBeingDiscarded = Enumerations.GetEventFromString(Console.ReadLine());
+            }
+            hunter.DiscardEvent(game, eventBeingDiscarded);
+        }
+
+        /// <summary>
         /// Checks all hunters' cards and bites to see if they should be revealing a card to Dracula
         /// </summary>
         /// <param name="game">The GameState</param>
@@ -113,18 +217,8 @@ namespace FuryOfDracula.ConsoleInterface
                                 Console.WriteLine("I couldn't find an Item with that name");
                             }
                         }
-                        ItemCard itemCardToReveal = h.ItemsKnownToDracula.Find(card => card.Item == itemToReveal);
-                        if (itemCardToReveal != null)
-                        {
-                            h.ItemShownToDraculaForBeingBitten = itemCardToReveal;
-                        }
-                        else
-                        {
-                            itemCardToReveal = game.ItemDeck.Find(card => card.Item == itemToReveal);
-                            h.ItemShownToDraculaForBeingBitten = itemCardToReveal;
-                            h.ItemsKnownToDracula.Add(itemCardToReveal);
-                            game.ItemDeck.Remove(itemCardToReveal);
-                        }
+                        ItemCard itemCardToReveal = AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, h, itemToReveal);
+                        h.ItemShownToDraculaForBeingBitten = itemCardToReveal;
                         Console.WriteLine("{0} revealed to Dracula", itemCardToReveal.Item.Name());
                     }
                     if (h.EventCount > 0 && h.BiteCount > 0 && h.EventShownToDraculaForBeingBitten == null)
@@ -139,18 +233,8 @@ namespace FuryOfDracula.ConsoleInterface
                                 Console.WriteLine("I couldn't find an Item with that name");
                             }
                         }
-                        EventCard eventCardToReveal = h.EventsKnownToDracula.Find(card => card.Event == eventToReveal);
-                        if (eventCardToReveal != null)
-                        {
-                            h.EventShownToDraculaForBeingBitten = eventCardToReveal;
-                        }
-                        else
-                        {
-                            eventCardToReveal = game.EventDeck.Find(card => card.Event == eventToReveal);
-                            h.EventShownToDraculaForBeingBitten = eventCardToReveal;
-                            h.EventsKnownToDracula.Add(eventCardToReveal);
-                            game.EventDeck.Remove(eventCardToReveal);
-                        }
+                        EventCard eventCardToReveal = AddEventCardToDraculaKnownCardsIfNotAlreadyKnown(game, h, eventToReveal);
+                        h.EventShownToDraculaForBeingBitten = eventCardToReveal;
                         Console.WriteLine("{0} revealed to Dracula", eventCardToReveal.Event.Name());
                     }
                 }
@@ -215,6 +299,7 @@ namespace FuryOfDracula.ConsoleInterface
                     }
                     Console.WriteLine("Entering combat with Dracula");
                     ResolveCombat(game, huntersAttacking, Opponent.Dracula, logic);
+                    CheckForHunterDeath(game);
                 }
 
             }
@@ -317,6 +402,65 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
+        /// Matures encounters
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="encounterTileBeingMatured">The EncounterTile being matured</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        private static void MatureEncounter(GameState game, EncounterTile encounterTileBeingMatured, DecisionMaker logic) {
+            switch (encounterTileBeingMatured.Encounter)
+            {
+                case Encounter.Ambush:
+                    Console.WriteLine("Dracula matured Ambush");
+                    Hunter hunterToAmbush = logic.ChooseHunterToAmbush(game);
+                    if (hunterToAmbush != Hunter.Nobody)
+                    {
+                        EncounterTile encounterToAmbushWith = logic.ChooseEncounterTileToAmbushHunterWith(game, hunterToAmbush);
+                        ResolveEncounterTile(game, encounterToAmbushWith, new List<Hunter> { hunterToAmbush }, logic, -1);
+                        game.Dracula.DiscardEncounterTile(game, encounterToAmbushWith);
+                        game.EncounterPool.Add(encounterToAmbushWith);
+                    }
+                    break;
+                case Encounter.DesecratedSoil:
+                    Console.WriteLine("Dracula matured Desecrated Soil");
+                    game.Dracula.ClearTrailDownTo(game, 3);
+                    for (int i = 0; i < 2; i++)
+                    {
+                        Console.WriteLine("Draw an Event card. If it is a Hunter card, name it, otherwise type \"Dracula\"");
+                        string line = "";
+                        Event eventDrawn = Event.None;
+                        do
+                        {
+                            line = Console.ReadLine();
+                            eventDrawn = Enumerations.GetEventFromString(line);
+                        } while ((eventDrawn == Event.None || !game.EventDeck.Find(card => card.Event == eventDrawn).IsDraculaCard) && !"dracula".StartsWith(line.ToLower()));
+                        if (eventDrawn == Event.None)
+                        {
+                            game.Dracula.TakeEvent(game.EventDeck);
+                            if (game.Dracula.EventHand.Count() > game.Dracula.EventHandSize)
+                            {
+                                game.Dracula.DiscardEvent(logic.ChooseEventToDiscard(game), game.EventDiscard);
+                            }
+                        }
+                        else
+                        {
+                            EventCard eventCardDiscarded = game.EventDeck.Find(card => card.Event == eventDrawn);
+                            game.EventDeck.Remove(eventCardDiscarded);
+                            game.EventDiscard.Add(eventCardDiscarded);
+                        }
+                    }
+                    break;
+                case Encounter.NewVampire:
+                    Console.WriteLine("Dracula matured a New Vampire");
+                    game.AdjustVampires(2);
+                    game.Dracula.ClearTrailDownTo(game, 1);
+                    break;
+            }
+            game.EncounterPool.Add(encounterTileBeingMatured);
+        }
+
+
+        /// <summary>
         /// Resolves an encounter on a group of hunters
         /// </summary>
         /// <param name="game">The GameState</param>
@@ -326,53 +470,438 @@ namespace FuryOfDracula.ConsoleInterface
         private static bool ResolveEncounterTile(GameState game, EncounterTile encounterTileBeingResolved, List<Hunter> huntersInvolved, DecisionMaker logic, int trailIndex)
         {
             Console.WriteLine("Resolving {0} with {1}{2}", encounterTileBeingResolved.Encounter.Name(), huntersInvolved.First().Name(), huntersInvolved.Count() > 1 ? " and his group" : "");
+            bool continueEncounters = true;
+            bool discardEncounterTile = true;
             switch (encounterTileBeingResolved.Encounter)
             {
-                case Encounter.Ambush: game.EncounterPool.Add(encounterTileBeingResolved); game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved); return ResolveAmbush(game, huntersInvolved, logic);
-                case Encounter.Assassin: game.EncounterPool.Add(encounterTileBeingResolved); game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved); return ResolveAssassin(game, huntersInvolved, logic);
-                case Encounter.Bats: game.Hunters[(int)huntersInvolved.First()].EncountersInFrontOfPlayer.Add(encounterTileBeingResolved); game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved); return ResolveBats(game, huntersInvolved, logic);
-                case Encounter.DesecratedSoil: game.EncounterPool.Add(encounterTileBeingResolved); game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved); return ResolveDesecratedSoil(game, huntersInvolved, logic);
-                case Encounter.Fog: game.Hunters[(int)huntersInvolved.First()].EncountersInFrontOfPlayer.Add(encounterTileBeingResolved); game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved); return ResolveFog(game, huntersInvolved, logic);
-                case Encounter.MinionWithKnife: game.EncounterPool.Add(encounterTileBeingResolved); game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved); return ResolveMinionWithKnife(game, huntersInvolved, logic);
-                case Encounter.MinionWithKnifeAndPistol: game.EncounterPool.Add(encounterTileBeingResolved); game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved); return ResolveMinionWithKnifeAndPistol(game, huntersInvolved, logic);
-                case Encounter.MinionWithKnifeAndRifle: game.EncounterPool.Add(encounterTileBeingResolved); game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved); return ResolveMinionWithKnifeAndRifle(game, huntersInvolved, logic);
-                case Encounter.Hoax: game.EncounterPool.Add(encounterTileBeingResolved); game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved); return ResolveHoax(game, huntersInvolved, logic);
-                case Encounter.Lightning: game.EncounterPool.Add(encounterTileBeingResolved); game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved); return ResolveLightning(game, huntersInvolved, logic);
-                case Encounter.Peasants: game.EncounterPool.Add(encounterTileBeingResolved); game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved); return ResolvePeasants(game, huntersInvolved, logic);
-                case Encounter.Plague: game.EncounterPool.Add(encounterTileBeingResolved); game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved); return ResolvePlague(game, huntersInvolved, logic);
-                case Encounter.Rats: game.EncounterPool.Add(encounterTileBeingResolved); game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved); return ResolveRats(game, huntersInvolved, logic);
-                case Encounter.Saboteur: game.EncounterPool.Add(encounterTileBeingResolved); game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved); return ResolveSaboteur(game, huntersInvolved, logic);
-                case Encounter.Spy: game.EncounterPool.Add(encounterTileBeingResolved); game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved); return ResolveSpy(game, huntersInvolved, logic);
-                case Encounter.Thief: game.EncounterPool.Add(encounterTileBeingResolved); game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved); return ResolveThief(game, huntersInvolved, logic);
-                case Encounter.NewVampire: return ResolveNewVampire(game, huntersInvolved, logic);
-                case Encounter.Wolves: game.EncounterPool.Add(encounterTileBeingResolved); game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved); return ResolveWolves(game, huntersInvolved, logic);
+                case Encounter.Ambush:
+                    continueEncounters = ResolveAmbush(game, huntersInvolved, logic); break;
+                case Encounter.Assassin:
+                    continueEncounters = ResolveAssassin(game, huntersInvolved, logic); break;
+                case Encounter.Bats:
+                    discardEncounterTile = false;
+                    game.Hunters[(int)huntersInvolved.First()].EncountersInFrontOfPlayer.Add(encounterTileBeingResolved);
+                    if (trailIndex > -1)
+                    {
+                        game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved);
+                    }
+                    else
+                    {
+                        game.Dracula.EncounterHand.Remove(encounterTileBeingResolved);
+                    }
+                    return false;
+                case Encounter.DesecratedSoil:
+                    continueEncounters = ResolveDesecratedSoil(game, huntersInvolved, logic); break;
+                case Encounter.Fog:
+                    discardEncounterTile = false;
+                    game.Hunters[(int)huntersInvolved.First()].EncountersInFrontOfPlayer.Add(encounterTileBeingResolved);
+                    if (trailIndex > -1)
+                    {
+                        game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved);
+                    }
+                    else
+                    {
+                        game.Dracula.EncounterHand.Remove(encounterTileBeingResolved);
+                    }
+                    return false;
+                case Encounter.MinionWithKnife:
+                    continueEncounters = ResolveMinionWithKnife(game, huntersInvolved, logic); break;
+                case Encounter.MinionWithKnifeAndPistol:
+                    continueEncounters = ResolveMinionWithKnifeAndPistol(game, huntersInvolved, logic); break;
+                case Encounter.MinionWithKnifeAndRifle:
+                    continueEncounters = ResolveMinionWithKnifeAndRifle(game, huntersInvolved, logic); break;
+                case Encounter.Hoax:
+                    continueEncounters = ResolveHoax(game, huntersInvolved); break;
+                case Encounter.Lightning:
+                    continueEncounters = ResolveLightning(game, huntersInvolved); break;
+                case Encounter.Peasants:
+                    continueEncounters = ResolvePeasants(game, huntersInvolved); break;
+                case Encounter.Plague:
+                    continueEncounters = ResolvePlague(game, huntersInvolved); break;
+                case Encounter.Rats:
+                    continueEncounters = ResolveRats(game, huntersInvolved); break;
+                case Encounter.Saboteur:
+                    continueEncounters = ResolveSaboteur(game, huntersInvolved); break;
+                case Encounter.Spy:
+                    continueEncounters = ResolveSpy(game, huntersInvolved); break;
+                case Encounter.Thief:
+                    continueEncounters = ResolveThief(game, huntersInvolved, logic); break;
+                case Encounter.NewVampire:
+                    continueEncounters = ResolveNewVampire(game, huntersInvolved, out discardEncounterTile); break;
+                case Encounter.Wolves:
+                    continueEncounters = ResolveWolves(game, huntersInvolved); break;
                 default: return false;
             }
+            if (discardEncounterTile)
+            {
+                game.EncounterPool.Add(encounterTileBeingResolved);
+                if (trailIndex > -1)
+                {
+                    game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved);
+                }
+                else
+                {
+                    game.Dracula.EncounterHand.Remove(encounterTileBeingResolved);
+                }
+            }
+            return continueEncounters;
         }
 
-        private static bool ResolveWolves(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
+        /// <summary>
+        /// Resolves an encounter of Wolves for a group of hunters
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
+        private static bool ResolveWolves(GameState game, List<Hunter> huntersInvolved)
         {
+            bool groupHasPistol = false;
+            bool groupHasRifle = false;
+            foreach (Hunter h in huntersInvolved)
+            {
+                Console.WriteLine("What Items does {0} have? 0= nothing, 1= Pistol, 2=Rifle, 3=Both", h.Name());
+                int answer = -1;
+                while (answer == -1)
+                {
+                    if (!(Int32.TryParse(Console.ReadLine(), out answer) && answer > -1 && answer < 4))
+                    {
+                        answer = -1;
+                    }
+                }
+                switch (answer)
+                {
+                    case 1:
+                        groupHasPistol = true;
+                        AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)h], Item.Pistol);
+                        break;
+                    case 2:
+                        groupHasRifle = true;
+                        AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)h], Item.Rifle);
+                        break;
+                    case 3:
+                        groupHasPistol = true; groupHasRifle = true;
+                        AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)h], Item.Pistol);
+                        AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)h], Item.Rifle);
+                        break;
+                }
+                if (groupHasPistol && groupHasRifle)
+                {
+                    break;
+                }
+            }
+            if (groupHasPistol && groupHasRifle)
+            {
+                Console.WriteLine("Encounter neutralised");
+            }
+            else
+            {
+                foreach (Hunter h in huntersInvolved)
+                {
+                    Console.WriteLine("{0} loses {1} health", h.Name(), ((groupHasPistol ? 0 : 1) + (groupHasRifle ? 0 : 1)));
+                }
+                if (CheckForHunterDeath(game))
+                {
+                    return false;
+                }
+
+            }
             return true;
         }
 
-        private static bool ResolveNewVampire(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
+        /// <summary>
+        /// Resolves an encounter of New Vampire for a group of hunters
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
+        private static bool ResolveNewVampire(GameState game, List<Hunter> huntersInvolved, out bool discardNewVampire)
         {
+            switch (game.TimeOfDay)
+            {
+                case TimeOfDay.Dawn:
+                case TimeOfDay.Noon:
+                case TimeOfDay.Dusk:
+                    Console.WriteLine("New Vampire encountered during the day and disposed of");
+                    discardNewVampire = true;
+                    return true;
+            }
+            Console.WriteLine("Roll a die and enter the result");
+            int dieRoll = 0;
+            while (dieRoll == 0)
+            {
+                if (!(Int32.TryParse(Console.ReadLine(), out dieRoll) && dieRoll > 0 && dieRoll < 7))
+                {
+                    dieRoll = 0;
+                }
+            }
+            switch (dieRoll)
+            {
+                case 1:
+                case 2:
+                case 3:
+                    Console.WriteLine("The Vampire attempts to bite you");
+                    bool groupHasHolyItem = false;
+                    foreach (Hunter h in huntersInvolved)
+                    {
+                        Console.WriteLine("What Items does {0} have? 0= nothing, 1= Crucifix, 2= Heavenly Host", h.Name());
+                        Item holyItem = Item.None;
+                        int answer = -1;
+                        while (answer == -1)
+                        {
+                            if (Int32.TryParse(Console.ReadLine(), out answer))
+                            {
+                                if (answer > -1 && answer < 3)
+                                {
+                                    switch (answer)
+                                    {
+                                        case 0: holyItem = Item.None; break;
+                                        case 1: holyItem = Item.Crucifix; break;
+                                        case 2: holyItem = Item.HeavenlyHost; break;
+                                    }
+                                }
+                                else
+                                {
+                                    answer = -1;
+                                }
+                            }
+                        }
+                        if (holyItem != Item.None)
+                        {
+                            groupHasHolyItem = true;
+                            AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)h], holyItem);
+                            break;
+                        }
+                    }
+                    if (groupHasHolyItem)
+                    {
+                        Console.WriteLine("Bite attempted negated by holy item");
+                        discardNewVampire = true;
+                        return true;
+                    }
+                    else
+                    {
+                        foreach (Hunter h in huntersInvolved)
+                        {
+                            Console.WriteLine("{0} is bitten!");
+                            game.Hunters[(int)h].AdjustBites(1);
+                            discardNewVampire = true;
+                            return true;
+                        }
+                        if (CheckForHunterDeath(game))
+                        {
+                            discardNewVampire = true;
+                            return false;
+                        }
+                    }
+                    break;
+                case 4:
+                case 5:
+                case 6:
+                    Console.WriteLine("The Vampire attempts to escape");
+                    bool groupHasSharpItem = false;
+                    foreach (Hunter h in huntersInvolved)
+                    {
+                        Console.WriteLine("What Items does {0} have? 0= nothing, 1= Knife, 2= Stake", h.Name());
+                        Item sharpItem = Item.None;
+                        int answer = -1;
+                        while (answer == -1)
+                        {
+                            if (Int32.TryParse(Console.ReadLine(), out answer))
+                            {
+                                if (answer > -1 && answer < 3)
+                                {
+                                    switch (answer)
+                                    {
+                                        case 0: sharpItem = Item.None; break;
+                                        case 1: sharpItem = Item.Knife; break;
+                                        case 2: sharpItem = Item.Stake; break;
+                                    }
+                                }
+                                else
+                                {
+                                    answer = -1;
+                                }
+                            }
+                        }
+                        if (sharpItem != Item.None)
+                        {
+                            groupHasSharpItem = true;
+                            game.Hunters[(int)h].DiscardItem(game, sharpItem);
+                            break;
+                        }
+                    }
+                    if (groupHasSharpItem)
+                    {
+                        Console.WriteLine("Escape attempted negated by sharp weapon");
+                        discardNewVampire = true;
+                        return true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("The Vampire escapes and remains in the city");
+                        discardNewVampire = false;
+                        return true;
+                    }
+            }
+            discardNewVampire = true;
             return true;
         }
 
+        /// <summary>
+        /// Resolves an encounter of Thief for a group of hunters
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
         private static bool ResolveThief(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
         {
+            foreach (Hunter h in huntersInvolved)
+            {
+                if (game.Hunters[(int)h].HasDogsFaceUp)
+                {
+                    return true;
+                }
+            }
+            foreach (Hunter h in huntersInvolved)
+            {
+                CardType typeOfCardToDiscard = logic.ChooseToDiscardItemFromHunterInsteadOfEvent(game.Hunters[(int)h]);
+                if (typeOfCardToDiscard != CardType.None)
+                {
+                    Console.WriteLine("Dracula has decided to discard an {0} from {1}", typeOfCardToDiscard, h.Name());
+                }
+            }
+            Console.WriteLine("Use the standard discard command to tell me what was discarded");
             return true;
         }
 
-        private static bool ResolveSpy(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
+        /// <summary>
+        /// Resolves an encounter of Spy for a group of hunters
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
+        private static bool ResolveSpy(GameState game, List<Hunter> huntersInvolved)
         {
+            foreach (Hunter h in huntersInvolved)
+            {
+                if (game.Hunters[(int)h].HasDogsFaceUp)
+                {
+                    return true;
+                }
+            }
+            foreach (Hunter h in huntersInvolved)
+            {
+                Console.WriteLine("{0} must reveal all of {1} cards and declare {1} next move", h.Name(), h == Hunter.MinaHarker ? "her" : "his");
+                game.ItemDeck.AddRange(game.Hunters[(int)h].ItemsKnownToDracula);
+                game.Hunters[(int)h].ItemsKnownToDracula.Clear();
+                for (int i = 0; i < game.Hunters[(int)h].ItemCount; i++)
+                {
+                    Console.WriteLine("Name the Item being revealed to Dracula");
+                    Item itemBeingRevealed = Item.None;
+                    while (itemBeingRevealed == Item.None)
+                    {
+                        itemBeingRevealed = Enumerations.GetItemFromString(Console.ReadLine());
+                    }
+                    AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)h], itemBeingRevealed);
+                }
+                game.EventDeck.AddRange(game.Hunters[(int)h].EventsKnownToDracula);
+                game.Hunters[(int)h].EventsKnownToDracula.Clear();
+                for (int i = 0; i < game.Hunters[(int)h].EventCount; i++)
+                {
+                    Console.WriteLine("Name the Event being revealed to Dracula");
+                    Event eventBeingRevealed = Event.None;
+                    while (eventBeingRevealed == Event.None)
+                    {
+                        eventBeingRevealed = Enumerations.GetEventFromString(Console.ReadLine());
+                    }
+                    AddEventCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)h], eventBeingRevealed);
+                }
+                Console.WriteLine("What will be {0}'s destination next turn?", h.Name());
+                Location destination = Location.Nowhere;
+                while (destination == Location.Nowhere)
+                {
+                    destination = Enumerations.GetLocationFromString(Console.ReadLine());
+                }
+                Console.WriteLine("What will be {0}'s means of travel next turn?", h.Name());
+                ConnectionType methodOfTravel = ConnectionType.None;
+                while (methodOfTravel == ConnectionType.None)
+                {
+                    methodOfTravel = Enumerations.GetConnectionTypeFromString(Console.ReadLine());
+                }
+                game.Hunters[(int)h].SetNextMoveDestination(destination);
+                game.Hunters[(int)h].SetNextMoveConnectionType(methodOfTravel);
+            }
             return true;
         }
 
-        private static bool ResolveSaboteur(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
+        /// <summary>
+        /// Resolves an encounter of Saboteur for a group of hunters
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
+        private static bool ResolveSaboteur(GameState game, List<Hunter> huntersInvolved)
         {
-            return true;
+            foreach (Hunter h in huntersInvolved)
+            {
+                if (game.Hunters[(int)h].HasDogsFaceUp)
+                {
+                    return true;
+                }
+            }
+            foreach (Hunter h in huntersInvolved)
+            {
+                Item itemDiscarded = Item.None;
+                Event eventDiscarded = Event.None;
+                string line = "";
+                if (game.Hunters[(int)h].ItemCount > 0)
+                {
+                    if (game.Hunters[(int)h].EventCount > 0)
+                    {
+                        Console.WriteLine("{0} must discard 1 Item or Event. What is the name of the card being discarded?", h.Name());
+                        while (itemDiscarded == Item.None && eventDiscarded == Event.None)
+                        {
+                            line = Console.ReadLine();
+                            itemDiscarded = Enumerations.GetItemFromString(line);
+                            eventDiscarded = Enumerations.GetEventFromString(line);
+                        }
+                        if (itemDiscarded != Item.None)
+                        {
+                            game.Hunters[(int)h].DiscardItem(game, itemDiscarded);
+                        }
+                        else
+                        {
+                            game.Hunters[(int)h].DiscardEvent(game, eventDiscarded);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("{0} must discard 1 Item. What is the name of the card being discarded?", h.Name());
+                        while (itemDiscarded == Item.None)
+                        {
+                            line = Console.ReadLine();
+                            itemDiscarded = Enumerations.GetItemFromString(line);
+                        }
+                        game.Hunters[(int)h].DiscardItem(game, itemDiscarded);
+                    }
+                }
+                else if (game.Hunters[(int)h].EventCount > 0)
+                {
+                    Console.WriteLine("{0} must discard 1 Event. What is the name of the card being discarded?", h.Name());
+                    while (eventDiscarded == Event.None)
+                    {
+                        line = Console.ReadLine();
+                        eventDiscarded = Enumerations.GetEventFromString(line);
+                    }
+                    game.Hunters[(int)h].DiscardEvent(game, eventDiscarded);
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -382,7 +911,7 @@ namespace FuryOfDracula.ConsoleInterface
         /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
         /// <param name="logic">The artificial intelligence component</param>
         /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
-        private static bool ResolveRats(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
+        private static bool ResolveRats(GameState game, List<Hunter> huntersInvolved)
         {
             foreach (Hunter h in huntersInvolved)
             {
@@ -394,11 +923,16 @@ namespace FuryOfDracula.ConsoleInterface
                 int amount = -1;
                 while (amount == -1)
                 {
-                    if (Int32.TryParse(Console.ReadLine(), out amount))) {
+                    if (Int32.TryParse(Console.ReadLine(), out amount))
+                    {
                         game.Hunters[(int)h].AdjustHealth(amount - game.Hunters[(int)h].Health);
                         break;
                     }
                 }
+            }
+            if (CheckForHunterDeath(game))
+            {
+                return false;
             }
             return true;
         }
@@ -410,11 +944,15 @@ namespace FuryOfDracula.ConsoleInterface
         /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
         /// <param name="logic">The artificial intelligence component</param>
         /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
-        private static bool ResolvePlague(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
+        private static bool ResolvePlague(GameState game, List<Hunter> huntersInvolved)
         {
             foreach (Hunter h in huntersInvolved)
             {
                 game.Hunters[(int)h].AdjustHealth(-2);
+            }
+            if (CheckForHunterDeath(game))
+            {
+                return false;
             }
             return true;
         }
@@ -426,9 +964,9 @@ namespace FuryOfDracula.ConsoleInterface
         /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
         /// <param name="logic">The artificial intelligence component</param>
         /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
-        private static bool ResolvePeasants(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
+        private static bool ResolvePeasants(GameState game, List<Hunter> huntersInvolved)
         {
-            if (!game.Map.IsEastern(game.Hunters[(int)h].CurrentLocation))
+            if (!game.Map.IsEastern(game.Hunters[(int)huntersInvolved.First()].CurrentLocation))
             {
                 foreach (Hunter h in huntersInvolved)
                 {
@@ -473,7 +1011,7 @@ namespace FuryOfDracula.ConsoleInterface
         /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
         /// <param name="logic">The artificial intelligence component</param>
         /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
-        private static bool ResolveLightning(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
+        private static bool ResolveLightning(GameState game, List<Hunter> huntersInvolved)
         {
             int answer = 0;
             foreach (Hunter h in huntersInvolved)
@@ -481,18 +1019,14 @@ namespace FuryOfDracula.ConsoleInterface
                 Console.WriteLine("What Item does {0} have? 0= Nothing, 1= Crucifix, 2= Heavenly Host", h.Name());
                 if (Int32.TryParse(Console.ReadLine(), out answer) && answer > 0 && answer < 3)
                 {
-                    if (answer == 1 && game.Hunters[(int)h].ItemsKnownToDracula.Find(item => item.Item == Item.Crucifix) == null)
+                    if (answer == 1)
                     {
-                        ItemCard itemCardNowKnownToDracula = game.ItemDeck.Find(item => item.Item == Item.Crucifix);
-                        game.ItemDeck.Remove(itemCardNowKnownToDracula);
-                        game.Hunters[(int)h].ItemsKnownToDracula.Add(itemCardNowKnownToDracula);
+                        AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)h], Item.Crucifix);
                         break;
                     }
-                    else if (answer == 2 && game.Hunters[(int)h].ItemsKnownToDracula.Find(item => item.Item == Item.HeavenlyHost) == null)
+                    else if (answer == 2)
                     {
-                        ItemCard itemCardNowKnownToDracula = game.ItemDeck.Find(item => item.Item == Item.HeavenlyHost);
-                        game.ItemDeck.Remove(itemCardNowKnownToDracula);
-                        game.Hunters[(int)h].ItemsKnownToDracula.Add(itemCardNowKnownToDracula);
+                        AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)h], Item.HeavenlyHost);
                         break;
                     }
                 }
@@ -516,6 +1050,10 @@ namespace FuryOfDracula.ConsoleInterface
                     }
                 }
             }
+            if (CheckForHunterDeath(game))
+            {
+                return false;
+            }
             return true;
         }
 
@@ -526,7 +1064,7 @@ namespace FuryOfDracula.ConsoleInterface
         /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
         /// <param name="logic">The artificial intelligence component</param>
         /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
-        private static bool ResolveHoax(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
+        private static bool ResolveHoax(GameState game, List<Hunter> huntersInvolved)
         {
             foreach (Hunter h in huntersInvolved)
             {
@@ -576,7 +1114,12 @@ namespace FuryOfDracula.ConsoleInterface
             {
                 huntersInCombat.Add(game.Hunters[(int)h]);
             }
-            return ResolveCombat(game, huntersInCombat, Opponent.MinionWithKnifeAndRifle, logic);
+            bool continueEncounters = ResolveCombat(game, huntersInCombat, Opponent.MinionWithKnifeAndRifle, logic);
+            if (CheckForHunterDeath(game))
+            {
+                return false;
+            }
+            return continueEncounters;
         }
 
         /// <summary>
@@ -593,7 +1136,12 @@ namespace FuryOfDracula.ConsoleInterface
             {
                 huntersInCombat.Add(game.Hunters[(int)h]);
             }
-            return ResolveCombat(game, huntersInCombat, Opponent.MinionWithKnifeAndPistol, logic);
+            bool continueEncounters = ResolveCombat(game, huntersInCombat, Opponent.MinionWithKnifeAndPistol, logic);
+            if (CheckForHunterDeath(game))
+            {
+                return false;
+            }
+            return continueEncounters;
         }
 
         /// <summary>
@@ -610,23 +1158,16 @@ namespace FuryOfDracula.ConsoleInterface
             {
                 huntersInCombat.Add(game.Hunters[(int)h]);
             }
-            return ResolveCombat(game, huntersInCombat, Opponent.MinionWithKnife, logic);
+            bool continueEncounters = ResolveCombat(game, huntersInCombat, Opponent.MinionWithKnife, logic);
+            if (CheckForHunterDeath(game))
+            {
+                return false;
+            }
+            return continueEncounters;
         }
 
         /// <summary>
-        /// Resolves an encounter of fog for a group of hunters
-        /// </summary>
-        /// <param name="game">The GameState</param>
-        /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
-        /// <param name="logic">The artificial intelligence component</param>
-        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
-        private static bool ResolveFog(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
-        {
-            return false;
-        }
-
-        /// <summary>
-        /// Resolves an encounter of Desecrared Soil for a group of hunters
+        /// Resolves an encounter of Desecrated Soil for a group of hunters
         /// </summary>
         /// <param name="game">The GameState</param>
         /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
@@ -660,18 +1201,6 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        /// Resolves an encounter of bats for a group of hunters
-        /// </summary>
-        /// <param name="game">The GameState</param>
-        /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
-        /// <param name="logic">The artificial intelligence component</param>
-        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
-        private static bool ResolveBats(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
-        {
-            return false;
-        }
-
-        /// <summary>
         /// Resolves an encounter of Assassin for a group of hunters
         /// </summary>
         /// <param name="game">The GameState</param>
@@ -685,7 +1214,12 @@ namespace FuryOfDracula.ConsoleInterface
             {
                 huntersInCombat.Add(game.Hunters[(int)h]);
             }
-            return ResolveCombat(game, huntersInCombat, Opponent.Assassin, logic);
+            bool continueEncounters = ResolveCombat(game, huntersInCombat, Opponent.Assassin, logic);
+            if (CheckForHunterDeath(game))
+            {
+                return false;
+            }
+            return continueEncounters;
         }
 
         /// <summary>
@@ -698,7 +1232,7 @@ namespace FuryOfDracula.ConsoleInterface
         private static bool ResolveAmbush(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
         {
             game.Dracula.DrawEncounter(game.EncounterPool);
-            game.Dracula.DiscardEncounterTile(game.EncounterPool);
+            game.Dracula.DiscardEncounterTile(game, logic.ChooseEncounterTileToDiscardFromEncounterHand(game));
             return true;
         }
 
@@ -827,7 +1361,7 @@ namespace FuryOfDracula.ConsoleInterface
                 {
                     cardDroppedOffTrail.DraculaCards.Remove(cardDroppedOffTrail.DraculaCards[1]);
                 }
-                int index = logic.PutDroppedOffCardInCatacombs(game, cardDroppedOffTrail);
+                int index = logic.ChooseToPutDroppedOffCardInCatacombs(game, cardDroppedOffTrail);
                 if (index > -1)
                 {
                     game.Dracula.Catacombs[index] = cardDroppedOffTrail;
@@ -839,7 +1373,7 @@ namespace FuryOfDracula.ConsoleInterface
                     while (cardDroppedOffTrail.EncounterTiles.Count() > 0)
                     {
                         cardDroppedOffTrail.EncounterTiles.First().IsRevealed = false;
-                        game.EncounterPool.Add(cardDroppedOffTrail.EncounterTiles.First());
+                        MatureEncounter(game, cardDroppedOffTrail.EncounterTiles.First(), logic);
                         cardDroppedOffTrail.EncounterTiles.Remove(cardDroppedOffTrail.EncounterTiles.First());
                     }
                 }

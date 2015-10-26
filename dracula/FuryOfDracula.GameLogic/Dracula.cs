@@ -176,6 +176,10 @@ namespace FuryOfDracula.GameLogic
             foreach (int i in list)
             {
                 encounterTilesDiscarded.AddRange(Catacombs[i].EncounterTiles);
+                foreach(DraculaCard d in Catacombs[i].DraculaCards)
+                {
+                    d.IsRevealed = false;
+                }
                 Catacombs[i] = null;
             }
             foreach (EncounterTile enc in encounterTilesDiscarded)
@@ -240,7 +244,7 @@ namespace FuryOfDracula.GameLogic
             List<EncounterTile> encountersDiscarded = new List<EncounterTile>();
             for (int i = 0; i < 6; i++)
             {
-                if (Trail[i].DraculaCards.First().Power == Power.Hide)
+                if (Trail[i] != null && Trail[i].DraculaCards.First().Power == Power.Hide)
                 {
                     Trail[i].DraculaCards.First().IsRevealed = false;
                     LocationWhereHideWasUsed = Location.Nowhere;
@@ -387,17 +391,59 @@ namespace FuryOfDracula.GameLogic
                 game.EncounterPool.Add(enc);
             }
             Trail[0] = new DraculaCardSlot(DraculaCardDeck.Find(card => card.Location == destination));
-            if (destination == Location.CastleDracula) {
+            if (destination == Location.CastleDracula)
+            {
                 Trail[0].DraculaCards.First().IsRevealed = true;
             }
             CurrentLocation = destination;
         }
 
-        public void DiscardEncounterTile(List<EncounterTile> encounterPool)
+        public void DiscardEncounterTile(GameState game, EncounterTile encounterToDiscard)
         {
-            EncounterTile encounterToDiscard = EncounterHand[new Random().Next(0, EncounterHand.Count())];
-            encounterPool.Add(encounterToDiscard);
+            game.EncounterPool.Add(encounterToDiscard);
             EncounterHand.Remove(encounterToDiscard);
+        }
+
+        public void ClearTrailDownTo(GameState game, int length)
+        {
+            for (int i = 5; i >= length; i--)
+            {
+                if (Trail[i] != null)
+                {
+                    if (Trail[i].DraculaCards.First().Location != CurrentLocation)
+                    {
+                        foreach (EncounterTile enc in Trail[i].EncounterTiles)
+                        {
+                            enc.IsRevealed = false;
+                        }
+                        game.EncounterPool.AddRange(Trail[i].EncounterTiles);
+                        Trail[i].EncounterTiles.Clear();
+                        foreach (DraculaCard d in Trail[i].DraculaCards)
+                        {
+                            d.IsRevealed = false;
+                        }
+                        Trail[i] = null;
+                    } else
+                    {
+                        length--;
+                    }
+                }
+            }
+            for (int i = 0; i < 6; i++)
+            {
+                if (Trail[i] == null)
+                {
+                    for (int j = i + 1; j < 6; j++)
+                    {
+                        if (Trail[j] != null)
+                        {
+                            Trail[i] = Trail[j];
+                            Trail[j] = null;
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
 }

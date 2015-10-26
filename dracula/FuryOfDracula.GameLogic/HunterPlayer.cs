@@ -116,6 +116,10 @@ namespace FuryOfDracula.GameLogic
             {
                 ItemShownToDraculaForBeingBitten = null;
             }
+            if (itemToDiscard == Item.Dogs) {
+                HasDogsFaceUp = false;
+            }
+
         }
 
         public void DiscardEvent(GameState game, Event eventToDiscard)
@@ -145,6 +149,16 @@ namespace FuryOfDracula.GameLogic
         public void AdjustBites(int amount)
         {
             BiteCount += amount;
+        }
+
+        public void SetNextMoveDestination(Location destination)
+        {
+            NextMoveDestination = destination;
+        }
+
+        public void SetNextMoveConnectionType(ConnectionType methodOfTravel)
+        {
+            NextMoveConnectionType = methodOfTravel;
         }
     }
 }
