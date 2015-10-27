@@ -133,6 +133,15 @@ namespace FuryOfDracula.ArtificialIntelligence
             }
         }
 
+        public bool ChooseToDelayHunterWithFalseTipoff(GameState game)
+        {
+            if (game.Dracula.EventHand.Find(card => card.Event == Event.FalseTipoff) != null && new Random().Next(0, 2) == 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
         public EncounterTile ChooseEncounterToResolveOnSearchingHunter(GameState game, List<EncounterTile> encounterTilesToResolve)
         {
             return encounterTilesToResolve[new Random().Next(0, encounterTilesToResolve.Count())];
@@ -151,7 +160,7 @@ namespace FuryOfDracula.ArtificialIntelligence
             return cardsToDiscard;
         }
 
-        public EncounterTile ChooseEncounterTileToDiscardFromDoubleBackedCatacomnbsLocation(GameState game)
+        public EncounterTile ChooseEncounterTileToDiscardFromDoubleBackedCatacombsLocation(GameState game)
         {
             if (game.Dracula.Trail[0].EncounterTiles.Count() > 1)
             {
@@ -219,13 +228,20 @@ namespace FuryOfDracula.ArtificialIntelligence
             return game.Dracula.EncounterHand[new Random().Next(0, game.Dracula.EncounterHand.Count())];
         }
 
-        public EnemyCombatCard ChooseCombatCardAndTarget(List<HunterPlayer> huntersInvolved, List<EnemyCombatCard> enemyCombatCards, bool firstRound, out Hunter enemyTarget, EnemyCombatCard cardUsedLastRound, bool repelled)
+        public EnemyCombatCard ChooseCombatCardAndTarget(GameState game, List<HunterPlayer> huntersInvolved, List<EnemyCombatCard> enemyCombatCards, bool firstRound, out Hunter enemyTarget, EnemyCombatCard cardUsedLastRound, bool repelled, bool sisterAgathaInEffect, int roundsWithoutEscape)
         {
+            if (sisterAgathaInEffect && game.Dracula.Blood < 3)
+            {
+                enemyCombatCards.Remove(EnemyCombatCard.EscapeBat);
+                enemyCombatCards.Remove(EnemyCombatCard.EscapeMan);
+                enemyCombatCards.Remove(EnemyCombatCard.EscapeMist);
+                enemyCombatCards.Remove(EnemyCombatCard.Fangs);
+            }
             EnemyCombatCard cardChosen = EnemyCombatCard.None;
             do
             {
                 cardChosen = enemyCombatCards[new Random().Next(0, enemyCombatCards.Count())];
-            } while ((cardChosen == EnemyCombatCard.Dodge && firstRound) || cardChosen == cardUsedLastRound || (repelled && (cardChosen == EnemyCombatCard.Fangs || cardChosen == EnemyCombatCard.Mesmerize || cardChosen == EnemyCombatCard.Strength)));
+            } while ((cardChosen == EnemyCombatCard.Dodge && firstRound) || cardChosen == cardUsedLastRound || (repelled && (cardChosen == EnemyCombatCard.Fangs || cardChosen == EnemyCombatCard.Mesmerize || cardChosen == EnemyCombatCard.Strength)) || (roundsWithoutEscape > 0) && (cardChosen == EnemyCombatCard.EscapeBat || cardChosen == EnemyCombatCard.EscapeMan || cardChosen == EnemyCombatCard.EscapeMist));
             enemyTarget = huntersInvolved[new Random().Next(0, huntersInvolved.Count())].Hunter;
             return cardChosen;
         }
@@ -353,6 +369,143 @@ namespace FuryOfDracula.ArtificialIntelligence
         public EncounterTile ChooseEncounterTileToAmbushHunterWith(GameState game, Hunter hunterToAmbush)
         {
             return game.Dracula.EncounterHand[new Random().Next(0, game.Dracula.EncounterHand.Count())];
+        }
+
+        public Event ChooseEventCardToPlayAtStartOfDraculaTurn(GameState game, out DevilishPowerTarget devilishPowerTarget, out Location roadBlock1, out Location roadBlock2, out ConnectionType roadBlockType)
+        {
+            List<Event> eventsThatCanBePlayed = new List<Event>();
+            if (game.Dracula.EventHand.Find(card => card.Event == Event.Roadblock) != null)
+            {
+                eventsThatCanBePlayed.Add(Event.Roadblock);
+            }
+            if (game.Dracula.EventHand.Find(card => card.Event == Event.TimeRunsShort) != null && game.TimeOfDay != TimeOfDay.SmallHours)
+            {
+                eventsThatCanBePlayed.Add(Event.TimeRunsShort);
+            }
+            if (game.Dracula.EventHand.Find(card => card.Event == Event.UnearthlySwiftness) != null)
+            {
+                eventsThatCanBePlayed.Add(Event.UnearthlySwiftness);
+            }
+            if (game.Dracula.EventHand.Find(card => card.Event == Event.DevilishPower) != null && (game.HunterAlly != null || game.HeavenlyHostLocation1 != Location.Nowhere || game.HeavenlyHostLocation2 != Location.Nowhere))
+            {
+                eventsThatCanBePlayed.Add(Event.DevilishPower);
+            }
+            if (new Random().Next(0, 2) == 0) {
+                Event eventChosen = eventsThatCanBePlayed[new Random().Next(0, eventsThatCanBePlayed.Count())];
+                switch (eventChosen)
+                {
+                    case Event.Roadblock:
+                        roadBlock1 = ChooseSetupForRoadBlock(game, out roadBlock2, out roadBlockType);
+                        devilishPowerTarget = DevilishPowerTarget.None;
+                        break;
+                    case Event.DevilishPower:
+                        devilishPowerTarget = ChooseDevilishPowerTarget(game);
+                        roadBlock1 = roadBlock2 = Location.Nowhere;
+                        roadBlockType = ConnectionType.None;
+                        break;
+                    default:
+                        devilishPowerTarget = DevilishPowerTarget.None;
+                        roadBlock1 = roadBlock2 = Location.Nowhere;
+                        roadBlockType = ConnectionType.None;
+                        break;
+                }
+                return eventChosen;
+            }
+            devilishPowerTarget = DevilishPowerTarget.None;
+            roadBlock1 = roadBlock2 = Location.Nowhere;
+            roadBlockType = ConnectionType.None;
+            return Event.None;
+        }
+
+        private DevilishPowerTarget ChooseDevilishPowerTarget(GameState game)
+        {
+            List<DevilishPowerTarget> possibleTargets = new List<DevilishPowerTarget>();
+            if (game.HeavenlyHostLocation1 != Location.Nowhere) {
+                possibleTargets.Add(DevilishPowerTarget.HeavenlyHost1);
+            }
+            if (game.HeavenlyHostLocation2 != Location.Nowhere)
+            {
+                possibleTargets.Add(DevilishPowerTarget.HeavenlyHost2);
+            }
+            if (game.HunterAlly != null)
+            {
+                possibleTargets.Add(DevilishPowerTarget.HunterAlly);
+            }
+            return possibleTargets[new Random().Next(0, possibleTargets.Count())];
+        }
+
+        private Location ChooseSetupForRoadBlock(GameState game, out Location roadBlock2, out ConnectionType roadBlockType)
+        {
+            List<Location> allLocations = Enumerations.GetAllLocations();
+            List<Location> allCities = new List<Location>();
+            foreach (Location loc in allLocations) {
+                if (game.Map.TypeOfLocation(loc) == LocationType.SmallCity || game.Map.TypeOfLocation(loc) == LocationType.LargeCity)
+                {
+                    allCities.Add(loc);
+                }
+            }
+            Location roadBlock1 = allCities[new Random().Next(0, allCities.Count())];
+            List<Location> citiesConnectedToRoadBlock1ByRoad = game.Map.LocationsConnectedByRoadTo(roadBlock1);
+            List<Location> citiesConnectedToRoadBlock1ByTrain = game.Map.LocationsConnectedByTrainTo(roadBlock1);
+            List<Location> citiesConnectedToRoadBlock1 = new List<Location>();
+            citiesConnectedToRoadBlock1.AddRange(citiesConnectedToRoadBlock1ByRoad);
+            citiesConnectedToRoadBlock1.AddRange(citiesConnectedToRoadBlock1ByTrain);
+            roadBlock2 = citiesConnectedToRoadBlock1[new Random().Next(0, citiesConnectedToRoadBlock1.Count())];
+            if (citiesConnectedToRoadBlock1ByRoad.Contains(roadBlock2))
+            {
+                if (citiesConnectedToRoadBlock1ByTrain.Contains(roadBlock2)) {
+                    if (new Random().Next(0, 2) == 0)
+                    {
+                        roadBlockType = ConnectionType.Road;
+                    } else
+                    {
+                        roadBlockType = ConnectionType.Rail;
+                    }
+                } else
+                {
+                    roadBlockType = ConnectionType.Road;
+                }
+
+            } else
+            {
+                roadBlockType = ConnectionType.Rail;
+            }
+            return roadBlock1;
+        }
+
+        public Location ChoosePortToMoveHuntersToWithControlStorms(GameState game, Hunter hunterMoved)
+        {
+            List<Location> validPorts = new List<Location>();
+            List<Location> connectedSeaLocations = new List<Location>() { game.Hunters[(int)hunterMoved].CurrentLocation };
+            List<Location> seaExtension = new List<Location>();
+            for (int i = 0; i < 2; i++)
+            {
+                seaExtension.Clear();
+                foreach (Location loc in connectedSeaLocations)
+                {
+                    seaExtension.AddRange(game.Map.LocationsConnectedBySeaTo(loc));
+                }
+                foreach (Location loc in seaExtension)
+                {
+                    if (game.Map.TypeOfLocation(loc) == LocationType.Sea && !connectedSeaLocations.Contains(loc))
+                    {
+                        connectedSeaLocations.Add(loc);
+                    }
+                }
+            }
+            seaExtension.Clear();
+            foreach (Location loc in connectedSeaLocations)
+            {
+                seaExtension.AddRange(game.Map.LocationsConnectedBySeaTo(loc));
+            }
+            foreach (Location loc in seaExtension)
+            {
+                if ((game.Map.TypeOfLocation(loc) == LocationType.SmallCity || game.Map.TypeOfLocation(loc) == LocationType.LargeCity) && !validPorts.Contains(loc))
+                {
+                    validPorts.Add(loc);
+                }
+            }
+            return validPorts[new Random().Next(0, validPorts.Count())];
         }
     }
 }

@@ -775,6 +775,28 @@ namespace FuryOfDracula.GameLogic
             return tempMap;
         }
 
+        public List<Location> LocationsConnectedBySeaTo(Location location)
+        {
+            List<Location> tempList = new List<Location>();
+            tempList.AddRange(map[(int)location].BySea);
+            return tempList;
+        }
+
+        public List<Location> LocationsConnectedByTrainTo(Location location)
+        {
+            List<Location> tempList = new List<Location>();
+            tempList.AddRange(map[(int)location].ByTrain);
+            return tempList;
+        }
+
+        public List<Location> LocationsConnectedByRoadOrTrainTo(Location location)
+        {
+            List<Location> tempList = new List<Location>();
+            tempList.AddRange(map[(int)location].ByRoad);
+            tempList.AddRange(map[(int)location].ByTrain);
+            return tempList;
+        }
+
         public List<Location> GetPortsAdjacentTo(Location location)
         {
             List<Location> ports = new List<Location>();

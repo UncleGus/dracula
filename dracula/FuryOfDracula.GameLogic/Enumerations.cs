@@ -388,4 +388,12 @@ namespace FuryOfDracula.GameLogic
         Item,
         Event
     }
+
+    public enum DevilishPowerTarget
+    {
+        None,
+        HeavenlyHost1,
+        HeavenlyHost2,
+        HunterAlly
+    }
 }

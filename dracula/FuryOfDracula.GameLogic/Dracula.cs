@@ -50,6 +50,8 @@ namespace FuryOfDracula.GameLogic
         public Location AdvanceMoveLocation { get; set; }
         [DataMember]
         public Power AdvanceMovePower { get; set; }
+        [DataMember]
+        public bool LostBloodFromSeaMovementLastTurn { get; set; }
 
         public Dracula()
         {
@@ -507,6 +509,23 @@ namespace FuryOfDracula.GameLogic
                     }
                 }
             }
+        }
+
+        public int NumberOfEncountersAtLocation(Location location)
+        {
+            for (int i = 0; i < 6; i++) {
+                if (Trail[i] != null && Trail[i].DraculaCards.First().Location == location) {
+                    return Trail[i].EncounterTiles.Count();
+                }
+            }
+            for (int i = 0; i < 3; i++)
+            {
+                if (Catacombs[i] != null && Catacombs[i].DraculaCards.First().Location == location)
+                {
+                    return Catacombs[i].EncounterTiles.Count();
+                }
+            }
+            return -1;
         }
     }
 }
