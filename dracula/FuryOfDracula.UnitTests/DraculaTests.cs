@@ -91,8 +91,9 @@ namespace FuryOfDracula.UnitTests
         public void TakeEvent_ListOfEvents_ListGetsShorterAndEventHandGetsLonger()
         {
             List<EventCard> cards = new List<EventCard> { new EventCard(Event.DevilishPower, true, EventType.Keep) };
+            List<EventCard> discard = new List<EventCard>();
             int cardCountBefore = dracula.EventHand.Count();
-            dracula.TakeEvent(cards);
+            dracula.TakeEvent(cards, discard);
             Assert.AreEqual(null, cards.Find(card => card.Event == Event.DevilishPower));
             Assert.AreNotEqual(null, dracula.EventHand.Find(card => card.Event == Event.DevilishPower));
             Assert.AreEqual(cardCountBefore + 1, dracula.EventHand.Count());
@@ -103,7 +104,7 @@ namespace FuryOfDracula.UnitTests
         {
             List<EventCard> cards = new List<EventCard> { new EventCard(Event.DevilishPower, true, EventType.Keep) };
             List<EventCard> discard = new List<EventCard>();
-            dracula.TakeEvent(cards);
+            dracula.TakeEvent(cards, discard);
             int cardCountBefore = dracula.EventHand.Count();
             dracula.DiscardEvent(Event.DevilishPower, discard);
             Assert.AreEqual(null, dracula.EventHand.Find(card => card.Event == Event.DevilishPower));

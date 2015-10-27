@@ -89,7 +89,8 @@ namespace FuryOfDracula.ArtificialIntelligence
                 possiblePowers.Remove(Power.WolfForm);
             }
             int totalPossibleMoves = possibleDestinations.Count() + possiblePowers.Count();
-            if (totalPossibleMoves == 0) {
+            if (totalPossibleMoves == 0)
+            {
                 power = Power.None;
                 return Location.Nowhere;
             }
@@ -325,18 +326,22 @@ namespace FuryOfDracula.ArtificialIntelligence
                     if (new Random().Next(0, 2) == 0)
                     {
                         return CardType.Item;
-                    } else
+                    }
+                    else
                     {
                         return CardType.Event;
                     }
-                } else
+                }
+                else
                 {
                     return CardType.Item;
                 }
-            } else if (hunterDiscardingCard.EventCount > 0)
+            }
+            else if (hunterDiscardingCard.EventCount > 0)
             {
                 return CardType.Event;
-            } else
+            }
+            else
             {
                 return CardType.None;
             }
@@ -360,7 +365,8 @@ namespace FuryOfDracula.ArtificialIntelligence
             if (validHunters.Count() == 0)
             {
                 return Hunter.Nobody;
-            } else
+            }
+            else
             {
                 return validHunters[new Random().Next(0, validHunters.Count())];
             }
@@ -390,7 +396,8 @@ namespace FuryOfDracula.ArtificialIntelligence
             {
                 eventsThatCanBePlayed.Add(Event.DevilishPower);
             }
-            if (new Random().Next(0, 2) == 0) {
+            if (new Random().Next(0, 2) == 0)
+            {
                 Event eventChosen = eventsThatCanBePlayed[new Random().Next(0, eventsThatCanBePlayed.Count())];
                 switch (eventChosen)
                 {
@@ -420,7 +427,8 @@ namespace FuryOfDracula.ArtificialIntelligence
         private DevilishPowerTarget ChooseDevilishPowerTarget(GameState game)
         {
             List<DevilishPowerTarget> possibleTargets = new List<DevilishPowerTarget>();
-            if (game.HeavenlyHostLocation1 != Location.Nowhere) {
+            if (game.HeavenlyHostLocation1 != Location.Nowhere)
+            {
                 possibleTargets.Add(DevilishPowerTarget.HeavenlyHost1);
             }
             if (game.HeavenlyHostLocation2 != Location.Nowhere)
@@ -438,7 +446,8 @@ namespace FuryOfDracula.ArtificialIntelligence
         {
             List<Location> allLocations = Enumerations.GetAllLocations();
             List<Location> allCities = new List<Location>();
-            foreach (Location loc in allLocations) {
+            foreach (Location loc in allLocations)
+            {
                 if (game.Map.TypeOfLocation(loc) == LocationType.SmallCity || game.Map.TypeOfLocation(loc) == LocationType.LargeCity)
                 {
                     allCities.Add(loc);
@@ -453,20 +462,24 @@ namespace FuryOfDracula.ArtificialIntelligence
             roadBlock2 = citiesConnectedToRoadBlock1[new Random().Next(0, citiesConnectedToRoadBlock1.Count())];
             if (citiesConnectedToRoadBlock1ByRoad.Contains(roadBlock2))
             {
-                if (citiesConnectedToRoadBlock1ByTrain.Contains(roadBlock2)) {
+                if (citiesConnectedToRoadBlock1ByTrain.Contains(roadBlock2))
+                {
                     if (new Random().Next(0, 2) == 0)
                     {
                         roadBlockType = ConnectionType.Road;
-                    } else
+                    }
+                    else
                     {
                         roadBlockType = ConnectionType.Rail;
                     }
-                } else
+                }
+                else
                 {
                     roadBlockType = ConnectionType.Road;
                 }
 
-            } else
+            }
+            else
             {
                 roadBlockType = ConnectionType.Rail;
             }
@@ -506,6 +519,136 @@ namespace FuryOfDracula.ArtificialIntelligence
                 }
             }
             return validPorts[new Random().Next(0, validPorts.Count())];
+        }
+
+        public Location ChooseDestinationForWildHorses(GameState game)
+        {
+            List<Location> possibleDestination = game.Map.LocationsConnectedByRoadTo(game.Dracula.CurrentLocation);
+            return possibleDestination[new Random().Next(0, possibleDestination.Count())];
+        }
+
+        public bool ChooseToPlayWildHorses(GameState game)
+        {
+            if (game.Dracula.EventHand.Find(card => card.Event == Event.WildHorses) != null && new Random().Next(0, 2) == 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool ChooseToPlayCustomsSearch(GameState game, Hunter hunterMoved, Location origin)
+        {
+            bool haveCard = game.Dracula.EventHand.Find(card => card.Event == Event.CustomsSearch) != null;
+            bool hunterWasAtSea = game.Map.TypeOfLocation(origin) == LocationType.Sea;
+            bool hunterIsNowOnLand = game.Map.TypeOfLocation(game.Hunters[(int)hunterMoved].CurrentLocation) == LocationType.SmallCity || game.Map.TypeOfLocation(game.Hunters[(int)hunterMoved].CurrentLocation) == LocationType.LargeCity;
+            bool hunterMovedAcrossLand = game.Map.TypeOfLocation(game.Hunters[(int)hunterMoved].CurrentLocation) != LocationType.Sea && game.Map.TypeOfLocation(origin) != LocationType.Sea;
+            bool hunterCrossedBorder = game.Map.IsEastern(origin) != game.Map.IsEastern(game.Hunters[(int)hunterMoved].CurrentLocation);
+            bool destinationHasEncounters = game.Dracula.NumberOfEncountersAtLocation(game.Hunters[(int)hunterMoved].CurrentLocation) > 0;
+            if (haveCard && !destinationHasEncounters && ((hunterWasAtSea && hunterIsNowOnLand) || (hunterMovedAcrossLand && hunterCrossedBorder)) && new Random().Next(0, 2) == 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool ChooseToPlaySeduction(GameState game)
+        {
+            if (game.Dracula.EventHand.Find(card => card.Event == Event.Seduction) != null && new Random().Next(0, 2) == 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool ChooseToPlayControlStorms(GameState game, Hunter hunterMoved)
+        {
+            if (game.Dracula.EventHand.Find(card => card.Event == Event.ControlStorms) != null && game.Map.TypeOfLocation(game.Hunters[(int)hunterMoved].CurrentLocation) == LocationType.Sea && new Random().Next(0, 2) == 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool ChooseToPlayRelentlessMinion(GameState game, List<Hunter> huntersInvolved, Opponent opponent)
+        {
+            if (game.Dracula.EventHand.Find(card => card.Event == Event.RelentlessMinion) != null && new Random().Next(0, 2) == 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool ChooseToPlayTrap(GameState game, List<HunterPlayer> huntersInvolved, Opponent opponent)
+        {
+            if (game.Dracula.EventHand.Find(card => card.Event == Event.Trap) != null && new Random().Next(0, 2) == 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public Item ChooseItemToDiscardWithRage(GameState game, Hunter rageTarget)
+        {
+            if (game.Hunters[(int)rageTarget].ItemCount == 0)
+            {
+                return Item.None;
+            }
+            return game.Hunters[(int)rageTarget].ItemsKnownToDracula[new Random().Next(0, game.Hunters[(int)rageTarget].ItemsKnownToDracula.Count())].Item;
+        }
+
+        public Hunter ChooseToPlayRage(GameState game, List<HunterPlayer> huntersInvolved)
+        {
+            if (game.Dracula.EventHand.Find(card => card.Event == Event.Rage) != null && new Random().Next(0, 2) == 0)
+            {
+                return huntersInvolved[new Random().Next(0, huntersInvolved.Count())].Hunter;
+            }
+            return Hunter.Nobody;
+        }
+
+        public bool ChooseToPlaySensationalistPress(GameState game, Location location)
+        {
+            if (game.Dracula.EventHand.Find(card => card.Event == Event.SensationalistPress) != null && new Random().Next(0, 2) == 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public HunterPlayer ChooseNightVisitVictim(List<HunterPlayer> bittenHunters)
+        {
+            return bittenHunters[new Random().Next(0, bittenHunters.Count())];
+        }
+
+        public Event ChooseAllyToKeep(Event existingAlly, Event newAlly)
+        {
+            if (new Random().Next(0, 2) == 0)
+            {
+                return newAlly;
+            }
+            else
+            {
+                return existingAlly;
+            }
+        }
+
+        public HunterPlayer ChooseVampiricInfluenceVictim(List<HunterPlayer> bittenHunters)
+        {
+            return bittenHunters[new Random().Next(0, bittenHunters.Count())];
+        }
+
+        public Location ChooseWhereToEvadeTo(GameState game)
+        {
+            List<Location> allLocations = Enumerations.GetAllLocations();
+            Location destination;
+            do {
+                destination = allLocations[new Random().Next(0, allLocations.Count())];
+            } while (destination == Location.StJosephAndStMary);
+            return destination;
+        }
+
+        public Hunter ChooseVictimForQuinceyPMorris(GameState game)
+        {
+            return (Hunter)(new Random().Next(1, 5));
         }
     }
 }

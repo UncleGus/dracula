@@ -136,7 +136,7 @@ namespace FuryOfDracula.GameLogic
             return cardSlotDroppedOffTrail;
         }
 
-        public void RevealEncountersAtPositionInTrail(GameState game, int positionRevealed)
+        public void RevealEncountersAtPositionInTrail(int positionRevealed)
         {
             if (positionRevealed < 6 && Trail[positionRevealed] != null)
             {
@@ -286,20 +286,24 @@ namespace FuryOfDracula.GameLogic
             return encountersDiscarded;
         }
 
-        public bool TakeEvent(List<EventCard> eventDeck)
+        public Event TakeEvent(List<EventCard> eventDeck, List<EventCard> eventDiscard)
         {
             EventCard cardDrawn;
             do
             {
                 cardDrawn = eventDeck[new Random().Next(0, eventDeck.Count())];
             } while (!cardDrawn.IsDraculaCard);
-            EventHand.Add(cardDrawn);
             eventDeck.Remove(cardDrawn);
-            if (EventHand.Count() > EventHandSize)
+            if (cardDrawn.EventType == EventType.PlayImmediately)
             {
-                return true;
+                eventDiscard.Add(cardDrawn);
+                return cardDrawn.Event;
             }
-            return false;
+            else
+            {
+                EventHand.Add(cardDrawn);
+                return Event.None;
+            }
         }
 
         public int RevealHideCard()
