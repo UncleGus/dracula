@@ -37,8 +37,26 @@ namespace FuryOfDracula.GameLogic
             }
         }
         public int MaxHealth { get; private set; }
+        private int _biteCount;
         [DataMember]
-        public int BiteCount { get; private set; }
+        public int BiteCount
+        {
+            get
+            {
+                return _biteCount;
+            }
+            private set
+            {
+                if (value < 0)
+                {
+                    _biteCount = 0;
+                }
+                else
+                {
+                    _biteCount = value;
+                }
+            }
+        }
         [DataMember]
         public int BitesRequiredToKill { get; private set; }
         [DataMember]
@@ -116,7 +134,8 @@ namespace FuryOfDracula.GameLogic
             {
                 ItemShownToDraculaForBeingBitten = null;
             }
-            if (itemToDiscard == Item.Dogs) {
+            if (itemToDiscard == Item.Dogs)
+            {
                 HasDogsFaceUp = false;
             }
 
@@ -129,7 +148,8 @@ namespace FuryOfDracula.GameLogic
             if (eventCardToDiscard != null)
             {
                 EventsKnownToDracula.Remove(eventCardToDiscard);
-            } else
+            }
+            else
             {
                 eventCardToDiscard = game.EventDeck.Find(card => card.Event == eventToDiscard);
                 game.EventDeck.Remove(eventCardToDiscard);
@@ -159,6 +179,11 @@ namespace FuryOfDracula.GameLogic
         public void SetNextMoveConnectionType(ConnectionType methodOfTravel)
         {
             NextMoveConnectionType = methodOfTravel;
+        }
+
+        public void SetDogsFaceUp(bool v)
+        {
+            HasDogsFaceUp = v;
         }
     }
 }

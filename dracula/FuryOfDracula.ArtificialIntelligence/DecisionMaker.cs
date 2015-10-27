@@ -12,6 +12,14 @@ namespace FuryOfDracula.ArtificialIntelligence
         public Location ChooseDestinationAndPower(GameState game, out Power power)
         {
             Location destination;
+            if (game.Dracula.AdvanceMoveLocation != Location.Nowhere || game.Dracula.AdvanceMovePower != Power.None)
+            {
+                power = game.Dracula.AdvanceMovePower;
+                destination = game.Dracula.AdvanceMoveLocation;
+                game.Dracula.AdvanceMoveLocation = Location.Nowhere;
+                game.Dracula.AdvanceMovePower = Power.None;
+                return destination;
+            }
             List<Power> possiblePowers = new List<Power>();
             if (game.Map.TypeOfLocation(game.Dracula.CurrentLocation) != LocationType.Sea)
             {
@@ -64,6 +72,13 @@ namespace FuryOfDracula.ArtificialIntelligence
                     }
                 }
             }
+            List<Location> locationsWithHeavenlyHostOrConsecratedGround = game.GetBlockedLocations();
+            foreach (Location loc in locationsWithHeavenlyHostOrConsecratedGround)
+            {
+                possibleDestinations.Remove(loc);
+                possibleWolfFormDestinations.Remove(loc);
+                possibleDoubleBackDestinations.Remove(loc);
+            }
             possibleDoubleBackDestinations.Remove(game.Dracula.CurrentLocation);
             if (possibleDoubleBackDestinations.Count == 0)
             {
@@ -73,7 +88,13 @@ namespace FuryOfDracula.ArtificialIntelligence
             {
                 possiblePowers.Remove(Power.WolfForm);
             }
-            int randomNumber = new Random().Next(0, possibleDestinations.Count() + possiblePowers.Count());
+            int totalPossibleMoves = possibleDestinations.Count() + possiblePowers.Count();
+            if (totalPossibleMoves == 0) {
+                power = Power.None;
+                return Location.Nowhere;
+            }
+
+            int randomNumber = new Random().Next(0, totalPossibleMoves);
             if (randomNumber < possibleDestinations.Count())
             {
                 do
@@ -149,9 +170,18 @@ namespace FuryOfDracula.ArtificialIntelligence
             }
         }
 
-        public EventCard ChooseEventToDiscard(GameState game)
+        public bool ChooseToCancelEventWithDevilishPower(GameState game, Event eventBeingPlayedNow, Event eventInitiallyPlayed)
         {
-            return game.Dracula.EventHand[new Random().Next(0, game.Dracula.EventHand.Count())];
+            if (game.Dracula.EventHand.Find(card => card.Event == Event.DevilishPower) != null && new Random().Next(0, 4) == 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public Event ChooseEventToDiscard(GameState game)
+        {
+            return game.Dracula.EventHand[new Random().Next(0, game.Dracula.EventHand.Count())].Event;
         }
 
         public Location ChooseStartLocation(GameState game)
@@ -198,6 +228,15 @@ namespace FuryOfDracula.ArtificialIntelligence
             } while ((cardChosen == EnemyCombatCard.Dodge && firstRound) || cardChosen == cardUsedLastRound || (repelled && (cardChosen == EnemyCombatCard.Fangs || cardChosen == EnemyCombatCard.Mesmerize || cardChosen == EnemyCombatCard.Strength)));
             enemyTarget = huntersInvolved[new Random().Next(0, huntersInvolved.Count())].Hunter;
             return cardChosen;
+        }
+
+        public bool ChooseToCancelCharteredCarriageWithFalseTipoff(GameState game)
+        {
+            if (game.Dracula.EventHand.Find(card => card.Event == Event.FalseTipoff) != null && new Random().Next(0, 2) == 0)
+            {
+                return true;
+            }
+            return false;
         }
 
         public Location ChooseEscapeAsBatDestination(GameState game)
@@ -249,6 +288,16 @@ namespace FuryOfDracula.ArtificialIntelligence
                 possibleDestinations.Remove(loc);
             }
             return possibleDestinations[new Random().Next(0, possibleDestinations.Count())];
+        }
+
+        public Location ChoosePortToGoToAfterStormySeas(GameState game)
+        {
+            List<Location> validPorts = game.Map.GetPortsAdjacentTo(game.Dracula.CurrentLocation);
+            if (validPorts.Count() == 0)
+            {
+                return Location.Nowhere;
+            }
+            return validPorts[new Random().Next(0, validPorts.Count())];
         }
 
         public CardType ChooseToDiscardItemFromHunterInsteadOfEvent(HunterPlayer hunterDiscardingCard)

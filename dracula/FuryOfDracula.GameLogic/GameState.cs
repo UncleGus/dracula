@@ -88,15 +88,31 @@ namespace FuryOfDracula.GameLogic
             }
         }
         [DataMember]
-        public EventCard DraculaAlly { get; private set; }
+        public EventCard DraculaAlly { get; set; }
         [DataMember]
-        public EventCard HunterAlly { get; private set; }
+        public EventCard HunterAlly { get; set; }
         [DataMember]
         public TimeOfDay TimeOfDay { get; private set; }
         [DataMember]
         public int Resolve { get; private set; }
         [DataMember]
         public int Vampires { get; private set; }
+        [DataMember]
+        public Location HeavenlyHostLocation1 { get; set; }
+        [DataMember]
+        public Location HeavenlyHostLocation2 { get; set; }
+        [DataMember]
+        public Location ConsecratedGroundLocation{ get; set; }
+        [DataMember]
+        public Location StormySeasLocation { get; set; }
+        [DataMember]
+        public int StormySeasRounds { get; set; }
+        [DataMember]
+        public Location RoadBlockLocation1 { get; set; }
+        [DataMember]
+        public Location RoadBlockLocation2 { get; set; }
+        [DataMember]
+        public ConnectionType RoadBlockConnectionType { get; set; }
 
         public GameState()
         {
@@ -106,6 +122,28 @@ namespace FuryOfDracula.GameLogic
             EventDiscard = new List<EventCard>();
             Resolve = 0;
             Vampires = 0;
+        }
+
+        public List<Location> GetBlockedLocations()
+        {
+            List<Location> tempLocationList = new List<Location>();
+            if (HeavenlyHostLocation1 != Location.Nowhere)
+            {
+                tempLocationList.Add(HeavenlyHostLocation1);
+            }
+            if (HeavenlyHostLocation2 != Location.Nowhere)
+            {
+                tempLocationList.Add(HeavenlyHostLocation2);
+            }
+            if (ConsecratedGroundLocation!= Location.Nowhere)
+            {
+                tempLocationList.Add(ConsecratedGroundLocation);
+            }
+            if (StormySeasRounds > 0 && StormySeasLocation != Location.Nowhere)
+            {
+                tempLocationList.Add(StormySeasLocation);
+            }
+            return tempLocationList;
         }
 
         public Hunter GetHunterFromString(string hunterName)
@@ -134,6 +172,7 @@ namespace FuryOfDracula.GameLogic
 
         public void AdvanceTimeTracker()
         {
+            StormySeasRounds--;
             if (Map.TypeOfLocation(Dracula.CurrentLocation) != LocationType.Sea)
             {
 
@@ -324,6 +363,11 @@ namespace FuryOfDracula.GameLogic
             tempEncounterDeck.Add(new EncounterTile(Encounter.Wolves));
             return tempEncounterDeck;
 
+        }
+
+        public void RegressTimeTracker()
+        {
+            TimeOfDay = TimeOfDay - 1;
         }
 
         private void SaveState(string fileName) {

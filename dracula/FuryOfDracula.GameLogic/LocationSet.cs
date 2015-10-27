@@ -775,6 +775,19 @@ namespace FuryOfDracula.GameLogic
             return tempMap;
         }
 
+        public List<Location> GetPortsAdjacentTo(Location location)
+        {
+            List<Location> ports = new List<Location>();
+            foreach (Location loc in map[(int)location].BySea)
+            {
+                if (map[(int)loc].LocationType == LocationType.SmallCity || map[(int)loc].LocationType == LocationType.LargeCity)
+                {
+                    ports.Add(loc);
+                }
+            }
+            return ports;
+        }
+
         public LocationType TypeOfLocation(Location location)
         {
             return map[(int)location].LocationType;

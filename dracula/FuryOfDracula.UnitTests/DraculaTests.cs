@@ -105,7 +105,7 @@ namespace FuryOfDracula.UnitTests
             List<EventCard> discard = new List<EventCard>();
             dracula.TakeEvent(cards);
             int cardCountBefore = dracula.EventHand.Count();
-            dracula.DiscardEvent(dracula.EventHand.Find(card => card.Event == Event.DevilishPower), discard);
+            dracula.DiscardEvent(Event.DevilishPower, discard);
             Assert.AreEqual(null, dracula.EventHand.Find(card => card.Event == Event.DevilishPower));
             Assert.AreNotEqual(null, discard.Find(card => card.Event == Event.DevilishPower));
             Assert.AreEqual(cardCountBefore - 1, dracula.EventHand.Count());

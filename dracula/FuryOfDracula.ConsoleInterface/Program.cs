@@ -65,6 +65,10 @@ namespace FuryOfDracula.ConsoleInterface
 
                 switch (commandSet.command)
                 {
+                    case "e":
+                    case "event": PlayEvent(game, commandSet.argument1, commandSet.argument2, logic); break;
+                    case "u":
+                    case "use": UseItem(game, commandSet.argument1, commandSet.argument2); break;
                     case "g":
                     case "group": SetupGroup(game, commandSet.argument1); break;
                     case "t":
@@ -89,6 +93,726 @@ namespace FuryOfDracula.ConsoleInterface
                     default: Console.WriteLine("I didn't understand that"); break;
                 }
             } while (commandSet.command != "exit");
+        }
+
+        private static void PlayEvent(GameState game, string eventName, string hunterIndex, DecisionMaker logic)
+        {
+            int index = 0;
+            Hunter hunterPlayingEvent = Hunter.Nobody;
+            if (Int32.TryParse(hunterIndex, out index))
+            {
+                hunterPlayingEvent = game.GetHunterFromInt(index);
+            }
+            string line = "";
+            while (hunterPlayingEvent == Hunter.Nobody && index != -1)
+            {
+                Console.WriteLine("Who is playing an Event? {0}= {1}, {2}= {3}, {4}= {5}, {6}= {7} (-1 to cancel)", (int)Hunter.LordGodalming, Hunter.LordGodalming.Name(), (int)Hunter.DrSeward, Hunter.DrSeward.Name(), (int)Hunter.VanHelsing, Hunter.VanHelsing.Name(), (int)Hunter.MinaHarker, Hunter.MinaHarker.Name());
+                line = Console.ReadLine();
+                if (Int32.TryParse(line, out index))
+                {
+                    if (index == -1)
+                    {
+                        Console.WriteLine("Cancelled");
+                        return;
+                    }
+                    hunterPlayingEvent = game.GetHunterFromInt(index);
+                    Console.WriteLine(hunterPlayingEvent.Name());
+                }
+                else
+                {
+                    Console.WriteLine("I didn't understand that");
+                }
+            }
+            Event eventBeingPlayed = Enumerations.GetEventFromString(eventName);
+            while (eventBeingPlayed == Event.None && line.ToLower() != "cancel")
+            {
+                Console.WriteLine("What is the name of the Event being played?");
+                line = Console.ReadLine();
+                eventBeingPlayed = Enumerations.GetEventFromString(line);
+            }
+            if (line.ToLower() == "cancel")
+            {
+                Console.WriteLine("Cancelled");
+                return;
+            }
+            game.Hunters[(int)hunterPlayingEvent].DiscardEvent(game, eventBeingPlayed);
+            if (DraculaIsPlayingDevilishPowerToCancelEvent(game, eventBeingPlayed, eventBeingPlayed, logic))
+            {
+                Console.WriteLine("{0} cancelled", eventBeingPlayed.Name());
+                return;
+            }
+            switch (eventBeingPlayed)
+            {
+                case Event.JonathanHarker:
+                case Event.RufusSmith:
+                case Event.SisterAgatha:
+                    PlayAlly(game, hunterPlayingEvent, eventBeingPlayed);
+                    break;
+                case Event.BloodTransfusion:
+                    PlayBloodTransfusion(game, hunterPlayingEvent);
+                    break;
+                case Event.CharteredCarriage:
+                    PlayCharteredCarriage(game, hunterPlayingEvent, logic);
+                    break;
+                case Event.ConsecratedGround:
+                    PlayConsecratedGround(game, hunterPlayingEvent);
+                    break;
+                case Event.ExcellentWeather:
+                    PlayExcellentWeather(game, hunterPlayingEvent);
+                    break;
+                case Event.GoodLuck:
+                    PlayGoodLuck(game, hunterPlayingEvent);
+                    break;
+                case Event.HiredScouts:
+                    PlayHiredScouts(game, hunterPlayingEvent);
+                    break;
+                case Event.Hypnosis:
+                    PlayHypnosis(game, hunterPlayingEvent, logic);
+                    break;
+                case Event.LongDay:
+                    PlayLongDay(game, hunterPlayingEvent);
+                    break;
+                case Event.MoneyTrail:
+                    PlayMoneyTrail(game, hunterPlayingEvent);
+                    break;
+                case Event.MysticResearch:
+                    PlayMysticResearch(game, hunterPlayingEvent);
+                    break;
+                case Event.NewspaperReports:
+                    PlayNewsPaperReports(game, hunterPlayingEvent);
+                    break;
+                case Event.ReEquip:
+                    PlayReEquip(game, hunterPlayingEvent);
+                    break;
+                case Event.SenseofEmergency:
+                    PlaySenseOfEmergency(game, hunterPlayingEvent, logic);
+                    break;
+                case Event.StormySeas:
+                    PlayStormySeas(game, hunterPlayingEvent, logic);
+                    break;
+                case Event.SurprisingReturn:
+                    PlaySurprisingReturn(game, hunterPlayingEvent);
+                    break;
+                case Event.TelegraphAhead:
+                    PlayTelegraphAhead(game, hunterPlayingEvent);
+                    break;
+                case Event.VampireLair:
+                    PlayVampireLair(game, hunterPlayingEvent, logic);
+                    break;
+                default:
+                    Console.WriteLine("It is not appropriate to play {0} at this time", eventBeingPlayed.Name());
+                    break;
+            }
+        }
+
+        private static void PlayVampireLair(GameState game, Hunter hunterPlayingEvent, DecisionMaker logic)
+        {
+            if (game.Vampires < 1)
+            {
+                Console.WriteLine("No Vampires to battle");
+                return;
+            }
+            if (ResolveCombat(game, new List<HunterPlayer> { game.Hunters[(int)hunterPlayingEvent] }, Opponent.NewVampire, logic))
+            {
+                game.AdjustVampires(-1);
+            }
+        }
+
+        private static void PlayTelegraphAhead(GameState game, Hunter hunterPlayingEvent)
+        {
+            foreach (Location loc in game.Map.LocationsConnectedByRoadTo(game.Dracula.CurrentLocation))
+            {
+                game.Dracula.RevealCardInTrailWithLocation(loc);
+            }
+        }
+
+        private static void PlaySurprisingReturn(GameState game, Hunter hunterPlayingEvent)
+        {
+            if (game.EventDiscard.Count == 0)
+            {
+                return;
+            }
+            Console.WriteLine("What is the name of the card you are taking from the Event discard pile?");
+            Event eventRetrieved = Event.None;
+            while (eventRetrieved == Event.None)
+            {
+                eventRetrieved = Enumerations.GetEventFromString(Console.ReadLine());
+            }
+            game.Hunters[(int)hunterPlayingEvent].DrawEventCard();
+            EventCard eventCardRetrieved = game.EventDiscard.Find(card => card.Event == eventRetrieved);
+            game.Hunters[(int)hunterPlayingEvent].EventsKnownToDracula.Add(eventCardRetrieved);
+            game.EventDiscard.Remove(eventCardRetrieved);
+        }
+
+        private static void PlayStormySeas(GameState game, Hunter hunterPlayingEvent, DecisionMaker logic)
+        {
+            Console.WriteLine("Where is {0} playing Stormy Seas?", hunterPlayingEvent.Name());
+            Location stormySeasLocation = Location.Nowhere;
+            while (stormySeasLocation == Location.Nowhere || game.Map.TypeOfLocation(stormySeasLocation) != LocationType.Sea)
+            {
+                stormySeasLocation = Enumerations.GetLocationFromString(Console.ReadLine());
+            }
+            game.StormySeasLocation = stormySeasLocation;
+            game.StormySeasRounds = 2;
+            if (stormySeasLocation == game.Dracula.CurrentLocation)
+            {
+                Console.WriteLine("Dracula was in {0}", stormySeasLocation.Name());
+                Location destination = logic.ChoosePortToGoToAfterStormySeas(game);
+                if (destination == Location.Nowhere)
+                {
+                    Console.WriteLine("Dracula cannot make a legal move");
+                    return;
+                }
+                DraculaCardSlot cardDroppedOffTrail = game.Dracula.MoveTo(destination, Power.None);
+                game.Dracula.RevealCardInTrailWithLocation(destination);
+                DealWithDroppedOffCardSlot(game, cardDroppedOffTrail, logic);
+            }
+        }
+
+        private static void DealWithDroppedOffCardSlot(GameState game, DraculaCardSlot cardDroppedOffTrail, DecisionMaker logic)
+        {
+            if (cardDroppedOffTrail != null)
+            {
+                if (cardDroppedOffTrail.DraculaCards.Count() > 1)
+                {
+                    cardDroppedOffTrail.DraculaCards.Remove(cardDroppedOffTrail.DraculaCards[1]);
+                }
+                int index = logic.ChooseToPutDroppedOffCardInCatacombs(game, cardDroppedOffTrail);
+                if (index > -1)
+                {
+                    game.Dracula.Catacombs[index] = cardDroppedOffTrail;
+                    game.Dracula.PlaceEncounterTileOnCard(logic.ChooseEncounterTileToPlaceOnDraculaCardSlot(game, game.Dracula.Catacombs[index]), cardDroppedOffTrail);
+                }
+                else
+                {
+                    cardDroppedOffTrail.DraculaCards.First().IsRevealed = false;
+                    while (cardDroppedOffTrail.EncounterTiles.Count() > 0)
+                    {
+                        cardDroppedOffTrail.EncounterTiles.First().IsRevealed = false;
+                        MatureEncounter(game, cardDroppedOffTrail.EncounterTiles.First(), logic);
+                        cardDroppedOffTrail.EncounterTiles.Remove(cardDroppedOffTrail.EncounterTiles.First());
+                    }
+                }
+                if (cardDroppedOffTrail.DraculaCards.First().Location == game.Dracula.LocationWhereHideWasUsed && game.Dracula.LocationWhereHideWasUsed != Location.Nowhere)
+                {
+                    List<EncounterTile> encountersToReturnToEncounterPool = game.Dracula.DiscardHide();
+                    foreach (EncounterTile enc in encountersToReturnToEncounterPool)
+                    {
+                        enc.IsRevealed = false;
+                        game.EncounterPool.Add(enc);
+                    }
+                    Console.WriteLine("The location where Dracula used Hide dropped off the trail, so the Hide card is also removed from the trail");
+                }
+            }
+        }
+
+        private static void PlaySenseOfEmergency(GameState game, Hunter hunterPlayingEvent, DecisionMaker logic)
+        {
+            if (game.Hunters[(int)hunterPlayingEvent].Health <= 6 - game.Vampires)
+            {
+                Console.WriteLine("{0} does not have enough health", hunterPlayingEvent.Name());
+                return;
+            }
+            Console.WriteLine("{0} loses {1} health", hunterPlayingEvent.Name(), 6 - game.Vampires);
+            game.Hunters[(int)hunterPlayingEvent].AdjustHealth(game.Vampires - 6);
+            Console.WriteLine("Where is {0} moving?");
+            Location destination = Location.Nowhere;
+            while (destination == Location.Nowhere)
+            {
+                destination = Enumerations.GetLocationFromString(Console.ReadLine());
+            }
+            HandleMoveOperation(game, ((int)hunterPlayingEvent).ToString(), destination.Name(), logic);
+        }
+
+        private static void PlayReEquip(GameState game, Hunter hunterPlayingEvent)
+        {
+            DiscardUnknownItemFromHunter(game, game.Hunters[(int)hunterPlayingEvent]);
+            game.Hunters[(int)hunterPlayingEvent].DrawItemCard();
+        }
+
+        private static void PlayNewsPaperReports(GameState game, Hunter hunterPlayingEvent)
+        {
+            for (int i = 5; i > 0; i--)
+            {
+                if (game.Dracula.Trail[i] != null && game.Dracula.Trail[i].DraculaCards.First().Location != Location.Nowhere && game.Dracula.Trail[i].DraculaCards.First().Location != game.Dracula.CurrentLocation && !game.Dracula.Trail[i].DraculaCards.First().IsRevealed)
+                {
+                    game.Dracula.RevealCardAtPosition(i);
+                    break;
+                }
+            }
+        }
+
+        private static void PlayMysticResearch(GameState game, Hunter hunterPlayingEvent)
+        {
+            Console.WriteLine("These are Dracula's Event cards: ");
+            foreach (EventCard e in game.Dracula.EventHand)
+            {
+                Console.Write(" {0},", e.Event.Name());
+            }
+        }
+
+        private static void PlayMoneyTrail(GameState game, Hunter hunterPlayingEvent)
+        {
+            for (int i = 5; i > 0; i--)
+            {
+                if (game.Dracula.Trail[i] != null && game.Map.TypeOfLocation(game.Dracula.Trail[i].DraculaCards.First().Location) == LocationType.Sea)
+                {
+                    game.Dracula.RevealCardAtPosition(i);
+                }
+            }
+        }
+
+        private static void PlayLongDay(GameState game, Hunter hunterPlayingEvent)
+        {
+            if (game.TimeOfDay == TimeOfDay.Dawn)
+            {
+                Console.WriteLine("You cannot play this card during Dawn. Take the card back.");
+                EventCard longDayCard = game.EventDiscard.Find(card => card.Event == Event.LongDay);
+                game.Hunters[(int)hunterPlayingEvent].EventsKnownToDracula.Add(longDayCard);
+                game.EventDiscard.Remove(longDayCard);
+                return;
+            }
+            game.RegressTimeTracker();
+        }
+
+        private static void PlayHypnosis(GameState game, Hunter hunterPlayingEvent, DecisionMaker logic)
+        {
+            Console.WriteLine("Roll a die and enter the result");
+            int dieRoll = 0;
+            while (dieRoll == 0)
+            {
+                if (Int32.TryParse(Console.ReadLine(), out dieRoll))
+                {
+                    if (dieRoll < 1 || dieRoll > 7)
+                    {
+                        dieRoll = 0;
+                    }
+                }
+            }
+            switch (dieRoll)
+            {
+                case 1:
+                case 2:
+                    Console.WriteLine("No effect");
+                    break;
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                    game.Dracula.RevealCardInTrailWithLocation(game.Dracula.CurrentLocation);
+                    game.Dracula.RevealAllVampires();
+                    Power power = Power.None;
+                    Location advanceMoveLocation = logic.ChooseDestinationAndPower(game, out power);
+                    if (advanceMoveLocation == Location.Nowhere && power == Power.None)
+                    {
+                        Console.WriteLine("Dracula will have no legal moves next turn");
+                    }
+                    else
+                    {
+                        game.Dracula.AdvanceMoveLocation = advanceMoveLocation;
+                        game.Dracula.AdvanceMovePower = power;
+                        Console.WriteLine("Dracula's next move will be to {0}{1}", game.Dracula.AdvanceMoveLocation, power == Power.None ? "" : " using " + game.Dracula.AdvanceMovePower.Name());
+                    }
+                    break;
+            }
+        }
+
+        private static void PlayHiredScouts(GameState game, Hunter hunterPlayingEvent)
+        {
+            Console.WriteLine("Name the first city");
+            Location locationToReveal = Location.Nowhere;
+            while (locationToReveal == Location.Nowhere)
+            {
+                locationToReveal = Enumerations.GetLocationFromString(Console.ReadLine());
+            }
+            int trailIndex = game.Dracula.RevealCardInTrailWithLocation(locationToReveal);
+            if (trailIndex == -1)
+            {
+                trailIndex = game.Dracula.RevealCardInCatacombsWithLocation(locationToReveal);
+            }
+            if (trailIndex == -1)
+            {
+                Console.WriteLine("{0} is not in Dracula's trail or Catacombs", locationToReveal.Name());
+            }
+            else
+            {
+                Console.WriteLine("{0} revealed", locationToReveal.Name());
+                game.Dracula.RevealEncountersAtPositionInTrail(game, trailIndex);
+                DrawGameState(game);
+            }
+            locationToReveal = Location.Nowhere;
+            Console.WriteLine("Name the second city");
+            locationToReveal = Location.Nowhere;
+            while (locationToReveal == Location.Nowhere)
+            {
+                locationToReveal = Enumerations.GetLocationFromString(Console.ReadLine());
+            }
+            trailIndex = game.Dracula.RevealCardInTrailWithLocation(locationToReveal);
+            if (trailIndex == -1)
+            {
+                trailIndex = game.Dracula.RevealCardInCatacombsWithLocation(locationToReveal);
+            }
+            if (trailIndex == -1)
+            {
+                Console.WriteLine("{0} is not in Dracula's trail or Catacombs", locationToReveal.Name());
+            }
+            else
+            {
+                Console.WriteLine("{0} revealed", locationToReveal.Name());
+                game.Dracula.RevealEncountersAtPositionInTrail(game, trailIndex);
+                DrawGameState(game);
+            }
+        }
+
+        private static void PlayGoodLuck(GameState game, Hunter hunterPlayingEvent)
+        {
+            Console.WriteLine("What would you like to discard? 0= Nothing (cancel), 1= Roadblock, 2= Dracula's Ally");
+            int answer = -1;
+            while (answer == -1)
+            {
+                if (Int32.TryParse(Console.ReadLine(), out answer))
+                {
+                    if (answer < 0 || answer > 2)
+                    {
+                        answer = -1;
+                    }
+                }
+                switch (answer)
+                {
+                    case 0:
+                        Console.WriteLine("Take the card back");
+                        EventCard goodLuckCard = game.EventDiscard.Find(card => card.Event == Event.GoodLuck);
+                        game.EventDiscard.Remove(goodLuckCard);
+                        game.Hunters[(int)hunterPlayingEvent].EventsKnownToDracula.Add(goodLuckCard);
+                        game.Hunters[(int)hunterPlayingEvent].DrawEventCard();
+                        break;
+                    case 1:
+                        game.RoadBlockLocation1 = Location.Nowhere;
+                        game.RoadBlockLocation2 = Location.Nowhere;
+                        game.RoadBlockConnectionType = ConnectionType.None;
+                        break;
+                    case 2:
+                        if (game.DraculaAlly != null)
+                        {
+                            game.EventDiscard.Add(game.DraculaAlly);
+                            game.DraculaAlly = null;
+                        }
+                        break;
+                }
+            }
+        }
+
+        private static void PlayExcellentWeather(GameState game, Hunter hunterPlayingEvent)
+        {
+            Console.WriteLine("{0} may make up to four sea moves this turng", hunterPlayingEvent.Name());
+        }
+
+        private static void PlayConsecratedGround(GameState game, Hunter hunterPlayingEvent)
+        {
+            Console.WriteLine("Where would you like to place the Consecrated Ground marker?");
+            Location ground = Location.Nowhere;
+            while (ground == Location.Nowhere || ground == Location.CastleDracula || ground == Location.Galatz || ground == Location.Klausenburg || (game.Map.TypeOfLocation(ground) != LocationType.SmallCity && game.Map.TypeOfLocation(ground) != LocationType.LargeCity))
+            {
+                ground = Enumerations.GetLocationFromString(Console.ReadLine());
+            }
+            game.ConsecratedGroundLocation = ground;
+        }
+
+        private static void PlayCharteredCarriage(GameState game, Hunter hunterPlayingEvent, DecisionMaker logic)
+        {
+            if (DraculaIsPlayingFalseTipoffToCancelCharteredCarriage(game, logic))
+            {
+                Console.WriteLine("Chartered Carriage cancelled");
+                return;
+            }
+            Console.WriteLine("{0} catches a fast train this turn", hunterPlayingEvent.Name());
+        }
+
+        private static void PlayBloodTransfusion(GameState game, Hunter hunterPlayingEvent)
+        {
+            Console.WriteLine("Who is receiving the transfusion? { 0}= { 1}, { 2}= { 3}, { 4}= { 5}, { 6}= { 7} (-1 to cancel)", (int)Hunter.LordGodalming, Hunter.LordGodalming.Name(), (int)Hunter.DrSeward, Hunter.DrSeward.Name(), (int)Hunter.VanHelsing, Hunter.VanHelsing.Name(), (int)Hunter.MinaHarker, Hunter.MinaHarker.Name());
+            int answer = 0;
+            while (answer == 0)
+            {
+                if (Int32.TryParse(Console.ReadLine(), out answer))
+                {
+                    if (answer < 1 || answer > 4)
+                    {
+                        answer = 0;
+                    }
+                }
+            }
+            if ((Hunter)answer == hunterPlayingEvent)
+            {
+                Console.WriteLine("Who is giving the transfusion? { 0}= { 1}, { 2}= { 3}, { 4}= { 5}, { 6}= { 7} (-1 to cancel)", (int)Hunter.LordGodalming, Hunter.LordGodalming.Name(), (int)Hunter.DrSeward, Hunter.DrSeward.Name(), (int)Hunter.VanHelsing, Hunter.VanHelsing.Name(), (int)Hunter.MinaHarker, Hunter.MinaHarker.Name());
+                answer = 0;
+                while (answer == 0)
+                {
+                    if (Int32.TryParse(Console.ReadLine(), out answer))
+                    {
+                        if (answer < 1 || answer > 4)
+                        {
+                            answer = 0;
+                        }
+                    }
+                }
+                game.Hunters[(int)hunterPlayingEvent].AdjustBites(-1);
+                game.Hunters[answer].AdjustHealth(-1);
+                CheckForHunterDeath(game);
+            }
+            else
+            {
+                game.Hunters[(int)hunterPlayingEvent].AdjustHealth(-1);
+                game.Hunters[answer].AdjustBites(-1);
+                CheckForHunterDeath(game);
+            }
+        }
+
+        private static void PlayAlly(GameState game, Hunter hunterPlayingEvent, Event allyBeingPlayed)
+        {
+            EventCard hunterAllyEventCard = game.Hunters[(int)hunterPlayingEvent].EventsKnownToDracula.Find(card => card.Event == allyBeingPlayed);
+            if (hunterAllyEventCard == null)
+            {
+                hunterAllyEventCard = game.EventDeck.Find(card => card.Event == allyBeingPlayed);
+            }
+            if (game.HunterAlly.Event == Event.None)
+            {
+                game.HunterAlly = hunterAllyEventCard;
+            }
+            else
+            {
+                game.EventDiscard.Add(game.HunterAlly);
+            }
+        }
+
+        private static bool DraculaIsPlayingFalseTipoffToCancelCharteredCarriage(GameState game, DecisionMaker logic)
+        {
+            if (logic.ChooseToCancelCharteredCarriageWithFalseTipoff(game))
+            {
+                Console.WriteLine("Dracula is playing False Tip-off to cancel Chartered Carriage");
+                game.Dracula.DiscardEvent(Event.FalseTipoff, game.EventDiscard);
+                if (HunterPlayingGoodLuckToCancelDraculaEvent(game, Event.FalseTipoff, Event.CharteredCarriage, logic) != 0)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static bool DraculaIsPlayingDevilishPowerToCancelEvent(GameState game, Event eventBeingPlayedNow, Event eventInitiallyPlayed, DecisionMaker logic)
+        {
+            if (logic.ChooseToCancelEventWithDevilishPower(game, eventBeingPlayedNow, eventInitiallyPlayed))
+            {
+                Console.WriteLine("Dracula is playing Devilish Power to cancel {0}", eventBeingPlayedNow);
+                game.Dracula.DiscardEvent(Event.DevilishPower, game.EventDiscard);
+                if (HunterPlayingGoodLuckToCancelDraculaEvent(game, Event.DevilishPower, eventInitiallyPlayed, logic) != 0)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static int HunterPlayingGoodLuckToCancelDraculaEvent(GameState game, Event draculaEventBeingPlayed, Event eventInitiallyPlayed, DecisionMaker logic)
+        {
+            Console.WriteLine("Will anyone play Good Luck to cancel {0}? 0= Nobody, {1}= {2}, {3}= {4}, {5}= {6}, {7}= {8}", draculaEventBeingPlayed.Name(), (int)Hunter.LordGodalming, Hunter.LordGodalming.Name(), (int)Hunter.DrSeward, Hunter.DrSeward.Name(), (int)Hunter.VanHelsing, Hunter.VanHelsing.Name(), (int)Hunter.MinaHarker, Hunter.MinaHarker.Name());
+            int answer = -1;
+            while (answer == -1)
+            {
+                if (Int32.TryParse(Console.ReadLine(), out answer))
+                {
+                    if (answer < 0 || answer > 4)
+                    {
+                        answer = -1;
+                    }
+                }
+            }
+            if (answer > 0)
+            {
+                game.Hunters[answer].DiscardEvent(game, Event.GoodLuck);
+                if (DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.GoodLuck, eventInitiallyPlayed, logic))
+                {
+                    game.Dracula.DiscardEvent(Event.DevilishPower, game.EventDiscard);
+                    return 0;
+                }
+            }
+            return answer;
+        }
+
+        private static void UseItem(GameState game, string itemName, string hunterIndex)
+        {
+            int index = 0;
+            Hunter hunterUsingItem = Hunter.Nobody;
+            if (Int32.TryParse(hunterIndex, out index))
+            {
+                hunterUsingItem = game.GetHunterFromInt(index);
+            }
+            string line = "";
+            while (hunterUsingItem == Hunter.Nobody && index != -1)
+            {
+                Console.WriteLine("Who is using an Item? {0}= {1}, {2}= {3}, {4}= {5}, {6}= {7} (-1 to cancel)", (int)Hunter.LordGodalming, Hunter.LordGodalming.Name(), (int)Hunter.DrSeward, Hunter.DrSeward.Name(), (int)Hunter.VanHelsing, Hunter.VanHelsing.Name(), (int)Hunter.MinaHarker, Hunter.MinaHarker.Name());
+                line = Console.ReadLine();
+                if (Int32.TryParse(line, out index))
+                {
+                    if (index == -1)
+                    {
+                        Console.WriteLine("Cancelled");
+                        return;
+                    }
+                    hunterUsingItem = game.GetHunterFromInt(index);
+                    Console.WriteLine(hunterUsingItem.Name());
+                }
+                else
+                {
+                    Console.WriteLine("I didn't understand that");
+                }
+            }
+            Item itemBeingUsed = Enumerations.GetItemFromString(itemName);
+            while (itemBeingUsed == Item.None && line.ToLower() != "cancel")
+            {
+                Console.WriteLine("What is the name of the Item being used?");
+                line = Console.ReadLine();
+                itemBeingUsed = Enumerations.GetItemFromString(line);
+            }
+            if (line.ToLower() == "cancel")
+            {
+                Console.WriteLine("Cancelled");
+                return;
+            }
+            switch (itemBeingUsed)
+            {
+                case Item.Dogs:
+                    game.Hunters[(int)hunterUsingItem].SetDogsFaceUp(true); AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)hunterUsingItem], Item.Dogs); break;
+                case Item.LocalRumors:
+                    int trailIndex = -1;
+                    Console.WriteLine("In which trail position (1-6) or Catacombs position (7-9) would you like to reveal an Encounter?");
+                    while (trailIndex == -1)
+                    {
+                        if (Int32.TryParse(Console.ReadLine(), out trailIndex))
+                        {
+                            if (trailIndex < 1 || trailIndex > 9)
+                            {
+                                trailIndex = -1;
+                            }
+                        }
+                    }
+                    if (trailIndex < 7)
+                    {
+                        game.Dracula.RevealEncountersAtPositionInTrail(game, trailIndex - 1);
+                    }
+                    else
+                    {
+                        if (game.Dracula.Catacombs[trailIndex - 7] != null && game.Dracula.Catacombs[trailIndex - 7].EncounterTiles.Count() > 1)
+                        {
+                            int encounterIndex = -1;
+                            while (encounterIndex == -1)
+                            {
+                                Console.WriteLine("Which Encounter would you like to reveal? 1 or 2");
+                                if (Int32.TryParse(Console.ReadLine(), out encounterIndex))
+                                {
+                                    if (encounterIndex < 1 || encounterIndex > 2)
+                                    {
+                                        encounterIndex = -1;
+                                    }
+                                }
+                            }
+                            game.Dracula.RevealEncounterAtPositionInTrail(game, trailIndex - 1, encounterIndex - 1);
+                        }
+                        else
+                        {
+                            game.Dracula.RevealEncountersAtPositionInTrail(game, trailIndex - 1);
+                        }
+                    }
+                    game.Hunters[(int)hunterUsingItem].DiscardItem(game, Item.LocalRumors);
+                    DrawGameState(game);
+                    break;
+                case Item.HolyWater:
+                    UseHolyWaterOnHunter(game, hunterUsingItem);
+                    game.Hunters[(int)hunterUsingItem].DiscardItem(game, Item.HolyWater);
+                    break;
+                case Item.FastHorse:
+                    Console.WriteLine("{0} may travel two roads this turn", hunterUsingItem.Name());
+                    game.Hunters[(int)hunterUsingItem].DiscardItem(game, Item.FastHorse);
+                    break;
+                case Item.HeavenlyHost:
+                    Console.WriteLine("Heavenly Host placed in {0}", game.Hunters[(int)hunterUsingItem].CurrentLocation.Name());
+                    PlaceHeavenlyHostIn(game, game.Hunters[(int)hunterUsingItem].CurrentLocation);
+                    game.Hunters[(int)hunterUsingItem].DiscardItem(game, Item.HeavenlyHost);
+                    break;
+                default: Console.WriteLine("It is not appropriate to use {0} at this time", itemBeingUsed.Name()); break;
+            }
+
+        }
+
+        private static void PlaceHeavenlyHostIn(GameState game, Location location)
+        {
+            if (game.HeavenlyHostLocation1 == Location.Nowhere)
+            {
+                game.HeavenlyHostLocation1 = location;
+            }
+            else if (game.HeavenlyHostLocation2 == Location.Nowhere)
+            {
+                game.HeavenlyHostLocation2 = location;
+            }
+            else
+            {
+                Console.WriteLine("Where are you moving a Heavenly Host token from? 1= {0}, 2= {1}", game.HeavenlyHostLocation1.Name(), game.HeavenlyHostLocation2.Name());
+                int answer = 0;
+                while (answer == 0)
+                {
+                    if (Int32.TryParse(Console.ReadLine(), out answer))
+                    {
+                        if (answer < 1 || answer > 2)
+                        {
+                            answer = 0;
+                        }
+                    }
+                }
+                switch (answer)
+                {
+                    case 1: game.HeavenlyHostLocation1 = location; break;
+                    case 2: game.HeavenlyHostLocation2 = location; break;
+                }
+            }
+        }
+
+        private static void UseHolyWaterOnHunter(GameState game, Hunter hunterReceivingHolyWater)
+        {
+            if (hunterReceivingHolyWater == Hunter.MinaHarker)
+            {
+                Console.WriteLine("Mina's bite cannot be cured");
+                return;
+            }
+            Console.WriteLine("Roll a die and enter the result");
+            int dieRoll = 0;
+            while (dieRoll == 0)
+            {
+                if (Int32.TryParse(Console.ReadLine(), out dieRoll))
+                {
+                    if (dieRoll < 1 || dieRoll > 7)
+                    {
+                        dieRoll = 0;
+                    }
+                }
+            }
+            switch (dieRoll)
+            {
+                case 1:
+                    Console.WriteLine("{0} loses 2 health", hunterReceivingHolyWater.Name());
+                    game.Hunters[(int)hunterReceivingHolyWater].AdjustHealth(-2);
+                    CheckForHunterDeath(game);
+                    break;
+                case 2:
+                case 3:
+                case 4: Console.WriteLine("Nothing happens"); break;
+                case 5:
+                case 6:
+                    Console.WriteLine("{0} is cured of a Bite", hunterReceivingHolyWater.Name());
+                    game.Hunters[(int)hunterReceivingHolyWater].AdjustBites(-1);
+                    break;
+            }
+
+
         }
 
         /// <summary>
@@ -301,7 +1025,6 @@ namespace FuryOfDracula.ConsoleInterface
                     ResolveCombat(game, huntersAttacking, Opponent.Dracula, logic);
                     CheckForHunterDeath(game);
                 }
-
             }
         }
 
@@ -407,7 +1130,8 @@ namespace FuryOfDracula.ConsoleInterface
         /// <param name="game">The GameState</param>
         /// <param name="encounterTileBeingMatured">The EncounterTile being matured</param>
         /// <param name="logic">The artificial intelligence component</param>
-        private static void MatureEncounter(GameState game, EncounterTile encounterTileBeingMatured, DecisionMaker logic) {
+        private static void MatureEncounter(GameState game, EncounterTile encounterTileBeingMatured, DecisionMaker logic)
+        {
             switch (encounterTileBeingMatured.Encounter)
             {
                 case Encounter.Ambush:
@@ -458,7 +1182,6 @@ namespace FuryOfDracula.ConsoleInterface
             }
             game.EncounterPool.Add(encounterTileBeingMatured);
         }
-
 
         /// <summary>
         /// Resolves an encounter on a group of hunters
@@ -1327,7 +2050,12 @@ namespace FuryOfDracula.ConsoleInterface
                 game.Dracula.DiscardCatacombsCards(game, catacombsSlotsCleared);
             }
             Power power;
-            DraculaCardSlot cardDroppedOffTrail = game.Dracula.MoveTo(logic.ChooseDestinationAndPower(game, out power), power);
+            Location destination = logic.ChooseDestinationAndPower(game, out power);
+            if (destination == Location.Nowhere && power == Power.None)
+            {
+                Console.WriteLine("Dracula is cornered by his own trail and has no valid moves");
+            }
+            DraculaCardSlot cardDroppedOffTrail = game.Dracula.MoveTo(destination, power);
             if (game.Dracula.CurrentLocation != game.Hunters[(int)Hunter.LordGodalming].CurrentLocation && game.Dracula.CurrentLocation != game.Hunters[(int)Hunter.DrSeward].CurrentLocation && game.Dracula.CurrentLocation != game.Hunters[(int)Hunter.VanHelsing].CurrentLocation && game.Dracula.CurrentLocation != game.Hunters[(int)Hunter.MinaHarker].CurrentLocation)
             {
                 switch (power)
@@ -1355,44 +2083,12 @@ namespace FuryOfDracula.ConsoleInterface
                 }
                 ResolveCombat(game, huntersAttacked, Opponent.Dracula, logic);
             }
-            if (cardDroppedOffTrail != null)
+            if (game.Dracula.CurrentLocation == game.Dracula.LocationWhereHideWasUsed && power == Power.DoubleBack && game.Dracula.LocationWhereHideWasUsed != Location.Nowhere)
             {
-                if (cardDroppedOffTrail.DraculaCards.Count() > 1)
-                {
-                    cardDroppedOffTrail.DraculaCards.Remove(cardDroppedOffTrail.DraculaCards[1]);
-                }
-                int index = logic.ChooseToPutDroppedOffCardInCatacombs(game, cardDroppedOffTrail);
-                if (index > -1)
-                {
-                    game.Dracula.Catacombs[index] = cardDroppedOffTrail;
-                    game.Dracula.PlaceEncounterTileOnCard(logic.ChooseEncounterTileToPlaceOnDraculaCardSlot(game, game.Dracula.Catacombs[index]), cardDroppedOffTrail);
-                }
-                else
-                {
-                    cardDroppedOffTrail.DraculaCards.First().IsRevealed = false;
-                    while (cardDroppedOffTrail.EncounterTiles.Count() > 0)
-                    {
-                        cardDroppedOffTrail.EncounterTiles.First().IsRevealed = false;
-                        MatureEncounter(game, cardDroppedOffTrail.EncounterTiles.First(), logic);
-                        cardDroppedOffTrail.EncounterTiles.Remove(cardDroppedOffTrail.EncounterTiles.First());
-                    }
-                }
-                if (cardDroppedOffTrail.DraculaCards.First().Location == game.Dracula.LocationWhereHideWasUsed && game.Dracula.LocationWhereHideWasUsed != Location.Nowhere)
-                {
-                    List<EncounterTile> encountersToReturnToEncounterPool = game.Dracula.DiscardHide();
-                    foreach (EncounterTile enc in encountersToReturnToEncounterPool)
-                    {
-                        enc.IsRevealed = false;
-                        game.EncounterPool.Add(enc);
-                    }
-                    Console.WriteLine("The location where Dracula used Hide dropped off the trail, so the Hide card is also removed from the trail");
-                }
-                if (game.Dracula.CurrentLocation == game.Dracula.LocationWhereHideWasUsed && power == Power.DoubleBack && game.Dracula.LocationWhereHideWasUsed != Location.Nowhere)
-                {
-                    game.Dracula.RevealHideCard();
-                    Console.WriteLine("Dracula used Double Back to return to the location where he previously used Hide");
-                }
+                game.Dracula.RevealHideCard();
+                Console.WriteLine("Dracula used Double Back to return to the location where he previously used Hide");
             }
+            DealWithDroppedOffCardSlot(game, cardDroppedOffTrail, logic);
             while (game.Dracula.EncounterHand.Count() < game.Dracula.EncounterHandSize)
             {
                 game.Dracula.DrawEncounter(game.EncounterPool);
@@ -1889,6 +2585,88 @@ namespace FuryOfDracula.ConsoleInterface
         /// <returns>A bool of whether the HunterPlayers can continue resolving encounters or not</returns>
         private static bool ResolveCombat(GameState game, List<HunterPlayer> huntersInvolved, Opponent opponent, DecisionMaker logic)
         {
+            int answer = -1;
+            do
+            {
+                Console.WriteLine("Is anyone playing an Event at the start of this combat? 0= Nobody, {0}= {1}, {2}= {3}, {4}= {5}, {6}= {7}", (int)Hunter.LordGodalming, Hunter.LordGodalming.Name(), (int)Hunter.DrSeward, Hunter.DrSeward.Name(), (int)Hunter.VanHelsing, Hunter.VanHelsing.Name(), (int)Hunter.MinaHarker, Hunter.MinaHarker.Name());
+                while (answer == -1)
+                {
+                    if (Int32.TryParse(Console.ReadLine(), out answer))
+                    {
+                        if (answer < 0 || answer > 4)
+                        {
+                            answer = -1;
+                        }
+                    }
+                }
+                if (answer > 0)
+                {
+                    string line = "";
+                    Console.WriteLine("What Event is {0} playing? (cancel to cancel)", ((Hunter)answer).Name());
+                    Event eventBeingPlayed = Event.None;
+                    while (eventBeingPlayed != Event.AdvancePlanning && eventBeingPlayed != Event.EscapeRoute && eventBeingPlayed != Event.HeroicLeap && line.ToLower() != "cancel")
+                    {
+                        line = Console.ReadLine();
+                        eventBeingPlayed = Enumerations.GetEventFromString(line);
+                    }
+                    if (line.ToLower() == "cancel")
+                    {
+                        answer = -1;
+                    } else
+                    {
+                        switch (eventBeingPlayed) {
+                            case Event.AdvancePlanning:
+                                game.Hunters[answer].DiscardEvent(game, Event.AdvancePlanning);
+                                if (!DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.AdvancePlanning, Event.AdvancePlanning, logic)) {
+                                    Console.WriteLine("{0}'s combat rolls are at +1 for this combat", ((Hunter)answer).Name());
+                                } else
+                                {
+                                    Console.WriteLine("Advance Planning cancelled");
+                                }
+                                break;
+                            case Event.EscapeRoute:
+                                game.Hunters[answer].DiscardEvent(game, Event.EscapeRoute);
+                                if (!DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.EscapeRoute, Event.EscapeRoute, logic))
+                                {
+                                    Console.WriteLine("Combat cancelled", ((Hunter)answer).Name());
+                                    return false;
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Escape Route cancelled");
+                                }
+                                break;
+                            case Event.HeroicLeap:
+                                game.Hunters[answer].DiscardEvent(game, Event.HeroicLeap);
+                                if (!DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.HeroicLeap, Event.HeroicLeap, logic))
+                                {
+                                    Console.WriteLine("Roll a die and enter the result");
+                                    int dieRoll = 0;
+                                    while (dieRoll == 0)
+                                    {
+                                        if (Int32.TryParse(Console.ReadLine(), out dieRoll))
+                                        {
+                                            if (dieRoll < 1 || dieRoll > 7)
+                                            {
+                                                dieRoll = 0;
+                                            }
+                                        }
+                                    }
+                                    game.Hunters[answer].AdjustHealth(-dieRoll);
+                                    game.Dracula.AdjustBlood(-dieRoll);
+                                    CheckForHunterDeath(game);
+                                    return false;
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Escape Route cancelled");
+                                }
+                                break;
+                        }
+
+                    }
+                }
+            } while (answer != 0);
             List<ItemCard> basicHunterCombatCards = new List<ItemCard> { new ItemCard(Item.Punch), new ItemCard(Item.Dodge), new ItemCard(Item.Escape) };
             List<EnemyCombatCard> enemyCombatCards = new List<EnemyCombatCard>();
             switch (opponent)
