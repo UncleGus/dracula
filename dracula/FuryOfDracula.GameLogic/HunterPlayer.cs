@@ -99,6 +99,7 @@ namespace FuryOfDracula.GameLogic
             HasDogsFaceUp = false;
             HuntersInGroup = new List<Hunter>();
             HuntersInGroup.Add(Hunter);
+            EncountersInFrontOfPlayer = new List<EncounterTile>();
         }
 
         public void MoveTo(Location location)

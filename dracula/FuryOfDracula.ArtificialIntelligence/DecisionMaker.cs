@@ -396,7 +396,7 @@ namespace FuryOfDracula.ArtificialIntelligence
             {
                 eventsThatCanBePlayed.Add(Event.DevilishPower);
             }
-            if (new Random().Next(0, 2) == 0)
+            if (eventsThatCanBePlayed.Count() > 0 && new Random().Next(0, 2) == 0)
             {
                 Event eventChosen = eventsThatCanBePlayed[new Random().Next(0, eventsThatCanBePlayed.Count())];
                 switch (eventChosen)

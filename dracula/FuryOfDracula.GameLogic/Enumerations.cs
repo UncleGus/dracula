@@ -116,6 +116,18 @@ namespace FuryOfDracula.GameLogic
             }
             return ConnectionType.None;
         }
+
+        public static ResolveAbility GetResolveAbilityFromString(string input)
+        {
+            for (int i = 1; i < 4; i++)
+            {
+                if (((ResolveAbility)i).Name().ToLower().StartsWith(input.ToLower()))
+                {
+                    return (ResolveAbility)i;
+                }
+            }
+            return ResolveAbility.None;
+        }
     }
     
     public enum EventType
@@ -395,5 +407,13 @@ namespace FuryOfDracula.GameLogic
         HeavenlyHost1,
         HeavenlyHost2,
         HunterAlly
+    }
+
+    public enum ResolveAbility
+    {
+        None,
+        NewspaperReports,
+        InnerStrength,
+        SenseOfEmergency
     }
 }

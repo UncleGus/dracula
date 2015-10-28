@@ -65,6 +65,8 @@ namespace FuryOfDracula.ConsoleInterface
 
                 switch (commandSet.command)
                 {
+                    case "s":
+                    case "resolve": SpendResolve(game, commandSet.argument1, commandSet.argument2, logic); break;
                     case "c":
                     case "catch": CatchTrain(game, commandSet.argument1, logic); break;
                     case "e":
@@ -97,6 +99,84 @@ namespace FuryOfDracula.ConsoleInterface
                     default: Console.WriteLine("I didn't understand that"); break;
                 }
             } while (commandSet.command != "exit");
+        }
+
+        private static void SpendResolve(GameState game, string resolveName, string hunterIndex, DecisionMaker logic)
+        {
+            Hunter hunterSpendingResolve = Hunter.Nobody;
+            int index;
+            if (Int32.TryParse(hunterIndex, out index))
+            {
+                hunterSpendingResolve = game.GetHunterFromInt(index);
+            }
+            string line = "";
+            while (hunterSpendingResolve == Hunter.Nobody && index != -1)
+            {
+                Console.WriteLine("Who is spending resolve? {0}= {1}, {2}= {3}, {4}= {5}, {6}= {7} (-1 to cancel)", (int)Hunter.LordGodalming, Hunter.LordGodalming.Name(), (int)Hunter.DrSeward, Hunter.DrSeward.Name(), (int)Hunter.VanHelsing, Hunter.VanHelsing.Name(), (int)Hunter.MinaHarker, Hunter.MinaHarker.Name());
+                line = Console.ReadLine();
+                if (Int32.TryParse(line, out index))
+                {
+                    if (index == -1)
+                    {
+                        Console.WriteLine("Cancelled");
+                        return;
+                    }
+                    hunterSpendingResolve = game.GetHunterFromInt(index);
+                    Console.WriteLine(hunterSpendingResolve.Name());
+                }
+                else
+                {
+                    Console.WriteLine("I didn't understand that");
+                }
+            }
+            ResolveAbility ability = Enumerations.GetResolveAbilityFromString(resolveName);
+            while (ability == ResolveAbility.None && line.ToLower() != "cancel")
+            {
+                Console.WriteLine("What resolve ability if {0} using?", hunterSpendingResolve.Name());
+                line = Console.ReadLine();
+                if (line.ToLower() == "cancel")
+                {
+                    Console.WriteLine("Cancelled");
+                    return;
+                }
+                ability = Enumerations.GetResolveAbilityFromString(line);
+            }
+            switch (ability)
+            {
+                case ResolveAbility.NewspaperReports:
+                    PlayNewsPaperReports(game, hunterSpendingResolve, logic);
+                    break;
+                case ResolveAbility.InnerStrength:
+                    PlayInnerStrength(game);
+                    break;
+                case ResolveAbility.SenseOfEmergency:
+                    PlaySenseOfEmergency(game, hunterSpendingResolve, logic);
+                    break;
+            }
+            game.AdjustResolve(-1);
+        }
+
+        private static void PlayInnerStrength(GameState game)
+        {
+            Console.WriteLine("Who is being healed? {0}= {1}, {2}= {3}, {4}= {5}, {6}= {7} (-1 to cancel)", (int)Hunter.LordGodalming, Hunter.LordGodalming.Name(), (int)Hunter.DrSeward, Hunter.DrSeward.Name(), (int)Hunter.VanHelsing, Hunter.VanHelsing.Name(), (int)Hunter.MinaHarker, Hunter.MinaHarker.Name());
+            Hunter hunterBeingHealed = Hunter.Nobody;
+            string line = Console.ReadLine();
+            int index = -2;
+            if (Int32.TryParse(line, out index))
+            {
+                if (index == -1)
+                {
+                    Console.WriteLine("Cancelled");
+                    return;
+                }
+                hunterBeingHealed = game.GetHunterFromInt(index);
+                Console.WriteLine(hunterBeingHealed.Name());
+            }
+            else
+            {
+                Console.WriteLine("I didn't understand that");
+            }
+            game.Hunters[index].AdjustHealth(4);
         }
 
         private static void PlayImmediatelyDraculaCard(GameState game, Event eventPlayedByDracula, DecisionMaker logic)
@@ -467,7 +547,12 @@ namespace FuryOfDracula.ConsoleInterface
                     Console.WriteLine("Dracula cannot make a legal move");
                     return;
                 }
-                List<DraculaCardSlot> cardsDroppedOffTrail = new List<DraculaCardSlot>() { game.Dracula.MoveTo(destination, Power.None) };
+                DraculaCardSlot cardDroppedOffTrail = game.Dracula.MoveTo(destination, Power.None);
+                List<DraculaCardSlot> cardsDroppedOffTrail = new List<DraculaCardSlot>();
+                if (cardDroppedOffTrail != null)
+                {
+                    cardsDroppedOffTrail.Add(cardDroppedOffTrail);
+                }
                 if (DraculaIsPlayingSensationalistPressToPreventRevealingLocation(game, destination, logic))
                 {
                     Console.WriteLine("Dracula prevented a location from being revealed");
@@ -2413,18 +2498,18 @@ namespace FuryOfDracula.ConsoleInterface
             {
                 if (game.Hunters[i].Hunter == Hunter.DrSeward)
                 {
-                    if (game.Hunters[i].ItemCount > 4 && game.Hunters[i].EventCount > 4)
+                    if (game.Hunters[i].ItemCount > 3 && game.Hunters[i].EventCount > 3)
                     {
                         Console.WriteLine("{0} must discard an Item or an Event", game.Hunters[i].Hunter.Name());
                     }
                     else
                     {
 
-                        if (game.Hunters[i].ItemCount > 5)
+                        if (game.Hunters[i].ItemCount > 4)
                         {
                             Console.WriteLine("{0} must discard an Item", game.Hunters[i].Hunter.Name());
                         }
-                        if (game.Hunters[i].EventCount > 5)
+                        if (game.Hunters[i].EventCount > 4)
                         {
                             Console.WriteLine("{0} must discard an Event", game.Hunters[i].Hunter.Name());
                         }
@@ -2432,11 +2517,11 @@ namespace FuryOfDracula.ConsoleInterface
                 }
                 else
                 {
-                    if (game.Hunters[i].ItemCount > 4)
+                    if (game.Hunters[i].ItemCount > 3)
                     {
                         Console.WriteLine("{0} must discard an Item", game.Hunters[i].Hunter.Name());
                     }
-                    if (game.Hunters[i].EventCount > 4)
+                    if (game.Hunters[i].EventCount > 3)
                     {
                         Console.WriteLine("{0} must discard an Event", game.Hunters[i].Hunter.Name());
                     }
@@ -2592,7 +2677,11 @@ namespace FuryOfDracula.ConsoleInterface
                     Console.WriteLine("Dracula is cornered by his own trail and has no valid moves");
                     return;
                 }
-                cardsDroppedOffTrail.Add(game.Dracula.MoveTo(destination, power));
+                DraculaCardSlot cardDroppedOffTrail = game.Dracula.MoveTo(destination, power);
+                if (cardDroppedOffTrail != null)
+                {
+                    cardsDroppedOffTrail.Add(cardDroppedOffTrail);
+                }
                 if (game.Map.TypeOfLocation(destination) == LocationType.Sea)
                 {
                     if ((!game.Dracula.LostBloodFromSeaMovementLastTurn || game.HunterAlly.Event == Event.RufusSmith))

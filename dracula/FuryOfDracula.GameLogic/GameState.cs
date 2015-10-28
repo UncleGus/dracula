@@ -120,8 +120,8 @@ namespace FuryOfDracula.GameLogic
             Dracula = new Dracula();
             ItemDiscard = new List<ItemCard>();
             EventDiscard = new List<EventCard>();
-            Resolve = 0;
-            Vampires = 0;
+            Resolve = -1;
+            Vampires = -1;
         }
 
         public List<Location> GetBlockedLocations()
@@ -394,6 +394,11 @@ namespace FuryOfDracula.GameLogic
         public void AdjustVampires(int adjustment)
         {
             Vampires += adjustment;
+        }
+
+        public void AdjustResolve(int adjustment)
+        {
+            Resolve += adjustment;
         }
     }
 }
