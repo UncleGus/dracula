@@ -2,7 +2,7 @@
 
 namespace FuryOfDracula.GameLogic
 {
-    [DataContract]
+    [DataContract(IsReference = true)]
     public class ItemCard
     {
         public ItemCard(Item item)

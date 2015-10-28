@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 
 namespace FuryOfDracula.GameLogic
 {
-    [DataContract]
+    [DataContract(IsReference = true)]
     public class HunterPlayer
     {
         private int _biteCount;
@@ -50,6 +50,7 @@ namespace FuryOfDracula.GameLogic
             }
         }
 
+        [DataMember]
         public int MaxHealth { get; private set; }
 
         [DataMember]

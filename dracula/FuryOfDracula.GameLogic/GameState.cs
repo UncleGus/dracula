@@ -17,8 +17,8 @@ namespace FuryOfDracula.GameLogic
         {
             Hunters = new HunterPlayer[5]
             {
-                null, new HunterPlayer(Hunter.LordGodalming, 12, 0, 2), new HunterPlayer(Hunter.DrSeward, 8, 0, 2),
-                new HunterPlayer(Hunter.VanHelsing, 10, 0, 3), new HunterPlayer(Hunter.MinaHarker, 8, 1, 2)
+                null, new HunterPlayer(Hunter.LordGodalming, 12, 0, 2), new HunterPlayer(Hunter.DrSeward, 10, 0, 2),
+                new HunterPlayer(Hunter.VanHelsing, 8, 0, 3), new HunterPlayer(Hunter.MinaHarker, 8, 1, 2)
             };
             Dracula = new Dracula();
             ItemDiscard = new List<ItemCard>();

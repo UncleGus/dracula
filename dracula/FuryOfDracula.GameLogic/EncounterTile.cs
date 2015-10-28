@@ -2,7 +2,7 @@
 
 namespace FuryOfDracula.GameLogic
 {
-    [DataContract]
+    [DataContract(IsReference = true)]
     public class EncounterTile
     {
         public EncounterTile(Encounter encounter)

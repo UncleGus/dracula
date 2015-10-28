@@ -37,5 +37,11 @@ namespace FuryOfDracula.UnitTests
         {
             Assert.AreEqual(LocationType.LargeCity, map.TypeOfLocation(Location.Milan));
         }
+
+        [Test]
+        public void LocationsConnectedByRoadTo_Varna_ReturnsAListWithoutParis()
+        {
+            Assert.AreEqual(false, map.LocationsConnectedByRoadTo(Location.Varna).Contains(Location.Paris));
+        }
     }
 }

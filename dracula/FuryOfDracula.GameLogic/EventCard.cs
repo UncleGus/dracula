@@ -2,7 +2,7 @@
 
 namespace FuryOfDracula.GameLogic
 {
-    [DataContract]
+    [DataContract(IsReference = true)]
     public class EventCard
     {
         public EventCard(Event e, bool isDraculaCard, EventType eventType)

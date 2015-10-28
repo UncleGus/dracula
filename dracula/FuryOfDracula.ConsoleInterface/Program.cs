@@ -13,6 +13,8 @@ namespace FuryOfDracula.ConsoleInterface
         private static void Main(string[] args)
         {
             var game = new GameState();
+            var logic = new DecisionMaker();
+
             if (args.Length > 0)
             {
                 try
@@ -47,15 +49,13 @@ namespace FuryOfDracula.ConsoleInterface
                     }
                     game.Hunters[i].MoveTo(destination);
                 }
+                game.Dracula.MoveTo(logic.ChooseStartLocation(game), Power.None);
+                while (game.Dracula.EncounterHand.Count() < game.Dracula.EncounterHandSize)
+                {
+                    game.Dracula.DrawEncounter(game.EncounterPool);
+                }
+                EndHunterTurn(game, logic);
             }
-
-            var logic = new DecisionMaker();
-            game.Dracula.MoveTo(logic.ChooseStartLocation(game), Power.None);
-            while (game.Dracula.EncounterHand.Count() < game.Dracula.EncounterHandSize)
-            {
-                game.Dracula.DrawEncounter(game.EncounterPool);
-            }
-            EndHunterTurn(game, logic);
 
             var commandSet = new CommandSet();
 
@@ -200,7 +200,8 @@ namespace FuryOfDracula.ConsoleInterface
             }
             while (game.Hunters[(int)hunterWithEncounter].EncountersInFrontOfPlayer.Any())
             {
-                switch (game.Hunters[(int)hunterWithEncounter].EncountersInFrontOfPlayer.First().Encounter) {
+                switch (game.Hunters[(int)hunterWithEncounter].EncountersInFrontOfPlayer.First().Encounter)
+                {
                     case Encounter.Fog:
                         game.EncounterPool.Add(game.Hunters[(int)hunterWithEncounter].EncountersInFrontOfPlayer.First());
                         game.Hunters[(int)hunterWithEncounter].EncountersInFrontOfPlayer.Remove(game.Hunters[(int)hunterWithEncounter].EncountersInFrontOfPlayer.First());
@@ -377,9 +378,8 @@ namespace FuryOfDracula.ConsoleInterface
         {
             Console.WriteLine("Dracula played Vampiric Influence");
             var bittenHunters = new List<HunterPlayer>();
-            if (
-                HunterPlayingGoodLuckToCancelDraculaEvent(game, Event.VampiricInfluence, Event.VampiricInfluence, logic) >
-                -1)
+            if (HunterPlayingGoodLuckToCancelDraculaEvent(game, Event.VampiricInfluence, Event.VampiricInfluence, logic) >
+                0)
             {
                 Console.WriteLine("Vampiric Influence cancelled");
                 return;
@@ -512,14 +512,19 @@ namespace FuryOfDracula.ConsoleInterface
             {
                 Console.WriteLine("Dracula is playing False Tip-off to delay the train");
                 game.Dracula.DiscardEvent(Event.FalseTipoff, game.EventDiscard);
-                if (
-                    HunterPlayingGoodLuckToCancelDraculaEvent(game, Event.FalseTipoff, Event.CharteredCarriage, logic) !=
-                    0)
+                if (HunterPlayingGoodLuckToCancelDraculaEvent(game, Event.FalseTipoff, Event.FalseTipoff, logic) > 0 ||
+                    HunterPlayingCharteredCarriageToCancelFalseTipOff(game, Event.FalseTipoff, Event.FalseTipoff, logic) > 0)
                 {
-                    return true;
+                    return false;
                 }
+                return true;
             }
             return false;
+        }
+
+        private static int HunterPlayingCharteredCarriageToCancelFalseTipOff(GameState game, Event falseTipoff1, Event falseTipoff2, DecisionMaker logic)
+        {
+            throw new NotImplementedException();
         }
 
         private static void PlayEvent(GameState game, string eventName, string hunterIndex, DecisionMaker logic)
@@ -652,7 +657,7 @@ namespace FuryOfDracula.ConsoleInterface
 
         private static void PlayTelegraphAhead(GameState game, Hunter hunterPlayingEvent, DecisionMaker logic)
         {
-            foreach (var loc in game.Map.LocationsConnectedByRoadTo(game.Dracula.CurrentLocation))
+            foreach (var loc in game.Map.LocationsConnectedByRoadTo(game.Hunters[(int)hunterPlayingEvent].CurrentLocation))
             {
                 if (DraculaIsPlayingSensationalistPressToPreventRevealingLocation(game, loc, logic))
                 {
@@ -690,9 +695,15 @@ namespace FuryOfDracula.ConsoleInterface
             }
             Console.WriteLine("What is the name of the card you are taking from the Event discard pile?");
             var eventRetrieved = Event.None;
-            while (eventRetrieved == Event.None)
+            string line = "";
+            while (eventRetrieved == Event.None && line.ToLower() != "nothing")
             {
                 eventRetrieved = Enumerations.GetEventFromString(Console.ReadLine());
+            }
+            if (line.ToLower() == "nothing")
+            {
+                Console.WriteLine("Event discarded");
+                return;
             }
             game.Hunters[(int)hunterPlayingEvent].DrawEventCard();
             var eventCardRetrieved = game.EventDiscard.Find(card => card.Event == eventRetrieved);
@@ -1128,12 +1139,12 @@ namespace FuryOfDracula.ConsoleInterface
             {
                 Console.WriteLine("Dracula is playing False Tip-off to cancel Chartered Carriage");
                 game.Dracula.DiscardEvent(Event.FalseTipoff, game.EventDiscard);
-                if (
-                    HunterPlayingGoodLuckToCancelDraculaEvent(game, Event.FalseTipoff, Event.CharteredCarriage, logic) !=
-                    0)
+                if (HunterPlayingGoodLuckToCancelDraculaEvent(game, Event.FalseTipoff, Event.CharteredCarriage, logic) > 0 ||
+                    HunterPlayingCharteredCarriageToCancelFalseTipOff(game, Event.FalseTipoff, Event.CharteredCarriage, logic) > 0)
                 {
-                    return true;
+                    return false;
                 }
+                return true;
             }
             return false;
         }
@@ -1145,10 +1156,11 @@ namespace FuryOfDracula.ConsoleInterface
             {
                 Console.WriteLine("Dracula is playing Devilish Power to cancel {0}", eventBeingPlayedNow);
                 game.Dracula.DiscardEvent(Event.DevilishPower, game.EventDiscard);
-                if (HunterPlayingGoodLuckToCancelDraculaEvent(game, Event.DevilishPower, eventInitiallyPlayed, logic) != 0)
+                if (HunterPlayingGoodLuckToCancelDraculaEvent(game, Event.DevilishPower, eventInitiallyPlayed, logic) > 0)
                 {
-                    return true;
+                    return false;
                 }
+                return true;
             }
             return false;
         }
@@ -1663,7 +1675,7 @@ namespace FuryOfDracula.ConsoleInterface
                 Console.WriteLine("Dracula is playing Customs Search");
                 game.Dracula.DiscardEvent(Event.CustomsSearch, game.EventDiscard);
                 if (HunterPlayingGoodLuckToCancelDraculaEvent(game, Event.CustomsSearch, Event.CustomsSearch, logic) >
-                    -1)
+                    0)
                 {
                     Console.WriteLine("Customs Search cancelled");
                     return false;
@@ -3134,7 +3146,7 @@ namespace FuryOfDracula.ConsoleInterface
             {
                 Console.Write("   ");
             }
-            Console.Write("            ");
+            Console.Write("           ");
             if (game.HunterAlly != null)
             {
                 Console.Write(game.HunterAlly.Event.Name().Substring(0, 3).ToUpper());
@@ -3537,7 +3549,7 @@ namespace FuryOfDracula.ConsoleInterface
                 Console.WriteLine("Dracula is playing Control Storms to control your movement");
                 game.Dracula.DiscardEvent(Event.ControlStorms, game.EventDiscard);
                 if (HunterPlayingGoodLuckToCancelDraculaEvent(game, Event.ControlStorms, Event.ControlStorms, logic) >
-                    -1)
+                    0)
                 {
                     Console.WriteLine("Control Storms cancelled");
                     return false;

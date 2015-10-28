@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 
 namespace FuryOfDracula.GameLogic
 {
-    [DataContract]
+    [DataContract(IsReference = true)]
     public class DraculaCard
     {
         public DraculaCard(string abbreviation, Location location, Power power)

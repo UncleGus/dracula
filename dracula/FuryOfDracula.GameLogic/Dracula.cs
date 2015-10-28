@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 
 namespace FuryOfDracula.GameLogic
 {
-    [DataContract]
+    [DataContract(IsReference = true)]
     public class Dracula
     {
         private List<DraculaCard> _draculaCardDeck;
@@ -166,7 +166,7 @@ namespace FuryOfDracula.GameLogic
         {
             for (var i = 0; i < 6; i++)
             {
-                if (Trail[i] != null && Trail[i].DraculaCards.First().Location == location)
+                if (location != Location.Nowhere && Trail[i] != null && Trail[i].DraculaCards.First().Location == location)
                 {
                     Trail[i].DraculaCards.First().IsRevealed = true;
                     return i;
