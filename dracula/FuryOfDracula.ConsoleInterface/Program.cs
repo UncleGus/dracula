@@ -66,6 +66,10 @@ namespace FuryOfDracula.ConsoleInterface
 
                 switch (commandSet.command)
                 {
+                    case "h":
+                    case "help": DisplayHelp(); break;
+                    case "f":
+                    case "front": HandleEncountersInFrontOfHunter(game, commandSet.argument1, logic); break;
                     case "shuffle": ShuffleDeck(game, commandSet.argument1); break;
                     case "s":
                     case "resolve":
@@ -106,6 +110,7 @@ namespace FuryOfDracula.ConsoleInterface
                     case "state":
                         DisplayState(game, commandSet.argument1);
                         break;
+                    case "a":
                     case "discard":
                         DiscardCard(game, commandSet.argument1, commandSet.argument2);
                         break;
@@ -133,6 +138,83 @@ namespace FuryOfDracula.ConsoleInterface
                         break;
                 }
             } while (commandSet.command != "exit");
+        }
+
+        private static void DisplayHelp()
+        {
+            Console.WriteLine("Commands can be written as the full word or the letter in brackets:");
+            Console.WriteLine("Catch: (C)atch a train");
+            Console.WriteLine("Move: (M)ove Hunter");
+            Console.WriteLine("Draw: (D)raw a card for a Hunter");
+            Console.WriteLine("Take: Let Dracula (T)ake an Event card");
+            Console.WriteLine("Discard: Disc(A)rd a card from a Hunter");
+            Console.WriteLine("Event: Play an (E)vent card");
+            Console.WriteLine("Use: (U)se an Item from a Hunter");
+            Console.WriteLine("Group: Set up a Hunter (G)roup");
+            Console.WriteLine("Resolve: (S)pend resolve");
+            Console.WriteLine("Front: Resolve an Encounter in (F)ront of a Hunter");
+            Console.WriteLine("Cycle: C(Y)cle a card discard back into a new deck");
+            Console.WriteLine("State: Show the state of the game");
+            Console.WriteLine("Save: Save the game to a file");
+            Console.WriteLine("Load: Load the game from a file");
+            Console.WriteLine("Help: Display this (H)elp text");
+            Console.WriteLine("");
+            Console.WriteLine("Commands that ask additional questions can also be answered in advance");
+            Console.WriteLine("e.g. \"m san 2\" would move Dr. Seward to Santander");
+        }
+
+        private static void HandleEncountersInFrontOfHunter(GameState game, string hunterIndex, DecisionMaker logic)
+        {
+            var hunterWithEncounter = Hunter.Nobody;
+            int index = -2;
+            if (int.TryParse(hunterIndex, out index))
+            {
+                hunterWithEncounter = game.GetHunterFromInt(index);
+            }
+            var line = "";
+            while (hunterWithEncounter == Hunter.Nobody && index != -1)
+            {
+                Console.WriteLine("Who is resolving an Encounter in front of them? {0}= {1}, {2}= {3}, {4}= {5}, {6}= {7} (-1 to cancel)",
+                    (int)Hunter.LordGodalming, Hunter.LordGodalming.Name(), (int)Hunter.DrSeward,
+                    Hunter.DrSeward.Name(), (int)Hunter.VanHelsing, Hunter.VanHelsing.Name(), (int)Hunter.MinaHarker,
+                    Hunter.MinaHarker.Name());
+                line = Console.ReadLine();
+                if (int.TryParse(line, out index))
+                {
+                    if (index < -1 || index > 4)
+                    {
+                        index = -2;
+                    }
+                    if (index == -1)
+                    {
+                        Console.WriteLine("Cancelled");
+                        return;
+                    }
+                    hunterWithEncounter = game.GetHunterFromInt(index);
+                    Console.WriteLine(hunterWithEncounter.Name());
+                }
+                else
+                {
+                    Console.WriteLine("I didn't understand that");
+                }
+            }
+            while (game.Hunters[(int)hunterWithEncounter].EncountersInFrontOfPlayer.Any())
+            {
+                switch (game.Hunters[(int)hunterWithEncounter].EncountersInFrontOfPlayer.First().Encounter) {
+                    case Encounter.Fog:
+                        game.EncounterPool.Add(game.Hunters[(int)hunterWithEncounter].EncountersInFrontOfPlayer.First());
+                        game.Hunters[(int)hunterWithEncounter].EncountersInFrontOfPlayer.Remove(game.Hunters[(int)hunterWithEncounter].EncountersInFrontOfPlayer.First());
+                        Console.WriteLine("Fog tile returned to the Encounter pool");
+                        break;
+                    case Encounter.Bats:
+                        game.EncounterPool.Add(game.Hunters[(int)hunterWithEncounter].EncountersInFrontOfPlayer.First());
+                        game.Hunters[(int)hunterWithEncounter].EncountersInFrontOfPlayer.Remove(game.Hunters[(int)hunterWithEncounter].EncountersInFrontOfPlayer.First());
+                        Console.WriteLine("Dracula is controlling {0}'s movement", hunterWithEncounter.Name());
+                        Location destination = logic.ChooseBatsDestination(game, hunterWithEncounter);
+                        HandleMoveOperation(game, destination.Name(), ((int)hunterWithEncounter).ToString(), logic);
+                        break;
+                }
+            }
         }
 
         private static void ShuffleDeck(GameState game, string deckType)
@@ -1829,10 +1911,6 @@ namespace FuryOfDracula.ConsoleInterface
                         if (trailIndex > -1)
                         {
                             game.Dracula.Trail[trailIndex].EncounterTiles.Remove(encounterTileBeingResolved);
-                        }
-                        else
-                        {
-                            game.Dracula.EncounterHand.Remove(encounterTileBeingResolved);
                         }
                         return true;
                     }

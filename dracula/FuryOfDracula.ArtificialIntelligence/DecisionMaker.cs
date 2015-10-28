@@ -222,6 +222,12 @@ namespace FuryOfDracula.ArtificialIntelligence
             return -1;
         }
 
+        public Location ChooseBatsDestination(GameState game, Hunter hunterWithEncounter)
+        {
+            List<Location> possibleDestinations = game.Map.LocationsConnectedByRoadTo(game.Hunters[(int)hunterWithEncounter].CurrentLocation);
+            return possibleDestinations[new Random().Next(0, possibleDestinations.Count())];
+        }
+
         public EncounterTile ChooseEncounterTileToPlaceOnDraculaCardSlot(GameState game, DraculaCardSlot slot)
         {
             if (game.Map.TypeOfLocation(slot.DraculaCards.First().Location) != LocationType.SmallCity &&
