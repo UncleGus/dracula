@@ -1,89 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FuryOfDracula.GameLogic
 {
     [DataContract]
     public class HunterPlayer
     {
-        [DataMember]
-        public Hunter Hunter { get; private set; }
-        private int _health;
-        [DataMember]
-        public int Health
-        {
-            get
-            {
-                return _health;
-            }
-            private set
-            {
-                if (value > MaxHealth)
-                {
-                    _health = MaxHealth;
-                }
-                else if (value < 0)
-                {
-                    _health = 0;
-                }
-                else
-                {
-                    _health = value;
-                }
-            }
-        }
-        public int MaxHealth { get; private set; }
         private int _biteCount;
-        [DataMember]
-        public int BiteCount
-        {
-            get
-            {
-                return _biteCount;
-            }
-            private set
-            {
-                if (value < 0)
-                {
-                    _biteCount = 0;
-                }
-                else
-                {
-                    _biteCount = value;
-                }
-            }
-        }
-        [DataMember]
-        public int BitesRequiredToKill { get; private set; }
-        [DataMember]
-        public int ItemCount { get; private set; }
-        [DataMember]
-        public int EventCount { get; private set; }
-        [DataMember]
-        public Location CurrentLocation { get; private set; }
-        [DataMember]
-        public List<ItemCard> ItemsKnownToDracula { get; set; }
-        [DataMember]
-        public List<EventCard> EventsKnownToDracula { get; set; }
-        [DataMember]
-        public ItemCard ItemShownToDraculaForBeingBitten { get; set; }
-        [DataMember]
-        public EventCard EventShownToDraculaForBeingBitten { get; set; }
-        [DataMember]
-        public bool HasDogsFaceUp { get; private set; }
-        public Item LastCombatCardChosen { get; set; }
-        [DataMember]
-        public ConnectionType NextMoveConnectionType { get; private set; }
-        [DataMember]
-        public Location NextMoveDestination { get; private set; }
-        [DataMember]
-        public List<Hunter> HuntersInGroup { get; private set; }
-        [DataMember]
-        public List<EncounterTile> EncountersInFrontOfPlayer { get; set; }
+        private int _health;
 
         public HunterPlayer(Hunter hunter, int health, int numberOfBites, int bitesRequiredToKill)
         {
@@ -101,6 +25,90 @@ namespace FuryOfDracula.GameLogic
             HuntersInGroup.Add(Hunter);
             EncountersInFrontOfPlayer = new List<EncounterTile>();
         }
+
+        [DataMember]
+        public Hunter Hunter { get; private set; }
+
+        [DataMember]
+        public int Health
+        {
+            get { return _health; }
+            private set
+            {
+                if (value > MaxHealth)
+                {
+                    _health = MaxHealth;
+                }
+                else if (value < 0)
+                {
+                    _health = 0;
+                }
+                else
+                {
+                    _health = value;
+                }
+            }
+        }
+
+        public int MaxHealth { get; private set; }
+
+        [DataMember]
+        public int BiteCount
+        {
+            get { return _biteCount; }
+            private set
+            {
+                if (value < 0)
+                {
+                    _biteCount = 0;
+                }
+                else
+                {
+                    _biteCount = value;
+                }
+            }
+        }
+
+        [DataMember]
+        public int BitesRequiredToKill { get; private set; }
+
+        [DataMember]
+        public int ItemCount { get; private set; }
+
+        [DataMember]
+        public int EventCount { get; private set; }
+
+        [DataMember]
+        public Location CurrentLocation { get; private set; }
+
+        [DataMember]
+        public List<ItemCard> ItemsKnownToDracula { get; set; }
+
+        [DataMember]
+        public List<EventCard> EventsKnownToDracula { get; set; }
+
+        [DataMember]
+        public ItemCard ItemShownToDraculaForBeingBitten { get; set; }
+
+        [DataMember]
+        public EventCard EventShownToDraculaForBeingBitten { get; set; }
+
+        [DataMember]
+        public bool HasDogsFaceUp { get; private set; }
+
+        public Item LastCombatCardChosen { get; set; }
+
+        [DataMember]
+        public ConnectionType NextMoveConnectionType { get; private set; }
+
+        [DataMember]
+        public Location NextMoveDestination { get; private set; }
+
+        [DataMember]
+        public List<Hunter> HuntersInGroup { get; private set; }
+
+        [DataMember]
+        public List<EncounterTile> EncountersInFrontOfPlayer { get; set; }
 
         public void MoveTo(Location location)
         {
@@ -120,7 +128,7 @@ namespace FuryOfDracula.GameLogic
         public void DiscardItem(GameState game, Item itemToDiscard)
         {
             ItemCount--;
-            ItemCard ItemCardToDiscard = ItemsKnownToDracula.Find(card => card.Item == itemToDiscard);
+            var ItemCardToDiscard = ItemsKnownToDracula.Find(card => card.Item == itemToDiscard);
             if (ItemCardToDiscard != null)
             {
                 ItemsKnownToDracula.Remove(ItemCardToDiscard);
@@ -139,13 +147,12 @@ namespace FuryOfDracula.GameLogic
             {
                 HasDogsFaceUp = false;
             }
-
         }
 
         public void DiscardEvent(GameState game, Event eventToDiscard)
         {
             EventCount--;
-            EventCard eventCardToDiscard = EventsKnownToDracula.Find(card => card.Event == eventToDiscard);
+            var eventCardToDiscard = EventsKnownToDracula.Find(card => card.Event == eventToDiscard);
             if (eventCardToDiscard != null)
             {
                 EventsKnownToDracula.Remove(eventCardToDiscard);

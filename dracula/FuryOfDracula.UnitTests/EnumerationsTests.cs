@@ -1,10 +1,5 @@
 ﻿using FuryOfDracula.GameLogic;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FuryOfDracula.UnitTests
 {
@@ -12,15 +7,15 @@ namespace FuryOfDracula.UnitTests
     public class EnumerationsTests
     {
         [Test]
-        public void Name_LocationWithDescription_ReturnsDescription()
+        public void GetEventFromString_GOO_ReturnsEventGoodLuck()
         {
-            Assert.AreEqual("Clermont-Ferrand", Location.ClermontFerrand.Name());
+            Assert.AreEqual(Event.GoodLuck, Enumerations.GetEventFromString("GOO"));
         }
 
         [Test]
-        public void Name_SingleWordLocationWithoutDescription_ReturnsEnumValue()
+        public void GetItemFromString_PIS_ReturnsItemPistol()
         {
-            Assert.AreEqual("Paris", Location.Paris.Name());
+            Assert.AreEqual(Item.Pistol, Enumerations.GetItemFromString("PIS"));
         }
 
         [Test]
@@ -36,15 +31,15 @@ namespace FuryOfDracula.UnitTests
         }
 
         [Test]
-        public void GetItemFromString_PIS_ReturnsItemPistol()
+        public void Name_LocationWithDescription_ReturnsDescription()
         {
-            Assert.AreEqual(Item.Pistol, Enumerations.GetItemFromString("PIS"));
+            Assert.AreEqual("Clermont-Ferrand", Location.ClermontFerrand.Name());
         }
 
         [Test]
-        public void GetEventFromString_GOO_ReturnsEventGoodLuck()
+        public void Name_SingleWordLocationWithoutDescription_ReturnsEnumValue()
         {
-            Assert.AreEqual(Event.GoodLuck, Enumerations.GetEventFromString("GOO"));
+            Assert.AreEqual("Paris", Location.Paris.Name());
         }
     }
 }

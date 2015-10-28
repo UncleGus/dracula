@@ -1,21 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
+﻿using System.Runtime.Serialization;
 
 namespace FuryOfDracula.GameLogic
 {
     [DataContract]
     public class EncounterTile
     {
-        [DataMember]
-        public Encounter Encounter { get; private set; }
-        [DataMember]
-        public bool IsRevealed { get; set; }
-        [DataMember]
-        public string Abbreviation { get; private set; }
-
         public EncounterTile(Encounter encounter)
         {
             Encounter = encounter;
@@ -30,5 +19,13 @@ namespace FuryOfDracula.GameLogic
             Abbreviation = abbreviation;
         }
 
+        [DataMember]
+        public Encounter Encounter { get; private set; }
+
+        [DataMember]
+        public bool IsRevealed { get; set; }
+
+        [DataMember]
+        public string Abbreviation { get; private set; }
     }
 }

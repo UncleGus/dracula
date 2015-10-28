@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FuryOfDracula.ConsoleInterface
+﻿namespace FuryOfDracula.ConsoleInterface
 {
-    public class CommandSet {
-        public string command;
+    public class CommandSet
+    {
         public string argument1;
         public string argument2;
+        public string command;
 
         public CommandSet(string command, string argument1, string argument2)
         {

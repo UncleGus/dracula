@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace FuryOfDracula.GameLogic
 {
@@ -18,28 +14,26 @@ namespace FuryOfDracula.GameLogic
 
         public static string DescriptionAttr<T>(this T source)
         {
-            FieldInfo fi = source.GetType().GetField(source.ToString());
+            var fi = source.GetType().GetField(source.ToString());
 
-            DescriptionAttribute[] attributes = (DescriptionAttribute[])fi.GetCustomAttributes(
+            var attributes = (DescriptionAttribute[])fi.GetCustomAttributes(
                 typeof(DescriptionAttribute), false);
 
             if (attributes != null && attributes.Length > 0)
             {
                 return attributes[0].Description;
             }
-            else
-            {
-                var description = Regex.Replace(source.ToString(), "([A-Z])", " $1", System.Text.RegularExpressions.RegexOptions.Compiled).Trim();
-                description = Regex.Replace(description, "([0-9])", "", System.Text.RegularExpressions.RegexOptions.Compiled).Trim();
-                return description;
-            }
+            var description = Regex.Replace(source.ToString(), "([A-Z])", " $1", RegexOptions.Compiled).Trim();
+            description = Regex.Replace(description, "([0-9])", "", RegexOptions.Compiled).Trim();
+            return description;
         }
 
         public static List<Power> GetAvailablePowers(TimeOfDay timeOfDay)
         {
-            List<Power> tempListOfPowers = new List<Power>() { Power.DoubleBack, Power.Hide };
+            var tempListOfPowers = new List<Power> { Power.DoubleBack, Power.Hide };
 
-            if ((int)timeOfDay > 3) {
+            if ((int)timeOfDay > 3)
+            {
                 tempListOfPowers.Add(Power.DarkCall);
                 tempListOfPowers.Add(Power.Feed);
                 tempListOfPowers.Add(Power.WolfForm);
@@ -49,57 +43,69 @@ namespace FuryOfDracula.GameLogic
 
         public static Item GetItemFromString(string name)
         {
-            for (int i = 0; i < 16; i++)
+            Item firstMatch = Item.None;
+            for (var i = 0; i < 16; i++)
             {
                 if (((Item)i).Name().ToLower().StartsWith(name.ToLower()))
                 {
-                    return (Item)i;
+                    if (firstMatch == Item.None)
+                    {
+                        firstMatch = (Item)i;
+                    }
+                    else
+                    {
+                        return Item.None;
+                    }
                 }
             }
-            return Item.None;
+            return firstMatch;
         }
 
         public static Event GetEventFromString(string name)
         {
-            for (int i = 0; i < 46; i++)
+            Event firstMatch = Event.None;
+            for (var i = 0; i < 46; i++)
             {
                 if (((Event)i).Name().ToLower().StartsWith(name.ToLower()))
                 {
-                    return (Event)i;
+                    if (firstMatch == Event.None)
+                    {
+                        firstMatch = (Event)i;
+                    }
+                    else
+                    {
+                        return Event.None;
+                    }
                 }
             }
-            return Event.None;
+            return firstMatch;
         }
 
         public static Location GetLocationFromString(string name)
         {
-            Location tempLocation = Location.Nowhere;
-            int countOfMatches = 0;
-            for (int i = 0; i < 72; i ++)
+            var firstMatch = Location.Nowhere;
+            for (var i = 0; i < 72; i++)
             {
                 if (((Location)i).Name().ToLower().StartsWith(name.ToLower()))
                 {
-                    countOfMatches++;
-                    if (tempLocation == Location.Nowhere)
+                    if (firstMatch == Location.Nowhere)
                     {
-                        tempLocation = (Location)i;
+                        firstMatch = (Location)i;
+                    }
+                    else
+                    {
+                        return Location.Nowhere;
                     }
                 }
             }
-            if (countOfMatches == 1)
-            {
-                return tempLocation;
-            }
-            else
-            {
-                return Location.Nowhere;
-            }
+            return firstMatch;
         }
 
         public static List<Location> GetAllLocations()
         {
-            List<Location> tempListOfLocations = new List<Location>();
-            for (int i = 1; i < 72; i++) {
+            var tempListOfLocations = new List<Location>();
+            for (var i = 1; i < 72; i++)
+            {
                 tempListOfLocations.Add((Location)i);
             }
             return tempListOfLocations;
@@ -107,29 +113,45 @@ namespace FuryOfDracula.GameLogic
 
         public static ConnectionType GetConnectionTypeFromString(string input)
         {
-            for (int i = 0; i < 5; i++)
+            var firstMatch = ConnectionType.None;
+            for (var i = 0; i < 5; i++)
             {
                 if (((ConnectionType)i).Name().ToLower().StartsWith(input.ToLower()))
                 {
-                    return (ConnectionType)i;
+                    if (firstMatch == ConnectionType.None)
+                    {
+                        firstMatch = (ConnectionType)i;
+                    }
+                    else
+                    {
+                        return ConnectionType.None;
+                    }
                 }
             }
-            return ConnectionType.None;
+            return firstMatch;
         }
 
         public static ResolveAbility GetResolveAbilityFromString(string input)
         {
-            for (int i = 1; i < 4; i++)
+            var firstMatch = ResolveAbility.None;
+            for (var i = 1; i < 4; i++)
             {
                 if (((ResolveAbility)i).Name().ToLower().StartsWith(input.ToLower()))
                 {
-                    return (ResolveAbility)i;
+                    if (firstMatch == ResolveAbility.None)
+                    {
+                        firstMatch = (ResolveAbility)i;
+                    }
+                    else
+                    {
+                        return ResolveAbility.None;
+                    }
                 }
             }
-            return ResolveAbility.None;
+            return firstMatch;
         }
     }
-    
+
     public enum EventType
     {
         None,

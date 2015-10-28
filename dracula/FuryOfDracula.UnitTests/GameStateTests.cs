@@ -1,10 +1,5 @@
 ﻿using FuryOfDracula.GameLogic;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FuryOfDracula.UnitTests
 {
@@ -20,27 +15,15 @@ namespace FuryOfDracula.UnitTests
         }
 
         [Test]
-        public void GameState_HuntersInitialisation()
-        {
-            Assert.AreEqual(3, game.Hunters[(int)Hunter.VanHelsing].BitesRequiredToKill);
-        }
-
-        [Test]
         public void GameState_DraculaInitialisation()
         {
             Assert.AreEqual(4, game.Dracula.EventHandSize);
         }
 
         [Test]
-        public void GetHunterFromString_Van_ReturnsVanHelsing()
+        public void GameState_HuntersInitialisation()
         {
-            Assert.AreEqual(Hunter.VanHelsing, game.GetHunterFromString("van"));
-        }
-
-        [Test]
-        public void GetHunterFromString_Bob_ReturnsNobody()
-        {
-            Assert.AreEqual(Hunter.Nobody, game.GetHunterFromString("Bob"));
+            Assert.AreEqual(3, game.Hunters[(int) Hunter.VanHelsing].BitesRequiredToKill);
         }
 
         [Test]
@@ -55,5 +38,16 @@ namespace FuryOfDracula.UnitTests
             Assert.AreEqual(Hunter.Nobody, game.GetHunterFromInt(5));
         }
 
+        [Test]
+        public void GetHunterFromString_Bob_ReturnsNobody()
+        {
+            Assert.AreEqual(Hunter.Nobody, game.GetHunterFromString("Bob"));
+        }
+
+        [Test]
+        public void GetHunterFromString_Van_ReturnsVanHelsing()
+        {
+            Assert.AreEqual(Hunter.VanHelsing, game.GetHunterFromString("van"));
+        }
     }
 }

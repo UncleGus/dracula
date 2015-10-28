@@ -1,10 +1,6 @@
-﻿using FuryOfDracula.GameLogic;
+﻿using System.Collections.Generic;
+using FuryOfDracula.GameLogic;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FuryOfDracula.UnitTests
 {
@@ -17,51 +13,6 @@ namespace FuryOfDracula.UnitTests
         public void BeforeAll()
         {
             vanHelsing = new HunterPlayer(Hunter.VanHelsing, 10, 0, 2);
-        }
-
-        [Test]
-        public void MoveTo_Hamburg_CurrentLocationReturnsHamburg()
-        {
-            vanHelsing.MoveTo(Location.Hamburg);
-            Assert.AreEqual(Location.Hamburg, vanHelsing.CurrentLocation);
-        }
-
-        [Test]
-        public void DrawItemCard_ItemCountReturns1()
-        {
-            vanHelsing.DrawItemCard();
-            Assert.AreEqual(1, vanHelsing.ItemCount);
-        }
-
-        [Test]
-        public void DrawEventCard_EventCountReturns1()
-        {
-            vanHelsing.DrawEventCard();
-            Assert.AreEqual(1, vanHelsing.EventCount);
-        }
-
-        [Test]
-        public void DiscardItem_ItemRemovedFromItemsKnownToDraculaAndItemCountDecreased()
-        {
-            vanHelsing.ItemsKnownToDracula.Add(new ItemCard(Item.Knife));
-            vanHelsing.DrawItemCard();
-            int cardCountBefore = vanHelsing.ItemCount;
-            List<ItemCard> itemDiscard = new List<ItemCard>();
-            vanHelsing.DiscardItem(new GameState(), Item.Knife);
-            Assert.AreEqual(cardCountBefore - 1, vanHelsing.ItemCount);
-            Assert.AreEqual(null, vanHelsing.ItemsKnownToDracula.Find(card => card.Item == Item.Knife));
-        }
-
-        [Test]
-        public void DiscardEvent_EventRemovedFromEventsKnownToDraculaAndEventCountDecreased()
-        {
-            vanHelsing.EventsKnownToDracula.Add(new EventCard(Event.GoodLuck, false, EventType.Keep));
-            vanHelsing.DrawEventCard();
-            int cardCountBefore = vanHelsing.EventCount;
-            List<EventCard> eventDiscard = new List<EventCard>();
-            vanHelsing.DiscardEvent(new GameState(), Event.GoodLuck);
-            Assert.AreEqual(cardCountBefore - 1, vanHelsing.EventCount);
-            Assert.AreEqual(null, vanHelsing.EventsKnownToDracula.Find(card => card.Event == Event.GoodLuck));
         }
 
         [Test]
@@ -85,5 +36,49 @@ namespace FuryOfDracula.UnitTests
             Assert.AreEqual(10, vanHelsing.Health);
         }
 
+        [Test]
+        public void DiscardEvent_EventRemovedFromEventsKnownToDraculaAndEventCountDecreased()
+        {
+            vanHelsing.EventsKnownToDracula.Add(new EventCard(Event.GoodLuck, false, EventType.Keep));
+            vanHelsing.DrawEventCard();
+            var cardCountBefore = vanHelsing.EventCount;
+            var eventDiscard = new List<EventCard>();
+            vanHelsing.DiscardEvent(new GameState(), Event.GoodLuck);
+            Assert.AreEqual(cardCountBefore - 1, vanHelsing.EventCount);
+            Assert.AreEqual(null, vanHelsing.EventsKnownToDracula.Find(card => card.Event == Event.GoodLuck));
+        }
+
+        [Test]
+        public void DiscardItem_ItemRemovedFromItemsKnownToDraculaAndItemCountDecreased()
+        {
+            vanHelsing.ItemsKnownToDracula.Add(new ItemCard(Item.Knife));
+            vanHelsing.DrawItemCard();
+            var cardCountBefore = vanHelsing.ItemCount;
+            var itemDiscard = new List<ItemCard>();
+            vanHelsing.DiscardItem(new GameState(), Item.Knife);
+            Assert.AreEqual(cardCountBefore - 1, vanHelsing.ItemCount);
+            Assert.AreEqual(null, vanHelsing.ItemsKnownToDracula.Find(card => card.Item == Item.Knife));
+        }
+
+        [Test]
+        public void DrawEventCard_EventCountReturns1()
+        {
+            vanHelsing.DrawEventCard();
+            Assert.AreEqual(1, vanHelsing.EventCount);
+        }
+
+        [Test]
+        public void DrawItemCard_ItemCountReturns1()
+        {
+            vanHelsing.DrawItemCard();
+            Assert.AreEqual(1, vanHelsing.ItemCount);
+        }
+
+        [Test]
+        public void MoveTo_Hamburg_CurrentLocationReturnsHamburg()
+        {
+            vanHelsing.MoveTo(Location.Hamburg);
+            Assert.AreEqual(Location.Hamburg, vanHelsing.CurrentLocation);
+        }
     }
 }

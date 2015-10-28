@@ -1,26 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FuryOfDracula.GameLogic
 {
     [DataContract]
     public class DraculaCard
     {
-        [DataMember]
-        public string Abbreviation { get; private set; }
-        [DataMember]
-        public Location Location { get; private set; }
-        [DataMember]
-        public Power Power { get; private set; }
-        [DataMember]
-        public bool IsRevealed { get; set; }
-        [DataMember]
-        public ConsoleColor Color { get; private set; }
-
         public DraculaCard(string abbreviation, Location location, Power power)
         {
             Abbreviation = abbreviation;
@@ -38,5 +23,20 @@ namespace FuryOfDracula.GameLogic
             IsRevealed = false;
             Color = color;
         }
+
+        [DataMember]
+        public string Abbreviation { get; private set; }
+
+        [DataMember]
+        public Location Location { get; private set; }
+
+        [DataMember]
+        public Power Power { get; private set; }
+
+        [DataMember]
+        public bool IsRevealed { get; set; }
+
+        [DataMember]
+        public ConsoleColor Color { get; private set; }
     }
 }

@@ -2,56 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FuryOfDracula.GameLogic
 {
     [DataContract]
     public class Dracula
     {
-        [DataMember]
-        public int Blood { get; private set; }
-        [DataMember]
-        public Location CurrentLocation { get; private set; }
-        [DataMember]
-        public List<EncounterTile> EncounterHand { get; private set; }
-        [DataMember]
-        public List<EventCard> EventHand { get; private set; }
-        [DataMember]
-        public int EncounterHandSize { get; set; }
-        [DataMember]
-        public int EventHandSize { get; set; }
-        [DataMember]
-        public DraculaCardSlot[] Trail { get; private set; }
-        [DataMember]
-        public DraculaCardSlot[] Catacombs { get; private set; }
         private List<DraculaCard> _draculaCardDeck;
-        [DataMember]
-        public List<DraculaCard> DraculaCardDeck
-        {
-            get
-            {
-                if (_draculaCardDeck == null)
-                {
-                    _draculaCardDeck = CreateDraculaCardDeck();
-                }
-                return _draculaCardDeck;
-
-            }
-            private set
-            {
-                _draculaCardDeck = value;
-            }
-        }
-        [DataMember]
-        public Location LocationWhereHideWasUsed { get; private set; }
-        [DataMember]
-        public Location AdvanceMoveLocation { get; set; }
-        [DataMember]
-        public Power AdvanceMovePower { get; set; }
-        [DataMember]
-        public bool LostBloodFromSeaMovementLastTurn { get; set; }
 
         public Dracula()
         {
@@ -64,18 +21,68 @@ namespace FuryOfDracula.GameLogic
             Catacombs = new DraculaCardSlot[3];
         }
 
+        [DataMember]
+        public int Blood { get; private set; }
+
+        [DataMember]
+        public Location CurrentLocation { get; private set; }
+
+        [DataMember]
+        public List<EncounterTile> EncounterHand { get; private set; }
+
+        [DataMember]
+        public List<EventCard> EventHand { get; private set; }
+
+        [DataMember]
+        public int EncounterHandSize { get; set; }
+
+        [DataMember]
+        public int EventHandSize { get; set; }
+
+        [DataMember]
+        public DraculaCardSlot[] Trail { get; private set; }
+
+        [DataMember]
+        public DraculaCardSlot[] Catacombs { get; private set; }
+
+        [DataMember]
+        public List<DraculaCard> DraculaCardDeck
+        {
+            get
+            {
+                if (_draculaCardDeck == null)
+                {
+                    _draculaCardDeck = CreateDraculaCardDeck();
+                }
+                return _draculaCardDeck;
+            }
+            private set { _draculaCardDeck = value; }
+        }
+
+        [DataMember]
+        public Location LocationWhereHideWasUsed { get; private set; }
+
+        [DataMember]
+        public Location AdvanceMoveLocation { get; set; }
+
+        [DataMember]
+        public Power AdvanceMovePower { get; set; }
+
+        [DataMember]
+        public bool LostBloodFromSeaMovementLastTurn { get; set; }
+
         public DraculaCardSlot MoveTo(Location destination, Power power)
         {
             DraculaCardSlot doubleBackedCard = null;
-            int catacombsSlot = 0;
+            var catacombsSlot = 0;
             if (power == Power.DoubleBack)
             {
-                for (int i = 0; i < 6; i++)
+                for (var i = 0; i < 6; i++)
                 {
                     if (Trail[i] != null && Trail[i].DraculaCards.First().Location == destination)
                     {
                         doubleBackedCard = Trail[i];
-                        for (int j = i; j > 0; j--)
+                        for (var j = i; j > 0; j--)
                         {
                             Trail[j] = Trail[j - 1];
                         }
@@ -86,7 +93,7 @@ namespace FuryOfDracula.GameLogic
                         return null;
                     }
                 }
-                for (int i = 0; i < 3; i++)
+                for (var i = 0; i < 3; i++)
                 {
                     if (Catacombs[i] != null && Catacombs[i].DraculaCards.First().Location == destination)
                     {
@@ -95,8 +102,8 @@ namespace FuryOfDracula.GameLogic
                     }
                 }
             }
-            DraculaCardSlot cardSlotDroppedOffTrail = Trail[5];
-            for (int i = 5; i > 0; i--)
+            var cardSlotDroppedOffTrail = Trail[5];
+            for (var i = 5; i > 0; i--)
             {
                 Trail[i] = Trail[i - 1];
             }
@@ -140,7 +147,7 @@ namespace FuryOfDracula.GameLogic
         {
             if (positionRevealed < 6 && Trail[positionRevealed] != null)
             {
-                foreach (EncounterTile enc in Trail[positionRevealed].EncounterTiles)
+                foreach (var enc in Trail[positionRevealed].EncounterTiles)
                 {
                     enc.IsRevealed = true;
                 }
@@ -148,7 +155,7 @@ namespace FuryOfDracula.GameLogic
             else if (Catacombs[positionRevealed - 6] != null)
             {
                 positionRevealed -= 6;
-                foreach (EncounterTile enc in Catacombs[positionRevealed].EncounterTiles)
+                foreach (var enc in Catacombs[positionRevealed].EncounterTiles)
                 {
                     enc.IsRevealed = true;
                 }
@@ -157,7 +164,7 @@ namespace FuryOfDracula.GameLogic
 
         public int RevealCardInTrailWithLocation(Location location)
         {
-            for (int i = 0; i < 6; i++)
+            for (var i = 0; i < 6; i++)
             {
                 if (Trail[i] != null && Trail[i].DraculaCards.First().Location == location)
                 {
@@ -170,24 +177,24 @@ namespace FuryOfDracula.GameLogic
 
         public void DiscardEvent(Event eventToDiscard, List<EventCard> discardPile)
         {
-            EventCard eventCardToDiscard = EventHand.Find(card => card.Event == eventToDiscard);
+            var eventCardToDiscard = EventHand.Find(card => card.Event == eventToDiscard);
             EventHand.Remove(eventCardToDiscard);
             discardPile.Add(eventCardToDiscard);
         }
 
         public void DiscardCatacombsCards(GameState game, List<int> list)
         {
-            List<EncounterTile> encounterTilesDiscarded = new List<EncounterTile>();
-            foreach (int i in list)
+            var encounterTilesDiscarded = new List<EncounterTile>();
+            foreach (var i in list)
             {
                 encounterTilesDiscarded.AddRange(Catacombs[i].EncounterTiles);
-                foreach(DraculaCard d in Catacombs[i].DraculaCards)
+                foreach (var d in Catacombs[i].DraculaCards)
                 {
                     d.IsRevealed = false;
                 }
                 Catacombs[i] = null;
             }
-            foreach (EncounterTile enc in encounterTilesDiscarded)
+            foreach (var enc in encounterTilesDiscarded)
             {
                 enc.IsRevealed = false;
                 game.EncounterPool.Add(enc);
@@ -204,7 +211,7 @@ namespace FuryOfDracula.GameLogic
             {
                 if (Trail[position] != null)
                 {
-                    foreach (DraculaCard card in Trail[position].DraculaCards)
+                    foreach (var card in Trail[position].DraculaCards)
                     {
                         card.IsRevealed = true;
                     }
@@ -213,7 +220,7 @@ namespace FuryOfDracula.GameLogic
             }
             else if (Catacombs[position - 6] != null)
             {
-                foreach (DraculaCard card in Catacombs[position - 6].DraculaCards)
+                foreach (var card in Catacombs[position - 6].DraculaCards)
                 {
                     card.IsRevealed = true;
                 }
@@ -222,7 +229,8 @@ namespace FuryOfDracula.GameLogic
             return false;
         }
 
-        public void DiscardEncounterTileFromCardSlot(EncounterTile encounterTileToDiscard, DraculaCardSlot draculaCardSlot, List<EncounterTile> encounterPool)
+        public void DiscardEncounterTileFromCardSlot(EncounterTile encounterTileToDiscard,
+            DraculaCardSlot draculaCardSlot, List<EncounterTile> encounterPool)
         {
             draculaCardSlot.EncounterTiles.Remove(encounterTileToDiscard);
             encounterPool.Add(encounterTileToDiscard);
@@ -230,7 +238,7 @@ namespace FuryOfDracula.GameLogic
 
         public void DrawEncounter(List<EncounterTile> encounterPool)
         {
-            EncounterTile encounterDrawn = encounterPool[new Random().Next(0, encounterPool.Count())];
+            var encounterDrawn = encounterPool[new Random().Next(0, encounterPool.Count())];
             EncounterHand.Add(encounterDrawn);
             encounterPool.Remove(encounterDrawn);
         }
@@ -264,18 +272,18 @@ namespace FuryOfDracula.GameLogic
 
         public List<EncounterTile> DiscardHide()
         {
-            List<EncounterTile> encountersDiscarded = new List<EncounterTile>();
-            for (int i = 0; i < 6; i++)
+            var encountersDiscarded = new List<EncounterTile>();
+            for (var i = 0; i < 6; i++)
             {
                 if (Trail[i] != null && Trail[i].DraculaCards.First().Power == Power.Hide)
                 {
                     Trail[i].DraculaCards.First().IsRevealed = false;
                     LocationWhereHideWasUsed = Location.Nowhere;
-                    foreach (EncounterTile enc in Trail[i].EncounterTiles)
+                    foreach (var enc in Trail[i].EncounterTiles)
                     {
                         encountersDiscarded.Add(enc);
                     }
-                    for (int j = i; j < 5; j++)
+                    for (var j = i; j < 5; j++)
                     {
                         Trail[j] = Trail[j + 1];
                     }
@@ -299,16 +307,13 @@ namespace FuryOfDracula.GameLogic
                 eventDiscard.Add(cardDrawn);
                 return cardDrawn.Event;
             }
-            else
-            {
-                EventHand.Add(cardDrawn);
-                return Event.None;
-            }
+            EventHand.Add(cardDrawn);
+            return Event.None;
         }
 
         public int RevealHideCard()
         {
-            for (int i = 0; i < 6; i++)
+            for (var i = 0; i < 6; i++)
             {
                 if (Trail[i].DraculaCards.First().Power == Power.Hide)
                 {
@@ -321,7 +326,7 @@ namespace FuryOfDracula.GameLogic
 
         private List<DraculaCard> CreateDraculaCardDeck()
         {
-            List<DraculaCard> tempDraculaCardDeck = new List<DraculaCard>();
+            var tempDraculaCardDeck = new List<DraculaCard>();
             tempDraculaCardDeck.Add(new DraculaCard("ADR", Location.AdriaticSea, Power.None, ConsoleColor.Cyan));
             tempDraculaCardDeck.Add(new DraculaCard("ALI", Location.Alicante, Power.None));
             tempDraculaCardDeck.Add(new DraculaCard("AMS", Location.Amsterdam, Power.None));
@@ -398,16 +403,16 @@ namespace FuryOfDracula.GameLogic
             tempDraculaCardDeck.Add(new DraculaCard("WOL", Location.Nowhere, Power.WolfForm, ConsoleColor.DarkGreen));
             tempDraculaCardDeck.Add(new DraculaCard("DOU", Location.Nowhere, Power.DoubleBack, ConsoleColor.DarkGreen));
             return tempDraculaCardDeck;
-
         }
 
         public void RevealAllVampires()
         {
-            for (int i = 0; i < 6; i++)
+            for (var i = 0; i < 6; i++)
             {
                 if (Trail[i] != null)
                 {
-                    foreach (EncounterTile enc in Trail[i].EncounterTiles) {
+                    foreach (var enc in Trail[i].EncounterTiles)
+                    {
                         if (enc.Encounter == Encounter.NewVampire)
                         {
                             enc.IsRevealed = true;
@@ -415,11 +420,11 @@ namespace FuryOfDracula.GameLogic
                     }
                 }
             }
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 if (Catacombs[i] != null)
                 {
-                    foreach (EncounterTile enc in Catacombs[i].EncounterTiles)
+                    foreach (var enc in Catacombs[i].EncounterTiles)
                     {
                         if (enc.Encounter == Encounter.NewVampire)
                         {
@@ -437,11 +442,11 @@ namespace FuryOfDracula.GameLogic
 
         public void EscapeAsBat(GameState game, Location destination)
         {
-            foreach (DraculaCard card in Trail[0].DraculaCards)
+            foreach (var card in Trail[0].DraculaCards)
             {
                 card.IsRevealed = false;
             }
-            foreach (EncounterTile enc in Trail[0].EncounterTiles)
+            foreach (var enc in Trail[0].EncounterTiles)
             {
                 enc.IsRevealed = false;
                 game.EncounterPool.Add(enc);
@@ -456,7 +461,7 @@ namespace FuryOfDracula.GameLogic
 
         public int RevealCardInCatacombsWithLocation(Location location)
         {
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 if (Catacombs[i] != null && Catacombs[i].DraculaCards.First().Location == location)
                 {
@@ -475,34 +480,35 @@ namespace FuryOfDracula.GameLogic
 
         public void ClearTrailDownTo(GameState game, int length)
         {
-            for (int i = 5; i >= length; i--)
+            for (var i = 5; i >= length; i--)
             {
                 if (Trail[i] != null)
                 {
                     if (Trail[i].DraculaCards.First().Location != CurrentLocation)
                     {
-                        foreach (EncounterTile enc in Trail[i].EncounterTiles)
+                        foreach (var enc in Trail[i].EncounterTiles)
                         {
                             enc.IsRevealed = false;
                         }
                         game.EncounterPool.AddRange(Trail[i].EncounterTiles);
                         Trail[i].EncounterTiles.Clear();
-                        foreach (DraculaCard d in Trail[i].DraculaCards)
+                        foreach (var d in Trail[i].DraculaCards)
                         {
                             d.IsRevealed = false;
                         }
                         Trail[i] = null;
-                    } else
+                    }
+                    else
                     {
                         length--;
                     }
                 }
             }
-            for (int i = 0; i < 6; i++)
+            for (var i = 0; i < 6; i++)
             {
                 if (Trail[i] == null)
                 {
-                    for (int j = i + 1; j < 6; j++)
+                    for (var j = i + 1; j < 6; j++)
                     {
                         if (Trail[j] != null)
                         {
@@ -517,12 +523,14 @@ namespace FuryOfDracula.GameLogic
 
         public int NumberOfEncountersAtLocation(Location location)
         {
-            for (int i = 0; i < 6; i++) {
-                if (Trail[i] != null && Trail[i].DraculaCards.First().Location == location) {
+            for (var i = 0; i < 6; i++)
+            {
+                if (Trail[i] != null && Trail[i].DraculaCards.First().Location == location)
+                {
                     return Trail[i].EncounterTiles.Count();
                 }
             }
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 if (Catacombs[i] != null && Catacombs[i].DraculaCards.First().Location == location)
                 {

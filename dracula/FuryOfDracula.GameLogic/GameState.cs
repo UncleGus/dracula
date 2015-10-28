@@ -1,17 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FuryOfDracula.GameLogic
 {
     [DataContract(IsReference = true)]
     public class GameState
     {
+        private List<EncounterTile> _encounterPool;
+        private List<EventCard> _eventDeck;
+        private List<ItemCard> _itemDeck;
         private LocationSet _map;
+
+        public GameState()
+        {
+            Hunters = new HunterPlayer[5]
+            {
+                null, new HunterPlayer(Hunter.LordGodalming, 12, 0, 2), new HunterPlayer(Hunter.DrSeward, 8, 0, 2),
+                new HunterPlayer(Hunter.VanHelsing, 10, 0, 3), new HunterPlayer(Hunter.MinaHarker, 8, 1, 2)
+            };
+            Dracula = new Dracula();
+            ItemDiscard = new List<ItemCard>();
+            EventDiscard = new List<EventCard>();
+            Resolve = -1;
+            Vampires = -1;
+        }
+
         public LocationSet Map
         {
             get
@@ -22,16 +37,15 @@ namespace FuryOfDracula.GameLogic
                 }
                 return _map;
             }
-            private set
-            {
-                _map = value;
-            }
+            private set { _map = value; }
         }
+
         [DataMember]
         public HunterPlayer[] Hunters { get; private set; }
+
         [DataMember]
         public Dracula Dracula { get; private set; }
-        private List<EventCard> _eventDeck;
+
         [DataMember]
         public List<EventCard> EventDeck
         {
@@ -42,16 +56,13 @@ namespace FuryOfDracula.GameLogic
                     _eventDeck = CreateEventDeck();
                 }
                 return _eventDeck;
-
             }
-            private set
-            {
-                _eventDeck = value;
-            }
+            private set { _eventDeck = value; }
         }
+
         [DataMember]
         public List<EventCard> EventDiscard { get; private set; }
-        private List<ItemCard> _itemDeck;
+
         [DataMember]
         public List<ItemCard> ItemDeck
         {
@@ -63,14 +74,12 @@ namespace FuryOfDracula.GameLogic
                 }
                 return _itemDeck;
             }
-            private set
-            {
-                _itemDeck = value;
-            }
+            private set { _itemDeck = value; }
         }
+
         [DataMember]
         public List<ItemCard> ItemDiscard { get; private set; }
-        private List<EncounterTile> _encounterPool;
+
         [DataMember]
         public List<EncounterTile> EncounterPool
         {
@@ -82,51 +91,51 @@ namespace FuryOfDracula.GameLogic
                 }
                 return _encounterPool;
             }
-            private set
-            {
-                _encounterPool = value;
-            }
+            private set { _encounterPool = value; }
         }
+
         [DataMember]
         public EventCard DraculaAlly { get; set; }
+
         [DataMember]
         public EventCard HunterAlly { get; set; }
+
         [DataMember]
         public TimeOfDay TimeOfDay { get; private set; }
+
         [DataMember]
         public int Resolve { get; private set; }
+
         [DataMember]
         public int Vampires { get; private set; }
+
         [DataMember]
         public Location HeavenlyHostLocation1 { get; set; }
+
         [DataMember]
         public Location HeavenlyHostLocation2 { get; set; }
+
         [DataMember]
-        public Location ConsecratedGroundLocation{ get; set; }
+        public Location ConsecratedGroundLocation { get; set; }
+
         [DataMember]
         public Location StormySeasLocation { get; set; }
+
         [DataMember]
         public int StormySeasRounds { get; set; }
+
         [DataMember]
         public Location RoadBlockLocation1 { get; set; }
+
         [DataMember]
         public Location RoadBlockLocation2 { get; set; }
+
         [DataMember]
         public ConnectionType RoadBlockConnectionType { get; set; }
 
-        public GameState()
-        {
-            Hunters = new HunterPlayer[5] { null, new HunterPlayer(Hunter.LordGodalming, 12, 0, 2), new HunterPlayer(Hunter.DrSeward, 8, 0, 2), new HunterPlayer(Hunter.VanHelsing, 10, 0, 3), new HunterPlayer(Hunter.MinaHarker, 8, 1, 2) };
-            Dracula = new Dracula();
-            ItemDiscard = new List<ItemCard>();
-            EventDiscard = new List<EventCard>();
-            Resolve = -1;
-            Vampires = -1;
-        }
-
         public List<Location> GetBlockedLocations()
         {
-            List<Location> tempLocationList = new List<Location>();
+            var tempLocationList = new List<Location>();
             if (HeavenlyHostLocation1 != Location.Nowhere)
             {
                 tempLocationList.Add(HeavenlyHostLocation1);
@@ -135,7 +144,7 @@ namespace FuryOfDracula.GameLogic
             {
                 tempLocationList.Add(HeavenlyHostLocation2);
             }
-            if (ConsecratedGroundLocation!= Location.Nowhere)
+            if (ConsecratedGroundLocation != Location.Nowhere)
             {
                 tempLocationList.Add(ConsecratedGroundLocation);
             }
@@ -148,7 +157,7 @@ namespace FuryOfDracula.GameLogic
 
         public Hunter GetHunterFromString(string hunterName)
         {
-            for (int i = 1; i < 5; i++)
+            for (var i = 1; i < 5; i++)
             {
                 if (Hunters[i].Hunter.Name().ToLower().StartsWith(hunterName.ToLower()))
                 {
@@ -175,8 +184,7 @@ namespace FuryOfDracula.GameLogic
             StormySeasRounds--;
             if (Map.TypeOfLocation(Dracula.CurrentLocation) != LocationType.Sea)
             {
-
-                TimeOfDay = (TimeOfDay)((int)TimeOfDay % 6 + 1);
+                TimeOfDay = (TimeOfDay) ((int) TimeOfDay%6 + 1);
                 if (TimeOfDay == TimeOfDay.Dawn)
                 {
                     Vampires++;
@@ -187,7 +195,7 @@ namespace FuryOfDracula.GameLogic
 
         private List<ItemCard> CreateItemDeck()
         {
-            List<ItemCard> tempItemDeck = new List<ItemCard>();
+            var tempItemDeck = new List<ItemCard>();
             tempItemDeck.Add(new ItemCard(Item.Crucifix));
             tempItemDeck.Add(new ItemCard(Item.Crucifix));
             tempItemDeck.Add(new ItemCard(Item.Crucifix));
@@ -233,7 +241,7 @@ namespace FuryOfDracula.GameLogic
 
         private List<EventCard> CreateEventDeck()
         {
-            List<EventCard> tempEventDeck = new List<EventCard>();
+            var tempEventDeck = new List<EventCard>();
             tempEventDeck.Add(new EventCard(Event.AdvancePlanning, false, EventType.Keep));
             tempEventDeck.Add(new EventCard(Event.AdvancePlanning, false, EventType.Keep));
             tempEventDeck.Add(new EventCard(Event.AdvancePlanning, false, EventType.Keep));
@@ -310,12 +318,11 @@ namespace FuryOfDracula.GameLogic
             tempEventDeck.Add(new EventCard(Event.VampiricInfluence, true, EventType.PlayImmediately));
             tempEventDeck.Add(new EventCard(Event.WildHorses, true, EventType.Keep));
             return tempEventDeck;
-
         }
 
         private List<EncounterTile> CreateEncounterPool()
         {
-            List<EncounterTile> tempEncounterDeck = new List<EncounterTile>();
+            var tempEncounterDeck = new List<EncounterTile>();
             tempEncounterDeck.Add(new EncounterTile(Encounter.Ambush));
             tempEncounterDeck.Add(new EncounterTile(Encounter.Ambush));
             tempEncounterDeck.Add(new EncounterTile(Encounter.Ambush));
@@ -362,7 +369,6 @@ namespace FuryOfDracula.GameLogic
             tempEncounterDeck.Add(new EncounterTile(Encounter.Wolves));
             tempEncounterDeck.Add(new EncounterTile(Encounter.Wolves));
             return tempEncounterDeck;
-
         }
 
         public void RegressTimeTracker()
@@ -370,22 +376,23 @@ namespace FuryOfDracula.GameLogic
             TimeOfDay = TimeOfDay - 1;
         }
 
-        private void SaveState(string fileName) {
+        private void SaveState(string fileName)
+        {
             try
             {
-                string invalid = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
-                foreach (char c in invalid)
+                var invalid = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+                foreach (var c in invalid)
                 {
                     fileName = fileName.Replace(c.ToString(), "");
                 }
                 fileName = fileName + ".sav";
-                DataContractSerializer fileWriter = new DataContractSerializer(typeof(GameState));
-                FileStream writeStream = File.OpenWrite(fileName);
+                var fileWriter = new DataContractSerializer(typeof (GameState));
+                var writeStream = File.OpenWrite(fileName);
 
                 fileWriter.WriteObject(writeStream, this);
                 writeStream.Close();
             }
-            catch 
+            catch
             {
                 throw;
             }
@@ -399,6 +406,18 @@ namespace FuryOfDracula.GameLogic
         public void AdjustResolve(int adjustment)
         {
             Resolve += adjustment;
+        }
+
+        public void RecycleItemDiscard()
+        {
+            ItemDeck = ItemDiscard;
+            ItemDiscard = new List<ItemCard>();
+        }
+
+        public void RecycleEventDiscard()
+        {
+            EventDeck = EventDiscard;
+            EventDiscard = new List<EventCard>();
         }
     }
 }
