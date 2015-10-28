@@ -539,5 +539,17 @@ namespace FuryOfDracula.GameLogic
             }
             return -1;
         }
+
+        public DraculaCardSlot slotWhereHideCardIs()
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                if (Trail[i] != null && Trail[i].DraculaCards.First().Power == Power.Hide)
+                {
+                    return Trail[i];
+                }
+            }
+            return new DraculaCardSlot(new DraculaCard("NOW", Location.Nowhere, Power.None));
+        }
     }
 }

@@ -195,8 +195,12 @@ namespace FuryOfDracula.ArtificialIntelligence
             do
             {
                 startLocation = allLocations[new Random().Next(0, allLocations.Count())];
-            } while (game.Map.TypeOfLocation(startLocation) != LocationType.SmallCity &&
-                     game.Map.TypeOfLocation(startLocation) != LocationType.LargeCity);
+            } while ((game.Map.TypeOfLocation(startLocation) != LocationType.SmallCity &&
+                     game.Map.TypeOfLocation(startLocation) != LocationType.LargeCity) ||
+                game.Hunters[(int)Hunter.LordGodalming].CurrentLocation == startLocation ||
+            game.Hunters[(int)Hunter.DrSeward].CurrentLocation == startLocation ||
+            game.Hunters[(int)Hunter.VanHelsing].CurrentLocation == startLocation ||
+            game.Hunters[(int)Hunter.MinaHarker].CurrentLocation == startLocation);
             return startLocation;
         }
 

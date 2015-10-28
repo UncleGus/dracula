@@ -41,5 +41,10 @@ namespace FuryOfDracula.UnitTests
         {
             Assert.AreEqual("Paris", Location.Paris.Name());
         }
+
+        [Test]
+        public void GetResolveAbilityFromString_Hashes_ReturnsNone() {
+            Assert.AreEqual(ResolveAbility.None, Enumerations.GetResolveAbilityFromString("####"));
+        }
     }
 }

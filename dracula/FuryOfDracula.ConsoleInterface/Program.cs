@@ -161,7 +161,7 @@ namespace FuryOfDracula.ConsoleInterface
         private static void SpendResolve(GameState game, string resolveName, string hunterIndex, DecisionMaker logic)
         {
             var hunterSpendingResolve = Hunter.Nobody;
-            int index;
+            int index = -2;
             if (int.TryParse(hunterIndex, out index))
             {
                 hunterSpendingResolve = game.GetHunterFromInt(index);
@@ -176,6 +176,10 @@ namespace FuryOfDracula.ConsoleInterface
                 line = Console.ReadLine();
                 if (int.TryParse(line, out index))
                 {
+                    if (index < -1 || index > 4)
+                    {
+                        index = -2;
+                    }
                     if (index == -1)
                     {
                         Console.WriteLine("Cancelled");
@@ -192,7 +196,7 @@ namespace FuryOfDracula.ConsoleInterface
             var ability = Enumerations.GetResolveAbilityFromString(resolveName);
             while (ability == ResolveAbility.None && line.ToLower() != "cancel")
             {
-                Console.WriteLine("What resolve ability if {0} using?", hunterSpendingResolve.Name());
+                Console.WriteLine("What resolve ability is {0} using?", hunterSpendingResolve.Name());
                 line = Console.ReadLine();
                 if (line.ToLower() == "cancel")
                 {
@@ -1459,7 +1463,7 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Handles the entirety of a hunter's move, including search, encounters, combat etc.
+        /// Handles the entirety of a hunter's move, including search, encounters, combat etc.
         /// </summary>
         /// <param name="game">The GameState</param>
         /// <param name="hunterIndex">The index of the Hunter (and group) to move</param>
@@ -1512,6 +1516,13 @@ namespace FuryOfDracula.ConsoleInterface
                 foreach (var enc in slotBeingRevealed.EncounterTiles)
                 {
                     encounterTilesToResolve.Add(enc);
+                }
+                if (game.Hunters[(int)hunterMoved].CurrentLocation == game.Dracula.LocationWhereHideWasUsed)
+                {
+                    foreach (var enc in game.Dracula.slotWhereHideCardIs().EncounterTiles)
+                    {
+                        encounterTilesToResolve.Add(enc);
+                    }
                 }
                 var hunterCanContinueToResolveEncounters = true;
                 while (encounterTilesToResolve.Count() > 0 && hunterCanContinueToResolveEncounters)
@@ -2931,7 +2942,7 @@ namespace FuryOfDracula.ConsoleInterface
             else
             {
                 game.Dracula.Trail[0].DraculaCards.First().IsRevealed = true;
-                Console.WriteLine("Dracula attacks!");
+                DrawGameState(game);
                 var huntersAttacked = new List<HunterPlayer>();
                 foreach (var h in game.Hunters)
                 {
@@ -2940,6 +2951,7 @@ namespace FuryOfDracula.ConsoleInterface
                         huntersAttacked.Add(h);
                     }
                 }
+                Console.WriteLine("Dracula attacks {0}{1}!", huntersAttacked.First().Hunter.Name(), huntersAttacked.Count > 1 ? " et al" : "");
                 ResolveCombat(game, huntersAttacked, Opponent.Dracula, logic);
             }
             if (game.Dracula.CurrentLocation == game.Dracula.LocationWhereHideWasUsed && power == Power.DoubleBack &&
