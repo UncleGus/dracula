@@ -30,11 +30,10 @@ namespace FuryOfDracula.GameLogic
 
         public static List<Power> GetAvailablePowers(TimeOfDay timeOfDay)
         {
-            var tempListOfPowers = new List<Power> { Power.DoubleBack, Power.Hide };
+            var tempListOfPowers = new List<Power> { Power.DoubleBack, Power.Hide, Power.DarkCall };
 
             if ((int)timeOfDay > 3)
             {
-                tempListOfPowers.Add(Power.DarkCall);
                 tempListOfPowers.Add(Power.Feed);
                 tempListOfPowers.Add(Power.WolfForm);
             }

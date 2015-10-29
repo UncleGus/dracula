@@ -44,9 +44,9 @@ namespace FuryOfDracula.ArtificialIntelligence
                 {
                     foreach (var card in game.Dracula.Trail[i].DraculaCards)
                     {
-                        possibleDestinations.Remove(card.Location);
-                        if (card.Location != Location.Nowhere)
+                        if (card.Location != Location.Nowhere && possibleDestinations.Contains(card.Location))
                         {
+                            possibleDestinations.Remove(card.Location);
                             possibleDoubleBackDestinations.Add(card.Location);
                         }
                         possibleWolfFormDestinations.Remove(card.Location);
@@ -60,10 +60,10 @@ namespace FuryOfDracula.ArtificialIntelligence
                 {
                     foreach (var card in game.Dracula.Catacombs[i].DraculaCards)
                     {
-                        possibleDestinations.Remove(card.Location);
-                        if (card.Location != Location.Nowhere)
+                        if (card.Location != Location.Nowhere && possibleDestinations.Contains(card.Location))
                         {
                             possibleDoubleBackDestinations.Add(card.Location);
+                            possibleDestinations.Remove(card.Location);
                         }
                         possibleWolfFormDestinations.Remove(card.Location);
                         possiblePowers.Remove(card.Power);
@@ -85,6 +85,10 @@ namespace FuryOfDracula.ArtificialIntelligence
             if (possibleWolfFormDestinations.Count() == 0)
             {
                 possiblePowers.Remove(Power.WolfForm);
+            }
+            if (game.Dracula.Blood < 3)
+            {
+                possiblePowers.Remove(Power.DarkCall);
             }
             var totalPossibleMoves = possibleDestinations.Count() + possiblePowers.Count();
             if (totalPossibleMoves == 0)

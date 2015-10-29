@@ -451,10 +451,19 @@ namespace FuryOfDracula.GameLogic
                 enc.IsRevealed = false;
                 game.EncounterPool.Add(enc);
             }
-            Trail[0] = new DraculaCardSlot(DraculaCardDeck.Find(card => card.Location == destination));
+            int i;
+            for (i = 0; i < 6; i++)
+            {
+                if (Trail[i] != null && Trail[i].DraculaCards.First().Location == CurrentLocation)
+                {
+                    break;
+                }
+            }
+            Trail[i] = new DraculaCardSlot(DraculaCardDeck.Find(card => card.Location == destination));
+
             if (destination == Location.CastleDracula)
             {
-                Trail[0].DraculaCards.First().IsRevealed = true;
+                Trail[i].DraculaCards.First().IsRevealed = true;
             }
             CurrentLocation = destination;
         }

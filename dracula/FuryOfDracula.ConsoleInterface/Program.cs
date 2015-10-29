@@ -564,6 +564,7 @@ namespace FuryOfDracula.ConsoleInterface
                 Console.WriteLine("What is the name of the Event being played?");
                 line = Console.ReadLine();
                 eventBeingPlayed = Enumerations.GetEventFromString(line);
+                Console.WriteLine(eventBeingPlayed.Name());
             }
             if (line.ToLower() == "cancel")
             {
@@ -582,7 +583,6 @@ namespace FuryOfDracula.ConsoleInterface
                 case Event.RufusSmith:
                 case Event.SisterAgatha:
                     PlayAlly(game, hunterPlayingEvent, eventBeingPlayed);
-                    DrawGameState(game);
                     break;
                 case Event.BloodTransfusion:
                     PlayBloodTransfusion(game, hunterPlayingEvent);
@@ -823,6 +823,7 @@ namespace FuryOfDracula.ConsoleInterface
         {
             if (DiscardUnknownItemFromHunter(game, game.Hunters[(int)hunterPlayingEvent]))
             {
+                Console.WriteLine("Now draw another card from the Item deck and shuffle it. You now have {0} Items", game.Hunters[(int)hunterPlayingEvent].ItemCount);
                 game.Hunters[(int)hunterPlayingEvent].DrawItemCard();
             }
         }
@@ -1125,12 +1126,12 @@ namespace FuryOfDracula.ConsoleInterface
 
         private static void PlayAlly(GameState game, Hunter hunterPlayingEvent, Event allyBeingPlayed)
         {
-            var hunterAllyEventCard = game.EventDiscard.Find(card => card.Event == allyBeingPlayed);
             if (game.HunterAlly != null)
             {
                 game.EventDiscard.Add(game.HunterAlly);
             }
-            game.HunterAlly = hunterAllyEventCard;
+            game.HunterAlly = game.EventDiscard.Find(card => card.Event == allyBeingPlayed);
+            game.EventDiscard.Remove(game.HunterAlly);
         }
 
         private static bool DraculaIsPlayingFalseTipoffToCancelCharteredCarriage(GameState game, DecisionMaker logic)
@@ -1242,6 +1243,7 @@ namespace FuryOfDracula.ConsoleInterface
             switch (itemBeingUsed)
             {
                 case Item.Dogs:
+                    Console.WriteLine("Dogs is now face up in front of {0}", hunterUsingItem.Name());
                     game.Hunters[(int)hunterUsingItem].SetDogsFaceUp(true);
                     AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)hunterUsingItem], Item.Dogs);
                     break;
@@ -1441,7 +1443,7 @@ namespace FuryOfDracula.ConsoleInterface
                 if (h != null && (h.Health == 0 || h.BiteCount == h.BitesRequiredToKill))
                 {
                     Console.WriteLine(
-                        "{0} has been defeated. All Items and Events discarded. Hunter moved to St. Joseph and St. Mary and must skip the next turn");
+                        "{0} has been defeated. All Items and Events discarded. Hunter moved to St. Joseph and St. Mary and must skip the next turn", h.Hunter.Name());
                     while (h.ItemCount > 0)
                     {
                         DiscardUnknownItemFromHunter(game, h);
@@ -1606,6 +1608,7 @@ namespace FuryOfDracula.ConsoleInterface
                 {
                     Console.WriteLine("Dracula has been here");
                 }
+                DrawGameState(game);
                 var encounterTilesToResolve = new List<EncounterTile>();
                 foreach (var enc in slotBeingRevealed.EncounterTiles)
                 {
@@ -2745,7 +2748,7 @@ namespace FuryOfDracula.ConsoleInterface
                 line = Console.ReadLine();
                 eventDrawn = Enumerations.GetEventFromString(line);
             } while (eventDrawn == Event.None && !"dracula".StartsWith(line.ToLower()));
-            if (eventDrawn == Event.None)
+            if (line.ToLower() == "dracula")
             {
                 var eventPlayedByDracula = game.Dracula.TakeEvent(game.EventDeck, game.EventDiscard);
                 PlayImmediatelyDraculaCard(game, eventPlayedByDracula, logic);
@@ -3027,6 +3030,20 @@ namespace FuryOfDracula.ConsoleInterface
                         game.Dracula.DiscardEncounterTileFromCardSlot(encounterTileToDiscard, game.Dracula.Trail[0],
                             game.EncounterPool);
                         break;
+                    case Power.Feed:
+                        game.Dracula.AdjustBlood(1);
+                        break;
+                    case Power.DarkCall:
+                        game.Dracula.AdjustBlood(-2);
+                        for (int i = 0; i < 10; i++)
+                        {
+                            game.Dracula.DrawEncounter(game.EncounterPool);
+                        }
+                        while (game.Dracula.EncounterHand.Count() > game.Dracula.EncounterHandSize)
+                        {
+                            game.Dracula.DiscardEncounterTile(game, logic.ChooseEncounterTileToDiscardFromEncounterHand(game));
+                        }
+                        break;
                 }
             }
             else
@@ -3257,9 +3274,18 @@ namespace FuryOfDracula.ConsoleInterface
             {
                 if (h != null)
                 {
-                    Console.WriteLine("{0} is in {1} with {2} Items and {3} Events, on {4} health with {5} bites",
-                        h.Hunter.Name(), h.CurrentLocation.Name(), h.ItemCount, h.EventCount, h.Health, h.BiteCount);
-                    if (h.ItemsKnownToDracula.Count() > 0 && argument1 == "debug")
+                    Console.WriteLine("{0} is in {1} with {2} Items and {3} Events, on {4} health with {5} bites{6}",
+                        h.Hunter.Name(), h.CurrentLocation.Name(), h.ItemCount, h.EventCount, h.Health, h.BiteCount, h.HasDogsFaceUp ? " and has Dogs face up" : "");
+                    if (h.EncountersInFrontOfPlayer.Any())
+                    {
+                        Console.Write("These Encounter tiles are in front of {0}: ", h.Hunter.Name());
+                        foreach (EncounterTile enc in h.EncountersInFrontOfPlayer)
+                        {
+                            Console.Write("{0}, ", enc.Encounter.Name());
+                        }
+                        Console.WriteLine("");
+                    }
+                    if (h.ItemsKnownToDracula.Any() && argument1 == "debug")
                     {
                         Console.Write("These Items held by {0} are known to Dracula: ", h.Hunter.Name());
                         foreach (var i in h.ItemsKnownToDracula)
@@ -3268,7 +3294,7 @@ namespace FuryOfDracula.ConsoleInterface
                         }
                         Console.WriteLine("");
                     }
-                    if (h.EventsKnownToDracula.Count() > 0 && argument1 == "debug")
+                    if (h.EventsKnownToDracula.Any() && argument1 == "debug")
                     {
                         Console.Write("These Events held by {0} are known to Dracula: ", h.Hunter.Name());
                         foreach (var e in h.EventsKnownToDracula)
@@ -3607,6 +3633,7 @@ namespace FuryOfDracula.ConsoleInterface
             {
                 command = line;
             }
+            line = line.Replace('_', ' ');
 
             try
             {
@@ -3625,6 +3652,9 @@ namespace FuryOfDracula.ConsoleInterface
             {
                 argument1 = "####";
             }
+            line = line.Replace('_', ' ');
+            argument1= argument1.Replace('_', ' ');
+            argument2 = argument2.Replace('_', ' ');
 
             return new CommandSet(command.ToLower(), argument1.ToLower(), argument2.ToLower());
         }
@@ -3661,6 +3691,7 @@ namespace FuryOfDracula.ConsoleInterface
                 }
                 if (answer > 0)
                 {
+                    answer = -1;
                     var line = "";
                     Console.WriteLine("What Event is {0} playing? (cancel to cancel)", ((Hunter)answer).Name());
                     var eventBeingPlayed = Event.None;
@@ -3684,8 +3715,7 @@ namespace FuryOfDracula.ConsoleInterface
                                     !DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.AdvancePlanning,
                                         Event.AdvancePlanning, logic))
                                 {
-                                    Console.WriteLine("{0}'s combat rolls are at +1 for this combat",
-                                        ((Hunter)answer).Name());
+                                    Console.WriteLine("One participant of your choice has combat rolls at +1 for this combat");
                                 }
                                 else
                                 {
@@ -3733,18 +3763,15 @@ namespace FuryOfDracula.ConsoleInterface
                 }
             } while (answer != 0);
             answer = -1;
-            do
+            if (opponent == Opponent.Dracula || opponent == Opponent.NewVampire)
             {
-                Console.WriteLine(
-                    "Is anyone playing Garlic at the start of this combat? 0= Nobody, {0}= {1}, {2}= {3}, {4}= {5}, {6}= {7}",
-                    (int)Hunter.LordGodalming, Hunter.LordGodalming.Name(), (int)Hunter.DrSeward,
-                    Hunter.DrSeward.Name(), (int)Hunter.VanHelsing, Hunter.VanHelsing.Name(), (int)Hunter.MinaHarker,
-                    Hunter.MinaHarker.Name());
+                Console.WriteLine("Is anyone playing Garlic at the start of this combat? 0= Nobody, {0}{1}{2}{3}", huntersInvolved.Find(h => h.Hunter == Hunter.LordGodalming) == null ? "" : "1= Lord Godalming", huntersInvolved.Find(h => h.Hunter == Hunter.DrSeward) == null ? "" : "2= Dr. Seward", huntersInvolved.Find(h => h.Hunter == Hunter.VanHelsing) == null ? "" : "3= Van Helsing", huntersInvolved.Find(h => h.Hunter == Hunter.MinaHarker) == null ? "" : "4= Mina Harker");
+                    
                 while (answer == -1)
                 {
                     if (int.TryParse(Console.ReadLine(), out answer))
                     {
-                        if (answer < 0 || answer > 4)
+                        if (answer < 0 || answer > 4 || huntersInvolved.Find(h => (int)h.Hunter == answer) == null)
                         {
                             answer = -1;
                         }
@@ -3752,6 +3779,7 @@ namespace FuryOfDracula.ConsoleInterface
                 }
                 if (answer > 0)
                 {
+                    answer = -1;
                     game.Hunters[answer].DiscardItem(game, Item.Garlic);
                     roundsWithoutEscaping = 3;
                 }
@@ -3896,7 +3924,7 @@ namespace FuryOfDracula.ConsoleInterface
                 var index = 0;
                 do
                 {
-                    Console.WriteLine("What was the outcome? 1= Continue 2= Repel 3= Item destroyed 4= End");
+                    Console.WriteLine("What was the outcome? 1= Continue 2= Repel 3= Item destroyed or Event discarded 4= End");
                     line = Console.ReadLine();
                     if (int.TryParse(line, out index))
                     {
@@ -3914,17 +3942,17 @@ namespace FuryOfDracula.ConsoleInterface
                         repelled = true;
                         break;
                     case 3:
-                        HunterPlayer hunterToDiscardItem = null;
+                        HunterPlayer hunterToDiscardCard = null;
                         if (huntersInvolved.Count == 1)
                         {
-                            hunterToDiscardItem = huntersInvolved.First();
+                            hunterToDiscardCard = huntersInvolved.First();
                         }
                         else
                         {
                             var hunterIndex = 0;
                             do
                             {
-                                Console.Write("Whose Item was destroyed? ");
+                                Console.Write("Whose card is being discarded? ");
                                 foreach (var h in huntersInvolved)
                                 {
                                     Console.Write("{0}= {1} ", (int)h.Hunter, h.Hunter.Name());
@@ -3936,21 +3964,30 @@ namespace FuryOfDracula.ConsoleInterface
                                     {
                                         if ((int)h.Hunter == hunterIndex)
                                         {
-                                            hunterToDiscardItem = h;
+                                            hunterToDiscardCard = h;
                                             break;
                                         }
                                     }
                                 }
-                            } while (hunterToDiscardItem == null);
+                            } while (hunterToDiscardCard == null);
                         }
                         var itemDestroyed = Item.None;
-                        while (itemDestroyed == Item.None)
+                        var eventDiscarded = Event.None;
+                        while (itemDestroyed == Item.None && eventDiscarded == Event.None)
                         {
-                            Console.WriteLine("What Item was destroyed?");
+                            Console.WriteLine("What card was discarded?");
                             line = Console.ReadLine();
                             itemDestroyed = Enumerations.GetItemFromString(line);
+                            eventDiscarded = Enumerations.GetEventFromString(line);
                         }
-                        hunterToDiscardItem.DiscardItem(game, itemDestroyed);
+                        if (itemDestroyed != Item.None)
+                        {
+                            hunterToDiscardCard.DiscardItem(game, itemDestroyed);
+                        }
+                        else if (eventDiscarded != Event.None)
+                        {
+                            hunterToDiscardCard.DiscardEvent(game, eventDiscarded);
+                        }
                         break;
                     case 4:
                         continueCombat = false;
@@ -3998,7 +4035,7 @@ namespace FuryOfDracula.ConsoleInterface
                     game.AdjustVampires(-1);
                 }
                 Console.WriteLine(
-                    "Don't forget to register any cards discarded, such as Great Strength used to prevent health loss, Items due to enemy Knife wounds, Items consumed");
+                    "Don't forget to register any cards discarded, such as Great Strength used to prevent health loss, Events due to enemy Knife wounds, Items consumed, etc.");
                 return true;
             }
             if (opponent == Opponent.Dracula)
