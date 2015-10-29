@@ -175,11 +175,12 @@ namespace FuryOfDracula.GameLogic
             return -1;
         }
 
-        public void DiscardEvent(Event eventToDiscard, List<EventCard> discardPile)
+        public Event DiscardEvent(Event eventToDiscard, List<EventCard> discardPile)
         {
             var eventCardToDiscard = EventHand.Find(card => card.Event == eventToDiscard);
             EventHand.Remove(eventCardToDiscard);
             discardPile.Add(eventCardToDiscard);
+            return eventCardToDiscard.Event;
         }
 
         public void DiscardCatacombsCards(GameState game, List<int> list)
@@ -302,7 +303,7 @@ namespace FuryOfDracula.GameLogic
                 cardDrawn = eventDeck[new Random().Next(0, eventDeck.Count())];
             } while (!cardDrawn.IsDraculaCard);
             eventDeck.Remove(cardDrawn);
-            if (cardDrawn.EventType == EventType.PlayImmediately)
+            if (cardDrawn.EventType == EventType.PlayImmediately || cardDrawn.EventType == EventType.Ally)
             {
                 eventDiscard.Add(cardDrawn);
                 return cardDrawn.Event;
@@ -559,6 +560,18 @@ namespace FuryOfDracula.GameLogic
                 }
             }
             return new DraculaCardSlot(new DraculaCard("NOW", Location.Nowhere, Power.None));
+        }
+
+        public int PositionWhereHideCardIs()
+        {
+            for (int i = 0; i < 6; i ++)
+            {
+                if (Trail[i] != null && Trail[i].DraculaCards.First().Power == Power.Hide)
+                {
+                    return i;
+                }
+            }
+            return -1;
         }
     }
 }

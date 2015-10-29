@@ -32,7 +32,7 @@ namespace FuryOfDracula.ConsoleInterface
             }
             catch (Exception e)
             {
-                Console.WriteLine("File {0} could not be loaded because {1}", fileName, e.Message);
+                throw e;
             }
             return tempGame;
         }

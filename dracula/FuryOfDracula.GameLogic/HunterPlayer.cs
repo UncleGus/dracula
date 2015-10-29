@@ -30,12 +30,15 @@ namespace FuryOfDracula.GameLogic
         public Hunter Hunter { get; private set; }
 
         [DataMember]
+        public int MaxHealth { get; private set; }
+
+        [DataMember]
         public int Health
         {
             get { return _health; }
             private set
             {
-                if (value > MaxHealth)
+                if (value > MaxHealth && MaxHealth > 0)
                 {
                     _health = MaxHealth;
                 }
@@ -49,9 +52,6 @@ namespace FuryOfDracula.GameLogic
                 }
             }
         }
-
-        [DataMember]
-        public int MaxHealth { get; private set; }
 
         [DataMember]
         public int BiteCount

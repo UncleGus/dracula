@@ -96,9 +96,7 @@ namespace FuryOfDracula.ArtificialIntelligence
                 power = Power.None;
                 return Location.Nowhere;
             }
-
-            var randomNumber = new Random().Next(0, totalPossibleMoves);
-            if (randomNumber < possibleDestinations.Count())
+            if (possibleDestinations.Any() && new Random().Next(0, 4) > 0)
             {
                 do
                 {
