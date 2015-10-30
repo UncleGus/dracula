@@ -7,6 +7,8 @@ namespace FuryOfDracula.ArtificialIntelligence
 {
     public class DecisionMaker
     {
+        private List<PossibleTrail> possibilityTree = new List<PossibleTrail>();
+
         public Location ChooseDestinationAndPower(GameState game, out Power power)
         {
             Location destination;
@@ -203,7 +205,26 @@ namespace FuryOfDracula.ArtificialIntelligence
             game.Hunters[(int)Hunter.DrSeward].CurrentLocation == startLocation ||
             game.Hunters[(int)Hunter.VanHelsing].CurrentLocation == startLocation ||
             game.Hunters[(int)Hunter.MinaHarker].CurrentLocation == startLocation);
+            possibilityTree = initialisePossibilityTree(game, startLocation);
             return startLocation;
+        }
+
+        private List<PossibleTrail> initialisePossibilityTree(GameState game, Location startLocation)
+        {
+            List<PossibleTrail> newPossibilityTree = new List<PossibleTrail>();
+            List<Location> allLocations = Enumerations.GetAllLocations();
+            foreach (Location loc in allLocations)
+            {
+                if ((game.Map.TypeOfLocation(loc) == LocationType.SmallCity || game.Map.TypeOfLocation(loc) == LocationType.LargeCity) &&
+                    loc != game.Hunters[(int)Hunter.LordGodalming].CurrentLocation &&
+                    loc != game.Hunters[(int)Hunter.DrSeward].CurrentLocation &&
+                    loc != game.Hunters[(int)Hunter.VanHelsing].CurrentLocation &&
+                    loc != game.Hunters[(int)Hunter.MinaHarker].CurrentLocation)
+                {
+                    newPossibilityTree.Add(new PossibleTrail(loc, Power.None));
+                }
+            }
+            return newPossibilityTree;
         }
 
         public int ChooseToPutDroppedOffCardInCatacombs(GameState game, DraculaCardSlot cardDroppedOffTrail)
@@ -505,7 +526,7 @@ namespace FuryOfDracula.ArtificialIntelligence
         public Location ChoosePortToMoveHuntersToWithControlStorms(GameState game, Hunter hunterMoved)
         {
             var validPorts = new List<Location>();
-            var connectedSeaLocations = new List<Location> {game.Hunters[(int) hunterMoved].CurrentLocation};
+            var connectedSeaLocations = new List<Location> { game.Hunters[(int)hunterMoved].CurrentLocation };
             var seaExtension = new List<Location>();
             for (var i = 0; i < 2; i++)
             {
@@ -558,16 +579,16 @@ namespace FuryOfDracula.ArtificialIntelligence
         {
             var haveCard = game.Dracula.EventHand.Find(card => card.Event == Event.CustomsSearch) != null;
             var hunterWasAtSea = game.Map.TypeOfLocation(origin) == LocationType.Sea;
-            var hunterIsNowOnLand = game.Map.TypeOfLocation(game.Hunters[(int) hunterMoved].CurrentLocation) ==
+            var hunterIsNowOnLand = game.Map.TypeOfLocation(game.Hunters[(int)hunterMoved].CurrentLocation) ==
                                     LocationType.SmallCity ||
-                                    game.Map.TypeOfLocation(game.Hunters[(int) hunterMoved].CurrentLocation) ==
+                                    game.Map.TypeOfLocation(game.Hunters[(int)hunterMoved].CurrentLocation) ==
                                     LocationType.LargeCity;
-            var hunterMovedAcrossLand = game.Map.TypeOfLocation(game.Hunters[(int) hunterMoved].CurrentLocation) !=
+            var hunterMovedAcrossLand = game.Map.TypeOfLocation(game.Hunters[(int)hunterMoved].CurrentLocation) !=
                                         LocationType.Sea && game.Map.TypeOfLocation(origin) != LocationType.Sea;
             var hunterCrossedBorder = game.Map.IsEastern(origin) !=
-                                      game.Map.IsEastern(game.Hunters[(int) hunterMoved].CurrentLocation);
+                                      game.Map.IsEastern(game.Hunters[(int)hunterMoved].CurrentLocation);
             var destinationHasEncounters =
-                game.Dracula.NumberOfEncountersAtLocation(game.Hunters[(int) hunterMoved].CurrentLocation) > 0;
+                game.Dracula.NumberOfEncountersAtLocation(game.Hunters[(int)hunterMoved].CurrentLocation) > 0;
             if (haveCard && !destinationHasEncounters &&
                 ((hunterWasAtSea && hunterIsNowOnLand) || (hunterMovedAcrossLand && hunterCrossedBorder)) &&
                 new Random().Next(0, 2) == 0)
@@ -590,7 +611,7 @@ namespace FuryOfDracula.ArtificialIntelligence
         public bool ChooseToPlayControlStorms(GameState game, Hunter hunterMoved)
         {
             if (game.Dracula.EventHand.Find(card => card.Event == Event.ControlStorms) != null &&
-                game.Map.TypeOfLocation(game.Hunters[(int) hunterMoved].CurrentLocation) == LocationType.Sea &&
+                game.Map.TypeOfLocation(game.Hunters[(int)hunterMoved].CurrentLocation) == LocationType.Sea &&
                 new Random().Next(0, 2) == 0)
             {
                 return true;
@@ -619,13 +640,13 @@ namespace FuryOfDracula.ArtificialIntelligence
 
         public Item ChooseItemToDiscardWithRage(GameState game, Hunter rageTarget)
         {
-            if (game.Hunters[(int) rageTarget].ItemCount == 0)
+            if (game.Hunters[(int)rageTarget].ItemCount == 0)
             {
                 return Item.None;
             }
             return
-                game.Hunters[(int) rageTarget].ItemsKnownToDracula[
-                    new Random().Next(0, game.Hunters[(int) rageTarget].ItemsKnownToDracula.Count())].Item;
+                game.Hunters[(int)rageTarget].ItemsKnownToDracula[
+                    new Random().Next(0, game.Hunters[(int)rageTarget].ItemsKnownToDracula.Count())].Item;
         }
 
         public Hunter ChooseToPlayRage(GameState game, List<HunterPlayer> huntersInvolved)
@@ -679,7 +700,195 @@ namespace FuryOfDracula.ArtificialIntelligence
 
         public Hunter ChooseVictimForQuinceyPMorris(GameState game)
         {
-            return (Hunter) (new Random().Next(1, 5));
+            return (Hunter)(new Random().Next(1, 5));
+        }
+
+        private List<PossibleTrail> prunePossibilityTree(List<PossibleTrail> possibilityTree, Location location, Power power, int index)
+        {
+            List<PossibleTrail> prunedTree = new List<PossibleTrail>();
+            foreach (PossibleTrail trail in possibilityTree)
+            {
+                if (trail.Trail[index] != null && trail.Trail[index].Location == location && trail.Trail[index].Power == power)
+                {
+                    prunedTree.Add(trail);
+                }
+            }
+            return prunedTree;
+        }
+
+        private List<PossibleTrail> extendPossibilityTree(GameState game, List<PossibleTrail> possibilityTree, LocationType cardType, Power power, int doubleBackIndex)
+        {
+            List<PossibleTrail> extendedTree = new List<PossibleTrail>();
+            if (cardType == LocationType.SmallCity)
+            {
+                foreach (PossibleTrail trail in possibilityTree)
+                {
+                    Location originatingLocation = Location.Nowhere;
+                    for (int i = 0; i < 6; i++)
+                    {
+                        if (trail.Trail[i].Location != Location.Nowhere)
+                        {
+                            originatingLocation = trail.Trail[i].Location;
+                            break;
+                        }
+                        List<Location> possibleNewLocations = game.Map.LocationsConnectedByRoadTo(originatingLocation);
+                        foreach (Location loc in possibleNewLocations)
+                        {
+                            if (!trail.Contains(loc) &&
+                                game.Hunters[(int)Hunter.LordGodalming].CurrentLocation != loc &&
+                                game.Hunters[(int)Hunter.DrSeward].CurrentLocation != loc &&
+                                game.Hunters[(int)Hunter.VanHelsing].CurrentLocation != loc &&
+                                game.Hunters[(int)Hunter.MinaHarker].CurrentLocation != loc &&
+                                game.HeavenlyHostLocation1 != loc &&
+                                game.HeavenlyHostLocation2 != loc &&
+                                game.ConsecratedGroundLocation != loc)
+                            {
+                                PossibleTrail extendedTrail = new PossibleTrail();
+                                for (int j = 5; j > 0; j--)
+                                {
+                                    extendedTrail.Trail[j] = trail.Trail[j - 1];
+                                }
+                                extendedTrail.Trail[0] = new PossibleTrailSlot(loc, Power.None);
+                                extendedTree.Add(extendedTrail);
+                            }
+                        }
+                        if (!trail.Contains(Power.Hide))
+                        {
+                            PossibleTrail extendedTrail = new PossibleTrail();
+                            for (int j = 5; j > 0; j--)
+                            {
+                                extendedTrail.Trail[j] = trail.Trail[j - 1];
+                            }
+                            extendedTrail.Trail[0] = new PossibleTrailSlot(Location.Nowhere, Power.Hide);
+                            extendedTree.Add(extendedTrail);
+                        }
+                    }
+                }
+                return extendedTree;
+            }
+            if (cardType == LocationType.Sea)
+            {
+                foreach (PossibleTrail trail in possibilityTree)
+                {
+                    Location originatingLocation = Location.Nowhere;
+                    for (int i = 0; i < 6; i++)
+                    {
+                        if (trail.Trail[i].Location != Location.Nowhere)
+                        {
+                            originatingLocation = trail.Trail[i].Location;
+                            break;
+                        }
+                        List<Location> possibleNewLocations = game.Map.LocationsConnectedBySeaTo(originatingLocation);
+                        foreach (Location loc in possibleNewLocations)
+                        {
+                            if (!trail.Contains(loc) && game.Map.TypeOfLocation(loc) == LocationType.Sea)
+                            {
+                                PossibleTrail extendedTrail = new PossibleTrail();
+                                for (int j = 5; j > 0; j--)
+                                {
+                                    extendedTrail.Trail[j] = trail.Trail[j - 1];
+                                }
+                                extendedTrail.Trail[0] = new PossibleTrailSlot(loc, Power.None);
+                                extendedTree.Add(extendedTrail);
+                            }
+                        }
+                    }
+                }
+                return extendedTree;
+            }
+            switch (power)
+            {
+                case Power.DarkCall:
+                case Power.Feed:
+                    foreach (PossibleTrail trail in possibilityTree)
+                    {
+                        PossibleTrail extendedTrail = new PossibleTrail();
+                        for (int j = 5; j > 0; j--)
+                        {
+                            extendedTrail.Trail[j] = trail.Trail[j - 1];
+                        }
+                        extendedTrail.Trail[0] = new PossibleTrailSlot(Location.Nowhere, power);
+                        extendedTree.Add(extendedTrail);
+                    }
+                    return extendedTree;
+                case Power.DoubleBack:
+                    foreach (PossibleTrail trail in possibilityTree)
+                    {
+                        PossibleTrail extendedTrail = new PossibleTrail();
+                        for (int i = 5; i > doubleBackIndex; i--)
+                        {
+                            extendedTrail.Trail[i] = trail.Trail[i];
+                        }
+                        for (int i = doubleBackIndex; i > 0; i--)
+                        {
+                            extendedTrail.Trail[i] = trail.Trail[i - 1];
+                        }
+                        extendedTrail.Trail[0] = trail.Trail[doubleBackIndex];
+                        extendedTrail.Trail[0].Power = Power.DoubleBack;
+                        extendedTree.Add(extendedTrail);
+                    }
+                    return extendedTree;
+                case Power.WolfForm:
+                    foreach (PossibleTrail trail in possibilityTree)
+                    {
+                        Location originatingLocation = Location.Nowhere;
+                        List<Location> possibleDestinations = new List<Location>();
+                        for (int i = 0; i < 6; i++)
+                        {
+                            if (trail.Trail[i].Location != Location.Nowhere)
+                            {
+                                originatingLocation = trail.Trail[i].Location;
+                                break;
+                            }
+                            List<Location> firstTierExtension = game.Map.LocationsConnectedByRoadTo(originatingLocation);
+                            foreach (Location loc in firstTierExtension)
+                            {
+                                if (game.HeavenlyHostLocation1 != loc &&
+                                    game.HeavenlyHostLocation2 != loc &&
+                                    game.ConsecratedGroundLocation != loc)
+                                {
+                                    firstTierExtension.Add(loc);
+                                    if (!trail.Contains(loc) &&
+                                game.Hunters[(int)Hunter.LordGodalming].CurrentLocation != loc &&
+                                game.Hunters[(int)Hunter.DrSeward].CurrentLocation != loc &&
+                                game.Hunters[(int)Hunter.VanHelsing].CurrentLocation != loc &&
+                                game.Hunters[(int)Hunter.MinaHarker].CurrentLocation != loc)
+                                    {
+                                        possibleDestinations.Add(loc);
+                                    }
+                                }
+                                foreach (Location l in firstTierExtension)
+                                {
+                                    if (!trail.Contains(l) &&
+                                game.Hunters[(int)Hunter.LordGodalming].CurrentLocation != l &&
+                                game.Hunters[(int)Hunter.DrSeward].CurrentLocation != l &&
+                                game.Hunters[(int)Hunter.VanHelsing].CurrentLocation != l &&
+                                game.Hunters[(int)Hunter.MinaHarker].CurrentLocation != l &&
+                                game.HeavenlyHostLocation1 != l &&
+                                    game.HeavenlyHostLocation2 != l &&
+                                    game.ConsecratedGroundLocation != l &&
+                                        !possibleDestinations.Contains(l))
+                                    {
+                                        possibleDestinations.Add(l);
+                                    }
+
+                                }
+                            }
+                        }
+                        foreach (Location loc in possibleDestinations)
+                        {
+                            PossibleTrail extendedTrail = new PossibleTrail();
+                            for (int j = 5; j > 0; j--)
+                            {
+                                extendedTrail.Trail[j] = trail.Trail[j - 1];
+                            }
+                            extendedTrail.Trail[0] = new PossibleTrailSlot(loc, Power.WolfForm);
+                            extendedTree.Add(extendedTrail);
+                        }
+                    }
+                    return extendedTree;
+            }
+            return extendedTree;
         }
     }
 }
