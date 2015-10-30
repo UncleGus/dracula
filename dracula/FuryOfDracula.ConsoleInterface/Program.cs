@@ -66,31 +66,32 @@ namespace FuryOfDracula.ConsoleInterface
 
                 switch (commandSet.command)
                 {
+                    case "w":
+                    case "water": UseHolyWaterAtHospital(game, commandSet.argument1); break;
                     case "h":
-                    case "help": DisplayHelp(); break;
+                    case "help":
+                        DisplayHelp(); break;
                     case "f":
-                    case "front": HandleEncountersInFrontOfHunter(game, commandSet.argument1, logic); break;
-                    case "shuffle": ShuffleDeck(game, commandSet.argument1); break;
+                    case "front":
+                        HandleEncountersInFrontOfHunter(game, commandSet.argument1, logic); break;
+                    case "y":
+                    case "cycle":
+                        CycleDeck(game, commandSet.argument1); break;
                     case "s":
                     case "resolve":
-                        SpendResolve(game, commandSet.argument1, commandSet.argument2, logic);
-                        break;
+                        SpendResolve(game, commandSet.argument1, commandSet.argument2, logic); break;
                     case "c":
                     case "catch":
-                        CatchTrain(game, commandSet.argument1, logic);
-                        break;
+                        CatchTrain(game, commandSet.argument1, logic); break;
                     case "e":
                     case "event":
-                        PlayEvent(game, commandSet.argument1, commandSet.argument2, logic);
-                        break;
+                        PlayEvent(game, commandSet.argument1, commandSet.argument2, logic); break;
                     case "u":
                     case "use":
-                        UseItem(game, commandSet.argument1, commandSet.argument2);
-                        break;
+                        UseItem(game, commandSet.argument1, commandSet.argument2); break;
                     case "g":
                     case "group":
-                        SetupGroup(game, commandSet.argument1);
-                        break;
+                        SetupGroup(game, commandSet.argument1); break;
                     case "t":
                     case "take":
                         var eventPlayedByDracula = game.Dracula.TakeEvent(game.EventDeck, game.EventDiscard);
@@ -98,55 +99,86 @@ namespace FuryOfDracula.ConsoleInterface
                         while (game.Dracula.EventHand.Count() > game.Dracula.EventHandSize)
                         {
                             Console.WriteLine("Dracula discarded {0}", game.Dracula.DiscardEvent(logic.ChooseEventToDiscard(game), game.EventDiscard).Name());
-                        };
-                        break;
+                        }; break;
                     case "reveal":
-                        RevealCardInTrailAtPosition(game, commandSet.argument1);
-                        break;
+                        RevealCardInTrailAtPosition(game, commandSet.argument1); break;
                     case "z":
                     case "end":
-                        EndHunterTurn(game, logic);
-                        break;
+                        EndHunterTurn(game, logic); break;
                     case "state":
-                        DisplayState(game, commandSet.argument1);
-                        break;
+                        DisplayState(game, commandSet.argument1); break;
                     case "a":
                     case "discard":
-                        DiscardCard(game, commandSet.argument1, commandSet.argument2);
-                        break;
+                        DiscardCard(game, commandSet.argument1, commandSet.argument2); break;
                     case "d":
                     case "draw":
                         DrawCard(game, commandSet.argument1, commandSet.argument2);
                         CheckForDiscardRequired(game);
-                        CheckForCardsRevealedForBeingBitten(game);
-                        break;
+                        CheckForCardsRevealedForBeingBitten(game); break;
                     case "save":
-                        SaveGameState(game, commandSet.argument1);
-                        break;
+                        SaveGameState(game, commandSet.argument1); break;
                     case "load":
-                        try {
+                        try
+                        {
                             game = new FileLoader().LoadGameState(commandSet.argument1);
                         }
                         catch (Exception e)
                         {
                             Console.WriteLine(e.Message);
                             Environment.Exit(10);
-                        }
-                        break;
+                        } break;
                     case "m":
                     case "move":
-                        HandleMoveOperation(game, commandSet.argument1, commandSet.argument2, logic);
-                        break;
+                        HandleMoveOperation(game, commandSet.argument1, commandSet.argument2, logic); break;
                     case "exit":
-                        Console.WriteLine("Fare well");
-                        break;
+                        Console.WriteLine("Fare well"); break;
                     default:
-                        Console.WriteLine("I didn't understand that");
-                        break;
+                        Console.WriteLine("I didn't understand that"); break;
                 }
             } while (commandSet.command != "exit");
         }
 
+        private static void UseHolyWaterAtHospital(GameState game, string hunterIndex)
+        {
+            var hunterUsingHolyWater = Hunter.Nobody;
+            int index = -2;
+            if (int.TryParse(hunterIndex, out index))
+            {
+                hunterUsingHolyWater = game.GetHunterFromInt(index);
+            }
+            var line = "";
+            while (hunterUsingHolyWater == Hunter.Nobody && index != -1)
+            {
+                Console.WriteLine("Who is using the Holy Water font? {0}= {1}, {2}= {3}, {4}= {5}, {6}= {7} (-1 to cancel)",
+                    (int)Hunter.LordGodalming, Hunter.LordGodalming.Name(), (int)Hunter.DrSeward,
+                    Hunter.DrSeward.Name(), (int)Hunter.VanHelsing, Hunter.VanHelsing.Name(), (int)Hunter.MinaHarker,
+                    Hunter.MinaHarker.Name());
+                line = Console.ReadLine();
+                if (int.TryParse(line, out index))
+                {
+                    if (index < -1 || index > 4)
+                    {
+                        index = -2;
+                    }
+                    if (index == -1)
+                    {
+                        Console.WriteLine("Cancelled");
+                        return;
+                    }
+                    hunterUsingHolyWater = game.GetHunterFromInt(index);
+                    Console.WriteLine(hunterUsingHolyWater.Name());
+                }
+                else
+                {
+                    Console.WriteLine("I didn't understand that");
+                }
+            }
+            UseHolyWaterOnHunter(game, hunterUsingHolyWater);
+        }
+
+        /// <summary>
+        /// Displays help text to the user
+        /// </summary>
         private static void DisplayHelp()
         {
             Console.WriteLine("Commands can be written as the full word or the letter in brackets:");
@@ -160,6 +192,7 @@ namespace FuryOfDracula.ConsoleInterface
             Console.WriteLine("Group: Set up a Hunter (G)roup");
             Console.WriteLine("Resolve: (S)pend resolve");
             Console.WriteLine("Front: Resolve an Encounter in (F)ront of a Hunter");
+            Console.WriteLine("Water: Use Holy (W)ater font at the Hospital");
             Console.WriteLine("Cycle: C(Y)cle a card discard back into a new deck");
             Console.WriteLine("State: Show the state of the game");
             Console.WriteLine("Save: Save the game to a file");
@@ -167,9 +200,17 @@ namespace FuryOfDracula.ConsoleInterface
             Console.WriteLine("Help: Display this (H)elp text");
             Console.WriteLine("");
             Console.WriteLine("Commands that ask additional questions can also be answered in advance");
-            Console.WriteLine("e.g. \"m san 2\" would move Dr. Seward to Santander");
+            Console.WriteLine("e.g. \"e news 2\" play Newspaper Reports from Dr. Seward");
+            Console.WriteLine("When you need a space in an argument, use an underscore instead");
+            Console.WriteLine("e.g. \"m le_ha 4\" to move Mina Harker to Le Havre");
         }
 
+        /// <summary>
+        /// Resolves EncounterTiles in front of a Hunter
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterIndex">The string to be converted to a Hunter</param>
+        /// <param name="logic">The artificial intelligence component</param>
         private static void HandleEncountersInFrontOfHunter(GameState game, string hunterIndex, DecisionMaker logic)
         {
             var hunterWithEncounter = Hunter.Nobody;
@@ -225,7 +266,12 @@ namespace FuryOfDracula.ConsoleInterface
             }
         }
 
-        private static void ShuffleDeck(GameState game, string deckType)
+        /// <summary>
+        /// Cycles a discard pile into a new deck
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="deckType">The string to be converted to the type of deck being cycled</param>
+        private static void CycleDeck(GameState game, string deckType)
         {
             while (deckType.ToLower() != "cancel")
             {
@@ -248,6 +294,13 @@ namespace FuryOfDracula.ConsoleInterface
             Console.WriteLine("Cancelled");
         }
 
+        /// <summary>
+        /// For spending a Resolve point by a Hunter
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="resolveName">A string to be converted to the ResolveAbility being used</param>
+        /// <param name="hunterIndex">A string to be converted to the Hunter spending Resolve</param>
+        /// <param name="logic">The artificial intelligence component</param>
         private static void SpendResolve(GameState game, string resolveName, string hunterIndex, DecisionMaker logic)
         {
             var hunterSpendingResolve = Hunter.Nobody;
@@ -301,7 +354,7 @@ namespace FuryOfDracula.ConsoleInterface
                     PlayNewsPaperReports(game, hunterSpendingResolve, logic);
                     break;
                 case ResolveAbility.InnerStrength:
-                    PlayInnerStrength(game);
+                    PlayInnerStrength(game, hunterSpendingResolve);
                     break;
                 case ResolveAbility.SenseOfEmergency:
                     PlaySenseOfEmergency(game, hunterSpendingResolve, logic);
@@ -310,55 +363,47 @@ namespace FuryOfDracula.ConsoleInterface
             game.AdjustResolve(-1);
         }
 
-        private static void PlayInnerStrength(GameState game)
+        /// <summary>
+        /// Spends a point of Resolve using the Inner Strength ability
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterSpendingResolve">The Hunter spending the resolve and being healed</param>
+        private static void PlayInnerStrength(GameState game, Hunter hunterSpendingResolve)
         {
-            Console.WriteLine("Who is being healed? {0}= {1}, {2}= {3}, {4}= {5}, {6}= {7} (-1 to cancel)",
-                (int)Hunter.LordGodalming, Hunter.LordGodalming.Name(), (int)Hunter.DrSeward, Hunter.DrSeward.Name(),
-                (int)Hunter.VanHelsing, Hunter.VanHelsing.Name(), (int)Hunter.MinaHarker, Hunter.MinaHarker.Name());
-            var line = Console.ReadLine();
-            var index = -2;
-            if (int.TryParse(line, out index))
-            {
-                var hunterBeingHealed = Hunter.Nobody;
-                if (index == -1)
-                {
-                    Console.WriteLine("Cancelled");
-                    return;
-                }
-                hunterBeingHealed = game.GetHunterFromInt(index);
-                Console.WriteLine(hunterBeingHealed.Name());
-            }
-            else
-            {
-                Console.WriteLine("I didn't understand that");
-            }
-            game.Hunters[index].AdjustHealth(4);
+            game.Hunters[(int)hunterSpendingResolve].AdjustHealth(4);
+            Console.WriteLine("{0} now has {1} health", hunterSpendingResolve.Name(), game.Hunters[(int)hunterSpendingResolve].Health);
         }
 
+        /// <summary>
+        /// Checks if a card drawn by Dracula can be played immediately and resolves it if so
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="eventPlayedByDracula">The Event to assess</param>
+        /// <param name="logic">The artificial intelligence component</param>
         private static void PlayImmediatelyDraculaCard(GameState game, Event eventPlayedByDracula, DecisionMaker logic)
         {
             switch (eventPlayedByDracula)
             {
                 case Event.NightVisit:
-                    PlayNightVisit(game, logic);
-                    break;
+                    PlayNightVisit(game, logic); break;
                 case Event.VampiricInfluence:
-                    PlayVampiricInfluence(game, logic);
-                    break;
+                    PlayVampiricInfluence(game, logic); break;
                 case Event.Evasion:
-                    PlayEvasion(game, logic);
-                    break;
+                    PlayEvasion(game, logic); break;
                 case Event.QuinceyPMorris:
                 case Event.ImmanuelHildesheim:
                 case Event.DraculasBrides:
-                    PlayAlly(game, eventPlayedByDracula, logic);
-                    break;
+                    PlayDraculaAlly(game, eventPlayedByDracula, logic); break;
                 default:
-                    Console.WriteLine("Dracula drew an Event card into his hand");
-                    break;
+                    Console.WriteLine("Dracula drew an Event card into his hand"); break;
             }
         }
 
+        /// <summary>
+        /// Resolves the Evasion Event card
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="logic">The artificial intelligence component</param>
         private static void PlayEvasion(GameState game, DecisionMaker logic)
         {
             Console.WriteLine("Dracula played Evasion");
@@ -381,6 +426,11 @@ namespace FuryOfDracula.ConsoleInterface
             }
         }
 
+        /// <summary>
+        /// Resolves the Vampiric Influence Event card
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="logic">The artificial intelligence component</param>
         private static void PlayVampiricInfluence(GameState game, DecisionMaker logic)
         {
             Console.WriteLine("Dracula played Vampiric Influence");
@@ -407,6 +457,11 @@ namespace FuryOfDracula.ConsoleInterface
             HunterDeclaresNextMove(game, victim);
         }
 
+        /// <summary>
+        /// Handles the situation when a Hunter must reveal all Event cards to Dracula
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="victim">The Hunter revealing Event cards</param>
         private static void DraculaLooksAtAllHuntersEvents(GameState game, HunterPlayer victim)
         {
             game.EventDeck.AddRange(victim.EventsKnownToDracula);
@@ -423,6 +478,12 @@ namespace FuryOfDracula.ConsoleInterface
             }
         }
 
+        /// <summary>
+        /// Adds an Event card to the list of cards known to Dracula
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="victim">The Hunter who has revealed an Event</param>
+        /// <param name="eventRevealed">The Event revealed by the Hunter</param>
         private static void AddEventCardToDraculaKnownCards(GameState game, HunterPlayer victim, Event eventRevealed)
         {
             var eventCardRevealed = game.EventDeck.Find(card => card.Event == eventRevealed);
@@ -430,7 +491,13 @@ namespace FuryOfDracula.ConsoleInterface
             game.EventDeck.Remove(eventCardRevealed);
         }
 
-        private static void PlayAlly(GameState game, Event eventPlayedByDracula, DecisionMaker logic)
+        /// <summary>
+        /// Resolves the situation when Dracula plays an Ally card
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="eventPlayedByDracula">The Ally Event</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        private static void PlayDraculaAlly(GameState game, Event eventPlayedByDracula, DecisionMaker logic)
         {
             Console.WriteLine("Dracula drew ally {0}", eventPlayedByDracula.Name());
             Event allyToKeep;
@@ -450,6 +517,11 @@ namespace FuryOfDracula.ConsoleInterface
             game.Dracula.EventHandSize = game.DraculaAlly.Event == Event.ImmanuelHildesheim ? 6 : 4;
         }
 
+        /// <summary>
+        /// Resolves the Night Visit Event
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="logic">The artificial intelligence component</param>
         private static void PlayNightVisit(GameState game, DecisionMaker logic)
         {
             Console.WriteLine("Dracula is playing Night Visit");
@@ -472,6 +544,12 @@ namespace FuryOfDracula.ConsoleInterface
             CheckForHunterDeath(game);
         }
 
+        /// <summary>
+        /// Checks if Dracula will play False Tip-off when a Hunter attempts to catch a train
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterIndex">A String to be converted into the Hunter catching the train</param>
+        /// <param name="logic">The artificial intelligence component</param>
         private static void CatchTrain(GameState game, string hunterIndex, DecisionMaker logic)
         {
             var hunterCatchingTrain = Hunter.Nobody;
@@ -513,6 +591,12 @@ namespace FuryOfDracula.ConsoleInterface
             }
         }
 
+        /// <summary>
+        /// Checks to see if Dracula is playing False Tip-off when a Hunter attempts to catch a train by rolling the die
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        /// <returns>True if Dracula successfully plays False Tip-off</returns>
         private static bool DraculaIsPlayingFalseTipoffToDelayHunter(GameState game, DecisionMaker logic)
         {
             if (logic.ChooseToDelayHunterWithFalseTipoff(game))
@@ -529,11 +613,50 @@ namespace FuryOfDracula.ConsoleInterface
             return false;
         }
 
-        private static int HunterPlayingCharteredCarriageToCancelFalseTipOff(GameState game, Event falseTipoff1, Event falseTipoff2, DecisionMaker logic)
+        /// <summary>
+        /// Checks if a Hunter is playing Chartered Carriage to cancel Dracula's False Tip-off
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="eventBeingPlayed">The current Event being played</param>
+        /// <param name="eventInitiallyPlayed">The initial Event played at the start of this exchange</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        /// <returns>The int corresponding to the Hunter playing Chartered Carriage, 0 if none</returns>
+        private static int HunterPlayingCharteredCarriageToCancelFalseTipOff(GameState game, Event eventBeingPlayed, Event eventInitiallyPlayed, DecisionMaker logic)
         {
-            throw new NotImplementedException();
+            Console.WriteLine("Will anyone play Chartered Carriage to cancel False Tip-off? 0= Nobody, {0}= {1}, {2}= {3}, {4}= {5}, {6}= {7}",
+    (int)Hunter.LordGodalming, Hunter.LordGodalming.Name(),
+    (int)Hunter.DrSeward, Hunter.DrSeward.Name(), (int)Hunter.VanHelsing, Hunter.VanHelsing.Name(),
+    (int)Hunter.MinaHarker, Hunter.MinaHarker.Name());
+            var answer = -1;
+            while (answer == -1)
+            {
+                if (int.TryParse(Console.ReadLine(), out answer))
+                {
+                    if (answer < 0 || answer > 4)
+                    {
+                        answer = -1;
+                    }
+                }
+            }
+            if (answer > 0)
+            {
+                game.Hunters[answer].DiscardEvent(game, Event.CharteredCarriage);
+                if (DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.CharteredCarriage, eventInitiallyPlayed, logic))
+                {
+                    game.Dracula.DiscardEvent(Event.DevilishPower, game.EventDiscard);
+                    return 0;
+                }
+            }
+            return answer;
         }
 
+        /// <summary>
+        /// Resolves an Event card played by a Hunter
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="eventName">A string to be converted to the Event being played</param>
+        /// <param name="hunterIndex">A string to be converted to the Hunter playing the Event</param>
+        /// <param name="logic">The artificial intelligence component</param>
         private static void PlayEvent(GameState game, string eventName, string hunterIndex, DecisionMaker logic)
         {
             var index = 0;
@@ -589,65 +712,52 @@ namespace FuryOfDracula.ConsoleInterface
                 case Event.JonathanHarker:
                 case Event.RufusSmith:
                 case Event.SisterAgatha:
-                    PlayAlly(game, hunterPlayingEvent, eventBeingPlayed);
-                    break;
+                    PlayHunterAlly(game, hunterPlayingEvent, eventBeingPlayed); break;
                 case Event.BloodTransfusion:
-                    PlayBloodTransfusion(game, hunterPlayingEvent);
-                    break;
+                    PlayBloodTransfusion(game, hunterPlayingEvent); break;
                 case Event.CharteredCarriage:
-                    PlayCharteredCarriage(game, hunterPlayingEvent, logic);
-                    break;
+                    PlayCharteredCarriage(game, hunterPlayingEvent, logic); break;
                 case Event.ConsecratedGround:
-                    PlayConsecratedGround(game, hunterPlayingEvent);
-                    break;
+                    PlayConsecratedGround(game, hunterPlayingEvent); break;
                 case Event.ExcellentWeather:
-                    PlayExcellentWeather(game, hunterPlayingEvent);
-                    break;
+                    PlayExcellentWeather(game, hunterPlayingEvent); break;
                 case Event.GoodLuck:
-                    PlayGoodLuck(game, hunterPlayingEvent);
-                    break;
+                    PlayGoodLuck(game, hunterPlayingEvent); break;
                 case Event.HiredScouts:
-                    PlayHiredScouts(game, hunterPlayingEvent, logic);
-                    break;
+                    PlayHiredScouts(game, hunterPlayingEvent, logic); break;
                 case Event.Hypnosis:
-                    PlayHypnosis(game, hunterPlayingEvent, logic);
-                    break;
+                    PlayHypnosis(game, hunterPlayingEvent, logic); break;
                 case Event.LongDay:
-                    PlayLongDay(game, hunterPlayingEvent);
-                    break;
+                    PlayLongDay(game, hunterPlayingEvent); break;
                 case Event.MoneyTrail:
-                    PlayMoneyTrail(game, hunterPlayingEvent, logic);
-                    break;
+                    PlayMoneyTrail(game, hunterPlayingEvent, logic); break;
                 case Event.MysticResearch:
-                    PlayMysticResearch(game, hunterPlayingEvent);
-                    break;
+                    PlayMysticResearch(game, hunterPlayingEvent); break;
                 case Event.NewspaperReports:
-                    PlayNewsPaperReports(game, hunterPlayingEvent, logic);
-                    break;
+                    PlayNewsPaperReports(game, hunterPlayingEvent, logic); break;
                 case Event.ReEquip:
-                    PlayReEquip(game, hunterPlayingEvent);
-                    break;
+                    PlayReEquip(game, hunterPlayingEvent); break;
                 case Event.SenseofEmergency:
-                    PlaySenseOfEmergency(game, hunterPlayingEvent, logic);
-                    break;
+                    PlaySenseOfEmergency(game, hunterPlayingEvent, logic); break;
                 case Event.StormySeas:
-                    PlayStormySeas(game, hunterPlayingEvent, logic);
-                    break;
+                    PlayStormySeas(game, hunterPlayingEvent, logic); break;
                 case Event.SurprisingReturn:
-                    PlaySurprisingReturn(game, hunterPlayingEvent);
-                    break;
+                    PlaySurprisingReturn(game, hunterPlayingEvent); break;
                 case Event.TelegraphAhead:
-                    PlayTelegraphAhead(game, hunterPlayingEvent, logic);
-                    break;
+                    PlayTelegraphAhead(game, hunterPlayingEvent, logic); break;
                 case Event.VampireLair:
-                    PlayVampireLair(game, hunterPlayingEvent, logic);
-                    break;
+                    PlayVampireLair(game, hunterPlayingEvent, logic); break;
                 default:
-                    Console.WriteLine("It is not appropriate to play {0} at this time", eventBeingPlayed.Name());
-                    break;
+                    Console.WriteLine("It is not appropriate to play {0} at this time", eventBeingPlayed.Name()); break;
             }
         }
 
+        /// <summary>
+        /// Resolves the Vampire Lair Event card
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterPlayingEvent">The Hunter playing the Event</param>
+        /// <param name="logic">The artificial intelligence component</param>
         private static void PlayVampireLair(GameState game, Hunter hunterPlayingEvent, DecisionMaker logic)
         {
             if (game.Vampires < 1)
@@ -662,6 +772,12 @@ namespace FuryOfDracula.ConsoleInterface
             }
         }
 
+        /// <summary>
+        /// Resolves the Telegraph Ahead Event
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterPlayingEvent">The Hunter playing the Event</param>
+        /// <param name="logic">The artificial intelligence component</param>
         private static void PlayTelegraphAhead(GameState game, Hunter hunterPlayingEvent, DecisionMaker logic)
         {
             foreach (var loc in game.Map.LocationsConnectedByRoadTo(game.Hunters[(int)hunterPlayingEvent].CurrentLocation))
@@ -677,6 +793,13 @@ namespace FuryOfDracula.ConsoleInterface
             }
         }
 
+        /// <summary>
+        /// Checks if Dracula is playing Sensationalist Press to prevent a Location card from being revealed
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="location">The Location being revealed</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        /// <returns>True if Dracula successfully plays Sensationalist Press</returns>
         private static bool DraculaIsPlayingSensationalistPressToPreventRevealingLocation(GameState game,
             Location location, DecisionMaker logic)
         {
@@ -694,6 +817,11 @@ namespace FuryOfDracula.ConsoleInterface
             return false;
         }
 
+        /// <summary>
+        /// Resolves the Surprising Return Event
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterPlayingEvent">The Hunter playing the Event</param>
         private static void PlaySurprisingReturn(GameState game, Hunter hunterPlayingEvent)
         {
             if (game.EventDiscard.Count == 0)
@@ -718,6 +846,12 @@ namespace FuryOfDracula.ConsoleInterface
             game.EventDiscard.Remove(eventCardRetrieved);
         }
 
+        /// <summary>
+        /// Resolves the Stormy Seas Event
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterPlayingEvent">The Hunter playing the Event</param>
+        /// <param name="logic">The artificial intelligence component</param>
         private static void PlayStormySeas(GameState game, Hunter hunterPlayingEvent, DecisionMaker logic)
         {
             Console.WriteLine("Where is {0} playing Stormy Seas?", hunterPlayingEvent.Name());
@@ -737,6 +871,7 @@ namespace FuryOfDracula.ConsoleInterface
                 if (destination == Location.Nowhere)
                 {
                     Console.WriteLine("Dracula cannot make a legal move");
+                    game.Dracula.TakePunishmentForCheating(game);
                     return;
                 }
                 var cardDroppedOffTrail = game.Dracula.MoveTo(destination, Power.None);
@@ -758,14 +893,22 @@ namespace FuryOfDracula.ConsoleInterface
             }
         }
 
+        /// <summary>Checks if the sixth card in Dracula's Trail should be revealed by Jonathan Harker</summary>
+        /// <param name="game">The GameState</param>
         private static void CheckForJonathanHarker(GameState game)
         {
-            if (game.HunterAlly.Event == Event.JonathanHarker && game.Dracula.Trail[5] != null)
+            if (game.HunterAlly != null && game.HunterAlly.Event == Event.JonathanHarker && game.Dracula.Trail[5] != null)
             {
                 game.Dracula.RevealCardAtPosition(5);
             }
         }
 
+        /// <summary>
+        /// Handles cards dropped off the end of Dracula's Trails
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="cardsDroppedOffTrail">A List of cards that have dropped off the end of the Trail</param>
+        /// <param name="logic">The artificial intelligence component</param>
         private static void DealWithDroppedOffCardSlots(GameState game, List<DraculaCardSlot> cardsDroppedOffTrail,
             DecisionMaker logic)
         {
@@ -802,12 +945,17 @@ namespace FuryOfDracula.ConsoleInterface
                         enc.IsRevealed = false;
                         game.EncounterPool.Add(enc);
                     }
-                    Console.WriteLine(
-                        "The location where Dracula used Hide dropped off the trail, so the Hide card is also removed from the trail");
+                    Console.WriteLine("The location where Dracula used Hide dropped off the trail, so the Hide card is also removed from the trail");
                 }
             }
         }
 
+        /// <summary>
+        /// Handles the Sense of Emergency card or Resolve ability
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterPlayingEvent">The Hunter playing the Event</param>
+        /// <param name="logic">The artificial intelligence component</param>
         private static void PlaySenseOfEmergency(GameState game, Hunter hunterPlayingEvent, DecisionMaker logic)
         {
             if (game.Hunters[(int)hunterPlayingEvent].Health <= 6 - game.Vampires)
@@ -826,6 +974,11 @@ namespace FuryOfDracula.ConsoleInterface
             HandleMoveOperation(game, ((int)hunterPlayingEvent).ToString(), destination.Name(), logic);
         }
 
+        /// <summary>
+        /// Resolves the Re-Equip Event
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterPlayingEvent">The Hunter playing the Event</param>
         private static void PlayReEquip(GameState game, Hunter hunterPlayingEvent)
         {
             if (DiscardUnknownItemFromHunter(game, game.Hunters[(int)hunterPlayingEvent]))
@@ -835,6 +988,12 @@ namespace FuryOfDracula.ConsoleInterface
             }
         }
 
+        /// <summary>
+        /// Resolves the Newspaper Reports Event or Resolve ability
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterPlayingEvent">The Hunter playing the Event</param>
+        /// <param name="logic">The artificial intelligence component</param>
         private static void PlayNewsPaperReports(GameState game, Hunter hunterPlayingEvent, DecisionMaker logic)
         {
             for (var i = 5; i > 0; i--)
@@ -858,6 +1017,11 @@ namespace FuryOfDracula.ConsoleInterface
             }
         }
 
+        /// <summary>
+        /// Resolves the Mystic Research Event
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterPlayingEvent">The Hunter playing the Event</param>
         private static void PlayMysticResearch(GameState game, Hunter hunterPlayingEvent)
         {
             if (!game.Dracula.EventHand.Any())
@@ -873,6 +1037,12 @@ namespace FuryOfDracula.ConsoleInterface
             Console.WriteLine("");
         }
 
+        /// <summary>
+        /// Resolves the Money Trail Event
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterPlayingEvent">The Hunter playing the Event</param>
+        /// <param name="logic">The artificial intelligence component</param>
         private static void PlayMoneyTrail(GameState game, Hunter hunterPlayingEvent, DecisionMaker logic)
         {
             for (var i = 5; i > 0; i--)
@@ -893,6 +1063,11 @@ namespace FuryOfDracula.ConsoleInterface
             }
         }
 
+        /// <summary>
+        /// Resolves the Long Day Event
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterPlayingEvent">The Hunter playing the Event</param>
         private static void PlayLongDay(GameState game, Hunter hunterPlayingEvent)
         {
             if (game.TimeOfDay == TimeOfDay.Dawn)
@@ -901,11 +1076,18 @@ namespace FuryOfDracula.ConsoleInterface
                 var longDayCard = game.EventDiscard.Find(card => card.Event == Event.LongDay);
                 game.Hunters[(int)hunterPlayingEvent].EventsKnownToDracula.Add(longDayCard);
                 game.EventDiscard.Remove(longDayCard);
+                game.Hunters[(int)hunterPlayingEvent].DrawEventCard();
                 return;
             }
             game.RegressTimeTracker();
         }
 
+        /// <summary>
+        /// Resolves the Hypnosis Event
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterPlayingEvent">The Hunter playing the Event</param>
+        /// <param name="logic">The artificial intelligence component</param>
         private static void PlayHypnosis(GameState game, Hunter hunterPlayingEvent, DecisionMaker logic)
         {
             Console.WriteLine("Roll a die and enter the result");
@@ -924,14 +1106,12 @@ namespace FuryOfDracula.ConsoleInterface
             {
                 case 1:
                 case 2:
-                    Console.WriteLine("No effect");
-                    break;
+                    Console.WriteLine("No effect"); break;
                 case 3:
                 case 4:
                 case 5:
                 case 6:
-                    if (DraculaIsPlayingSensationalistPressToPreventRevealingLocation(game, game.Dracula.CurrentLocation,
-                        logic))
+                    if (DraculaIsPlayingSensationalistPressToPreventRevealingLocation(game, game.Dracula.CurrentLocation, logic))
                     {
                         Console.WriteLine("Dracula prevented a location from being revealed");
                     }
@@ -952,11 +1132,16 @@ namespace FuryOfDracula.ConsoleInterface
                         game.Dracula.AdvanceMovePower = power;
                         Console.WriteLine("Dracula's next move will be to {0}{1}", game.Dracula.AdvanceMoveLocation,
                             power == Power.None ? "" : " using " + game.Dracula.AdvanceMovePower.Name());
-                    }
-                    break;
+                    } break;
             }
         }
 
+        /// <summary>
+        /// Resolves the Hired Scouts Event
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterPlayingEvent">The Hunter playing the Event</param>
+        /// <param name="logic">The artificial intelligence component</param>
         private static void PlayHiredScouts(GameState game, Hunter hunterPlayingEvent, DecisionMaker logic)
         {
             Console.WriteLine("Name the first city");
@@ -1018,6 +1203,11 @@ namespace FuryOfDracula.ConsoleInterface
             }
         }
 
+        /// <summary>
+        /// Resolves the Good Luck Event played at the start of a Hunter's turn
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterPlayingEvent">The Hunter playing the Event</param>
         private static void PlayGoodLuck(GameState game, Hunter hunterPlayingEvent)
         {
             Console.WriteLine("What would you like to discard? 0= Nothing (cancel), 1= Roadblock, 2= Dracula's Ally");
@@ -1038,29 +1228,36 @@ namespace FuryOfDracula.ConsoleInterface
                         var goodLuckCard = game.EventDiscard.Find(card => card.Event == Event.GoodLuck);
                         game.EventDiscard.Remove(goodLuckCard);
                         game.Hunters[(int)hunterPlayingEvent].EventsKnownToDracula.Add(goodLuckCard);
-                        game.Hunters[(int)hunterPlayingEvent].DrawEventCard();
-                        break;
+                        game.Hunters[(int)hunterPlayingEvent].DrawEventCard(); break;
                     case 1:
                         game.RoadBlockLocation1 = Location.Nowhere;
                         game.RoadBlockLocation2 = Location.Nowhere;
-                        game.RoadBlockConnectionType = ConnectionType.None;
-                        break;
+                        game.RoadBlockConnectionType = ConnectionType.None; break;
                     case 2:
                         if (game.DraculaAlly != null)
                         {
                             game.EventDiscard.Add(game.DraculaAlly);
                             game.DraculaAlly = null;
-                        }
-                        break;
+                        } break;
                 }
             }
         }
 
+        /// <summary>
+        /// Resolves the Excellent Weather Event
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterPlayingEvent">The Hunter playing the Event</param>
         private static void PlayExcellentWeather(GameState game, Hunter hunterPlayingEvent)
         {
             Console.WriteLine("{0} may make up to four sea moves this turng", hunterPlayingEvent.Name());
         }
 
+        /// <summary>
+        /// Resolves the Consecrated Ground Event
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterPlayingEvent">The Hunter playing the Event</param>
         private static void PlayConsecratedGround(GameState game, Hunter hunterPlayingEvent)
         {
             Console.WriteLine("Where would you like to place the Consecrated Ground marker?");
@@ -1080,6 +1277,12 @@ namespace FuryOfDracula.ConsoleInterface
             }
         }
 
+        /// <summary>
+        /// Resolves the Chartered Carriage Event
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterPlayingEvent">The Hunter playing the Event</param>
+        /// <param name="logic">The artificial intelligence component</param>
         private static void PlayCharteredCarriage(GameState game, Hunter hunterPlayingEvent, DecisionMaker logic)
         {
             if (DraculaIsPlayingFalseTipoffToCancelCharteredCarriage(game, logic))
@@ -1090,6 +1293,11 @@ namespace FuryOfDracula.ConsoleInterface
             Console.WriteLine("{0} catches a fast train this turn", hunterPlayingEvent.Name());
         }
 
+        /// <summary>
+        /// Resolves the Blood Transfusion Event
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterPlayingEvent">The Hunter playing the Event</param>
         private static void PlayBloodTransfusion(GameState game, Hunter hunterPlayingEvent)
         {
             Console.WriteLine(
@@ -1104,6 +1312,11 @@ namespace FuryOfDracula.ConsoleInterface
                     if (answer < 1 || answer > 4)
                     {
                         answer = 0;
+                    }
+                    if (answer == -1)
+                    {
+                        Console.WriteLine("Cancelled, card is still discarded");
+                        return;
                     }
                 }
             }
@@ -1137,7 +1350,13 @@ namespace FuryOfDracula.ConsoleInterface
             }
         }
 
-        private static void PlayAlly(GameState game, Hunter hunterPlayingEvent, Event allyBeingPlayed)
+        /// <summary>
+        /// Resolves the situation when a Hunter plays an Ally
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterPlayingEvent">The Hunter playing the Ally Event</param>
+        /// <param name="allyBeingPlayed">The Ally Event being played</param>
+        private static void PlayHunterAlly(GameState game, Hunter hunterPlayingEvent, Event allyBeingPlayed)
         {
             if (game.HunterAlly != null)
             {
@@ -1147,6 +1366,12 @@ namespace FuryOfDracula.ConsoleInterface
             game.EventDiscard.Remove(game.HunterAlly);
         }
 
+        /// <summary>
+        /// Determines if Dracula is playing False Tip-off to cancel Chartered Carriage
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        /// <returns>True if Dracula successfully plays False Tip-off</returns>
         private static bool DraculaIsPlayingFalseTipoffToCancelCharteredCarriage(GameState game, DecisionMaker logic)
         {
             if (logic.ChooseToCancelCharteredCarriageWithFalseTipoff(game))
@@ -1163,6 +1388,14 @@ namespace FuryOfDracula.ConsoleInterface
             return false;
         }
 
+        /// <summary>
+        /// Determines if Dracula is playing Devilish Power to cancel an Event played by a Hunter
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="eventBeingPlayedNow">The Event being played now</param>
+        /// <param name="eventInitiallyPlayed">The Event initially played at the beginning of this exchange</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        /// <returns>True if Dracula successfully plays Devilish Power</returns>
         private static bool DraculaIsPlayingDevilishPowerToCancelEvent(GameState game, Event eventBeingPlayedNow,
             Event eventInitiallyPlayed, DecisionMaker logic)
         {
@@ -1179,8 +1412,15 @@ namespace FuryOfDracula.ConsoleInterface
             return false;
         }
 
-        private static int HunterPlayingGoodLuckToCancelDraculaEvent(GameState game, Event draculaEventBeingPlayed,
-            Event eventInitiallyPlayed, DecisionMaker logic)
+        /// <summary>
+        /// Determines if a Hunter is playing Good Luck to cancel an Event played by Dracula
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="draculaEventBeingPlayed">The Event being played now</param>
+        /// <param name="eventInitiallyPlayed">The Event initially played at the beginning of this exchange</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        /// <returns>An int corresponding to the Hunter playing Good Luck, 0 if none</returns>
+        private static int HunterPlayingGoodLuckToCancelDraculaEvent(GameState game, Event draculaEventBeingPlayed, Event eventInitiallyPlayed, DecisionMaker logic)
         {
             Console.WriteLine(
                 "Will anyone play Good Luck to cancel {0}? 0= Nobody, {1}= {2}, {3}= {4}, {5}= {6}, {7}= {8}",
@@ -1210,6 +1450,12 @@ namespace FuryOfDracula.ConsoleInterface
             return answer;
         }
 
+        /// <summary>
+        /// Resolves a Hunter using an Item outside of combat
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="itemName">The string to be converted to the Item being used</param>
+        /// <param name="hunterIndex">The string to be converted to the Hunter using the Item</param>
         private static void UseItem(GameState game, string itemName, string hunterIndex)
         {
             var index = 0;
@@ -1258,8 +1504,7 @@ namespace FuryOfDracula.ConsoleInterface
                 case Item.Dogs:
                     Console.WriteLine("Dogs is now face up in front of {0}", hunterUsingItem.Name());
                     game.Hunters[(int)hunterUsingItem].SetDogsFaceUp(true);
-                    AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)hunterUsingItem], Item.Dogs);
-                    break;
+                    AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)hunterUsingItem], Item.Dogs); break;
                 case Item.LocalRumors:
                     var trailIndex = -1;
                     Console.WriteLine(
@@ -1303,29 +1548,29 @@ namespace FuryOfDracula.ConsoleInterface
                         }
                     }
                     game.Hunters[(int)hunterUsingItem].DiscardItem(game, Item.LocalRumors);
-                    DrawGameState(game);
-                    break;
+                    DrawGameState(game); break;
                 case Item.HolyWater:
                     UseHolyWaterOnHunter(game, hunterUsingItem);
-                    game.Hunters[(int)hunterUsingItem].DiscardItem(game, Item.HolyWater);
-                    break;
+                    game.Hunters[(int)hunterUsingItem].DiscardItem(game, Item.HolyWater); break;
                 case Item.FastHorse:
                     Console.WriteLine("{0} may travel two roads this turn", hunterUsingItem.Name());
-                    game.Hunters[(int)hunterUsingItem].DiscardItem(game, Item.FastHorse);
-                    break;
+                    game.Hunters[(int)hunterUsingItem].DiscardItem(game, Item.FastHorse); break;
                 case Item.HeavenlyHost:
                     Console.WriteLine("Heavenly Host placed in {0}",
                         game.Hunters[(int)hunterUsingItem].CurrentLocation.Name());
                     PlaceHeavenlyHostIn(game, game.Hunters[(int)hunterUsingItem].CurrentLocation);
-                    game.Hunters[(int)hunterUsingItem].DiscardItem(game, Item.HeavenlyHost);
-                    break;
+                    game.Hunters[(int)hunterUsingItem].DiscardItem(game, Item.HeavenlyHost); break;
                 default:
-                    Console.WriteLine("It is not appropriate to use {0} at this time", itemBeingUsed.Name());
-                    break;
+                    Console.WriteLine("It is not appropriate to use {0} at this time", itemBeingUsed.Name()); break;
             }
             CheckForCardsRevealedForBeingBitten(game);
         }
 
+        /// <summary>
+        /// Resolves a Hunter using Heavenly Host outside of combat
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="location">The Location where the Heavenly Host is being placed</param>
         private static void PlaceHeavenlyHostIn(GameState game, Location location)
         {
             if (game.HeavenlyHostLocation1 == Location.Nowhere)
@@ -1354,15 +1599,18 @@ namespace FuryOfDracula.ConsoleInterface
                 switch (answer)
                 {
                     case 1:
-                        game.HeavenlyHostLocation1 = location;
-                        break;
+                        game.HeavenlyHostLocation1 = location; break;
                     case 2:
-                        game.HeavenlyHostLocation2 = location;
-                        break;
+                        game.HeavenlyHostLocation2 = location; break;
                 }
             }
         }
 
+        /// <summary>
+        /// Resolves a Hunter using the Holy Water Item or the Holy Water font at St. Joseph & St. Mary
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterReceivingHolyWater">The Hunter receiving the Holy Water effect</param>
         private static void UseHolyWaterOnHunter(GameState game, Hunter hunterReceivingHolyWater)
         {
             if (hunterReceivingHolyWater == Hunter.MinaHarker)
@@ -1387,23 +1635,20 @@ namespace FuryOfDracula.ConsoleInterface
                 case 1:
                     Console.WriteLine("{0} loses 2 health", hunterReceivingHolyWater.Name());
                     game.Hunters[(int)hunterReceivingHolyWater].AdjustHealth(-2);
-                    CheckForHunterDeath(game);
-                    break;
+                    CheckForHunterDeath(game); break;
                 case 2:
                 case 3:
                 case 4:
-                    Console.WriteLine("Nothing happens");
-                    break;
+                    Console.WriteLine("Nothing happens"); break;
                 case 5:
                 case 6:
                     Console.WriteLine("{0} is cured of a Bite", hunterReceivingHolyWater.Name());
-                    game.Hunters[(int)hunterReceivingHolyWater].AdjustBites(-1);
-                    break;
+                    game.Hunters[(int)hunterReceivingHolyWater].AdjustBites(-1); break;
             }
         }
 
         /// <summary>
-        ///     Checks if a given item card is already known by Dracula to be in a given hunter's hand and adds it if not
+        /// Checks if a given Item card is already known by Dracula to be in a given Hunter's hand and adds it if not
         /// </summary>
         /// <param name="game">The GameState</param>
         /// <param name="hunterRevealingCard">The Hunter revealing the card</param>
@@ -1424,7 +1669,7 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Checks if a given event card is already known by Dracula to be in a given hunter's hand and adds it if not
+        /// Checks if a given Event card is already known by Dracula to be in a given Hunter's hand and adds it if not
         /// </summary>
         /// <param name="game">The GameState</param>
         /// <param name="hunterRevealingCard">The Hunter revealing the card</param>
@@ -1445,7 +1690,7 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Checks all hunters to see if they are dead and adjusts them accordingly if they are
+        /// Checks all Hunters to see if they are dead and adjusts them accordingly if they are
         /// </summary>
         /// <param name="game">The GameState</param>
         /// <returns>True if a Hunter has died</returns>
@@ -1480,7 +1725,7 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Asks the user to name an Item and then discards it from that hunter
+        ///     Asks the user to name an Item and then discards it from that Hunter
         /// </summary>
         /// <param name="game">The GameState</param>
         /// <param name="hunter">The Hunter discarding an Item</param>
@@ -1507,7 +1752,7 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Asks the user to name an Event and then discards it from that hunter
+        /// Asks the user to name an Event and then discards it from that Hunter
         /// </summary>
         /// <param name="game">The GameState</param>
         /// <param name="hunter">The Hunter discarding an Event</param>
@@ -1523,7 +1768,7 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Checks all hunters' cards and bites to see if they should be revealing a card to Dracula
+        /// Checks all Hunters' cards and bites to see if they should be revealing a card to Dracula
         /// </summary>
         /// <param name="game">The GameState</param>
         private static void CheckForCardsRevealedForBeingBitten(GameState game)
@@ -1573,7 +1818,7 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        /// Handles the entirety of a hunter's move, including search, encounters, combat etc.
+        /// Handles the entirety of a Hunter's move, including search, Encounters, combat etc.
         /// </summary>
         /// <param name="game">The GameState</param>
         /// <param name="hunterIndex">The index of the Hunter (and group) to move</param>
@@ -1676,6 +1921,12 @@ namespace FuryOfDracula.ConsoleInterface
             }
         }
 
+        /// <summary>
+        /// Determines if Dracula is playing Wild Horses at the start of a combat
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        /// <returns>True if Dracula successfully plays Wild Horses</returns>
         private static bool DraculaIsPlayingWildHorses(GameState game, DecisionMaker logic)
         {
             if (logic.ChooseToPlayWildHorses(game))
@@ -1692,6 +1943,14 @@ namespace FuryOfDracula.ConsoleInterface
             return false;
         }
 
+        /// <summary>
+        /// Determines if Dracula is playing Customs Search on a Hunter
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterMoved">The Hunter who moved</param>
+        /// <param name="origin">The original Location</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        /// <returns>True if Dracula successfully plays Customs Search</returns>
         private static bool DraculaIsPlayingCustomsSearch(GameState game, Hunter hunterMoved, Location origin,
             DecisionMaker logic)
         {
@@ -1699,8 +1958,7 @@ namespace FuryOfDracula.ConsoleInterface
             {
                 Console.WriteLine("Dracula is playing Customs Search");
                 game.Dracula.DiscardEvent(Event.CustomsSearch, game.EventDiscard);
-                if (HunterPlayingGoodLuckToCancelDraculaEvent(game, Event.CustomsSearch, Event.CustomsSearch, logic) >
-                    0)
+                if (HunterPlayingGoodLuckToCancelDraculaEvent(game, Event.CustomsSearch, Event.CustomsSearch, logic) > 0)
                 {
                     Console.WriteLine("Customs Search cancelled");
                     return false;
@@ -1711,10 +1969,10 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Adds and removes people from the given hunter's group
+        /// Adds and removes people from the given Hunter's group
         /// </summary>
         /// <param name="game">The GameState</param>
-        /// <param name="hunterIndex">The index of the hunter with whom to set up a group</param>
+        /// <param name="hunterIndex">A string to be converted to the Hunter with whom to set up a group</param>
         private static void SetupGroup(GameState game, string hunterIndex)
         {
             var hunterFormingGroup = Hunter.Nobody;
@@ -1815,7 +2073,7 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Matures encounters
+        /// Matures an Encounter
         /// </summary>
         /// <param name="game">The GameState</param>
         /// <param name="encounterTileBeingMatured">The EncounterTile being matured</param>
@@ -1833,8 +2091,7 @@ namespace FuryOfDracula.ConsoleInterface
                         ResolveEncounterTile(game, encounterToAmbushWith, new List<Hunter> { hunterToAmbush }, logic, -1);
                         game.Dracula.DiscardEncounterTile(game, encounterToAmbushWith);
                         game.EncounterPool.Add(encounterToAmbushWith);
-                    }
-                    break;
+                    } break;
                 case Encounter.DesecratedSoil:
                     Console.WriteLine("Dracula matured Desecrated Soil");
                     game.Dracula.ClearTrailDownTo(game, 3);
@@ -1866,27 +2123,22 @@ namespace FuryOfDracula.ConsoleInterface
                             game.EventDeck.Remove(eventCardDiscarded);
                             game.EventDiscard.Add(eventCardDiscarded);
                         }
-                    }
-                    break;
+                    } break;
                 case Encounter.NewVampire:
                     Console.WriteLine("Dracula matured a New Vampire");
                     game.AdjustVampires(2);
-                    game.Dracula.ClearTrailDownTo(game, 1);
-                    break;
+                    game.Dracula.ClearTrailDownTo(game, 1); break;
             }
             game.EncounterPool.Add(encounterTileBeingMatured);
         }
 
         /// <summary>
-        ///     Resolves an encounter on a group of hunters
+        /// Resolves an Encounter on a group of Hunters
         /// </summary>
         /// <param name="game">The GameState</param>
         /// <param name="encounterTileBeingResolved">The Encounter being resolved</param>
-        /// <param name="trailIndex">
-        ///     The index of the trail slot (0-5), or catacombs slot (6-8) where the encounter is being
-        ///     resolved
-        /// </param>
-        /// <returns></returns>
+        /// <param name="trailIndex">The Index of the Trail slot (0-5), or Catacombs slot (6-8) where the Encounter is being resolved, or -1 if being resolved from Dracula's hand</param>
+        /// <returns>True if the Hunters can continue resolving Encounters</returns>
         private static bool ResolveEncounterTile(GameState game, EncounterTile encounterTileBeingResolved,
             List<Hunter> huntersInvolved, DecisionMaker logic, int trailIndex)
         {
@@ -1957,11 +2209,9 @@ namespace FuryOfDracula.ConsoleInterface
             switch (encounterTileBeingResolved.Encounter)
             {
                 case Encounter.Ambush:
-                    continueEncounters = ResolveAmbush(game, huntersInvolved, logic);
-                    break;
+                    continueEncounters = ResolveAmbush(game, huntersInvolved, logic); break;
                 case Encounter.Assassin:
-                    continueEncounters = ResolveAssassin(game, huntersInvolved, logic);
-                    break;
+                    continueEncounters = ResolveAssassin(game, huntersInvolved, logic); break;
                 case Encounter.Bats:
                     discardEncounterTile = false;
                     game.Hunters[(int)huntersInvolved.First()].EncountersInFrontOfPlayer.Add(encounterTileBeingResolved);
@@ -1975,8 +2225,7 @@ namespace FuryOfDracula.ConsoleInterface
                     }
                     return false;
                 case Encounter.DesecratedSoil:
-                    continueEncounters = ResolveDesecratedSoil(game, huntersInvolved, logic);
-                    break;
+                    continueEncounters = ResolveDesecratedSoil(game, huntersInvolved, logic); break;
                 case Encounter.Fog:
                     discardEncounterTile = false;
                     game.Hunters[(int)huntersInvolved.First()].EncountersInFrontOfPlayer.Add(encounterTileBeingResolved);
@@ -1990,38 +2239,27 @@ namespace FuryOfDracula.ConsoleInterface
                     }
                     return false;
                 case Encounter.MinionWithKnife:
-                    continueEncounters = ResolveMinionWithKnife(game, huntersInvolved, logic);
-                    break;
+                    continueEncounters = ResolveMinionWithKnife(game, huntersInvolved, logic); break;
                 case Encounter.MinionWithKnifeAndPistol:
-                    continueEncounters = ResolveMinionWithKnifeAndPistol(game, huntersInvolved, logic);
-                    break;
+                    continueEncounters = ResolveMinionWithKnifeAndPistol(game, huntersInvolved, logic); break;
                 case Encounter.MinionWithKnifeAndRifle:
-                    continueEncounters = ResolveMinionWithKnifeAndRifle(game, huntersInvolved, logic);
-                    break;
+                    continueEncounters = ResolveMinionWithKnifeAndRifle(game, huntersInvolved, logic); break;
                 case Encounter.Hoax:
-                    continueEncounters = ResolveHoax(game, huntersInvolved);
-                    break;
+                    continueEncounters = ResolveHoax(game, huntersInvolved); break;
                 case Encounter.Lightning:
-                    continueEncounters = ResolveLightning(game, huntersInvolved);
-                    break;
+                    continueEncounters = ResolveLightning(game, huntersInvolved); break;
                 case Encounter.Peasants:
-                    continueEncounters = ResolvePeasants(game, huntersInvolved);
-                    break;
+                    continueEncounters = ResolvePeasants(game, huntersInvolved); break;
                 case Encounter.Plague:
-                    continueEncounters = ResolvePlague(game, huntersInvolved);
-                    break;
+                    continueEncounters = ResolvePlague(game, huntersInvolved); break;
                 case Encounter.Rats:
-                    continueEncounters = ResolveRats(game, huntersInvolved);
-                    break;
+                    continueEncounters = ResolveRats(game, huntersInvolved); break;
                 case Encounter.Saboteur:
-                    continueEncounters = ResolveSaboteur(game, huntersInvolved);
-                    break;
+                    continueEncounters = ResolveSaboteur(game, huntersInvolved); break;
                 case Encounter.Spy:
-                    continueEncounters = ResolveSpy(game, huntersInvolved);
-                    break;
+                    continueEncounters = ResolveSpy(game, huntersInvolved); break;
                 case Encounter.Thief:
-                    continueEncounters = ResolveThief(game, huntersInvolved, logic);
-                    break;
+                    continueEncounters = ResolveThief(game, huntersInvolved, logic); break;
                 case Encounter.NewVampire:
                     var seductionPlayed = false;
                     continueEncounters = ResolveNewVampire(game, huntersInvolved, logic, out discardEncounterTile,
@@ -2042,11 +2280,9 @@ namespace FuryOfDracula.ConsoleInterface
                         {
                             game.Dracula.EncounterHand.Remove(encounterTileBeingResolved);
                         }
-                    }
-                    break;
+                    } break;
                 case Encounter.Wolves:
-                    continueEncounters = ResolveWolves(game, huntersInvolved);
-                    break;
+                    continueEncounters = ResolveWolves(game, huntersInvolved); break;
                 default:
                     return false;
             }
@@ -2066,12 +2302,12 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Resolves an encounter of Wolves for a group of hunters
+        /// Resolves an Encounter of Wolves for a group of Hunters
         /// </summary>
         /// <param name="game">The GameState</param>
-        /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
+        /// <param name="huntersInvolved">A list of Hunters involved in the Encounter</param>
         /// <param name="logic">The artificial intelligence component</param>
-        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
+        /// <returns>True if the Hunters can continue resolving Encounters</returns>
         private static bool ResolveWolves(GameState game, List<Hunter> huntersInvolved)
         {
             var groupHasPistol = false;
@@ -2091,18 +2327,15 @@ namespace FuryOfDracula.ConsoleInterface
                 {
                     case 1:
                         groupHasPistol = true;
-                        AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)h], Item.Pistol);
-                        break;
+                        AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)h], Item.Pistol); break;
                     case 2:
                         groupHasRifle = true;
-                        AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)h], Item.Rifle);
-                        break;
+                        AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)h], Item.Rifle); break;
                     case 3:
                         groupHasPistol = true;
                         groupHasRifle = true;
                         AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)h], Item.Pistol);
-                        AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)h], Item.Rifle);
-                        break;
+                        AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)h], Item.Rifle); break;
                 }
                 if (groupHasPistol && groupHasRifle)
                 {
@@ -2129,12 +2362,12 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Resolves an encounter of New Vampire for a group of hunters
+        /// Resolves an Encounter of New Vampire for a group of Hunters
         /// </summary>
         /// <param name="game">The GameState</param>
-        /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
+        /// <param name="huntersInvolved">A list of Hunters involved in the Encounter</param>
         /// <param name="logic">The artificial intelligence component</param>
-        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
+        /// <returns>True if the Hunters can continue resolving Encounters</returns>
         private static bool ResolveNewVampire(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic,
             out bool discardNewVampire, out bool seductionPlayed)
         {
@@ -2229,7 +2462,7 @@ namespace FuryOfDracula.ConsoleInterface
                     discardNewVampire = true;
                     foreach (var h in huntersInvolved)
                     {
-                        Console.WriteLine("{0} is bitten!");
+                        Console.WriteLine("{0} is bitten!", h.Name());
                         if (!HunterPlayingGreatStrengthToCancelBite(game, h, logic))
                         {
                             game.Hunters[(int)h].AdjustBites(1);
@@ -2296,6 +2529,12 @@ namespace FuryOfDracula.ConsoleInterface
             return true;
         }
 
+        /// <summary>
+        /// Determines if Dracula is playing Seduction at the start of an Encounter
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        /// <returns>True if Dracula successfully plays Seduction</returns>
         private static bool DraculaIsPlayingSeduction(GameState game, DecisionMaker logic)
         {
             if (logic.ChooseToPlaySeduction(game))
@@ -2313,12 +2552,12 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Resolves an encounter of Thief for a group of hunters
+        /// Resolves an Encounter of Thief for a group of Hunters
         /// </summary>
         /// <param name="game">The GameState</param>
-        /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
+        /// <param name="huntersInvolved">A list of Hunters involved in the Encounter</param>
         /// <param name="logic">The artificial intelligence component</param>
-        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
+        /// <returns>True if the Hunters can continue resolving Encounters</returns>
         private static bool ResolveThief(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
         {
             foreach (var h in huntersInvolved)
@@ -2341,10 +2580,10 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Resolves an encounter of Spy for a group of hunters
+        /// Resolves an Encounter of Spy for a group of Hunters
         /// </summary>
         /// <param name="game">The GameState</param>
-        /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
+        /// <param name="huntersInvolved">A list of Hunters involved in the Encounter</param>
         /// <param name="logic">The artificial intelligence component</param>
         /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
         private static bool ResolveSpy(GameState game, List<Hunter> huntersInvolved)
@@ -2358,8 +2597,7 @@ namespace FuryOfDracula.ConsoleInterface
             }
             foreach (var h in huntersInvolved)
             {
-                Console.WriteLine("{0} must reveal all of {1} cards and declare {1} next move", h.Name(),
-                    h == Hunter.MinaHarker ? "her" : "his");
+                Console.WriteLine("{0} must reveal all of {1} cards and declare {1} next move", h.Name(), h == Hunter.MinaHarker ? "her" : "his");
                 DraculaLooksAtAllHuntersItems(game, game.Hunters[(int)h]);
                 DraculaLooksAtAllHuntersEvents(game, game.Hunters[(int)h]);
                 HunterDeclaresNextMove(game, game.Hunters[(int)h]);
@@ -2367,6 +2605,11 @@ namespace FuryOfDracula.ConsoleInterface
             return true;
         }
 
+        /// <summary>
+        /// Handles the situation when a Hunter must reveal their next move
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="victim">The Hunter revealing their move</param>
         private static void HunterDeclaresNextMove(GameState game, HunterPlayer victim)
         {
             Console.WriteLine("What will be {0}'s destination next turn?", victim.Hunter.Name());
@@ -2386,12 +2629,12 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Resolves an encounter of Saboteur for a group of hunters
+        /// Resolves an Encounter of Saboteur for a group of Hunters
         /// </summary>
         /// <param name="game">The GameState</param>
-        /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
+        /// <param name="huntersInvolved">A list of Hunters involved in the Encounter</param>
         /// <param name="logic">The artificial intelligence component</param>
-        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
+        /// <returns>True if the Hunters can continue resolving Encounters</returns>
         private static bool ResolveSaboteur(GameState game, List<Hunter> huntersInvolved)
         {
             foreach (var h in huntersInvolved)
@@ -2455,12 +2698,12 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Resolves an encounter of Rats for a group of hunters
+        /// Resolves an Encounter of Rats for a group of Hunters
         /// </summary>
         /// <param name="game">The GameState</param>
-        /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
+        /// <param name="huntersInvolved">A list of Hunters involved in the Encounter</param>
         /// <param name="logic">The artificial intelligence component</param>
-        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
+        /// <returns>True if the Hunters can continue resolving Encounters</returns>
         private static bool ResolveRats(GameState game, List<Hunter> huntersInvolved)
         {
             foreach (var h in huntersInvolved)
@@ -2488,12 +2731,12 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Resolves an encounter of Plague for a group of hunters
+        /// Resolves an Encounter of Plague for a group of Hunters
         /// </summary>
         /// <param name="game">The GameState</param>
-        /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
+        /// <param name="huntersInvolved">A list of Hunters involved in the Encounter</param>
         /// <param name="logic">The artificial intelligence component</param>
-        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
+        /// <returns>True if the Hunters can continue resolving Encounters</returns>
         private static bool ResolvePlague(GameState game, List<Hunter> huntersInvolved)
         {
             foreach (var h in huntersInvolved)
@@ -2508,12 +2751,12 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Resolves an encounter of Peasants for a group of hunters
+        /// Resolves an Encounter of Peasants for a group of Hunters
         /// </summary>
         /// <param name="game">The GameState</param>
-        /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
+        /// <param name="huntersInvolved">A list of Hunters involved in the Encounter</param>
         /// <param name="logic">The artificial intelligence component</param>
-        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
+        /// <returns>True if the Hunters can continue resolving Encounters</returns>
         private static bool ResolvePeasants(GameState game, List<Hunter> huntersInvolved)
         {
             if (!game.Map.IsEastern(game.Hunters[(int)huntersInvolved.First()].CurrentLocation))
@@ -2560,12 +2803,12 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Resolves an encounter of Lightning for a group of hunters
+        /// Resolves an Encounter of Lightning for a group of Hunters
         /// </summary>
         /// <param name="game">The GameState</param>
-        /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
+        /// <param name="huntersInvolved">A list of Hunters involved in the Encounter</param>
         /// <param name="logic">The artificial intelligence component</param>
-        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
+        /// <returns>True if the Hunters can continue resolving Encounters</returns>
         private static bool ResolveLightning(GameState game, List<Hunter> huntersInvolved)
         {
             var answer = 0;
@@ -2613,12 +2856,12 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Resolves an encounter of a Hoax for a group of hunters
+        /// Resolves an encounter of a Hoax for a group of Hunters
         /// </summary>
         /// <param name="game">The GameState</param>
-        /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
+        /// <param name="huntersInvolved">A list of Hunters involved in the Encounter</param>
         /// <param name="logic">The artificial intelligence component</param>
-        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
+        /// <returns>A bool of whether or not the Hunters can continue resolving Encounters</returns>
         private static bool ResolveHoax(GameState game, List<Hunter> huntersInvolved)
         {
             foreach (var h in huntersInvolved)
@@ -2656,12 +2899,12 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Resolves an encounter of a Minion With Knife And Rifle for a group of hunters
+        /// Resolves an encounter of a Minion With Knife And Rifle for a group of Hunters
         /// </summary>
         /// <param name="game">The GameState</param>
         /// <param name="huntersInvolved">A list of Hunters involved in the combat</param>
         /// <param name="logic">The artificial intelligence component</param>
-        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
+        /// <returns>True if the Hunters can continue resolving Encounters</returns>
         private static bool ResolveMinionWithKnifeAndRifle(GameState game, List<Hunter> huntersInvolved,
             DecisionMaker logic)
         {
@@ -2683,6 +2926,14 @@ namespace FuryOfDracula.ConsoleInterface
             return continueEncounters;
         }
 
+        /// <summary>
+        /// Determines if Dracula is playing Relentless Minion
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="huntersInvolved">The List of Hunters involved in the Encounter</param>
+        /// <param name="opponent">The Opponent type</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        /// <returns>True if Dracula successfully plays Relentless Minion</returns>
         private static bool DraculaIsPlayingRelentlessMinion(GameState game, List<Hunter> huntersInvolved,
             Opponent opponent, DecisionMaker logic)
         {
@@ -2703,12 +2954,12 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Resolves an encounter of a Minion With Knife And Pistol for a group of hunters
+        /// Resolves an Encounter of a Minion With Knife And Pistol for a group of Hunters
         /// </summary>
         /// <param name="game">The GameState</param>
         /// <param name="huntersInvolved">A list of Hunters involved in the combat</param>
         /// <param name="logic">The artificial intelligence component</param>
-        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
+        /// <returns>True if the Hunters can continue resolving Encounters</returns>
         private static bool ResolveMinionWithKnifeAndPistol(GameState game, List<Hunter> huntersInvolved,
             DecisionMaker logic)
         {
@@ -2731,12 +2982,12 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Resolves an encounter of a Minion With Knife for a group of hunters
+        /// Resolves an Encounter of a Minion With Knife for a group of Hunters
         /// </summary>
         /// <param name="game">The GameState</param>
         /// <param name="huntersInvolved">A list of Hunters involved in the combat</param>
         /// <param name="logic">The artificial intelligence component</param>
-        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
+        /// <returns>True if the Hunters can continue resolving Encounters</returns>
         private static bool ResolveMinionWithKnife(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
         {
             var huntersInCombat = new List<HunterPlayer>();
@@ -2758,12 +3009,12 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Resolves an encounter of Desecrated Soil for a group of hunters
+        /// Resolves an Encounter of Desecrated Soil for a group of Hunters
         /// </summary>
         /// <param name="game">The GameState</param>
-        /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
+        /// <param name="huntersInvolved">A list of Hunters involved in the Encounter</param>
         /// <param name="logic">The artificial intelligence component</param>
-        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
+        /// <returns>True if the Hunters can continue resolving Encounters</returns>
         private static bool ResolveDesecratedSoil(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
         {
             Console.WriteLine("Draw an Event card. If it is a Hunter card, name it, otherwise type \"Dracula\"");
@@ -2793,12 +3044,12 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Resolves an encounter of Assassin for a group of hunters
+        /// Resolves an Encounter of Assassin for a group of Hunters
         /// </summary>
         /// <param name="game">The GameState</param>
         /// <param name="huntersInvolved">A list of Hunters involved in the combat</param>
         /// <param name="logic">The artificial intelligence component</param>
-        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
+        /// <returns>True if the Hunters can continue resolving Encounters</returns>
         private static bool ResolveAssassin(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
         {
             var huntersInCombat = new List<HunterPlayer>();
@@ -2815,12 +3066,12 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Resolves an encounter of Ambush for a group of hunters
+        /// Resolves an Encounter of Ambush for a group of Hunters
         /// </summary>
         /// <param name="game">The GameState</param>
-        /// <param name="huntersInvolved">A list of Hunters involved in the encounter</param>
+        /// <param name="huntersInvolved">A list of Hunters involved in the Encounter</param>
         /// <param name="logic">The artificial intelligence component</param>
-        /// <returns>A bool of whether or not the Hunters can continue resolving encounters</returns>
+        /// <returns>True if the Hunters can continue resolving Encounters</returns>
         private static bool ResolveAmbush(GameState game, List<Hunter> huntersInvolved, DecisionMaker logic)
         {
             game.Dracula.DrawEncounter(game.EncounterPool);
@@ -2829,7 +3080,7 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Checks if any of the hunters should discard a card
+        /// Checks if any of the Hunters should discard a card
         /// </summary>
         /// <param name="game">The GameState</param>
         private static void CheckForDiscardRequired(GameState game)
@@ -2869,7 +3120,7 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Reveals a card and its encounters at a given position, for debugging
+        /// Reveals a card and its Encounters at a given position, for debugging
         /// </summary>
         /// <param name="game">The GameState</param>
         /// <param name="position">1-6 for positions in the trail, 7-9 for the three catacombs positions</param>
@@ -2898,7 +3149,7 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Allows Dracula to take his turn
+        /// Allows Dracula to take his turn
         /// </summary>
         /// <param name="game">The GameState</param>
         /// <param name="logic">The artificial intelligence component</param>
@@ -2938,17 +3189,13 @@ namespace FuryOfDracula.ConsoleInterface
                     case 0:
                         Console.WriteLine("{0} loses 1 health");
                         game.Hunters[(int)victim].AdjustHealth(-1);
-                        CheckForHunterDeath(game);
-                        break;
+                        CheckForHunterDeath(game); break;
                     case 1:
                         Console.WriteLine("Health loss cancelled");
-                        AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)victim], Item.Crucifix);
-                        break;
+                        AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)victim], Item.Crucifix); break;
                     case 2:
                         Console.WriteLine("Health loss cancelled");
-                        AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)victim],
-                            Item.HeavenlyHost);
-                        break;
+                        AddItemCardToDraculaKnownCardsIfNotAlreadyKnown(game, game.Hunters[(int)victim], Item.HeavenlyHost); break;
                 }
             }
             var eventPlayed = Event.None;
@@ -2978,30 +3225,23 @@ namespace FuryOfDracula.ConsoleInterface
                                 {
                                     case DevilishPowerTarget.HeavenlyHost1:
                                         Console.WriteLine("Heavenly Host discarded from {0}", game.HeavenlyHostLocation1);
-                                        game.HeavenlyHostLocation1 = Location.Nowhere;
-                                        break;
+                                        game.HeavenlyHostLocation1 = Location.Nowhere; break;
                                     case DevilishPowerTarget.HeavenlyHost2:
                                         Console.WriteLine("Heavenly Host discarded from {0}", game.HeavenlyHostLocation2);
-                                        game.HeavenlyHostLocation2 = Location.Nowhere;
-                                        break;
+                                        game.HeavenlyHostLocation2 = Location.Nowhere; break;
                                     case DevilishPowerTarget.HunterAlly:
                                         Console.WriteLine("{0} discarded from play", game.HunterAlly.Event.Name());
                                         game.EventDiscard.Add(game.HunterAlly);
-                                        game.HunterAlly = null;
-                                        break;
-                                }
-                                break;
+                                        game.HunterAlly = null; break;
+                                } break;
                             case Event.UnearthlySwiftness:
-                                numberOfMoves = 2;
-                                break;
+                                numberOfMoves = 2; break;
                             case Event.TimeRunsShort:
-                                game.RegressTimeTracker();
-                                break;
+                                game.RegressTimeTracker(); break;
                             case Event.Roadblock:
                                 game.RoadBlockLocation1 = roadBlock1;
                                 game.RoadBlockLocation2 = roadBlock2;
-                                game.RoadBlockConnectionType = roadBlockType;
-                                break;
+                                game.RoadBlockConnectionType = roadBlockType; break;
                         }
                     }
                 }
@@ -3016,6 +3256,7 @@ namespace FuryOfDracula.ConsoleInterface
                 if (destination == Location.Nowhere && power == Power.None)
                 {
                     Console.WriteLine("Dracula is cornered by his own trail and has no valid moves");
+                    game.Dracula.TakePunishmentForCheating(game);
                     return;
                 }
                 var cardDroppedOffTrail = game.Dracula.MoveTo(destination, power);
@@ -3046,19 +3287,12 @@ namespace FuryOfDracula.ConsoleInterface
                     case Power.Hide:
                     case Power.None:
                     case Power.WolfForm:
-                        game.Dracula.PlaceEncounterTileOnCard(
-                            logic.ChooseEncounterTileToPlaceOnDraculaCardSlot(game, game.Dracula.Trail[0]),
-                            game.Dracula.Trail[0]);
-                        break;
+                        game.Dracula.PlaceEncounterTileOnCard(logic.ChooseEncounterTileToPlaceOnDraculaCardSlot(game, game.Dracula.Trail[0]), game.Dracula.Trail[0]); break;
                     case Power.DoubleBack:
-                        var encounterTileToDiscard =
-                            logic.ChooseEncounterTileToDiscardFromDoubleBackedCatacombsLocation(game);
-                        game.Dracula.DiscardEncounterTileFromCardSlot(encounterTileToDiscard, game.Dracula.Trail[0],
-                            game.EncounterPool);
-                        break;
+                        var encounterTileToDiscard = logic.ChooseEncounterTileToDiscardFromDoubleBackedCatacombsLocation(game);
+                        game.Dracula.DiscardEncounterTileFromCardSlot(encounterTileToDiscard, game.Dracula.Trail[0], game.EncounterPool); break;
                     case Power.Feed:
-                        game.Dracula.AdjustBlood(1);
-                        break;
+                        game.Dracula.AdjustBlood(1); break;
                     case Power.DarkCall:
                         game.Dracula.AdjustBlood(-2);
                         for (int i = 0; i < 10; i++)
@@ -3068,8 +3302,7 @@ namespace FuryOfDracula.ConsoleInterface
                         while (game.Dracula.EncounterHand.Count() > game.Dracula.EncounterHandSize)
                         {
                             game.Dracula.DiscardEncounterTile(game, logic.ChooseEncounterTileToDiscardFromEncounterHand(game));
-                        }
-                        break;
+                        } break;
                 }
             }
             else
@@ -3101,7 +3334,7 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Draws the gamestate on the screen
+        /// Draws the gamestate on the screen
         /// </summary>
         /// <param name="game">The GameState</param>
         private static void DrawGameState(GameState game)
@@ -3152,18 +3385,14 @@ namespace FuryOfDracula.ConsoleInterface
             {
                 case TimeOfDay.Dawn:
                 case TimeOfDay.Dusk:
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    break;
+                    Console.ForegroundColor = ConsoleColor.DarkYellow; break;
                 case TimeOfDay.Noon:
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    break;
+                    Console.ForegroundColor = ConsoleColor.Yellow; break;
                 case TimeOfDay.Midnight:
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    break;
+                    Console.ForegroundColor = ConsoleColor.Blue; break;
                 case TimeOfDay.Twilight:
                 case TimeOfDay.SmallHours:
-                    Console.ForegroundColor = ConsoleColor.DarkBlue;
-                    break;
+                    Console.ForegroundColor = ConsoleColor.DarkBlue; break;
             }
             Console.Write("    {0}", game.TimeOfDay.Name());
             Console.ResetColor();
@@ -3289,8 +3518,7 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Provides details about various aspects of the gamestate that are not otherwise displayed on the screen, for
-        ///     debugging
+        /// Provides details about various aspects of the gamestate that are not otherwise displayed on the screen
         /// </summary>
         /// <param name="game">The GameState</param>
         private static void DisplayState(GameState game, string argument1)
@@ -3364,11 +3592,11 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Discards a card of a given name from the given hunter
+        /// Discards a card of a given name from the given Hunter
         /// </summary>
         /// <param name="game">The GameState</param>
         /// <param name="cardName">The name of the card (Item or Event) to discard</param>
-        /// <param name="hunterIndex">The number of the hunter (1-4)</param>
+        /// <param name="hunterIndex">A string to be converted to the Hunter discarding the card</param>
         private static void DiscardCard(GameState game, string cardName, string hunterIndex)
         {
             var index = 0;
@@ -3439,11 +3667,11 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Adds 1 to the count of cards of the given type to the given hunter
+        /// Adds 1 to the count of cards of the given type to the given Hunter
         /// </summary>
         /// <param name="game">The GameState</param>
         /// <param name="cardType">Item or Event</param>
-        /// <param name="hunterIndex">The number of the hunter (1-4)</param>
+        /// <param name="hunterIndex">A string to be converted to the Hunter drawing the card</param>
         private static void DrawCard(GameState game, string cardType, string hunterIndex)
         {
             var index = 0;
@@ -3482,34 +3710,26 @@ namespace FuryOfDracula.ConsoleInterface
                     case "i":
                     case "item":
                         game.Hunters[index].DrawItemCard();
-                        Console.WriteLine("{0} drew an Item card, up to {1}", hunterToDraw.Name(),
-                            game.Hunters[index].ItemCount);
-                        return;
+                        Console.WriteLine("{0} drew an Item card, up to {1}", hunterToDraw.Name(), game.Hunters[index].ItemCount); return;
                     case "e":
                     case "event":
                         game.Hunters[index].DrawEventCard();
-                        Console.WriteLine("{0} drew an Event card, up to {1}", hunterToDraw.Name(),
-                            game.Hunters[index].EventCount);
-                        return;
+                        Console.WriteLine("{0} drew an Event card, up to {1}", hunterToDraw.Name(), game.Hunters[index].EventCount); return;
                     default:
                         Console.WriteLine("What type of card is {0} drawing?", hunterToDraw.Name());
-                        cardType = Console.ReadLine().ToLower();
-                        break;
+                        cardType = Console.ReadLine().ToLower(); break;
                 }
             } while (cardType != "cancel");
             Console.WriteLine("Cancelled");
         }
 
         /// <summary>
-        ///     Moves the given hunter to the given location, along with all hunters in the given hunter's group
+        /// Moves the given Hunter to the given Location, along with all Hunters in the given Hunter's group
         /// </summary>
         /// <param name="game">The GameState</param>
-        /// <param name="hunterIndex">The number of the hunter (1-4)</param>
-        /// <param name="location">The name of the location to move to</param>
-        /// <returns>
-        ///     The position of the card in Dracula's trail (0-5) or catacombs (6-8) that corresponds to the given location,
-        ///     or -1 if not in the trail/catacombs
-        /// </returns>
+        /// <param name="hunterIndex">A string to be converted to the Hunter discarding the card</param>
+        /// <param name="location">The name of the Location to move to</param>
+        /// <returns>The position of the card in Dracula's trail (0-5) or catacombs (6-8) that corresponds to the given location, or -1 if not in the trail/catacombs</returns>
         private static int MoveHunter(GameState game, string hunterIndex, string location, out Hunter hunterMoved,
             out Location originatingLocation, DecisionMaker logic)
         {
@@ -3594,6 +3814,13 @@ namespace FuryOfDracula.ConsoleInterface
             return -1;
         }
 
+        /// <summary>
+        /// Determines if Dracula is playing Control Storms at the start of a Hunter's movement
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="hunterMoved">The Hunter moving</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        /// <returns>True if Dracula successfully played Control Storms</returns>
         private static bool DraculaIsPlayingControlStorms(GameState game, Hunter hunterMoved, DecisionMaker logic)
         {
             if (logic.ChooseToPlayControlStorms(game, hunterMoved))
@@ -3612,7 +3839,7 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Serialises and saves a gamestate to a file with the given filename
+        /// Serialises and saves a GameState to a file with the given filename
         /// </summary>
         /// <param name="game">The GameState</param>
         /// <param name="fileName">The name of the file, without extension</param>
@@ -3640,15 +3867,15 @@ namespace FuryOfDracula.ConsoleInterface
         }
 
         /// <summary>
-        ///     Used to capture multiple strings from a single user console input
+        /// Used to capture multiple strings from a single user console input
         /// </summary>
         /// <returns>A CommandSet</returns>
         internal static CommandSet GetCommandSet()
         {
             string line;
             string command;
-            string argument1;
-            var argument2 = "no argument";
+            string argument1 = "####";
+            var argument2 = "####";
 
             line = Console.ReadLine().ToLower();
             try
@@ -3659,7 +3886,6 @@ namespace FuryOfDracula.ConsoleInterface
             {
                 command = line;
             }
-            line = line.Replace('_', ' ');
 
             try
             {
@@ -3679,20 +3905,20 @@ namespace FuryOfDracula.ConsoleInterface
                 argument1 = "####";
             }
             line = line.Replace('_', ' ');
-            argument1= argument1.Replace('_', ' ');
+            argument1 = argument1.Replace('_', ' ');
             argument2 = argument2.Replace('_', ' ');
 
             return new CommandSet(command.ToLower(), argument1.ToLower(), argument2.ToLower());
         }
 
         /// <summary>
-        ///     Resolves a combat between a group of hunters and an opponent
+        /// Resolves a combat between a group of Hunters and an Opponent
         /// </summary>
         /// <param name="game">The GameState</param>
         /// <param name="huntersInvolved">A list of HunterPlayers involved in the combat</param>
-        /// <param name="opponent">The opponent type</param>
+        /// <param name="opponent">The Opponent type</param>
         /// <param name="logic">The artificial intelligence component</param>
-        /// <returns>A bool of whether the HunterPlayers can continue resolving encounters or not</returns>
+        /// <returns>True if the Hunters can continue resolving Encounters</returns>
         private static bool ResolveCombat(GameState game, List<HunterPlayer> huntersInvolved, Opponent opponent,
             DecisionMaker logic)
         {
@@ -3744,8 +3970,7 @@ namespace FuryOfDracula.ConsoleInterface
                                 else
                                 {
                                     Console.WriteLine("Advance Planning cancelled");
-                                }
-                                break;
+                                } break;
                             case Event.EscapeRoute:
                                 game.Hunters[answer].DiscardEvent(game, Event.EscapeRoute);
                                 if (!DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.EscapeRoute, Event.EscapeRoute, logic))
@@ -3753,8 +3978,7 @@ namespace FuryOfDracula.ConsoleInterface
                                     Console.WriteLine("Combat cancelled", ((Hunter)answer).Name());
                                     return false;
                                 }
-                                Console.WriteLine("Escape Route cancelled");
-                                break;
+                                Console.WriteLine("Escape Route cancelled"); break;
                             case Event.HeroicLeap:
                                 game.Hunters[answer].DiscardEvent(game, Event.HeroicLeap);
                                 if (!DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.HeroicLeap, Event.HeroicLeap, logic))
@@ -3776,8 +4000,7 @@ namespace FuryOfDracula.ConsoleInterface
                                     CheckForHunterDeath(game);
                                     return false;
                                 }
-                                Console.WriteLine("Escape Route cancelled");
-                                break;
+                                Console.WriteLine("Escape Route cancelled"); break;
                         }
                     }
                 }
@@ -3786,7 +4009,7 @@ namespace FuryOfDracula.ConsoleInterface
             if (opponent == Opponent.Dracula || opponent == Opponent.NewVampire)
             {
                 Console.WriteLine("Is anyone playing Garlic at the start of this combat? 0= Nobody, {0}{1}{2}{3}", huntersInvolved.Find(h => h.Hunter == Hunter.LordGodalming) == null ? "" : "1= Lord Godalming", huntersInvolved.Find(h => h.Hunter == Hunter.DrSeward) == null ? "" : "2= Dr. Seward", huntersInvolved.Find(h => h.Hunter == Hunter.VanHelsing) == null ? "" : "3= Van Helsing", huntersInvolved.Find(h => h.Hunter == Hunter.MinaHarker) == null ? "" : "4= Mina Harker");
-                    
+
                 while (answer == -1)
                 {
                     if (int.TryParse(Console.ReadLine(), out answer))
@@ -3794,11 +4017,13 @@ namespace FuryOfDracula.ConsoleInterface
                         if (answer < 0 || answer > 4)
                         {
                             answer = -1;
-                        } else if (answer != 0 && huntersInvolved.Find(h => (int)h.Hunter == answer) == null)
+                        }
+                        else if (answer != 0 && huntersInvolved.Find(h => (int)h.Hunter == answer) == null)
                         {
                             answer = -1;
                         }
-                    } else
+                    }
+                    else
                     {
                         answer = -1;
                     }
@@ -3835,27 +4060,23 @@ namespace FuryOfDracula.ConsoleInterface
                 case Opponent.MinionWithKnife:
                     enemyCombatCards.Add(EnemyCombatCard.Punch);
                     enemyCombatCards.Add(EnemyCombatCard.Dodge);
-                    enemyCombatCards.Add(EnemyCombatCard.Knife);
-                    break;
+                    enemyCombatCards.Add(EnemyCombatCard.Knife); break;
                 case Opponent.MinionWithKnifeAndPistol:
                     enemyCombatCards.Add(EnemyCombatCard.Punch);
                     enemyCombatCards.Add(EnemyCombatCard.Dodge);
                     enemyCombatCards.Add(EnemyCombatCard.Knife);
-                    enemyCombatCards.Add(EnemyCombatCard.Pistol);
-                    break;
+                    enemyCombatCards.Add(EnemyCombatCard.Pistol); break;
                 case Opponent.MinionWithKnifeAndRifle:
                     enemyCombatCards.Add(EnemyCombatCard.Punch);
                     enemyCombatCards.Add(EnemyCombatCard.Dodge);
                     enemyCombatCards.Add(EnemyCombatCard.Knife);
-                    enemyCombatCards.Add(EnemyCombatCard.Rifle);
-                    break;
+                    enemyCombatCards.Add(EnemyCombatCard.Rifle); break;
                 case Opponent.Assassin:
                     enemyCombatCards.Add(EnemyCombatCard.Punch);
                     enemyCombatCards.Add(EnemyCombatCard.Dodge);
                     enemyCombatCards.Add(EnemyCombatCard.Knife);
                     enemyCombatCards.Add(EnemyCombatCard.Pistol);
-                    enemyCombatCards.Add(EnemyCombatCard.Rifle);
-                    break;
+                    enemyCombatCards.Add(EnemyCombatCard.Rifle); break;
                 case Opponent.Dracula:
                     enemyCombatCards.Add(EnemyCombatCard.Claws);
                     enemyCombatCards.Add(EnemyCombatCard.Dodge);
@@ -3871,9 +4092,7 @@ namespace FuryOfDracula.ConsoleInterface
                             enemyCombatCards.Add(EnemyCombatCard.Mesmerize);
                             enemyCombatCards.Add(EnemyCombatCard.Strength);
                             break;
-                    }
-                    ;
-                    break;
+                    } break;
                 case Opponent.NewVampire:
                     enemyCombatCards.Add(EnemyCombatCard.Claws);
                     enemyCombatCards.Add(EnemyCombatCard.Dodge);
@@ -3886,9 +4105,7 @@ namespace FuryOfDracula.ConsoleInterface
                             enemyCombatCards.Add(EnemyCombatCard.Mesmerize);
                             enemyCombatCards.Add(EnemyCombatCard.Strength);
                             break;
-                    }
-                    ;
-                    break;
+                    } break;
             }
             var firstRound = true;
             var repelled = false;
@@ -3964,11 +4181,9 @@ namespace FuryOfDracula.ConsoleInterface
                 } while (index == 0);
                 switch (index)
                 {
-                    case 1:
-                        break;
+                    case 1: break;
                     case 2:
-                        repelled = true;
-                        break;
+                        repelled = true; break;
                     case 3:
                         HunterPlayer hunterToDiscardCard = null;
                         if (huntersInvolved.Count == 1)
@@ -4015,11 +4230,9 @@ namespace FuryOfDracula.ConsoleInterface
                         else if (eventDiscarded != Event.None)
                         {
                             hunterToDiscardCard.DiscardEvent(game, eventDiscarded);
-                        }
-                        break;
+                        } break;
                     case 4:
-                        continueCombat = false;
-                        break;
+                        continueCombat = false; break;
                 }
                 firstRound = false;
             }
@@ -4050,8 +4263,7 @@ namespace FuryOfDracula.ConsoleInterface
                 } while (health == -1);
                 game.Dracula.AdjustBlood(health - game.Dracula.Blood);
             }
-            Console.WriteLine("Did {0} win? (An end result is a no)",
-                huntersInvolved.Count() > 1 ? "the Hunters" : huntersInvolved.First().Hunter.Name());
+            Console.WriteLine("Did {0} win? (An end result is a no)", huntersInvolved.Count() > 1 ? "the Hunters" : huntersInvolved.First().Hunter.Name());
             string input;
             do
             {
@@ -4063,8 +4275,7 @@ namespace FuryOfDracula.ConsoleInterface
                 {
                     game.AdjustVampires(-1);
                 }
-                Console.WriteLine(
-                    "Don't forget to register any cards discarded, such as Great Strength used to prevent health loss, Events due to enemy Knife wounds, Items consumed, etc.");
+                Console.WriteLine("Don't forget to register any cards discarded, such as Great Strength used to prevent health loss, Events due to enemy Knife wounds, Items consumed, etc.");
                 return true;
             }
             if (opponent == Opponent.Dracula)
@@ -4089,8 +4300,7 @@ namespace FuryOfDracula.ConsoleInterface
                             } while (itemDiscarded == Item.None);
                             game.Hunters[(int)enemyTarget].DiscardItem(game, itemDiscarded);
                         }
-                        CheckForHunterDeath(game);
-                        break;
+                        CheckForHunterDeath(game); break;
                     case EnemyCombatCard.Fangs:
                         Console.WriteLine("{0} is bitten!", enemyTarget.Name());
                         if (!HunterPlayingGreatStrengthToCancelBite(game, enemyTarget, logic))
@@ -4101,12 +4311,10 @@ namespace FuryOfDracula.ConsoleInterface
                         goto case EnemyCombatCard.EscapeBat;
                     case EnemyCombatCard.EscapeBat:
                         Console.WriteLine("Dracula escaped in the form of a bat");
-                        game.Dracula.EscapeAsBat(game, logic.ChooseEscapeAsBatDestination(game));
-                        break;
+                        game.Dracula.EscapeAsBat(game, logic.ChooseEscapeAsBatDestination(game)); break;
                 }
             }
-            Console.WriteLine(
-                "Don't forget to register any cards discarded, such as Great Strength used to prevent health loss or Items due to enemy Knife wounds");
+            Console.WriteLine("Don't forget to register any cards discarded, such as Great Strength used to prevent health loss or Items due to enemy Knife wounds");
             foreach (HunterPlayer h in huntersInvolved)
             {
                 h.LastCombatCardChosen = Item.None;
@@ -4114,6 +4322,11 @@ namespace FuryOfDracula.ConsoleInterface
             return false;
         }
 
+        /// <summary>
+        /// Handles the situation when a Hunter must reveal all Items to Dracula
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="victim">The Hunter revealing Items</param>
         private static void DraculaLooksAtAllHuntersItems(GameState game, HunterPlayer victim)
         {
             game.ItemDeck.AddRange(victim.ItemsKnownToDracula);
@@ -4130,6 +4343,12 @@ namespace FuryOfDracula.ConsoleInterface
             }
         }
 
+        /// <summary>
+        /// Adds an Item to a Hunter's list of Items known to Dracula
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="victim">The Hunter revealing an Item</param>
+        /// <param name="itemRevealed">The Item revealed</param>
         private static void AddItemCardToDraculaKnownCards(GameState game, HunterPlayer victim, Item itemRevealed)
         {
             var itemCardRevealed = game.ItemDeck.Find(card => card.Item == itemRevealed);
@@ -4137,6 +4356,13 @@ namespace FuryOfDracula.ConsoleInterface
             game.ItemDeck.Remove(itemCardRevealed);
         }
 
+        /// <summary>
+        /// Determines if Dracula is playing Rage against a Hunter at the start of a combat
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="huntersInvolved">The list of Hunters involved in the combat</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        /// <returns>True if Dracula successfully plays Rage</returns>
         private static Hunter DraculaIsPlayingRageAgainstHunter(GameState game, List<HunterPlayer> huntersInvolved,
             DecisionMaker logic)
         {
@@ -4155,6 +4381,14 @@ namespace FuryOfDracula.ConsoleInterface
             return Hunter.Nobody;
         }
 
+        /// <summary>
+        /// Determines if Dracula is playing Trap against a Hunter at the start of a combat
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="huntersInvolved">The list of Hunters involved in the combat</param>
+        /// <param name="opponent">The Opponent</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        /// <returns>True if Dracula successfully plays Trap</returns>
         private static bool DraculaIsPlayingTrap(GameState game, List<HunterPlayer> huntersInvolved, Opponent opponent,
             DecisionMaker logic)
         {
@@ -4172,6 +4406,13 @@ namespace FuryOfDracula.ConsoleInterface
             return false;
         }
 
+        /// <summary>
+        /// Determines if a Hunter is playing Great Strength to cancel a Bite
+        /// </summary>
+        /// <param name="game">The GameState</param>
+        /// <param name="bittenHunter">The Hunter receiving a bite</param>
+        /// <param name="logic">The artificial intelligence component</param>
+        /// <returns>True if the Hunter successfully plays Great Strength</returns>
         private static bool HunterPlayingGreatStrengthToCancelBite(GameState game, Hunter bittenHunter,
             DecisionMaker logic)
         {

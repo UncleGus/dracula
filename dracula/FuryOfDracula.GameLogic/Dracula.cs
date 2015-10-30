@@ -564,7 +564,7 @@ namespace FuryOfDracula.GameLogic
 
         public int PositionWhereHideCardIs()
         {
-            for (int i = 0; i < 6; i ++)
+            for (int i = 0; i < 6; i++)
             {
                 if (Trail[i] != null && Trail[i].DraculaCards.First().Power == Power.Hide)
                 {
@@ -572,6 +572,32 @@ namespace FuryOfDracula.GameLogic
                 }
             }
             return -1;
+        }
+
+        public void TakePunishmentForCheating(GameState game)
+        {
+            Blood = (int)(Blood / 5) * 5;
+            while (Trail[0].DraculaCards.First().Location != CurrentLocation)
+            {
+                foreach (DraculaCard card in Trail[0].DraculaCards)
+                {
+                    card.IsRevealed = false;
+                }
+                foreach (EncounterTile tile in Trail[0].EncounterTiles)
+                {
+                    tile.IsRevealed = false;
+                    game.EncounterPool.Add(tile);
+                }
+                for (int i = 0; i < 5; i++)
+                {
+                    if (Trail[i] != null && Trail[i + 1] != null)
+                    {
+                        Trail[i] = Trail[i + 1];
+                    }
+                }
+            }
+            ClearTrailDownTo(game, 1);
+            Trail[0].DraculaCards.First().IsRevealed = true;
         }
     }
 }
