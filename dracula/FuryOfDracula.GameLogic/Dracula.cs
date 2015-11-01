@@ -70,6 +70,16 @@ namespace FuryOfDracula.GameLogic
 
         [DataMember]
         public bool LostBloodFromSeaMovementLastTurn { get; set; }
+        public int CurrentLocationPosition { get {
+                for (int i = 0; i < 6; i++)
+                {
+                    if (Trail[i].DraculaCards.First().Location == CurrentLocation)
+                    {
+                        return i;
+                    }
+                }
+                return -1;
+            } }
 
         public DraculaCardSlot MoveTo(Location destination, Power power, out int doubleBackSlot)
         {
@@ -273,13 +283,15 @@ namespace FuryOfDracula.GameLogic
             }
         }
 
-        public List<EncounterTile> DiscardHide()
+        public List<EncounterTile> DiscardHide(out int position)
         {
+            position = -1;
             var encountersDiscarded = new List<EncounterTile>();
             for (var i = 0; i < 6; i++)
             {
                 if (Trail[i] != null && Trail[i].DraculaCards.First().Power == Power.Hide)
                 {
+                    position = i;
                     Trail[i].DraculaCards.First().IsRevealed = false;
                     LocationWhereHideWasUsed = Location.Nowhere;
                     foreach (var enc in Trail[i].EncounterTiles)

@@ -57,7 +57,8 @@ namespace FuryOfDracula.UnitTests
             dracula.Trail[3].EncounterTiles.Add(new EncounterTile(Encounter.Hoax));
             dracula.Trail[4].DraculaCards.Add(dracula.DraculaCardDeck.Find(card => card.Location == Location.Florence));
             dracula.Trail[5].DraculaCards.Add(dracula.DraculaCardDeck.Find(card => card.Location == Location.Milan));
-            var discardedEncounters = dracula.DiscardHide();
+            int hideIndex = -1;
+            var discardedEncounters = dracula.DiscardHide(out hideIndex);
             Assert.AreEqual(Location.Bari, dracula.Trail[0].DraculaCards[0].Location);
             Assert.AreEqual(Location.Naples, dracula.Trail[1].DraculaCards[0].Location);
             Assert.AreEqual(Location.Rome, dracula.Trail[2].DraculaCards[0].Location);

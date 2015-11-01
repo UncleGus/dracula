@@ -196,5 +196,74 @@ namespace FuryOfDracula.UnitTests
             Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.Cadiz));
             Assert.AreNotEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.Plymouth && trail[0].Power == Power.WolfForm && trail[1].Location == Location.Manchester));
         }
+
+        [Test]
+        public void TrimAllPossibleTrails_TrailsOfLength3TrimmedTo2_NoLength1or3Trails()
+        {
+            game.Hunters[(int)Hunter.LordGodalming].MoveTo(Location.Madrid);
+            game.Hunters[(int)Hunter.DrSeward].MoveTo(Location.Hamburg);
+            game.Hunters[(int)Hunter.VanHelsing].MoveTo(Location.Paris);
+            game.Hunters[(int)Hunter.MinaHarker].MoveTo(Location.Zagreb);
+            int doubleBackSlot = 0;
+            game.Dracula.MoveTo(Location.Alicante, Power.None, out doubleBackSlot);
+            logic.InitialisePossibilityTree(game);
+            game.Dracula.MoveTo(Location.Cadiz, Power.None, out doubleBackSlot);
+            logic.AddOrangeBackedCardToAllPossibleTrails(game);
+            game.Dracula.MoveTo(Location.Granada, Power.None, out doubleBackSlot);
+            logic.AddOrangeBackedCardToAllPossibleTrails(game);
+            game.Dracula.ClearTrailDownTo(game, 2);
+            logic.TrimAllPossibleTrails(2);
+            Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[2] != null));
+            Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[1] == null));
+        }
+
+        [Test]
+        public void EliminateTrailsThatContainLocation_TrailLength2LocationNaples_NoTrailsContainingNaples()
+        {
+            game.Hunters[(int)Hunter.LordGodalming].MoveTo(Location.Madrid);
+            game.Hunters[(int)Hunter.DrSeward].MoveTo(Location.Hamburg);
+            game.Hunters[(int)Hunter.VanHelsing].MoveTo(Location.Paris);
+            game.Hunters[(int)Hunter.MinaHarker].MoveTo(Location.Zagreb);
+            int doubleBackSlot = 0;
+            game.Dracula.MoveTo(Location.Berlin, Power.None, out doubleBackSlot);
+            logic.InitialisePossibilityTree(game);
+            logic.AddOrangeBackedCardToAllPossibleTrails(game);
+            logic.EliminateTrailsThatContainLocation(Location.Naples);
+            Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.Naples));
+            Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[1].Location == Location.Naples));
+        }
+
+        [Test]
+        public void EliminateTrailsThatDoNotContainLocationAtPosition_TrailLength2LocationRomePosition2_OnlyTrailsWithRomeInPosition2()
+        {
+            game.Hunters[(int)Hunter.LordGodalming].MoveTo(Location.Madrid);
+            game.Hunters[(int)Hunter.DrSeward].MoveTo(Location.Hamburg);
+            game.Hunters[(int)Hunter.VanHelsing].MoveTo(Location.Paris);
+            game.Hunters[(int)Hunter.MinaHarker].MoveTo(Location.Zagreb);
+            int doubleBackSlot = 0;
+            game.Dracula.MoveTo(Location.Rome, Power.None, out doubleBackSlot);
+            logic.InitialisePossibilityTree(game);
+            game.Dracula.MoveTo(Location.Naples, Power.None, out doubleBackSlot);
+            logic.AddOrangeBackedCardToAllPossibleTrails(game);
+            logic.EliminateTrailsThatDoNotContainLocationAtPosition(Location.Rome, 1);
+            Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[1].Location != Location.Rome));
+        }
+
+        [Test]
+        public void EliminateTrailsThatContainLocationAtPosition_Milan0_NoTrailsHaveZagrebAtPosition0()
+        {
+            game.Hunters[(int)Hunter.LordGodalming].MoveTo(Location.Madrid);
+            game.Hunters[(int)Hunter.DrSeward].MoveTo(Location.Hamburg);
+            game.Hunters[(int)Hunter.VanHelsing].MoveTo(Location.Paris);
+            game.Hunters[(int)Hunter.MinaHarker].MoveTo(Location.Zagreb);
+            int doubleBackSlot = 0;
+            game.Dracula.MoveTo(Location.Rome, Power.None, out doubleBackSlot);
+            logic.InitialisePossibilityTree(game);
+            Assert.AreNotEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.Milan));
+            int possibleLocationsBefore = logic.NumberOfPossibleCurrentLocations;
+            logic.EliminateTrailsThatContainLocationAtPosition(Location.Milan, 0);
+            Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.Milan));
+            Assert.AreEqual(possibleLocationsBefore - 1, logic.NumberOfPossibleCurrentLocations);
+        }
     }
 }
