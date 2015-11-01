@@ -419,5 +419,27 @@ namespace FuryOfDracula.GameLogic
             EventDeck = EventDiscard;
             EventDiscard = new List<EventCard>();
         }
+
+        public List<Hunter> HuntersAt(Location location)
+        {
+            List<Hunter> huntersAtLocation = new List<Hunter>();
+            for (int i = 1; i < 5; i++)
+            {
+                if (Hunters[i].CurrentLocation == location)
+                {
+                    huntersAtLocation.Add(Hunters[i].Hunter);
+                }
+            }
+            return huntersAtLocation;
+        }
+
+        public bool LocationIsBlocked(Location location)
+        {
+            if (HeavenlyHostLocation1 == location || HeavenlyHostLocation2 == location || ConsecratedGroundLocation == location || (StormySeasLocation == location && StormySeasRounds > 0))
+            {
+                return true;
+            }
+            return false;
+        }
     }
 }

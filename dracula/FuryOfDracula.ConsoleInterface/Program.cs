@@ -49,7 +49,8 @@ namespace FuryOfDracula.ConsoleInterface
                     }
                     game.Hunters[i].MoveTo(destination);
                 }
-                game.Dracula.MoveTo(logic.ChooseStartLocation(game), Power.None);
+                int rubbish = -1;
+                game.Dracula.MoveTo(logic.ChooseStartLocation(game), Power.None, out rubbish);
                 while (game.Dracula.EncounterHand.Count() < game.Dracula.EncounterHandSize)
                 {
                     game.Dracula.DrawEncounter(game.EncounterPool);
@@ -413,7 +414,12 @@ namespace FuryOfDracula.ConsoleInterface
                 return;
             }
             var destination = logic.ChooseWhereToEvadeTo(game);
-            var cardDroppedOffTrail = game.Dracula.MoveTo(destination, Power.None);
+            int doubleBackSlot = -1;
+            var cardDroppedOffTrail = game.Dracula.MoveTo(destination, Power.None, out doubleBackSlot);
+            if (doubleBackSlot > -1)
+            {
+                Console.WriteLine("Dracula Doubled Back to the location in slot {0}", doubleBackSlot);
+            }
             if (cardDroppedOffTrail != null)
             {
                 DealWithDroppedOffCardSlots(game, new List<DraculaCardSlot> { cardDroppedOffTrail }, logic);
@@ -874,7 +880,12 @@ namespace FuryOfDracula.ConsoleInterface
                     game.Dracula.TakePunishmentForCheating(game);
                     return;
                 }
-                var cardDroppedOffTrail = game.Dracula.MoveTo(destination, Power.None);
+                int doubleBackSlot;
+                var cardDroppedOffTrail = game.Dracula.MoveTo(destination, Power.None, out doubleBackSlot);
+                if (doubleBackSlot > -1)
+                {
+                    Console.WriteLine("Dracula Doubled Back to the location in slot {0}", doubleBackSlot);
+                }
                 var cardsDroppedOffTrail = new List<DraculaCardSlot>();
                 if (cardDroppedOffTrail != null)
                 {
@@ -3259,7 +3270,12 @@ namespace FuryOfDracula.ConsoleInterface
                     game.Dracula.TakePunishmentForCheating(game);
                     return;
                 }
-                var cardDroppedOffTrail = game.Dracula.MoveTo(destination, power);
+                int doubleBackSlot = -1;
+                var cardDroppedOffTrail = game.Dracula.MoveTo(destination, power, out doubleBackSlot);
+                if (doubleBackSlot > -1)
+                {
+                    Console.WriteLine("Dracula Doubled Back to the location in slot {0}", doubleBackSlot);
+                }
                 if (cardDroppedOffTrail != null)
                 {
                     cardsDroppedOffTrail.Add(cardDroppedOffTrail);

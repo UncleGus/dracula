@@ -437,4 +437,12 @@ namespace FuryOfDracula.GameLogic
         InnerStrength,
         SenseOfEmergency
     }
+
+    public enum CardBack
+    {
+        None,
+        Orange,
+        Blue,
+        Power
+    }
 }

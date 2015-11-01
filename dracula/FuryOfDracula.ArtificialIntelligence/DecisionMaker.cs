@@ -7,7 +7,7 @@ namespace FuryOfDracula.ArtificialIntelligence
 {
     public class DecisionMaker
     {
-        private List<PossibleTrail> possibilityTree = new List<PossibleTrail>();
+        public List<PossibleTrailSlot[]> PossibilityTree = new List<PossibleTrailSlot[]>();
 
         public Location ChooseDestinationAndPower(GameState game, out Power power)
         {
@@ -205,27 +205,9 @@ namespace FuryOfDracula.ArtificialIntelligence
             game.Hunters[(int)Hunter.DrSeward].CurrentLocation == startLocation ||
             game.Hunters[(int)Hunter.VanHelsing].CurrentLocation == startLocation ||
             game.Hunters[(int)Hunter.MinaHarker].CurrentLocation == startLocation);
-            possibilityTree = initialisePossibilityTree(game, startLocation);
             return startLocation;
         }
 
-        private List<PossibleTrail> initialisePossibilityTree(GameState game, Location startLocation)
-        {
-            List<PossibleTrail> newPossibilityTree = new List<PossibleTrail>();
-            List<Location> allLocations = Enumerations.GetAllLocations();
-            foreach (Location loc in allLocations)
-            {
-                if ((game.Map.TypeOfLocation(loc) == LocationType.SmallCity || game.Map.TypeOfLocation(loc) == LocationType.LargeCity) &&
-                    loc != game.Hunters[(int)Hunter.LordGodalming].CurrentLocation &&
-                    loc != game.Hunters[(int)Hunter.DrSeward].CurrentLocation &&
-                    loc != game.Hunters[(int)Hunter.VanHelsing].CurrentLocation &&
-                    loc != game.Hunters[(int)Hunter.MinaHarker].CurrentLocation)
-                {
-                    newPossibilityTree.Add(new PossibleTrail(loc, Power.None));
-                }
-            }
-            return newPossibilityTree;
-        }
 
         public int ChooseToPutDroppedOffCardInCatacombs(GameState game, DraculaCardSlot cardDroppedOffTrail)
         {
@@ -703,192 +685,219 @@ namespace FuryOfDracula.ArtificialIntelligence
             return (Hunter)(new Random().Next(1, 5));
         }
 
-        private List<PossibleTrail> prunePossibilityTree(List<PossibleTrail> possibilityTree, Location location, Power power, int index)
+        public void InitialisePossibilityTree(GameState game)
         {
-            List<PossibleTrail> prunedTree = new List<PossibleTrail>();
-            foreach (PossibleTrail trail in possibilityTree)
+            PossibilityTree.Clear();
+            List<Location> allLocations = Enumerations.GetAllLocations();
+            foreach (Location location in allLocations)
             {
-                if (trail.Trail[index] != null && trail.Trail[index].Location == location && trail.Trail[index].Power == power)
+                if (!game.HuntersAt(location).Any() && game.Map.TypeOfLocation(location) != LocationType.Sea && game.Map.TypeOfLocation(location) != LocationType.Castle && game.Map.TypeOfLocation(location) != LocationType.Hospital)
                 {
-                    prunedTree.Add(trail);
+                    PossibilityTree.Add(new PossibleTrailSlot[6] { new PossibleTrailSlot(location, Power.None), null, null, null, null, null });
                 }
             }
-            return prunedTree;
         }
 
-        private List<PossibleTrail> extendPossibilityTree(GameState game, List<PossibleTrail> possibilityTree, LocationType cardType, Power power, int doubleBackIndex)
+        public void AddOrangeBackedCardToAllPossibleTrails(GameState game)
         {
-            List<PossibleTrail> extendedTree = new List<PossibleTrail>();
-            if (cardType == LocationType.SmallCity)
+            List<PossibleTrailSlot[]> newPossibilityTree = new List<PossibleTrailSlot[]>();
+            foreach (PossibleTrailSlot[] trail in PossibilityTree)
             {
-                foreach (PossibleTrail trail in possibilityTree)
+                Location currentLocation = Location.Nowhere;
+                for (int i = 0; i < 6; i++)
                 {
-                    Location originatingLocation = Location.Nowhere;
-                    for (int i = 0; i < 6; i++)
+                    if (trail[i].Location != Location.Nowhere)
                     {
-                        if (trail.Trail[i].Location != Location.Nowhere)
-                        {
-                            originatingLocation = trail.Trail[i].Location;
-                            break;
-                        }
-                        List<Location> possibleNewLocations = game.Map.LocationsConnectedByRoadTo(originatingLocation);
-                        foreach (Location loc in possibleNewLocations)
-                        {
-                            if (!trail.Contains(loc) &&
-                                game.Hunters[(int)Hunter.LordGodalming].CurrentLocation != loc &&
-                                game.Hunters[(int)Hunter.DrSeward].CurrentLocation != loc &&
-                                game.Hunters[(int)Hunter.VanHelsing].CurrentLocation != loc &&
-                                game.Hunters[(int)Hunter.MinaHarker].CurrentLocation != loc &&
-                                game.HeavenlyHostLocation1 != loc &&
-                                game.HeavenlyHostLocation2 != loc &&
-                                game.ConsecratedGroundLocation != loc)
-                            {
-                                PossibleTrail extendedTrail = new PossibleTrail();
-                                for (int j = 5; j > 0; j--)
-                                {
-                                    extendedTrail.Trail[j] = trail.Trail[j - 1];
-                                }
-                                extendedTrail.Trail[0] = new PossibleTrailSlot(loc, Power.None);
-                                extendedTree.Add(extendedTrail);
-                            }
-                        }
-                        if (!trail.Contains(Power.Hide))
-                        {
-                            PossibleTrail extendedTrail = new PossibleTrail();
-                            for (int j = 5; j > 0; j--)
-                            {
-                                extendedTrail.Trail[j] = trail.Trail[j - 1];
-                            }
-                            extendedTrail.Trail[0] = new PossibleTrailSlot(Location.Nowhere, Power.Hide);
-                            extendedTree.Add(extendedTrail);
-                        }
+                        currentLocation = trail[i].Location;
+                        break;
                     }
                 }
-                return extendedTree;
-            }
-            if (cardType == LocationType.Sea)
-            {
-                foreach (PossibleTrail trail in possibilityTree)
+                List<PossibleTrailSlot> possibleCards = new List<PossibleTrailSlot>();
+                List<Location> possibleLocations = game.Map.LocationsConnectedByRoadTo(currentLocation);
+                foreach (Location location in possibleLocations)
                 {
-                    Location originatingLocation = Location.Nowhere;
-                    for (int i = 0; i < 6; i++)
+                    if (!TrailContainsLocation(trail, location) && !game.LocationIsBlocked(location))
                     {
-                        if (trail.Trail[i].Location != Location.Nowhere)
-                        {
-                            originatingLocation = trail.Trail[i].Location;
-                            break;
-                        }
-                        List<Location> possibleNewLocations = game.Map.LocationsConnectedBySeaTo(originatingLocation);
-                        foreach (Location loc in possibleNewLocations)
-                        {
-                            if (!trail.Contains(loc) && game.Map.TypeOfLocation(loc) == LocationType.Sea)
-                            {
-                                PossibleTrail extendedTrail = new PossibleTrail();
-                                for (int j = 5; j > 0; j--)
-                                {
-                                    extendedTrail.Trail[j] = trail.Trail[j - 1];
-                                }
-                                extendedTrail.Trail[0] = new PossibleTrailSlot(loc, Power.None);
-                                extendedTree.Add(extendedTrail);
-                            }
-                        }
+                        possibleCards.Add(new PossibleTrailSlot(location, Power.None));
                     }
                 }
-                return extendedTree;
+                if (!TrailContainsHide(trail))
+                {
+                    possibleCards.Add(new PossibleTrailSlot(Location.Nowhere, Power.Hide));
+                }
+                foreach (PossibleTrailSlot possibleCard in possibleCards)
+                {
+                    PossibleTrailSlot[] newTrail = new PossibleTrailSlot[6];
+                    for (int i = 5; i > 0; i--)
+                    {
+                        newTrail[i] = trail[i - 1];
+                    }
+                    newTrail[0] = possibleCard;
+                    newPossibilityTree.Add(newTrail);
+                }
             }
-            switch (power)
-            {
-                case Power.DarkCall:
-                case Power.Feed:
-                    foreach (PossibleTrail trail in possibilityTree)
-                    {
-                        PossibleTrail extendedTrail = new PossibleTrail();
-                        for (int j = 5; j > 0; j--)
-                        {
-                            extendedTrail.Trail[j] = trail.Trail[j - 1];
-                        }
-                        extendedTrail.Trail[0] = new PossibleTrailSlot(Location.Nowhere, power);
-                        extendedTree.Add(extendedTrail);
-                    }
-                    return extendedTree;
-                case Power.DoubleBack:
-                    foreach (PossibleTrail trail in possibilityTree)
-                    {
-                        PossibleTrail extendedTrail = new PossibleTrail();
-                        for (int i = 5; i > doubleBackIndex; i--)
-                        {
-                            extendedTrail.Trail[i] = trail.Trail[i];
-                        }
-                        for (int i = doubleBackIndex; i > 0; i--)
-                        {
-                            extendedTrail.Trail[i] = trail.Trail[i - 1];
-                        }
-                        extendedTrail.Trail[0] = trail.Trail[doubleBackIndex];
-                        extendedTrail.Trail[0].Power = Power.DoubleBack;
-                        extendedTree.Add(extendedTrail);
-                    }
-                    return extendedTree;
-                case Power.WolfForm:
-                    foreach (PossibleTrail trail in possibilityTree)
-                    {
-                        Location originatingLocation = Location.Nowhere;
-                        List<Location> possibleDestinations = new List<Location>();
-                        for (int i = 0; i < 6; i++)
-                        {
-                            if (trail.Trail[i].Location != Location.Nowhere)
-                            {
-                                originatingLocation = trail.Trail[i].Location;
-                                break;
-                            }
-                            List<Location> firstTierExtension = game.Map.LocationsConnectedByRoadTo(originatingLocation);
-                            foreach (Location loc in firstTierExtension)
-                            {
-                                if (game.HeavenlyHostLocation1 != loc &&
-                                    game.HeavenlyHostLocation2 != loc &&
-                                    game.ConsecratedGroundLocation != loc)
-                                {
-                                    firstTierExtension.Add(loc);
-                                    if (!trail.Contains(loc) &&
-                                game.Hunters[(int)Hunter.LordGodalming].CurrentLocation != loc &&
-                                game.Hunters[(int)Hunter.DrSeward].CurrentLocation != loc &&
-                                game.Hunters[(int)Hunter.VanHelsing].CurrentLocation != loc &&
-                                game.Hunters[(int)Hunter.MinaHarker].CurrentLocation != loc)
-                                    {
-                                        possibleDestinations.Add(loc);
-                                    }
-                                }
-                                foreach (Location l in firstTierExtension)
-                                {
-                                    if (!trail.Contains(l) &&
-                                game.Hunters[(int)Hunter.LordGodalming].CurrentLocation != l &&
-                                game.Hunters[(int)Hunter.DrSeward].CurrentLocation != l &&
-                                game.Hunters[(int)Hunter.VanHelsing].CurrentLocation != l &&
-                                game.Hunters[(int)Hunter.MinaHarker].CurrentLocation != l &&
-                                game.HeavenlyHostLocation1 != l &&
-                                    game.HeavenlyHostLocation2 != l &&
-                                    game.ConsecratedGroundLocation != l &&
-                                        !possibleDestinations.Contains(l))
-                                    {
-                                        possibleDestinations.Add(l);
-                                    }
+            PossibilityTree = newPossibilityTree;
+        }
 
-                                }
-                            }
-                        }
-                        foreach (Location loc in possibleDestinations)
+        public void AddBlueBackedCardToAllPossibleTrails(GameState game)
+        {
+            List<PossibleTrailSlot[]> newPossibilityTree = new List<PossibleTrailSlot[]>();
+            foreach (PossibleTrailSlot[] trail in PossibilityTree)
+            {
+                Location currentLocation = Location.Nowhere;
+                for (int i = 0; i < 6; i++)
+                {
+                    if (trail[i].Location != Location.Nowhere)
+                    {
+                        currentLocation = trail[i].Location;
+                        break;
+                    }
+                }
+                List<PossibleTrailSlot> possibleCards = new List<PossibleTrailSlot>();
+                List<Location> possibleLocations = game.Map.LocationsConnectedBySeaTo(currentLocation);
+                foreach (Location location in possibleLocations)
+                {
+                    if (!TrailContainsLocation(trail, location) && game.Map.TypeOfLocation(location) == LocationType.Sea && !game.LocationIsBlocked(location))
+                    {
+                        possibleCards.Add(new PossibleTrailSlot(location, Power.None));
+                    }
+                }
+                foreach (PossibleTrailSlot possibleCard in possibleCards)
+                {
+                    PossibleTrailSlot[] newTrail = new PossibleTrailSlot[6];
+                    for (int i = 5; i > 0; i--)
+                    {
+                        newTrail[i] = trail[i - 1];
+                    }
+                    newTrail[0] = possibleCard;
+                    newPossibilityTree.Add(newTrail);
+                }
+            }
+            PossibilityTree = newPossibilityTree;
+        }
+
+        public void AddPowerCardToAllPossibleTrails(Power power)
+        {
+            foreach (PossibleTrailSlot[] trail in PossibilityTree)
+            {
+                for (int i = 5; i > 0; i--)
+                {
+                    trail[i] = trail[i - 1];
+                }
+                trail[0] = new PossibleTrailSlot(Location.Nowhere, power);
+            }
+        }
+
+        public void AddDoubleBackToAllPossibleTrails(GameState game, int doubleBackSlot)
+        {
+            List<PossibleTrailSlot[]> newPossibilityTree = new List<PossibleTrailSlot[]>();
+            foreach (PossibleTrailSlot[] trail in PossibilityTree)
+            {
+                Location currentLocation = Location.Nowhere;
+                for (int i = 0; i < 6; i++)
+                {
+                    if (trail[i].Location != Location.Nowhere)
+                    {
+                        currentLocation = trail[i].Location;
+                        break;
+                    }
+                }
+                if (trail[doubleBackSlot].Power != Power.Hide && game.Map.LocationsConnectedByRoadTo(currentLocation).Contains(trail[doubleBackSlot].Location) && !game.LocationIsBlocked(trail[doubleBackSlot].Location))
+                {
+                    PossibleTrailSlot[] newPossibleTrail = new PossibleTrailSlot[6];
+                    for (int i = 5; i > doubleBackSlot + 1; i--)
+                    {
+                        newPossibleTrail[i] = trail[i - 1];
+                    }
+                    for (int i = doubleBackSlot; i > 0; i--)
+                    {
+                        newPossibleTrail[i] = trail[i - 1];
+                    }
+                    newPossibleTrail[0] = trail[doubleBackSlot];
+                    newPossibleTrail[0].Power = Power.DoubleBack;
+                    newPossibilityTree.Add(newPossibleTrail);
+                }
+            }
+            PossibilityTree = newPossibilityTree;
+        }
+
+        public void AddWolfFormToAllPossibleTrails(GameState game)
+        {
+            List<PossibleTrailSlot[]> newPossibilityTree = new List<PossibleTrailSlot[]>();
+            foreach (PossibleTrailSlot[] trail in PossibilityTree)
+            {
+                Location currentLocation = Location.Nowhere;
+                for (int i = 0; i < 6; i++)
+                {
+                    if (trail[i].Location != Location.Nowhere)
+                    {
+                        currentLocation = trail[i].Location;
+                        break;
+                    }
+                }
+                List<Location> possibleDestinations = new List<Location>();
+                List<Location> locationsToAdd = game.Map.LocationsConnectedByRoadTo(currentLocation);
+                foreach (Location location in locationsToAdd)
+                {
+                    if (!game.LocationIsBlocked(location) && !possibleDestinations.Contains(location))
+                    {
+                        possibleDestinations.Add(location);
+                    }
+                }
+                List<Location> moreLocationsToAdd = new List<Location>();
+                foreach (Location location in possibleDestinations)
+                {
+                    locationsToAdd = game.Map.LocationsConnectedByRoadTo(location);
+                    foreach (Location loc in locationsToAdd)
+                    {
+                        if (!game.LocationIsBlocked(loc) && !possibleDestinations.Contains(loc) && !TrailContainsLocation(trail, loc))
                         {
-                            PossibleTrail extendedTrail = new PossibleTrail();
-                            for (int j = 5; j > 0; j--)
-                            {
-                                extendedTrail.Trail[j] = trail.Trail[j - 1];
-                            }
-                            extendedTrail.Trail[0] = new PossibleTrailSlot(loc, Power.WolfForm);
-                            extendedTree.Add(extendedTrail);
+                            moreLocationsToAdd.Add(loc);
                         }
                     }
-                    return extendedTree;
+                }
+                possibleDestinations.AddRange(moreLocationsToAdd);
+                List<PossibleTrailSlot> possibleCards = new List<PossibleTrailSlot>();
+                foreach (Location location in possibleDestinations)
+                {
+                    possibleCards.Add(new PossibleTrailSlot(location, Power.WolfForm));
+                }
+                foreach (PossibleTrailSlot possibleCard in possibleCards)
+                {
+                    PossibleTrailSlot[] newTrail = new PossibleTrailSlot[6];
+                    for (int i = 5; i > 0; i--)
+                    {
+                        newTrail[i] = trail[i - 1];
+                    }
+                    newTrail[0] = possibleCard;
+                    newPossibilityTree.Add(newTrail);
+                }
             }
-            return extendedTree;
+            PossibilityTree = newPossibilityTree;
+        }
+
+        private bool TrailContainsHide(PossibleTrailSlot[] trail)
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                if (trail[i] != null && trail[i].Power == Power.Hide)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool TrailContainsLocation(PossibleTrailSlot[] trail, Location location)
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                if (trail[i] != null && trail[i].Location == location)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

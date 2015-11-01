@@ -23,7 +23,8 @@ namespace FuryOfDracula.UnitTests
         [Test]
         public void ChooseDestination_HamburgWithPowersUsed_ReturnsLocationConnectedToHamburg()
         {
-            game.Dracula.MoveTo(Location.Hamburg, Power.None);
+            int rubbish = 0;
+            game.Dracula.MoveTo(Location.Hamburg, Power.None, out rubbish);
             game.Dracula.Trail[1] =
                 new DraculaCardSlot(new DraculaCard("HID", Location.Nowhere, Power.Hide, ConsoleColor.DarkGreen));
             game.Dracula.Trail[2] =
@@ -48,7 +49,8 @@ namespace FuryOfDracula.UnitTests
         [Test]
         public void ChooseEncounterToPlace_ReturnsAnEncounterInDraculasHand()
         {
-            game.Dracula.MoveTo(Location.Toulouse, Power.None);
+            int rubbish = 0;
+            game.Dracula.MoveTo(Location.Toulouse, Power.None, out rubbish);
             game.Dracula.DrawEncounter(game.EncounterPool);
             Assert.AreEqual(game.Dracula.EncounterHand.First(),
                 logic.ChooseEncounterTileToPlaceOnDraculaCardSlot(game, game.Dracula.Trail[0]));
@@ -66,14 +68,133 @@ namespace FuryOfDracula.UnitTests
         [Test]
         public void MoveTo_WithFullTrail_ReturnsDraculaCardSlot()
         {
-            game.Dracula.MoveTo(Location.Nuremburg, Power.None);
-            game.Dracula.MoveTo(Location.Leipzig, Power.None);
-            game.Dracula.MoveTo(Location.Frankfurt, Power.None);
-            game.Dracula.MoveTo(Location.Cologne, Power.None);
-            game.Dracula.MoveTo(Location.Brussels, Power.None);
-            game.Dracula.MoveTo(Location.Paris, Power.None);
-            var cardSlot = game.Dracula.MoveTo(Location.LeHavre, Power.None);
+            int rubbish = 0;
+            game.Dracula.MoveTo(Location.Nuremburg, Power.None, out rubbish);
+            game.Dracula.MoveTo(Location.Leipzig, Power.None, out rubbish);
+            game.Dracula.MoveTo(Location.Frankfurt, Power.None, out rubbish);
+            game.Dracula.MoveTo(Location.Cologne, Power.None, out rubbish);
+            game.Dracula.MoveTo(Location.Brussels, Power.None, out rubbish);
+            game.Dracula.MoveTo(Location.Paris, Power.None, out rubbish);
+            var cardSlot = game.Dracula.MoveTo(Location.LeHavre, Power.None, out rubbish);
             Assert.AreEqual(Location.Nuremburg, cardSlot.DraculaCards[0].Location);
+        }
+
+        [Test]
+        public void InitialisePossibilityTree_MadridHamburgParisZagreb_ListOfCorrectPossibleTrails()
+        {
+            game.Hunters[(int)Hunter.LordGodalming].MoveTo(Location.Madrid);
+            game.Hunters[(int)Hunter.DrSeward].MoveTo(Location.Hamburg);
+            game.Hunters[(int)Hunter.VanHelsing].MoveTo(Location.Paris);
+            game.Hunters[(int)Hunter.MinaHarker].MoveTo(Location.Zagreb);
+            logic.InitialisePossibilityTree(game);
+            Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.Madrid));
+            Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.Hamburg));
+            Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.Paris));
+            Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.Zagreb));
+            Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.AtlanticOcean));
+            Assert.AreNotEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.Klausenburg));
+        }
+
+        [Test]
+        public void AddOrangeBackedCardToAllPossibleTrails_InstantiatedTree_TreeWithNewLocationsAdd()
+        {
+            int rubbish = 0;
+            game.Hunters[(int)Hunter.LordGodalming].MoveTo(Location.Madrid);
+            game.Hunters[(int)Hunter.DrSeward].MoveTo(Location.Hamburg);
+            game.Hunters[(int)Hunter.VanHelsing].MoveTo(Location.Paris);
+            game.Hunters[(int)Hunter.MinaHarker].MoveTo(Location.Zagreb);
+            game.Dracula.MoveTo(Location.Belgrade, Power.None, out rubbish);
+            logic.InitialisePossibilityTree(game);
+            game.Dracula.MoveTo(Location.Szeged, Power.None, out rubbish);
+            logic.AddOrangeBackedCardToAllPossibleTrails(game);
+            Assert.AreNotEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.Szeged && trail[1].Location == Location.Belgrade));
+            Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.Marseilles && trail[1].Location == Location.Belgrade));
+        }
+
+        [Test]
+        public void AddBlueBackedCardToAllPossibleTrails_InstantiatedTree_TreeWithNewLocationsAdd()
+        {
+            game.Hunters[(int)Hunter.LordGodalming].MoveTo(Location.Madrid);
+            game.Hunters[(int)Hunter.DrSeward].MoveTo(Location.Hamburg);
+            game.Hunters[(int)Hunter.VanHelsing].MoveTo(Location.Paris);
+            game.Hunters[(int)Hunter.MinaHarker].MoveTo(Location.Zagreb);
+            int rubbish = 0;
+            game.Dracula.MoveTo(Location.Belgrade, Power.None, out rubbish);
+            logic.InitialisePossibilityTree(game);
+            game.Dracula.MoveTo(Location.Szeged, Power.None, out rubbish);
+            logic.AddBlueBackedCardToAllPossibleTrails(game);
+            Assert.AreNotEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.MediterraneanSea && trail[1].Location == Location.Alicante));
+            Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.AtlanticOcean && trail[1].Location == Location.Belgrade));
+        }
+
+        [Test]
+        public void AddPowerCardToAllPossibleTrails_InstantiatedTree_TreeWithPowerAdded()
+        {
+            game.Hunters[(int)Hunter.LordGodalming].MoveTo(Location.Madrid);
+            game.Hunters[(int)Hunter.DrSeward].MoveTo(Location.Hamburg);
+            game.Hunters[(int)Hunter.VanHelsing].MoveTo(Location.Paris);
+            game.Hunters[(int)Hunter.MinaHarker].MoveTo(Location.Zagreb);
+            int rubbish = 0;
+            game.Dracula.MoveTo(Location.Belgrade, Power.None, out rubbish);
+            logic.InitialisePossibilityTree(game);
+            game.Dracula.MoveTo(Location.Nowhere, Power.DarkCall, out rubbish);
+            logic.AddPowerCardToAllPossibleTrails(Power.DarkCall);
+            Assert.AreNotEqual(null, logic.PossibilityTree.Find(trail => trail[0].Power == Power.DarkCall && trail[1].Location == Location.Munich));
+            Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[0].Power == Power.Feed && trail[1].Location == Location.Milan));
+        }
+
+        [Test]
+        public void AddDoubleBackToAllPossibleTrails_TrailsThreeLong_ValidDoubleBackTrails()
+        {
+            game.Hunters[(int)Hunter.LordGodalming].MoveTo(Location.Madrid);
+            game.Hunters[(int)Hunter.DrSeward].MoveTo(Location.Hamburg);
+            game.Hunters[(int)Hunter.VanHelsing].MoveTo(Location.Paris);
+            game.Hunters[(int)Hunter.MinaHarker].MoveTo(Location.Zagreb);
+            int doubleBackSlot = 0;
+            game.Dracula.MoveTo(Location.Belgrade, Power.None, out doubleBackSlot);
+            logic.InitialisePossibilityTree(game);
+            game.Dracula.MoveTo(Location.Szeged, Power.None, out doubleBackSlot);
+            logic.AddOrangeBackedCardToAllPossibleTrails(game);
+            game.Dracula.MoveTo(Location.Klausenburg, Power.None, out doubleBackSlot);
+            logic.AddOrangeBackedCardToAllPossibleTrails(game);
+            Assert.AreNotEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.Klausenburg && trail[1].Location == Location.Szeged && trail[2].Location == Location.Belgrade));
+            game.Dracula.MoveTo(Location.Belgrade, Power.DoubleBack, out doubleBackSlot);
+            logic.AddDoubleBackToAllPossibleTrails(game, doubleBackSlot);
+            Assert.AreNotEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.Belgrade && trail[0].Power == Power.DoubleBack && trail[1].Location == Location.Klausenburg && trail[2].Location == Location.Szeged));
+            Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[0].Power == Power.Feed));
+        }
+
+        [Test]
+        public void AddOrangeBackedCardToAllPossibleTrails_CadizIsBlocked_NoAlicanteToCadiz()
+        {
+            game.Hunters[(int)Hunter.LordGodalming].MoveTo(Location.Madrid);
+            game.Hunters[(int)Hunter.DrSeward].MoveTo(Location.Hamburg);
+            game.Hunters[(int)Hunter.VanHelsing].MoveTo(Location.Paris);
+            game.Hunters[(int)Hunter.MinaHarker].MoveTo(Location.Zagreb);
+            int doubleBackSlot = 0;
+            game.Dracula.MoveTo(Location.Alicante, Power.None, out doubleBackSlot);
+            logic.InitialisePossibilityTree(game);
+            game.HeavenlyHostLocation1 = Location.Cadiz;
+            game.Dracula.MoveTo(Location.Madrid, Power.None, out doubleBackSlot);
+            logic.AddOrangeBackedCardToAllPossibleTrails(game);
+            Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.Cadiz));
+        }
+
+        [Test]
+        public void AddWolfFormToAllPossibleTrails_CadizIsBlocked_NoWolfFormOnCadiz()
+        {
+            game.Hunters[(int)Hunter.LordGodalming].MoveTo(Location.Madrid);
+            game.Hunters[(int)Hunter.DrSeward].MoveTo(Location.Hamburg);
+            game.Hunters[(int)Hunter.VanHelsing].MoveTo(Location.Paris);
+            game.Hunters[(int)Hunter.MinaHarker].MoveTo(Location.Zagreb);
+            int doubleBackSlot = 0;
+            game.Dracula.MoveTo(Location.Alicante, Power.None, out doubleBackSlot);
+            logic.InitialisePossibilityTree(game);
+            game.HeavenlyHostLocation1 = Location.Cadiz;
+            game.Dracula.MoveTo(Location.Santander, Power.WolfForm, out doubleBackSlot);
+            logic.AddWolfFormToAllPossibleTrails(game);
+            Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.Cadiz));
+            Assert.AreNotEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.Plymouth && trail[0].Power == Power.WolfForm && trail[1].Location == Location.Manchester));
         }
     }
 }

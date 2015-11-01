@@ -84,34 +84,38 @@ namespace FuryOfDracula.UnitTests
         [Test]
         public void MoveTo_SixTimes_CardDroppedOffTrailIsUnrevealed()
         {
-            dracula.MoveTo(Location.Athens, Power.None);
-            dracula.MoveTo(Location.Barcelona, Power.None);
-            dracula.MoveTo(Location.Berlin, Power.None);
-            dracula.MoveTo(Location.Bordeaux, Power.None);
-            dracula.MoveTo(Location.Cadiz, Power.None);
-            dracula.MoveTo(Location.Dublin, Power.None);
-            dracula.MoveTo(Location.Frankfurt, Power.None);
+            int rubbish = 0;
+            dracula.MoveTo(Location.Athens, Power.None, out rubbish);
+            dracula.MoveTo(Location.Barcelona, Power.None, out rubbish);
+            dracula.MoveTo(Location.Berlin, Power.None, out rubbish);
+            dracula.MoveTo(Location.Bordeaux, Power.None, out rubbish);
+            dracula.MoveTo(Location.Cadiz, Power.None, out rubbish);
+            dracula.MoveTo(Location.Dublin, Power.None, out rubbish);
+            dracula.MoveTo(Location.Frankfurt, Power.None, out rubbish);
             Assert.AreEqual(false, dracula.DraculaCardDeck.Find(card => card.Location == Location.Athens).IsRevealed);
         }
 
         [Test]
         public void MoveTo_Szeged_CurrentLocationReturnsSzeged()
         {
-            dracula.MoveTo(Location.Szeged, Power.None);
+            int rubbish = 0;
+            dracula.MoveTo(Location.Szeged, Power.None, out rubbish);
             Assert.AreEqual(Location.Szeged, dracula.CurrentLocation);
         }
 
         [Test]
         public void MoveTo_Vienna_Trail0LocationReturnsVienna()
         {
-            dracula.MoveTo(Location.Vienna, Power.None);
+            int rubbish = 0;
+            dracula.MoveTo(Location.Vienna, Power.None, out rubbish);
             Assert.AreEqual(Location.Vienna, dracula.Trail[0].DraculaCards[0].Location);
         }
 
         [Test]
         public void PlaceEncounterTileOnCard_Peasants_RemovesPeasantsFromEncounterHandAndAddsToTrail()
         {
-            dracula.MoveTo(Location.Nuremburg, Power.None);
+            int rubbish = 0;
+            dracula.MoveTo(Location.Nuremburg, Power.None, out rubbish);
             dracula.EncounterHand.Clear();
             dracula.DrawEncounter(new List<EncounterTile> {new EncounterTile(Encounter.Peasants)});
             var countBefore = dracula.EncounterHand.Count();
@@ -123,7 +127,8 @@ namespace FuryOfDracula.UnitTests
         [Test]
         public void PlaceEncounterTileOnCard_PerformedTwice_PutsEncounterInSecondEncounterSlot()
         {
-            dracula.MoveTo(Location.Edinburgh, Power.None);
+            int rubbish = 0;
+            dracula.MoveTo(Location.Edinburgh, Power.None, out rubbish);
             var encounterTiles = new List<EncounterTile>
             {
                 new EncounterTile(Encounter.Rats),
@@ -142,7 +147,8 @@ namespace FuryOfDracula.UnitTests
         [Test]
         public void RevealCardAtPosition0_CardIsRevealed()
         {
-            dracula.MoveTo(Location.Belgrade, Power.None);
+            int rubbish = 0;
+            dracula.MoveTo(Location.Belgrade, Power.None, out rubbish);
             dracula.RevealCardAtPosition(0);
             Assert.AreEqual(true, dracula.Trail[0].DraculaCards[0].IsRevealed);
         }
