@@ -748,7 +748,7 @@ namespace FuryOfDracula.ArtificialIntelligence
                         possibleCards.Add(new PossibleTrailSlot(location, Power.None));
                     }
                 }
-                if (!TrailContainsHide(trail))
+                if (!TrailContainsPower(trail, Power.Hide))
                 {
                     possibleCards.Add(new PossibleTrailSlot(Location.Nowhere, Power.Hide));
                 }
@@ -1060,11 +1060,11 @@ namespace FuryOfDracula.ArtificialIntelligence
             PossibilityTree = newPossibilityTree;
         }
 
-        private bool TrailContainsHide(PossibleTrailSlot[] trail)
+        private bool TrailContainsPower(PossibleTrailSlot[] trail, Power power)
         {
             for (int i = 0; i < 6; i++)
             {
-                if (trail[i] != null && trail[i].Power == Power.Hide)
+                if (trail[i] != null && trail[i].Power == power)
                 {
                     return true;
                 }
@@ -1226,6 +1226,107 @@ namespace FuryOfDracula.ArtificialIntelligence
                 }
             }
             PossibilityTree = newPossibilityTree;
+        }
+
+        private void CalculateSneakiestTrail(GameState game)
+        {
+            List<PossibleTrailSlot[]> potentialityTree = new List<PossibleTrailSlot[]>();
+            PossibleTrailSlot[] actualTrail = new PossibleTrailSlot[6];
+            for (int i = 0; i < 6; i++)
+            {
+                if (game.Dracula.Trail[i] != null)
+                {
+                    actualTrail[i] = new PossibleTrailSlot(Location.Nowhere, Power.None);
+                    foreach (DraculaCard card in game.Dracula.Trail[i].DraculaCards)
+                    {
+                        if (card.Location != Location.Nowhere)
+                        {
+                            actualTrail[i].Location = card.Location;
+                        }
+                        if (card.Power != Power.None)
+                        {
+                            actualTrail[i].Power = card.Power;
+                        }
+                    }
+                }
+            }
+            List<Location> possibleDestinations = game.Map.LocationsConnectedByRoadOrSeaTo(game.Dracula.CurrentLocation);
+            List<Location> locationsToRemoveFromPossibleDestinations = new List<Location>();
+            foreach (Location loc in possibleDestinations)
+            {
+                if (game.LocationIsBlocked(loc) || (TrailContainsLocation(actualTrail, loc) && TrailContainsPower(actualTrail, Power.DoubleBack)))
+                {
+                    locationsToRemoveFromPossibleDestinations.Add(loc);
+                }
+            }
+            foreach (Location loc in locationsToRemoveFromPossibleDestinations)
+            {
+                possibleDestinations.Remove(loc);
+            }
+            if (!TrailContainsPower(actualTrail, Power.WolfForm) && (int)game.TimeOfDay > 3)
+            {
+                List<Location> locationsToAdd = new List<Location>();
+                foreach (Location loc in possibleDestinations)
+                {
+                    locationsToAdd.AddRange(game.Map.LocationsConnectedByRoadTo(loc));
+                }
+                foreach (Location loc in locationsToAdd)
+                {
+                    if (!possibleDestinations.Contains(loc) && !game.LocationIsBlocked(loc) && !TrailContainsLocation(actualTrail, loc))
+                    {
+                        possibleDestinations.Add(loc);
+                    }
+                }
+            }
+            if (!TrailContainsPower(actualTrail, Power.Hide) || (!TrailContainsPower(actualTrail, Power.Feed) && (int)game.TimeOfDay > 3) || !TrailContainsPower(actualTrail, Power.DarkCall))
+            {
+                possibleDestinations.Add(game.Dracula.CurrentLocation);
+            }
+            foreach (Location loc in possibleDestinations)
+            {
+                PossibleTrailSlot[] newTrail = new PossibleTrailSlot[6];
+                if (TrailContainsLocation(actualTrail, loc))
+                {
+                    int index = IndexOfLocationInTrail(actualTrail, loc);
+                    for (int i = 5; i > index; i--)
+                    {
+                        newTrail[i] = actualTrail[i];
+                    }
+                    newTrail[0] = actualTrail[index];
+                    for (int i = 1; i <= index; i ++)
+                    {
+                        newTrail[i] = actualTrail[i - 1];
+                    }
+                } else if (!game.Map.LocationsConnectedByRoadOrSeaTo(loc).Contains(game.Dracula.CurrentLocation))
+                {
+                    for (int i = 5; i > 0; i--)
+                    {
+                        newTrail[i] = actualTrail[i - 1];
+                    }
+                    newTrail[0] = new PossibleTrailSlot(loc, Power.WolfForm);
+                }
+                else
+                {
+                    for (int i = 5; i > 0; i --)
+                    {
+                        newTrail[i] = actualTrail[i - 1];
+                    }
+                    newTrail[0] = new PossibleTrailSlot(loc, Power.None);
+                }
+                potentialityTree.Add(newTrail);
+            }
+        }
+
+        private int IndexOfLocationInTrail(PossibleTrailSlot[] trail, Location loc)
+        {
+            for (int i = 0; i < 6; i ++)
+            {
+                if (trail[i].Location == loc)
+                {
+                    return i;
+                }
+            }
+            return -1;
         }
     }
 }
