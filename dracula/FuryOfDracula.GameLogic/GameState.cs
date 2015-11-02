@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
+using System.Linq;
 
 namespace FuryOfDracula.GameLogic
 {
@@ -435,9 +436,21 @@ namespace FuryOfDracula.GameLogic
 
         public bool LocationIsBlocked(Location location)
         {
-            if (HeavenlyHostLocation1 == location || HeavenlyHostLocation2 == location || ConsecratedGroundLocation == location || (StormySeasLocation == location && StormySeasRounds > 0))
+            if (HeavenlyHostLocation1 == location || HeavenlyHostLocation2 == location || ConsecratedGroundLocation == location || (StormySeasLocation == location && StormySeasRounds > 0) || Map.TypeOfLocation(location) == LocationType.Hospital)
             {
                 return true;
+            }
+            return false;
+        }
+
+        public bool CatacombsContainsLocation(Location loc)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                if (Dracula.Catacombs[i] != null && Dracula.Catacombs[i].DraculaCards.First().Location == loc)
+                {
+                    return true;
+                }
             }
             return false;
         }

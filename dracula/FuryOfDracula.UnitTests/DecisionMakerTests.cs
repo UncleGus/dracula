@@ -288,21 +288,15 @@ namespace FuryOfDracula.UnitTests
         [Test]
         public void CalculateSneakiestTrail_Something()
         {
-            game.AdvanceTimeTracker();
-            game.AdvanceTimeTracker();
-            game.AdvanceTimeTracker();
-            game.AdvanceTimeTracker();
             int doubleBackSlot;
-            game.Dracula.Trail[5] = game.Dracula.Trail[4] = game.Dracula.Trail[3] = game.Dracula.Trail[2] = game.Dracula.Trail[1] = game.Dracula.Trail[1] = null;
-            game.Dracula.MoveTo(Location.Nowhere, Power.Hide, out doubleBackSlot);
-            game.Dracula.MoveTo(Location.Nowhere, Power.Feed, out doubleBackSlot);
-            game.Dracula.MoveTo(Location.Nowhere, Power.DarkCall, out doubleBackSlot);
+            game.Dracula.Trail[5] = game.Dracula.Trail[4] = game.Dracula.Trail[3] = game.Dracula.Trail[2] = game.Dracula.Trail[1] = game.Dracula.Trail[1] = game.Dracula.Trail[0] = null;
             game.Dracula.MoveTo(Location.Marseilles, Power.None, out doubleBackSlot);
             PossibleTrailSlot[] actualTrail = logic.GetActualTrail(game);
             List<PossibleTrailSlot[]> possibilityTree = new List<PossibleTrailSlot[]>();
             possibilityTree.Add(actualTrail);
-            List<PossibleTrailSlot> sneakiestPossibleMoves = logic.CalculateSneakiestTrail(game, possibilityTree, 5, actualTrail[0]);
-            Assert.Fail();
+            List<int> numberOfPossibilities;
+            List<PossibleTrailSlot> sneakiestPossibleMoves = logic.CalculateSneakiestTrail(game, possibilityTree, 6, 0, out numberOfPossibilities);
+            Assert.AreEqual(9, sneakiestPossibleMoves.Count());
         }
     }
 }
