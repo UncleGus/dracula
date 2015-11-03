@@ -454,5 +454,61 @@ namespace FuryOfDracula.GameLogic
             }
             return false;
         }
+
+        public int DistanceByRoadOrSeaBetween(List<Location> searchSpace, int searchIndex, Location destination, int distance, bool includeHospital)
+        {
+            int stopIndex = searchSpace.Count();
+            if (searchIndex == stopIndex)
+            {
+                return 99;
+            }
+            for (int i = searchIndex; i < stopIndex; i++)
+            {
+                if (searchSpace[i] == destination)
+                {
+                    return distance;
+                }
+                else
+                {
+                    List<Location> newConnectedLocations = Map.LocationsConnectedByRoadOrSeaTo(searchSpace[i]);
+                    foreach (Location location in newConnectedLocations)
+                    {
+                        if (!searchSpace.Contains(location) && (includeHospital || Map.TypeOfLocation(location) != LocationType.Hospital))
+                        {
+                            searchSpace.Add(location);
+                        }
+                    }
+                }
+            }
+            return DistanceByRoadOrSeaBetween(searchSpace, stopIndex, destination, distance + 1, includeHospital);
+        }
+
+        public int DistanceByRoadBetween(List<Location> searchSpace, int searchIndex, Location destination, int distance, bool includeHospital)
+        {
+            int stopIndex = searchSpace.Count();
+            if (searchIndex == stopIndex)
+            {
+                return 99;
+            }
+            for (int i = searchIndex; i < stopIndex; i++)
+            {
+                if (searchSpace[i] == destination)
+                {
+                    return distance;
+                }
+                else
+                {
+                    List<Location> newConnectedLocations = Map.LocationsConnectedByRoadTo(searchSpace[i]);
+                    foreach (Location location in newConnectedLocations)
+                    {
+                        if (!searchSpace.Contains(location) && (includeHospital || Map.TypeOfLocation(location) != LocationType.Hospital))
+                        {
+                            searchSpace.Add(location);
+                        }
+                    }
+                }
+            }
+            return DistanceByRoadBetween(searchSpace, stopIndex, destination, distance + 1, includeHospital);
+        }
     }
 }

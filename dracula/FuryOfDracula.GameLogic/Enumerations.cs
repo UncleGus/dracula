@@ -445,4 +445,11 @@ namespace FuryOfDracula.GameLogic
         Blue,
         Power
     }
+
+    public enum Strategy
+    {
+        Random,
+        Sneaky,
+        Aggressive
+    }
 }

@@ -7,6 +7,11 @@ namespace FuryOfDracula.ArtificialIntelligence
 {
     public class DecisionMaker
     {
+        private float SEAMOVEMULTIPLIER = 0.5F;
+        private float DISTANCEFROMHUNTERMULTIPLIER = 0.5F;
+
+        public Strategy Strategy = Strategy.Sneaky;
+
         public int NumberOfPossibleCurrentLocations
         {
             get
@@ -45,16 +50,94 @@ namespace FuryOfDracula.ArtificialIntelligence
                 game.Dracula.AdvanceMovePower = Power.None;
                 return destination;
             }
-            PossibleTrailSlot[] actualTrail = GetActualTrail(game);
-            List<PossibleTrailSlot[]> possibilityTree = new List<PossibleTrailSlot[]>();
-            possibilityTree.Add(actualTrail);
-            List<int> numberOfPossibilities;
-            List<PossibleTrailSlot> sneakiestPossibleMoves = CalculateSneakiestTrail(game, possibilityTree, 6, 0, out numberOfPossibilities);
-
-            if (sneakiestPossibleMoves.Any())
+            if (Strategy == Strategy.Sneaky)
             {
-                power = sneakiestPossibleMoves[0].Power;
-                return sneakiestPossibleMoves[0].Location;
+                PossibleTrailSlot[] actualTrail = GetActualTrail(game);
+                List<PossibleTrailSlot[]> possibilityTree = new List<PossibleTrailSlot[]>();
+                possibilityTree.Add(actualTrail);
+                List<int> numberOfPossibilities;
+                List<PossibleTrailSlot> sneakiestPossibleMoves = CalculateSneakiestTrail(game, possibilityTree, 6, 0, out numberOfPossibilities);
+
+                if (sneakiestPossibleMoves.Any())
+                {
+                    List<int> distances = new List<int>();
+                    List<Location> searchSpace = new List<Location>();
+                    searchSpace.Add(game.Dracula.CurrentLocation);
+                    int currentDistanceFromHunters = 50;
+                    currentDistanceFromHunters = Math.Min(currentDistanceFromHunters, game.DistanceByRoadOrSeaBetween(searchSpace, 0, game.Hunters[(int)Hunter.LordGodalming].CurrentLocation, 0, false));
+                    searchSpace.Clear();
+                    searchSpace.Add(game.Dracula.CurrentLocation);
+                    currentDistanceFromHunters = Math.Min(currentDistanceFromHunters, game.DistanceByRoadOrSeaBetween(searchSpace, 0, game.Hunters[(int)Hunter.DrSeward].CurrentLocation, 0, false));
+                    searchSpace.Clear();
+                    searchSpace.Add(game.Dracula.CurrentLocation);
+                    currentDistanceFromHunters = Math.Min(currentDistanceFromHunters, game.DistanceByRoadOrSeaBetween(searchSpace, 0, game.Hunters[(int)Hunter.VanHelsing].CurrentLocation, 0, false));
+                    searchSpace.Clear();
+                    searchSpace.Add(game.Dracula.CurrentLocation);
+                    currentDistanceFromHunters = Math.Min(currentDistanceFromHunters, game.DistanceByRoadOrSeaBetween(searchSpace, 0, game.Hunters[(int)Hunter.MinaHarker].CurrentLocation, 0, false));
+                    GC.Collect();
+                    foreach (PossibleTrailSlot move in sneakiestPossibleMoves)
+                    {
+                        if (move.Location != Location.Nowhere)
+                        {
+                            searchSpace.Clear();
+                            searchSpace.Add(move.Location);
+                            int minDistance = 50;
+                            minDistance = Math.Min(minDistance, game.DistanceByRoadOrSeaBetween(searchSpace, 0, game.Hunters[(int)Hunter.LordGodalming].CurrentLocation, 0, false));
+                            searchSpace.Clear();
+                            searchSpace.Add(move.Location);
+                            minDistance = Math.Min(minDistance, game.DistanceByRoadOrSeaBetween(searchSpace, 0, game.Hunters[(int)Hunter.DrSeward].CurrentLocation, 0, false));
+                            searchSpace.Clear();
+                            searchSpace.Add(move.Location);
+                            minDistance = Math.Min(minDistance, game.DistanceByRoadOrSeaBetween(searchSpace, 0, game.Hunters[(int)Hunter.VanHelsing].CurrentLocation, 0, false));
+                            searchSpace.Clear();
+                            searchSpace.Add(move.Location);
+                            minDistance = Math.Min(minDistance, game.DistanceByRoadOrSeaBetween(searchSpace, 0, game.Hunters[(int)Hunter.MinaHarker].CurrentLocation, 0, false));
+                            distances.Add(minDistance);
+                            GC.Collect();
+                        }
+                        else
+                        {
+                            distances.Add(currentDistanceFromHunters);
+                        }
+                    }
+                    int index = -1;
+                    foreach (PossibleTrailSlot move in sneakiestPossibleMoves)
+                    {
+                        index++;
+                        if (game.Map.TypeOfLocation(move.Location) == LocationType.Sea)
+                        {
+                            numberOfPossibilities[index] = (int)(numberOfPossibilities[index] * SEAMOVEMULTIPLIER);
+                        }
+                        if (distances[index] < currentDistanceFromHunters)
+                        {
+                            numberOfPossibilities[index] = (int)(numberOfPossibilities[index] * DISTANCEFROMHUNTERMULTIPLIER);
+                        }
+                        else if (distances[index] > currentDistanceFromHunters)
+                        {
+                            numberOfPossibilities[index] = (int)(numberOfPossibilities[index] / DISTANCEFROMHUNTERMULTIPLIER);
+                        }
+                    }
+                    int totalCombinations = 0;
+                    foreach (int i in numberOfPossibilities)
+                    {
+                        totalCombinations += i;
+                    }
+                    int randomNumber = new Random().Next(0, totalCombinations);
+                    index = -1;
+                    int count = 0;
+                    foreach (int i in numberOfPossibilities)
+                    {
+                        index++;
+                        count += i;
+                        if (count > randomNumber)
+                        {
+                            power = sneakiestPossibleMoves[index].Power;
+                            return sneakiestPossibleMoves[index].Location;
+                        }
+                    }
+                    power = sneakiestPossibleMoves[0].Power;
+                    return sneakiestPossibleMoves[0].Location;
+                }
             }
 
             var possiblePowers = new List<Power>();
@@ -134,6 +217,129 @@ namespace FuryOfDracula.ArtificialIntelligence
             {
                 power = Power.None;
                 return Location.Nowhere;
+            }
+            if (Strategy == Strategy.Aggressive)
+            {
+                List<int> distances = new List<int>();
+                List<int> destinationWeights = new List<int>();
+                List<Location> searchSpace = new List<Location>();
+                searchSpace.Add(game.Dracula.CurrentLocation);
+                int currentDistanceFromHunters = 50;
+                currentDistanceFromHunters = Math.Min(currentDistanceFromHunters, game.DistanceByRoadOrSeaBetween(searchSpace, 0, game.Hunters[(int)Hunter.LordGodalming].CurrentLocation, 0, false));
+                searchSpace.Clear();
+                searchSpace.Add(game.Dracula.CurrentLocation);
+                currentDistanceFromHunters = Math.Min(currentDistanceFromHunters, game.DistanceByRoadOrSeaBetween(searchSpace, 0, game.Hunters[(int)Hunter.DrSeward].CurrentLocation, 0, false));
+                searchSpace.Clear();
+                searchSpace.Add(game.Dracula.CurrentLocation);
+                currentDistanceFromHunters = Math.Min(currentDistanceFromHunters, game.DistanceByRoadOrSeaBetween(searchSpace, 0, game.Hunters[(int)Hunter.VanHelsing].CurrentLocation, 0, false));
+                searchSpace.Clear();
+                searchSpace.Add(game.Dracula.CurrentLocation);
+                currentDistanceFromHunters = Math.Min(currentDistanceFromHunters, game.DistanceByRoadOrSeaBetween(searchSpace, 0, game.Hunters[(int)Hunter.MinaHarker].CurrentLocation, 0, false));
+                GC.Collect();
+                foreach (Location loc in possibleWolfFormDestinations)
+                {
+                    if (!possibleDestinations.Contains(loc))
+                    {
+                        possibleDestinations.Add(loc);
+                    }
+                }
+                foreach (Location move in possibleDestinations)
+                {
+                    destinationWeights.Add(100);
+                    if (move != Location.Nowhere)
+                    {
+                        searchSpace.Clear();
+                        searchSpace.Add(move);
+                        int minDistance = 50;
+                        minDistance = Math.Min(minDistance, game.DistanceByRoadOrSeaBetween(searchSpace, 0, game.Hunters[(int)Hunter.LordGodalming].CurrentLocation, 0, false));
+                        searchSpace.Clear();
+                        searchSpace.Add(move);
+                        minDistance = Math.Min(minDistance, game.DistanceByRoadOrSeaBetween(searchSpace, 0, game.Hunters[(int)Hunter.DrSeward].CurrentLocation, 0, false));
+                        searchSpace.Clear();
+                        searchSpace.Add(move);
+                        minDistance = Math.Min(minDistance, game.DistanceByRoadOrSeaBetween(searchSpace, 0, game.Hunters[(int)Hunter.VanHelsing].CurrentLocation, 0, false));
+                        searchSpace.Clear();
+                        searchSpace.Add(move);
+                        minDistance = Math.Min(minDistance, game.DistanceByRoadOrSeaBetween(searchSpace, 0, game.Hunters[(int)Hunter.MinaHarker].CurrentLocation, 0, false));
+                        distances.Add(minDistance);
+                        GC.Collect();
+                    }
+                    else
+                    {
+                        distances.Add(currentDistanceFromHunters);
+                    }
+                }
+                int index = -1;
+                foreach (Location loc in possibleDestinations)
+                {
+                    index++;
+                    if (currentDistanceFromHunters - distances[index] > 0)
+                    {
+                        destinationWeights[index] = (int)(destinationWeights[index] / DISTANCEFROMHUNTERMULTIPLIER);
+                    }
+                    if (currentDistanceFromHunters - distances[index] > 1)
+                    {
+                        destinationWeights[index] = (int)(destinationWeights[index] / DISTANCEFROMHUNTERMULTIPLIER);
+                    }
+                }
+                int totalDestinationWeights = 0;
+                foreach (int i in destinationWeights)
+                {
+                    totalDestinationWeights += i;
+                }
+                List<int> powerWeights = new List<int>();
+                index = -1;
+                possiblePowers.Remove(Power.WolfForm);
+                int totalPowerWeights = 0;
+                foreach (Power p in possiblePowers)
+                {
+                    index++;
+                    powerWeights.Add(20);
+                    totalPowerWeights += 20;
+                }
+                int randomNumber = new Random().Next(0, totalDestinationWeights + totalPowerWeights);
+                if (randomNumber > totalDestinationWeights)
+                {
+                    index = -1;
+                    int count = 0;
+                    foreach (int i in powerWeights)
+                    {
+                        index++;
+                        count += i;
+                        if (count > randomNumber)
+                        {
+                            power = possiblePowers[index];
+                            return Location.Nowhere;
+                        }
+                    }
+                    power = possiblePowers[0];
+                    return Location.Nowhere;
+                }
+                else
+                {
+                    randomNumber -= totalDestinationWeights;
+                    index = -1;
+                    int count = 0;
+                    foreach (int i in destinationWeights)
+                    {
+                        index++;
+                        count += i;
+                        if (count > randomNumber)
+                        {
+                            if (game.Map.LocationsConnectedByRoadOrSeaTo(game.Dracula.CurrentLocation).Contains(possibleDestinations[index]))
+                            {
+                                power = Power.None;
+                            }
+                            else
+                            {
+                                power = Power.WolfForm;
+                            }
+                            return possibleDestinations[index];
+                        }
+                    }
+                    power = Power.None;
+                    return possibleDestinations[0];
+                }
             }
             if (!possiblePowers.Any() || (possibleDestinations.Any() && new Random().Next(0, 4) > 0))
             {
@@ -929,7 +1135,8 @@ namespace FuryOfDracula.ArtificialIntelligence
                     }
 
                 }
-                for (int i = 5; i >= length; i--)
+                int stop = length;
+                for (int i = 5; i >= stop; i--)
                 {
                     if (trail[i] != null)
                     {
@@ -939,7 +1146,7 @@ namespace FuryOfDracula.ArtificialIntelligence
                         }
                         else
                         {
-                            length--;
+                            stop--;
                         }
                     }
                 }
@@ -1436,7 +1643,7 @@ namespace FuryOfDracula.ArtificialIntelligence
 
         private int IndexOfLocationInTrail(PossibleTrailSlot[] trail, Location loc)
         {
-            for (int i = 0; i < 6; i ++)
+            for (int i = 0; i < 6; i++)
             {
                 if (trail[i].Location == loc)
                 {
@@ -1444,6 +1651,54 @@ namespace FuryOfDracula.ArtificialIntelligence
                 }
             }
             return -1;
+        }
+
+        public void UpdateStrategy(GameState game)
+        {
+            List<Location> searchSpace = new List<Location>();
+            searchSpace.Add(game.Dracula.CurrentLocation);
+            int currentDistanceFromHunters = 50;
+            currentDistanceFromHunters = Math.Min(currentDistanceFromHunters, game.DistanceByRoadOrSeaBetween(searchSpace, 0, game.Hunters[(int)Hunter.LordGodalming].CurrentLocation, 0, false));
+            searchSpace.Clear();
+            searchSpace.Add(game.Dracula.CurrentLocation);
+            currentDistanceFromHunters = Math.Min(currentDistanceFromHunters, game.DistanceByRoadOrSeaBetween(searchSpace, 0, game.Hunters[(int)Hunter.DrSeward].CurrentLocation, 0, false));
+            searchSpace.Clear();
+            searchSpace.Add(game.Dracula.CurrentLocation);
+            currentDistanceFromHunters = Math.Min(currentDistanceFromHunters, game.DistanceByRoadOrSeaBetween(searchSpace, 0, game.Hunters[(int)Hunter.VanHelsing].CurrentLocation, 0, false));
+            searchSpace.Clear();
+            searchSpace.Add(game.Dracula.CurrentLocation);
+            currentDistanceFromHunters = Math.Min(currentDistanceFromHunters, game.DistanceByRoadOrSeaBetween(searchSpace, 0, game.Hunters[(int)Hunter.MinaHarker].CurrentLocation, 0, false));
+            GC.Collect();
+            int turnsUntilDark = (int)game.TimeOfDay > 3 ? 0 : 4 - (int)game.TimeOfDay;
+            int turnsUntilLight = (int)game.TimeOfDay < 4 ? 0 : 7 - (int)game.TimeOfDay;
+            if (new Random().Next(0, 5) == 0)
+            {
+                Console.WriteLine("Switching strategy");
+                if (Strategy == Strategy.Sneaky)
+                {
+                    Strategy = Strategy.Aggressive;
+                }
+                else
+                {
+                    Strategy = Strategy.Sneaky;
+                }
+            }
+            //if (Strategy == Strategy.Sneaky)
+            //{
+            //    if (turnsUntilDark < currentDistanceFromHunters)
+            //    {
+            //        Console.WriteLine("Going aggressive");
+            //        Strategy = Strategy.Aggressive;
+            //    }
+            //}
+            //else if (Strategy == Strategy.Aggressive)
+            //{
+            //    if (turnsUntilLight < currentDistanceFromHunters)
+            //    {
+            //        Console.WriteLine("Going sneaky");
+            //        Strategy = Strategy.Sneaky;
+            //    }
+            //}
         }
     }
 }

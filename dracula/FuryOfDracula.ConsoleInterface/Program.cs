@@ -2802,7 +2802,7 @@ namespace FuryOfDracula.ConsoleInterface
                 {
                     return true;
                 }
-                Console.WriteLine("How much health does {0} now have?");
+                Console.WriteLine("How much health does {0} now have?", h.Name());
                 var amount = -1;
                 while (amount == -1)
                 {
@@ -3249,6 +3249,8 @@ namespace FuryOfDracula.ConsoleInterface
         private static void EndHunterTurn(GameState game, DecisionMaker logic)
         {
             game.AdvanceTimeTracker();
+
+            logic.UpdateStrategy(game);
 
             var catacombsSlotsCleared = logic.ChooseWhichCatacombsCardsToDiscard(game);
             if (catacombsSlotsCleared.Count() > 0)
@@ -3728,6 +3730,7 @@ namespace FuryOfDracula.ConsoleInterface
             {
                 Console.WriteLine("There are {0} possible configurations of Dracula's trail", logic.PossibilityTree.Count());
                 Console.WriteLine("Dracula could be in one of {0} possible locations", logic.NumberOfPossibleCurrentLocations);
+                Console.WriteLine("Dracula's current strategy is {0}", logic.Strategy);
             }
         }
 
