@@ -101,6 +101,21 @@ namespace FuryOfDracula.GameLogic
         [DataMember]
         public EventCard HunterAlly { get; set; }
 
+        public int GetDistanceToClosestHunter(Location location)
+        {
+            List<Location> searchSpace = new List<Location>();
+            searchSpace.Add(location);
+            int minDistance = DistanceByRoadOrSeaBetween(searchSpace, 0, Hunters[(int)Hunter.LordGodalming].CurrentLocation, 0, false);
+            searchSpace.Clear();
+            minDistance = Math.Min(minDistance, DistanceByRoadOrSeaBetween(searchSpace, 0, Hunters[(int)Hunter.DrSeward].CurrentLocation, 0, false));
+            searchSpace.Clear();
+            minDistance = Math.Min(minDistance, DistanceByRoadOrSeaBetween(searchSpace, 0, Hunters[(int)Hunter.VanHelsing].CurrentLocation, 0, false));
+            searchSpace.Clear();
+            minDistance = Math.Min(minDistance, DistanceByRoadOrSeaBetween(searchSpace, 0, Hunters[(int)Hunter.MinaHarker].CurrentLocation, 0, false));
+            GC.Collect();
+            return minDistance;
+        }
+
         [DataMember]
         public TimeOfDay TimeOfDay { get; private set; }
 

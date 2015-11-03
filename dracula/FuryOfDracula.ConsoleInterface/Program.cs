@@ -68,6 +68,16 @@ namespace FuryOfDracula.ConsoleInterface
 
                 switch (commandSet.command)
                 {
+                    case "strategy":
+                        if (logic.Strategy == Strategy.Aggressive)
+                        {
+                            logic.Strategy = Strategy.Sneaky;
+                            Console.WriteLine("Strategy now Sneaky");
+                        } else if (logic.Strategy == Strategy.Sneaky)
+                        {
+                            logic.Strategy = Strategy.Aggressive;
+                            Console.WriteLine("Strategy now Aggressive");
+                        }; break;
                     case "w":
                     case "water": UseHolyWaterAtHospital(game, commandSet.argument1); break;
                     case "h":
@@ -1959,7 +1969,7 @@ namespace FuryOfDracula.ConsoleInterface
                 while (encounterTilesToResolve.Count() > 0 && hunterCanContinueToResolveEncounters)
                 {
                     var encounterTileBeingResolved = logic.ChooseEncounterToResolveOnSearchingHunter(game,
-                        encounterTilesToResolve);
+                        encounterTilesToResolve, hunterMoved);
                     hunterCanContinueToResolveEncounters = ResolveEncounterTile(game, encounterTileBeingResolved,
                         game.Hunters[(int)hunterMoved].HuntersInGroup, logic, trailIndex);
                     encounterTilesToResolve.Remove(encounterTileBeingResolved);
@@ -1974,7 +1984,7 @@ namespace FuryOfDracula.ConsoleInterface
                 while (encounterTilesToResolve.Count() > 0 && hunterCanContinueToResolveEncounters)
                 {
                     var encounterTileBeingResolved = logic.ChooseEncounterToResolveOnSearchingHunter(game,
-                        encounterTilesToResolve);
+                        encounterTilesToResolve, hunterMoved);
                     hunterCanContinueToResolveEncounters = ResolveEncounterTile(game, encounterTileBeingResolved,
                         game.Hunters[(int)hunterMoved].HuntersInGroup, logic, game.Dracula.PositionWhereHideCardIs());
                     encounterTilesToResolve.Remove(encounterTileBeingResolved);
@@ -3248,11 +3258,16 @@ namespace FuryOfDracula.ConsoleInterface
         /// <param name="logic">The artificial intelligence component</param>
         private static void EndHunterTurn(GameState game, DecisionMaker logic)
         {
+            bool firstMove = true;
+            var power = Power.None;
+            Location destination;
+            destination = logic.ChooseDestinationAndPower(game, out power);
+
             game.AdvanceTimeTracker();
 
             logic.UpdateStrategy(game);
 
-            var catacombsSlotsCleared = logic.ChooseWhichCatacombsCardsToDiscard(game);
+            var catacombsSlotsCleared = logic.ChooseWhichCatacombsCardsToDiscard(game, destination);
             if (catacombsSlotsCleared.Count() > 0)
             {
                 Console.Write("Dracula discarded cards from Catacombs positions: ");
@@ -3343,12 +3358,14 @@ namespace FuryOfDracula.ConsoleInterface
                 }
             } while (eventPlayed != Event.None);
 
-            var power = Power.None;
-            Location destination;
             var cardsDroppedOffTrail = new List<DraculaCardSlot>();
             for (var i = 0; i < numberOfMoves; i++)
             {
-                destination = logic.ChooseDestinationAndPower(game, out power);
+                if (!firstMove)
+                {
+                    destination = logic.ChooseDestinationAndPower(game, out power);
+                }
+                firstMove = false;
                 if (destination == Location.Nowhere && power == Power.None)
                 {
                     Console.WriteLine("Dracula is cornered by his own trail and has no valid moves");

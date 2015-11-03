@@ -295,7 +295,7 @@ namespace FuryOfDracula.UnitTests
             List<PossibleTrailSlot[]> possibilityTree = new List<PossibleTrailSlot[]>();
             possibilityTree.Add(actualTrail);
             List<int> numberOfPossibilities;
-            List<PossibleTrailSlot> sneakiestPossibleMoves = logic.CalculateSneakiestTrail(game, possibilityTree, 6, 0, out numberOfPossibilities);
+            List<PossibleTrailSlot> sneakiestPossibleMoves = logic.DetermineOrderedMoves(game, possibilityTree, 6, 0, out numberOfPossibilities);
             Assert.AreEqual(9, sneakiestPossibleMoves.Count());
         }
     }
