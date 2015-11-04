@@ -2082,7 +2082,7 @@ namespace FuryOfDracula.ArtificialIntelligence
             }
         }
 
-        public void EliminateTrailsThatContainLocation(Location location)
+        public void EliminateTrailsThatContainLocation(GameState game, Location location)
         {
             List<PossibleTrailSlot[]> newPossibilityTree = new List<PossibleTrailSlot[]>();
             foreach (PossibleTrailSlot[] trail in PossibilityTree)
@@ -2099,7 +2099,7 @@ namespace FuryOfDracula.ArtificialIntelligence
             }
         }
 
-        public void EliminateTrailsThatDoNotContainLocationAtPosition(Location location, int position)
+        public void EliminateTrailsThatDoNotContainLocationAtPosition(GameState game, Location location, int position)
         {
             List<PossibleTrailSlot[]> newPossibilityTree = new List<PossibleTrailSlot[]>();
             foreach (PossibleTrailSlot[] trail in PossibilityTree)
@@ -2229,7 +2229,7 @@ namespace FuryOfDracula.ArtificialIntelligence
             return false;
         }
 
-        public void EliminateTrailsThatDoNotContainHideAtPosition(int position)
+        public void EliminateTrailsThatDoNotContainHideAtPosition(GameState game, int position)
         {
             List<PossibleTrailSlot[]> newPossibilityTree = new List<PossibleTrailSlot[]>();
             foreach (PossibleTrailSlot[] trail in PossibilityTree)
