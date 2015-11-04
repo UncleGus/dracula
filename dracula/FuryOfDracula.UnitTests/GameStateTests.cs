@@ -54,42 +54,43 @@ namespace FuryOfDracula.UnitTests
         [Test]
         public void DistanceByRoadOrSeaBetween_MadridMadrid_Returns0()
         {
-            List<Location> searchSpace = new List<Location>();
-            searchSpace.Add(Location.Madrid);
-            Assert.AreEqual(0, game.DistanceByRoadOrSeaBetween(searchSpace, 0, Location.Madrid, 0, true));
+            Assert.AreEqual(0, game.DistanceByRoadOrSeaBetween(Location.Madrid, Location.Madrid, true));
         }
 
         [Test]
         public void DistanceByRoadOrSeaBetween_MadridSantander_Returns1()
         {
-            List<Location> searchSpace = new List<Location>();
-            searchSpace.Add(Location.Madrid);
-            Assert.AreEqual(1, game.DistanceByRoadOrSeaBetween(searchSpace, 0, Location.Santander, 0, true));
+            Assert.AreEqual(1, game.DistanceByRoadOrSeaBetween(Location.Madrid, Location.Santander, true));
         }
 
         [Test]
         public void DistanceByRoadOrSeaBetween_MadridBerlin_Returns5()
         {
-            List<Location> searchSpace = new List<Location>();
-            searchSpace.Add(Location.Madrid);
-            Assert.AreEqual(5, game.DistanceByRoadOrSeaBetween(searchSpace, 0, Location.Berlin, 0, true));
+            Assert.AreEqual(5, game.DistanceByRoadOrSeaBetween(Location.Madrid, Location.Berlin, true));
         }
 
         [Test]
         public void DistanceByRoadBetween_MadridBerlin_Returns8()
         {
-            List<Location> searchSpace = new List<Location>();
-            searchSpace.Add(Location.Madrid);
-            Assert.AreEqual(8, game.DistanceByRoadBetween(searchSpace, 0, Location.Berlin, 0, true));
+            Assert.AreEqual(8, game.DistanceByRoadBetween(Location.Madrid, Location.Berlin, true));
         }
 
         [Test]
-        public void DistanceByRoadBetween_MunichDublin_ReturnsNegative99()
+        public void DistanceByRoadBetween_MunichDublin_Returns99()
         {
-            List<Location> searchSpace = new List<Location>();
-            searchSpace.Add(Location.Munich);
-            Assert.AreEqual(99, game.DistanceByRoadBetween(searchSpace, 0, Location.Dublin, 0, true));
+            Assert.AreEqual(99, game.DistanceByRoadBetween(Location.Munich, Location.Dublin, true));
         }
 
+        [Test]
+        public void DistanceByTrainBetween_MunichDublin_Returns99()
+        {
+            Assert.AreEqual(99, game.DistanceByTrainBetween(Location.Munich, Location.Dublin, true));
+        }
+
+        [Test]
+        public void DistanceByTrainBetween_LisbonSalonica_Returns16()
+        {
+            Assert.AreEqual(16, game.DistanceByTrainBetween(Location.Lisbon, Location.Salonica, true));
+        }
     }
 }

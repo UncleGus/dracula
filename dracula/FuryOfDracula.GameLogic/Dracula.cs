@@ -613,5 +613,17 @@ namespace FuryOfDracula.GameLogic
             ClearTrailDownTo(game, 1);
             Trail[0].DraculaCards.First().IsRevealed = true;
         }
+
+        public bool TrailContains(Location location)
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                if (Trail[i] != null && Trail[i].DraculaCards.First().Location == location)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

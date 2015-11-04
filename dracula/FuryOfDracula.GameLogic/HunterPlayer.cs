@@ -194,5 +194,37 @@ namespace FuryOfDracula.GameLogic
         {
             HasDogsFaceUp = v;
         }
+
+        public int NumberOfKnownItemsOfType(Item item)
+        {
+            int count = 0;
+            ItemCard desiredCard = ItemsKnownToDracula.Find(card => card.Item == item);
+            List<ItemCard> itemsTemporarilyRemovedFromHand = new List<ItemCard>();
+            while (desiredCard != null)
+            {
+                count++;
+                itemsTemporarilyRemovedFromHand.Add(desiredCard);
+                ItemsKnownToDracula.Remove(desiredCard);
+                desiredCard = ItemsKnownToDracula.Find(card => card.Item == item);
+            }
+            ItemsKnownToDracula.AddRange(itemsTemporarilyRemovedFromHand);
+            return count;
+        }
+
+        public int NumberOfKnownEventsOfType(Event ev)
+        {
+            int count = 0;
+            EventCard desiredCard = EventsKnownToDracula.Find(card => card.Event == ev);
+            List<EventCard> eventsTemporarilyRemovedFromHand = new List<EventCard>();
+            while (desiredCard != null)
+            {
+                count++;
+                eventsTemporarilyRemovedFromHand.Add(desiredCard);
+                EventsKnownToDracula.Remove(desiredCard);
+                desiredCard = EventsKnownToDracula.Find(card => card.Event == ev);
+            }
+            EventsKnownToDracula.AddRange(eventsTemporarilyRemovedFromHand);
+            return count;
+        }
     }
 }

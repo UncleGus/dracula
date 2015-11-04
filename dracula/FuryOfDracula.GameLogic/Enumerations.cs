@@ -450,6 +450,7 @@ namespace FuryOfDracula.GameLogic
     {
         Random,
         Sneaky,
-        Aggressive
+        Aggressive,
+        FleeToCastleDracula
     }
 }

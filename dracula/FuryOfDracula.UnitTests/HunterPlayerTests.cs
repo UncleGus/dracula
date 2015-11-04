@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using FuryOfDracula.GameLogic;
 using NUnit.Framework;
+using System.Linq;
 
 namespace FuryOfDracula.UnitTests
 {
@@ -79,6 +80,23 @@ namespace FuryOfDracula.UnitTests
         {
             vanHelsing.MoveTo(Location.Hamburg);
             Assert.AreEqual(Location.Hamburg, vanHelsing.CurrentLocation);
+        }
+
+        [Test]
+        public void NumberOfKnownItemsOfType_CrucifixThree_Returns3()
+        {
+            vanHelsing.ItemsKnownToDracula.Add(new ItemCard(Item.Crucifix));
+            vanHelsing.ItemsKnownToDracula.Add(new ItemCard(Item.Crucifix));
+            vanHelsing.ItemsKnownToDracula.Add(new ItemCard(Item.Crucifix));
+            Assert.AreEqual(3, vanHelsing.NumberOfKnownItemsOfType(Item.Crucifix));
+            Assert.AreEqual(3, vanHelsing.ItemsKnownToDracula.Count());
+        }
+
+        [Test]
+        public void NumberOfKnownItemsOfType_CrucifixZero_Returns0()
+        {
+            vanHelsing.ItemsKnownToDracula.Clear();
+            Assert.AreEqual(0, vanHelsing.NumberOfKnownItemsOfType(Item.Crucifix));
         }
     }
 }

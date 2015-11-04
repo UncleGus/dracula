@@ -101,17 +101,12 @@ namespace FuryOfDracula.GameLogic
         [DataMember]
         public EventCard HunterAlly { get; set; }
 
-        public int GetDistanceToClosestHunter(Location location)
+        public int GetDistanceToClosestHunter(Location location, bool includeHospital)
         {
-            List<Location> searchSpace = new List<Location>();
-            searchSpace.Add(location);
-            int minDistance = DistanceByRoadOrSeaBetween(searchSpace, 0, Hunters[(int)Hunter.LordGodalming].CurrentLocation, 0, false);
-            searchSpace.Clear();
-            minDistance = Math.Min(minDistance, DistanceByRoadOrSeaBetween(searchSpace, 0, Hunters[(int)Hunter.DrSeward].CurrentLocation, 0, false));
-            searchSpace.Clear();
-            minDistance = Math.Min(minDistance, DistanceByRoadOrSeaBetween(searchSpace, 0, Hunters[(int)Hunter.VanHelsing].CurrentLocation, 0, false));
-            searchSpace.Clear();
-            minDistance = Math.Min(minDistance, DistanceByRoadOrSeaBetween(searchSpace, 0, Hunters[(int)Hunter.MinaHarker].CurrentLocation, 0, false));
+            int minDistance = DistanceByRoadOrSeaBetween(location, Hunters[(int)Hunter.LordGodalming].CurrentLocation, includeHospital);
+            minDistance = Math.Min(minDistance, DistanceByRoadOrSeaBetween(location, Hunters[(int)Hunter.DrSeward].CurrentLocation, includeHospital));
+            minDistance = Math.Min(minDistance, DistanceByRoadOrSeaBetween(location, Hunters[(int)Hunter.VanHelsing].CurrentLocation, includeHospital));
+            minDistance = Math.Min(minDistance, DistanceByRoadOrSeaBetween(location, Hunters[(int)Hunter.MinaHarker].CurrentLocation, includeHospital));
             GC.Collect();
             return minDistance;
         }
@@ -200,7 +195,7 @@ namespace FuryOfDracula.GameLogic
             StormySeasRounds--;
             if (Map.TypeOfLocation(Dracula.CurrentLocation) != LocationType.Sea)
             {
-                TimeOfDay = (TimeOfDay) ((int) TimeOfDay%6 + 1);
+                TimeOfDay = (TimeOfDay)((int)TimeOfDay % 6 + 1);
                 if (TimeOfDay == TimeOfDay.Dawn)
                 {
                     Vampires++;
@@ -402,7 +397,7 @@ namespace FuryOfDracula.GameLogic
                     fileName = fileName.Replace(c.ToString(), "");
                 }
                 fileName = fileName + ".sav";
-                var fileWriter = new DataContractSerializer(typeof (GameState));
+                var fileWriter = new DataContractSerializer(typeof(GameState));
                 var writeStream = File.OpenWrite(fileName);
 
                 fileWriter.WriteObject(writeStream, this);
@@ -470,7 +465,7 @@ namespace FuryOfDracula.GameLogic
             return false;
         }
 
-        public int DistanceByRoadOrSeaBetween(List<Location> searchSpace, int searchIndex, Location destination, int distance, bool includeHospital)
+        private int DistanceByRoadOrSeaBetweenRecursive(List<Location> searchSpace, int searchIndex, Location destination, int distance, bool includeHospital)
         {
             int stopIndex = searchSpace.Count();
             if (searchIndex == stopIndex)
@@ -495,10 +490,10 @@ namespace FuryOfDracula.GameLogic
                     }
                 }
             }
-            return DistanceByRoadOrSeaBetween(searchSpace, stopIndex, destination, distance + 1, includeHospital);
+            return DistanceByRoadOrSeaBetweenRecursive(searchSpace, stopIndex, destination, distance + 1, includeHospital);
         }
 
-        public int DistanceByRoadBetween(List<Location> searchSpace, int searchIndex, Location destination, int distance, bool includeHospital)
+        private int DistanceByRoadBetweenRecursive(List<Location> searchSpace, int searchIndex, Location destination, int distance, bool includeHospital)
         {
             int stopIndex = searchSpace.Count();
             if (searchIndex == stopIndex)
@@ -523,7 +518,70 @@ namespace FuryOfDracula.GameLogic
                     }
                 }
             }
-            return DistanceByRoadBetween(searchSpace, stopIndex, destination, distance + 1, includeHospital);
+            return DistanceByRoadBetweenRecursive(searchSpace, stopIndex, destination, distance + 1, includeHospital);
+        }
+
+        public int DistanceByRoadBetween(Location start, Location finish, bool includeHospital)
+        {
+            List<Location> searchSpace = new List<Location>();
+            searchSpace.Add(start);
+            return DistanceByRoadBetweenRecursive(searchSpace, 0, finish, 0, includeHospital);
+        }
+
+        public int DistanceByTrainBetween(Location start, Location finish, bool includeHospital)
+        {
+            List<Location> searchSpace = new List<Location>();
+            searchSpace.Add(start);
+            return DistanceByTrainBetweenRecursive(searchSpace, 0, finish, 0, includeHospital);
+        }
+
+        public int DistanceByTrainBetweenRecursive(List<Location> searchSpace, int searchIndex, Location destination, int distance, bool includeHospital)
+        {
+            int stopIndex = searchSpace.Count();
+            if (searchIndex == stopIndex)
+            {
+                return 99;
+            }
+            for (int i = searchIndex; i < stopIndex; i++)
+            {
+                if (searchSpace[i] == destination)
+                {
+                    return distance;
+                }
+                else
+                {
+                    List<Location> newConnectedLocations = Map.LocationsConnectedByTrainTo(searchSpace[i]);
+                    foreach (Location location in newConnectedLocations)
+                    {
+                        if (!searchSpace.Contains(location) && (includeHospital || Map.TypeOfLocation(location) != LocationType.Hospital))
+                        {
+                            searchSpace.Add(location);
+                        }
+                    }
+                }
+            }
+            return DistanceByTrainBetweenRecursive(searchSpace, stopIndex, destination, distance + 1, includeHospital);
+        }
+
+        public int DistanceByRoadOrSeaBetween(Location start, Location finish, bool includeHospital)
+        {
+            List<Location> searchSpace = new List<Location>();
+            searchSpace.Add(start);
+            return DistanceByRoadOrSeaBetweenRecursive(searchSpace, 0, finish, 0, includeHospital);
+        }
+
+        public List<HunterPlayer> HuntersClosestTo(Location location)
+        {
+            List<HunterPlayer> closestHunters = new List<HunterPlayer>();
+            int shortestDistance = GetDistanceToClosestHunter(location, false);
+            foreach (HunterPlayer h in Hunters)
+            {
+                if (h != null && DistanceByRoadOrSeaBetween(location, h.CurrentLocation, false) == shortestDistance)
+                {
+                    closestHunters.Add(h);
+                }
+            }
+            return closestHunters;
         }
     }
 }

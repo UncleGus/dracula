@@ -535,7 +535,7 @@ namespace FuryOfDracula.ConsoleInterface
             else
             {
                 game.EventDiscard.Add(game.DraculaAlly);
-                allyToKeep = logic.ChooseAllyToKeep(game.DraculaAlly.Event, eventPlayedByDracula);
+                allyToKeep = logic.ChooseAllyToKeep(game, game.DraculaAlly.Event, eventPlayedByDracula);
             }
             game.DraculaAlly = game.EventDiscard.Find(card => card.Event == allyToKeep);
             game.EventDiscard.Remove(game.DraculaAlly);
