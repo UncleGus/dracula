@@ -228,7 +228,7 @@ namespace FuryOfDracula.UnitTests
             game.Dracula.MoveTo(Location.Berlin, Power.None, out doubleBackSlot);
             logic.InitialisePossibilityTree(game);
             logic.AddOrangeBackedCardToAllPossibleTrails(game);
-            logic.EliminateTrailsThatContainLocation(Location.Naples);
+            logic.EliminateTrailsThatContainLocation(game, Location.Naples);
             Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.Naples));
             Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[1].Location == Location.Naples));
         }
@@ -245,7 +245,7 @@ namespace FuryOfDracula.UnitTests
             logic.InitialisePossibilityTree(game);
             game.Dracula.MoveTo(Location.Naples, Power.None, out doubleBackSlot);
             logic.AddOrangeBackedCardToAllPossibleTrails(game);
-            logic.EliminateTrailsThatDoNotContainLocationAtPosition(Location.Rome, 1);
+            logic.EliminateTrailsThatDoNotContainLocationAtPosition(game, Location.Rome, 1);
             Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[1].Location != Location.Rome));
         }
 
@@ -261,7 +261,7 @@ namespace FuryOfDracula.UnitTests
             logic.InitialisePossibilityTree(game);
             Assert.AreNotEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.Milan));
             int possibleLocationsBefore = logic.NumberOfPossibleCurrentLocations;
-            logic.EliminateTrailsThatContainLocationAtPosition(Location.Milan, 0);
+            logic.EliminateTrailsThatContainLocationAtPosition(game, Location.Milan, 0);
             Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[0].Location == Location.Milan));
             Assert.AreEqual(possibleLocationsBefore - 1, logic.NumberOfPossibleCurrentLocations);
         }
@@ -286,7 +286,7 @@ namespace FuryOfDracula.UnitTests
         }
 
         [Test]
-        public void CalculateSneakiestTrail_Something()
+        public void DetermineOrderedMoves_Marseilles_Returns9Moves()
         {
             int doubleBackSlot;
             game.Dracula.Trail[5] = game.Dracula.Trail[4] = game.Dracula.Trail[3] = game.Dracula.Trail[2] = game.Dracula.Trail[1] = game.Dracula.Trail[1] = game.Dracula.Trail[0] = null;
@@ -295,8 +295,35 @@ namespace FuryOfDracula.UnitTests
             List<PossibleTrailSlot[]> possibilityTree = new List<PossibleTrailSlot[]>();
             possibilityTree.Add(actualTrail);
             List<int> numberOfPossibilities;
-            List<PossibleTrailSlot> sneakiestPossibleMoves = logic.DetermineOrderedMoves(game, possibilityTree, 6, 0, out numberOfPossibilities);
-            Assert.AreEqual(9, sneakiestPossibleMoves.Count());
+            List<PossibleTrailSlot> orderedMoves = logic.DetermineOrderedMoves(game, possibilityTree, 6, 0, out numberOfPossibilities);
+            Assert.AreEqual(9, orderedMoves.Count());
+        }
+
+        [Test]
+        public void AddEscapeAsBatCardToAllTrails_TrailLength1_ReturnsCorrectCount()
+        {
+            int doubleBackSlot;
+            game.Dracula.Trail[5] = game.Dracula.Trail[4] = game.Dracula.Trail[3] = game.Dracula.Trail[2] = game.Dracula.Trail[1] = game.Dracula.Trail[1] = game.Dracula.Trail[0] = null;
+            game.Dracula.MoveTo(Location.Marseilles, Power.None, out doubleBackSlot);
+            logic.InitialisePossibilityTree(game);
+            logic.EliminateTrailsThatDoNotContainLocationAtPosition(game, Location.Marseilles, 0);
+            PossibleTrailSlot[] actualTrail = logic.GetActualTrail(game);
+            logic.AddEscapeAsBatCardToAllTrails(game);
+            Assert.AreEqual(15, logic.PossibilityTree.Count());
+        }
+
+        [Test]
+        public void AddDisembarkedCardToAllPossibleTrails_ThreeTrails_ReturnsCorrectCount()
+        {
+            int doubleBackSlot;
+            game.Dracula.Trail[5] = game.Dracula.Trail[4] = game.Dracula.Trail[3] = game.Dracula.Trail[2] = game.Dracula.Trail[1] = game.Dracula.Trail[1] = game.Dracula.Trail[0] = null;
+            game.Dracula.MoveTo(Location.Marseilles, Power.None, out doubleBackSlot);
+            logic.InitialisePossibilityTree(game);
+            logic.EliminateTrailsThatDoNotContainLocationAtPosition(game, Location.Marseilles, 0);
+            logic.AddBlueBackedCardToAllPossibleTrails(game);
+            logic.AddBlueBackedCardToAllPossibleTrails(game);
+            logic.AddDisembarkedCardToAllPossibleTrails(game);
+            Assert.AreEqual(7, logic.PossibilityTree.Count());
         }
     }
 }

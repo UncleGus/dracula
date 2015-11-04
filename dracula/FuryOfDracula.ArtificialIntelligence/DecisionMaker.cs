@@ -679,14 +679,17 @@ namespace FuryOfDracula.ArtificialIntelligence
                             huntersVulnerableToBite.Add(h);
                         }
                     }
-                    enemyTarget = huntersVulnerableToBite[new Random().Next(0, huntersVulnerableToBite.Count())].Hunter;
-                    if (cardUsedLastRound == EnemyCombatCard.Fangs)
+                    if (huntersVulnerableToBite.Any())
                     {
-                        return EnemyCombatCard.Mesmerize;
-                    }
-                    else if (enemyCombatCards.Contains(EnemyCombatCard.Fangs) && (!sisterAgathaInEffect || new Random().Next(0, 3) == 0))
-                    {
-                        return EnemyCombatCard.Fangs;
+                        enemyTarget = huntersVulnerableToBite[new Random().Next(0, huntersVulnerableToBite.Count())].Hunter;
+                        if (cardUsedLastRound == EnemyCombatCard.Fangs)
+                        {
+                            return EnemyCombatCard.Mesmerize;
+                        }
+                        else if (enemyCombatCards.Contains(EnemyCombatCard.Fangs) && (!sisterAgathaInEffect || new Random().Next(0, 3) == 0))
+                        {
+                            return EnemyCombatCard.Fangs;
+                        }
                     }
                 }
                 else if (enemyCombatCards.Contains(EnemyCombatCard.Strength) && cardUsedLastRound != EnemyCombatCard.Strength)
@@ -724,7 +727,7 @@ namespace FuryOfDracula.ArtificialIntelligence
                        cardChosen == EnemyCombatCard.Strength)) ||
                      (roundsWithoutEscape > 0) &&
                      (cardChosen == EnemyCombatCard.EscapeBat || cardChosen == EnemyCombatCard.EscapeMan ||
-                      cardChosen == EnemyCombatCard.EscapeMist) || ((cardChosen == EnemyCombatCard.Claws || cardChosen == EnemyCombatCard.Punch)) && numberOfAttempts > 0);
+                      cardChosen == EnemyCombatCard.EscapeMist) || ((cardChosen == EnemyCombatCard.EscapeMist || cardChosen == EnemyCombatCard.EscapeMan || cardChosen == EnemyCombatCard.EscapeBat || cardChosen == EnemyCombatCard.Claws || cardChosen == EnemyCombatCard.Punch)) && numberOfAttempts > 0);
             enemyTarget = huntersInvolved[new Random().Next(0, huntersInvolved.Count())].Hunter;
             return cardChosen;
         }
@@ -1553,12 +1556,12 @@ namespace FuryOfDracula.ArtificialIntelligence
                     numberOfHuntersAtSea++;
                 }
             }
-                if (game.Dracula.EventHand.Find(card => card.Event == Event.ControlStorms) != null &&
-                    game.Map.TypeOfLocation(game.Hunters[(int)hunterMoved].CurrentLocation) == LocationType.Sea &&
-                    new Random().Next(0, numberOfHuntersAtSea) == 0)
-                {
-                    return true;
-                }
+            if (game.Dracula.EventHand.Find(card => card.Event == Event.ControlStorms) != null &&
+                game.Map.TypeOfLocation(game.Hunters[(int)hunterMoved].CurrentLocation) == LocationType.Sea &&
+                new Random().Next(0, numberOfHuntersAtSea) == 0)
+            {
+                return true;
+            }
             return false;
         }
 
@@ -1618,7 +1621,7 @@ namespace FuryOfDracula.ArtificialIntelligence
             {
                 return Item.Knife;
             }
-            
+
             if (game.Hunters[(int)rageTarget].ItemCount == 0)
             {
                 return Item.None;
@@ -1693,6 +1696,10 @@ namespace FuryOfDracula.ArtificialIntelligence
 
         public bool ChooseToPlaySensationalistPress(GameState game, Location location)
         {
+            if (!TrailContainsLocation(GetActualTrail(game), location))
+            {
+                return false;
+            }
             if (game.Dracula.EventHand.Find(card => card.Event == Event.SensationalistPress) != null)
             {
                 int randomChances = (int)((0.75 * (NumberOfPossibleCurrentLocations - 5)) * (0.75 * (NumberOfPossibleCurrentLocations - 5)));
@@ -1882,6 +1889,7 @@ namespace FuryOfDracula.ArtificialIntelligence
             PossibilityTree = newPossibilityTree;
             if (PossibilityTree.Count() == 0)
             {
+                Console.WriteLine("Dracula stopped believing he exists after running AddOrangeBackedCardToAllPossibleTrails");
                 PossibilityTree.Add(GetActualTrail(game));
             }
         }
@@ -1923,6 +1931,7 @@ namespace FuryOfDracula.ArtificialIntelligence
             PossibilityTree = newPossibilityTree;
             if (PossibilityTree.Count() == 0)
             {
+                Console.WriteLine("Dracula stopped believing he exists after running AddBlueBackedCardToAllPossibleTrails");
                 PossibilityTree.Add(GetActualTrail(game));
             }
         }
@@ -1972,6 +1981,7 @@ namespace FuryOfDracula.ArtificialIntelligence
             PossibilityTree = newPossibilityTree;
             if (PossibilityTree.Count() == 0)
             {
+                Console.WriteLine("Dracula stopped believing he exists after running AddDoubleBackToAllPossibleTrails");
                 PossibilityTree.Add(GetActualTrail(game));
             }
         }
@@ -2031,6 +2041,7 @@ namespace FuryOfDracula.ArtificialIntelligence
             PossibilityTree = newPossibilityTree;
             if (PossibilityTree.Count() == 0)
             {
+                Console.WriteLine("Dracula stopped believing he exists after running AddWolfFormToAllPossibleTrails");
                 PossibilityTree.Add(GetActualTrail(game));
             }
         }
@@ -2095,6 +2106,7 @@ namespace FuryOfDracula.ArtificialIntelligence
             PossibilityTree = newPossibilityTree;
             if (PossibilityTree.Count() == 0)
             {
+                Console.WriteLine("Dracula stopped believing he exists after running EliminateTrailsThatContainLocation");
                 PossibilityTree.Add(GetActualTrail(game));
             }
         }
@@ -2112,6 +2124,7 @@ namespace FuryOfDracula.ArtificialIntelligence
             PossibilityTree = newPossibilityTree;
             if (PossibilityTree.Count() == 0)
             {
+                Console.WriteLine("Dracula stopped believing he exists after running EliminateTrailsThatDoNotContainLocationAtPosition");
                 PossibilityTree.Add(GetActualTrail(game));
             }
         }
@@ -2119,36 +2132,20 @@ namespace FuryOfDracula.ArtificialIntelligence
         public void AddEvasionCardToTrail(GameState game)
         {
             List<PossibleTrailSlot[]> newPossibilityTree = new List<PossibleTrailSlot[]>();
-            if (game.Dracula.Trail[0].DraculaCards.First().IsRevealed)
+            List<Location> allCities = new List<Location>();
+            List<Location> allLocations = Enumerations.GetAllLocations();
+            foreach (Location loc in allLocations)
             {
-                foreach (PossibleTrailSlot[] trail in PossibilityTree)
+                if (game.Map.TypeOfLocation(loc) == LocationType.SmallCity || game.Map.TypeOfLocation(loc) == LocationType.LargeCity)
                 {
-                    {
-                        PossibleTrailSlot[] newPossibleTrail = new PossibleTrailSlot[6];
-                        for (int i = 5; i > 0; i--)
-                        {
-                            newPossibleTrail[i] = trail[i - 1];
-                        }
-                        newPossibleTrail[0] = new PossibleTrailSlot(game.Dracula.Trail[0].DraculaCards.First().Location, Power.None);
-                        newPossibilityTree.Add(newPossibleTrail);
-                    }
+                    allCities.Add(loc);
                 }
             }
-            else if (game.Map.TypeOfLocation(game.Dracula.Trail[0].DraculaCards.First().Location) == LocationType.SmallCity ||
-       game.Map.TypeOfLocation(game.Dracula.Trail[0].DraculaCards.First().Location) == LocationType.LargeCity)
+            foreach (PossibleTrailSlot[] trail in PossibilityTree)
             {
-                List<Location> allCities = new List<Location>();
-                List<Location> allLocations = Enumerations.GetAllLocations();
-                foreach (Location loc in allLocations)
+                foreach (Location location in allCities)
                 {
-                    if (game.Map.TypeOfLocation(loc) == LocationType.SmallCity || game.Map.TypeOfLocation(loc) == LocationType.LargeCity)
-                    {
-                        allCities.Add(loc);
-                    }
-                }
-                foreach (PossibleTrailSlot[] trail in PossibilityTree)
-                {
-                    foreach (Location location in allCities)
+                    if (!game.HuntersAt(location).Any() && !TrailContainsLocation(trail, location) && !game.CatacombsContainsLocation(location))
                     {
                         PossibleTrailSlot[] newPossibleTrail = new PossibleTrailSlot[6];
                         for (int i = 5; i > 0; i--)
@@ -2159,50 +2156,13 @@ namespace FuryOfDracula.ArtificialIntelligence
                         newPossibilityTree.Add(newPossibleTrail);
                     }
                 }
-            }
-            else if (game.Map.TypeOfLocation(game.Dracula.Trail[0].DraculaCards.First().Location) == LocationType.Sea)
-            {
-                List<Location> allSeas = new List<Location>();
-                List<Location> allLocations = Enumerations.GetAllLocations();
-                foreach (Location loc in allLocations)
-                {
-                    if (game.Map.TypeOfLocation(loc) == LocationType.Sea)
-                    {
-                        allSeas.Add(loc);
-                    }
-                }
-                foreach (PossibleTrailSlot[] trail in PossibilityTree)
-                {
-                    foreach (Location location in allSeas)
-                    {
-                        PossibleTrailSlot[] newPossibleTrail = new PossibleTrailSlot[6];
-                        for (int i = 5; i > 0; i--)
-                        {
-                            newPossibleTrail[i] = trail[i - 1];
-                        }
-                        newPossibleTrail[0] = new PossibleTrailSlot(location, Power.None);
-                        newPossibilityTree.Add(newPossibleTrail);
-                    }
-                }
-            }
-            else if (game.Map.TypeOfLocation(game.Dracula.Trail[0].DraculaCards.First().Location) == LocationType.Castle)
-            {
-                foreach (PossibleTrailSlot[] trail in PossibilityTree)
-                {
-                    PossibleTrailSlot[] newPossibleTrail = new PossibleTrailSlot[6];
-                    for (int i = 5; i > 0; i--)
-                    {
-                        newPossibleTrail[i] = trail[i - 1];
-                    }
-                    newPossibleTrail[0] = new PossibleTrailSlot(Location.CastleDracula, Power.None);
-                    newPossibilityTree.Add(newPossibleTrail);
-                }
-            }
-            if (PossibilityTree.Count() == 0)
-            {
-                PossibilityTree.Add(GetActualTrail(game));
             }
             PossibilityTree = newPossibilityTree;
+            if (PossibilityTree.Count() == 0)
+            {
+                Console.WriteLine("Dracula stopped believing he exists after running AddEvasionCardToTrail");
+                PossibilityTree.Add(GetActualTrail(game));
+            }
         }
 
         private bool TrailContainsPower(PossibleTrailSlot[] trail, Power power)
@@ -2242,6 +2202,7 @@ namespace FuryOfDracula.ArtificialIntelligence
             PossibilityTree = newPossibilityTree;
             if (PossibilityTree.Count() == 0)
             {
+                Console.WriteLine("Dracula stopped believing he exists after running EliminateTrailsThatDoNotContainHideAtPosition");
                 PossibilityTree.Add(GetActualTrail(game));
             }
         }
@@ -2275,7 +2236,7 @@ namespace FuryOfDracula.ArtificialIntelligence
                     locationsToAdd = game.Map.LocationsConnectedByRoadTo(location);
                     foreach (Location loc in locationsToAdd)
                     {
-                        if (!game.LocationIsBlocked(loc) && !possibleDestinations.Contains(loc) && !TrailContainsLocation(trail, loc))
+                        if (!game.LocationIsBlocked(loc) && !possibleDestinations.Contains(loc) && !moreLocationsToAdd.Contains(loc) && !TrailContainsLocation(trail, loc))
                         {
                             moreLocationsToAdd.Add(loc);
                         }
@@ -2301,6 +2262,7 @@ namespace FuryOfDracula.ArtificialIntelligence
             PossibilityTree = newPossibilityTree;
             if (PossibilityTree.Count() == 0)
             {
+                Console.WriteLine("Dracula stopped believing he exists after running AddEscapeAsBatCardToAllTrails");
                 PossibilityTree.Add(GetActualTrail(game));
             }
         }
@@ -2310,15 +2272,7 @@ namespace FuryOfDracula.ArtificialIntelligence
             List<PossibleTrailSlot[]> newPossibilityTree = new List<PossibleTrailSlot[]>();
             foreach (PossibleTrailSlot[] trail in PossibilityTree)
             {
-                Location currentLocation = Location.Nowhere;
-                for (int i = 0; i < 6; i++)
-                {
-                    if (trail[i].Location != Location.Nowhere)
-                    {
-                        currentLocation = trail[i].Location;
-                        break;
-                    }
-                }
+                Location currentLocation = GetCurrentLocationFromTrail(trail);
                 List<PossibleTrailSlot> possibleCards = new List<PossibleTrailSlot>();
                 List<Location> possibleLocations = game.Map.LocationsConnectedBySeaTo(currentLocation);
                 foreach (Location location in possibleLocations)
@@ -2342,8 +2296,21 @@ namespace FuryOfDracula.ArtificialIntelligence
             PossibilityTree = newPossibilityTree;
             if (PossibilityTree.Count() == 0)
             {
+                Console.WriteLine("Dracula stopped believing he exists after running AddDisembarkedCardToAllPossibleTrails");
                 PossibilityTree.Add(GetActualTrail(game));
             }
+        }
+
+        private Location GetCurrentLocationFromTrail(PossibleTrailSlot[] trail)
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                if (trail[i].Location != Location.Nowhere)
+                {
+                    return trail[i].Location;
+                }
+            }
+            return Location.Nowhere;
         }
 
         public void EliminateTrailsThatHaveHuntersAtPosition(GameState game, int position)
@@ -2359,6 +2326,7 @@ namespace FuryOfDracula.ArtificialIntelligence
             PossibilityTree = newPossibilityTree;
             if (PossibilityTree.Count() == 0)
             {
+                Console.WriteLine("Dracula stopped believing he exists after running EliminateTrailsThatHaveHuntersAtPosition");
                 PossibilityTree.Add(GetActualTrail(game));
             }
         }
@@ -2376,6 +2344,7 @@ namespace FuryOfDracula.ArtificialIntelligence
             PossibilityTree = newPossibilityTree;
             if (PossibilityTree.Count() == 0)
             {
+                Console.WriteLine("Dracula stopped believing he exists after running EliminateTrailsThatDoNotContainLocation");
                 PossibilityTree.Add(GetActualTrail(game));
             }
         }
@@ -2393,6 +2362,7 @@ namespace FuryOfDracula.ArtificialIntelligence
             PossibilityTree = newPossibilityTree;
             if (PossibilityTree.Count() == 0)
             {
+                Console.WriteLine("Dracula stopped believing he exists after running EliminateTrailsThatContainLocationAtPosition");
                 PossibilityTree.Add(GetActualTrail(game));
             }
         }
@@ -2447,7 +2417,6 @@ namespace FuryOfDracula.ArtificialIntelligence
                     }
                     numberOfMatches.Add(count);
                 }
-                //int indexOfHighestCount = 0;
                 int currentIndex = -1;
                 int highestCount = 0;
                 foreach (int i in numberOfMatches)
@@ -2456,7 +2425,6 @@ namespace FuryOfDracula.ArtificialIntelligence
                     if (i > highestCount)
                     {
                         highestCount = i;
-                        //indexOfHighestCount = currentIndex;
                     }
                 }
                 for (int i = numberOfMatches.Count() - 1; i >= 0; i--)

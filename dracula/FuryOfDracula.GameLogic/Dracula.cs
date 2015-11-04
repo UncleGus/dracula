@@ -453,32 +453,34 @@ namespace FuryOfDracula.GameLogic
         public void AdjustBlood(int adjustment)
         {
             Blood += adjustment;
+            Blood = Math.Min(Blood, 15);
         }
 
         public void EscapeAsBat(GameState game, Location destination)
         {
-            foreach (var card in Trail[0].DraculaCards)
+            int currentLocationIndex = -1;
+            for (int i = 0; i < 6; i++)
+            {
+                if (Trail[i].DraculaCards.First().Location == CurrentLocation)
+                {
+                    currentLocationIndex = i;
+                    break;
+                }
+            }
+            foreach (var card in Trail[currentLocationIndex].DraculaCards)
             {
                 card.IsRevealed = false;
             }
-            foreach (var enc in Trail[0].EncounterTiles)
+            foreach (var enc in Trail[currentLocationIndex].EncounterTiles)
             {
                 enc.IsRevealed = false;
                 game.EncounterPool.Add(enc);
             }
-            int i;
-            for (i = 0; i < 6; i++)
-            {
-                if (Trail[i] != null && Trail[i].DraculaCards.First().Location == CurrentLocation)
-                {
-                    break;
-                }
-            }
-            Trail[i] = new DraculaCardSlot(DraculaCardDeck.Find(card => card.Location == destination));
+            Trail[currentLocationIndex] = new DraculaCardSlot(DraculaCardDeck.Find(card => card.Location == destination));
 
             if (destination == Location.CastleDracula)
             {
-                Trail[i].DraculaCards.First().IsRevealed = true;
+                Trail[currentLocationIndex].DraculaCards.First().IsRevealed = true;
             }
             CurrentLocation = destination;
         }
