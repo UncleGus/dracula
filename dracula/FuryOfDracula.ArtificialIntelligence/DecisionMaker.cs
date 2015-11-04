@@ -1814,7 +1814,7 @@ namespace FuryOfDracula.ArtificialIntelligence
         public Hunter ChooseVictimForQuinceyPMorris(GameState game)
         {
             List<HunterPlayer> potentialVictims = new List<HunterPlayer>();
-            for (int i = 0; i < 5; i++)
+            for (int i = 1; i < 5; i++)
             {
                 if (game.Hunters[i].NumberOfKnownItemsOfType(Item.Crucifix) == 0 && game.Hunters[i].NumberOfKnownItemsOfType(Item.HeavenlyHost) == 0)
                 {
@@ -1880,6 +1880,10 @@ namespace FuryOfDracula.ArtificialIntelligence
                 }
             }
             PossibilityTree = newPossibilityTree;
+            if (PossibilityTree.Count() == 0)
+            {
+                PossibilityTree.Add(GetActualTrail(game));
+            }
         }
 
         public void AddBlueBackedCardToAllPossibleTrails(GameState game)
@@ -1917,6 +1921,10 @@ namespace FuryOfDracula.ArtificialIntelligence
                 }
             }
             PossibilityTree = newPossibilityTree;
+            if (PossibilityTree.Count() == 0)
+            {
+                PossibilityTree.Add(GetActualTrail(game));
+            }
         }
 
         public void AddPowerCardToAllPossibleTrails(Power power)
@@ -1962,6 +1970,10 @@ namespace FuryOfDracula.ArtificialIntelligence
                 }
             }
             PossibilityTree = newPossibilityTree;
+            if (PossibilityTree.Count() == 0)
+            {
+                PossibilityTree.Add(GetActualTrail(game));
+            }
         }
 
         public void AddWolfFormToAllPossibleTrails(GameState game)
@@ -2017,6 +2029,10 @@ namespace FuryOfDracula.ArtificialIntelligence
                 }
             }
             PossibilityTree = newPossibilityTree;
+            if (PossibilityTree.Count() == 0)
+            {
+                PossibilityTree.Add(GetActualTrail(game));
+            }
         }
 
         public void TrimAllPossibleTrails(int length)
@@ -2077,6 +2093,10 @@ namespace FuryOfDracula.ArtificialIntelligence
                 }
             }
             PossibilityTree = newPossibilityTree;
+            if (PossibilityTree.Count() == 0)
+            {
+                PossibilityTree.Add(GetActualTrail(game));
+            }
         }
 
         public void EliminateTrailsThatDoNotContainLocationAtPosition(Location location, int position)
@@ -2090,6 +2110,10 @@ namespace FuryOfDracula.ArtificialIntelligence
                 }
             }
             PossibilityTree = newPossibilityTree;
+            if (PossibilityTree.Count() == 0)
+            {
+                PossibilityTree.Add(GetActualTrail(game));
+            }
         }
 
         public void AddEvasionCardToTrail(GameState game)
@@ -2174,6 +2198,10 @@ namespace FuryOfDracula.ArtificialIntelligence
                     newPossibilityTree.Add(newPossibleTrail);
                 }
             }
+            if (PossibilityTree.Count() == 0)
+            {
+                PossibilityTree.Add(GetActualTrail(game));
+            }
             PossibilityTree = newPossibilityTree;
         }
 
@@ -2212,6 +2240,10 @@ namespace FuryOfDracula.ArtificialIntelligence
                 }
             }
             PossibilityTree = newPossibilityTree;
+            if (PossibilityTree.Count() == 0)
+            {
+                PossibilityTree.Add(GetActualTrail(game));
+            }
         }
 
         public void AddEscapeAsBatCardToAllTrails(GameState game)
@@ -2267,6 +2299,10 @@ namespace FuryOfDracula.ArtificialIntelligence
                 }
             }
             PossibilityTree = newPossibilityTree;
+            if (PossibilityTree.Count() == 0)
+            {
+                PossibilityTree.Add(GetActualTrail(game));
+            }
         }
 
         public void AddDisembarkedCardToAllPossibleTrails(GameState game)
@@ -2304,6 +2340,10 @@ namespace FuryOfDracula.ArtificialIntelligence
                 }
             }
             PossibilityTree = newPossibilityTree;
+            if (PossibilityTree.Count() == 0)
+            {
+                PossibilityTree.Add(GetActualTrail(game));
+            }
         }
 
         public void EliminateTrailsThatHaveHuntersAtPosition(GameState game, int position)
@@ -2317,9 +2357,13 @@ namespace FuryOfDracula.ArtificialIntelligence
                 }
             }
             PossibilityTree = newPossibilityTree;
+            if (PossibilityTree.Count() == 0)
+            {
+                PossibilityTree.Add(GetActualTrail(game));
+            }
         }
 
-        public void EliminateTrailsThatDoNotContainLocation(Location location)
+        public void EliminateTrailsThatDoNotContainLocation(GameState game, Location location)
         {
             List<PossibleTrailSlot[]> newPossibilityTree = new List<PossibleTrailSlot[]>();
             foreach (PossibleTrailSlot[] trail in PossibilityTree)
@@ -2330,9 +2374,13 @@ namespace FuryOfDracula.ArtificialIntelligence
                 }
             }
             PossibilityTree = newPossibilityTree;
+            if (PossibilityTree.Count() == 0)
+            {
+                PossibilityTree.Add(GetActualTrail(game));
+            }
         }
 
-        public void EliminateTrailsThatContainLocationAtPosition(Location location, int position)
+        public void EliminateTrailsThatContainLocationAtPosition(GameState game, Location location, int position)
         {
             List<PossibleTrailSlot[]> newPossibilityTree = new List<PossibleTrailSlot[]>();
             foreach (PossibleTrailSlot[] trail in PossibilityTree)
@@ -2343,6 +2391,10 @@ namespace FuryOfDracula.ArtificialIntelligence
                 }
             }
             PossibilityTree = newPossibilityTree;
+            if (PossibilityTree.Count() == 0)
+            {
+                PossibilityTree.Add(GetActualTrail(game));
+            }
         }
 
         public PossibleTrailSlot[] GetActualTrail(GameState game)
