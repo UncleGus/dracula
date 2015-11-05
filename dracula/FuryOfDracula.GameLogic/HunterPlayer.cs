@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Linq;
 
 namespace FuryOfDracula.GameLogic
 {
@@ -225,6 +226,21 @@ namespace FuryOfDracula.GameLogic
             }
             EventsKnownToDracula.AddRange(eventsTemporarilyRemovedFromHand);
             return count;
+        }
+
+        public float LikelihoodOfHavingItemOfType(GameState game, Item item)
+        {
+            if (ItemsKnownToDracula.Find(card => card.Item == item) != null)
+            {
+                return NumberOfKnownItemsOfType(item);
+            }
+            int numberOfUnknownCards = ItemCount - ItemsKnownToDracula.Count();
+            if (numberOfUnknownCards == 0)
+            {
+                return 0F;
+            }
+            int numberOfItemsUnaccountedFor = game.NumberOfItemsOfType(item) - game.NumberOfRevealedItemsOfType(item);
+            return (float)numberOfItemsUnaccountedFor / game.ItemDeck.Count();
         }
     }
 }

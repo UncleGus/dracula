@@ -11,7 +11,9 @@ namespace FuryOfDracula.ArtificialIntelligence
         private float DISTANCEFROMHUNTERMULTIPLIER = 0.5F;
         private float DARKCALLMULTIPLIER = 0.5F;
         private float WOLFFORMMULTIPLIER = 0.75F;
+        private float DOUBLEBACKMULTIPLIER = 0.5F;
         private int CATACOMBSCHANCE = 4;
+        private HunterPlayer victim = null;
 
         public Strategy Strategy = Strategy.Sneaky;
 
@@ -111,6 +113,20 @@ namespace FuryOfDracula.ArtificialIntelligence
                         {
                             numberOfPossibilities[index] = (int)(numberOfPossibilities[index] * WOLFFORMMULTIPLIER);
                         }
+                        if (move.Power == Power.DoubleBack)
+                        {
+                            for (int i = 0; i < 6; i++)
+                            {
+                                if (game.Dracula.Trail[i] != null && game.Dracula.Trail[i].DraculaCards.First().Location != Location.Nowhere && game.Dracula.Trail[i].DraculaCards.First().IsRevealed)
+                                {
+                                    numberOfPossibilities[index] = (int)(numberOfPossibilities[index] * DOUBLEBACKMULTIPLIER);
+                                }
+                            }
+                        }
+                        if (numberOfPossibilities[index] < 1)
+                        {
+                            numberOfPossibilities[index] = 1;
+                        }
                     }
                     int totalCombinations = 0;
                     foreach (int i in numberOfPossibilities)
@@ -145,17 +161,17 @@ namespace FuryOfDracula.ArtificialIntelligence
             if (Strategy == Strategy.Aggressive)
             {
                 List<int> distances = new List<int>();
-                int currentDistanceFromHunters = game.GetDistanceToClosestHunter(game.Dracula.CurrentLocation, false);
+                int currentDistanceFromVictim = game.GetDistanceToHunter(victim);
                 foreach (PossibleTrailSlot move in possibleMoves)
                 {
                     if (move.Location != Location.Nowhere)
                     {
-                        distances.Add(game.GetDistanceToClosestHunter(move.Location, false));
+                        distances.Add(game.GetDistanceToHunter(victim));
                         GC.Collect();
                     }
                     else
                     {
-                        distances.Add(currentDistanceFromHunters);
+                        distances.Add(currentDistanceFromVictim);
                     }
                 }
                 int shortestDistance = distances.First();
@@ -643,7 +659,7 @@ namespace FuryOfDracula.ArtificialIntelligence
                 enemyTarget = huntersInvolved[new Random().Next(0, huntersInvolved.Count())].Hunter;
                 return EnemyCombatCard.EscapeMan;
             }
-            if (Strategy == Strategy.FleeToCastleDracula && game.Dracula.CurrentLocation != Location.CastleDracula)
+            if (CombatScore(game, huntersInvolved) + new Random().Next(0, 8) > 30)
             {
                 List<EnemyCombatCard> escapeCards = new List<EnemyCombatCard>();
                 foreach (EnemyCombatCard card in enemyCombatCards)
@@ -661,20 +677,20 @@ namespace FuryOfDracula.ArtificialIntelligence
             }
             if (!repelled)
             {
-                if (enemyCombatCards.Contains(EnemyCombatCard.Fangs) || enemyCombatCards.Contains(EnemyCombatCard.Mesmerize))
+                if (enemyCombatCards.Contains(EnemyCombatCard.Fangs) || (enemyCombatCards.Contains(EnemyCombatCard.Mesmerize) && game.Dracula.Blood > 1))
                 {
                     List<HunterPlayer> huntersVulnerableToBite = new List<HunterPlayer>();
                     foreach (HunterPlayer h in huntersInvolved)
                     {
-                        if (h.NumberOfKnownItemsOfType(Item.Crucifix) == 0 && h.NumberOfKnownItemsOfType(Item.HeavenlyHost) == 0)
+                        if (h.LikelihoodOfHavingItemOfType(game, Item.Crucifix) == 0 && h.LikelihoodOfHavingItemOfType(game, Item.HeavenlyHost) == 0)
                         {
                             huntersVulnerableToBite.Add(h);
                         }
-                        else if (h.NumberOfKnownItemsOfType(Item.Crucifix) == 1 && h.NumberOfKnownItemsOfType(Item.HeavenlyHost) == 0 && h.LastCombatCardChosen == Item.Crucifix)
+                        else if (h.LikelihoodOfHavingItemOfType(game, Item.Crucifix) > 0 && h.LikelihoodOfHavingItemOfType(game, Item.HeavenlyHost) == 0 && h.LastCombatCardChosen == Item.Crucifix)
                         {
                             huntersVulnerableToBite.Add(h);
                         }
-                        else if (h.NumberOfKnownItemsOfType(Item.Crucifix) == 0 && h.NumberOfKnownItemsOfType(Item.HeavenlyHost) == 1 && h.LastCombatCardChosen == Item.HeavenlyHost)
+                        else if (h.LikelihoodOfHavingItemOfType(game, Item.Crucifix) == 0 && h.LikelihoodOfHavingItemOfType(game, Item.HeavenlyHost) > 0 && h.LastCombatCardChosen == Item.HeavenlyHost)
                         {
                             huntersVulnerableToBite.Add(h);
                         }
@@ -697,26 +713,27 @@ namespace FuryOfDracula.ArtificialIntelligence
                     List<HunterPlayer> huntersWithWeaponsToDestroy = new List<HunterPlayer>();
                     foreach (HunterPlayer h in huntersInvolved)
                     {
-                        if (h.NumberOfKnownItemsOfType(Item.Crucifix) > 1 || (h.NumberOfKnownItemsOfType(Item.Crucifix) > 0 && h.LastCombatCardChosen != Item.Crucifix))
+                        if (h.NumberOfKnownItemsOfType(Item.Crucifix) > 1 || (h.LikelihoodOfHavingItemOfType(game, Item.Crucifix) > 0 && h.LastCombatCardChosen != Item.Crucifix))
                         {
                             huntersWithWeaponsToDestroy.Add(h);
                         }
-                        else if (h.NumberOfKnownItemsOfType(Item.Rifle) > 1 || (h.NumberOfKnownItemsOfType(Item.Rifle) > 0 && h.LastCombatCardChosen != Item.Rifle))
+                        else if (h.NumberOfKnownItemsOfType(Item.Rifle) > 1 || (h.LikelihoodOfHavingItemOfType(game, Item.Rifle) > 0 && h.LastCombatCardChosen != Item.Rifle))
                         {
                             huntersWithWeaponsToDestroy.Add(h);
                         }
-                        else if (h.NumberOfKnownItemsOfType(Item.Pistol) > 1 || (h.NumberOfKnownItemsOfType(Item.Pistol) > 0 && h.LastCombatCardChosen != Item.Pistol))
+                        else if (h.NumberOfKnownItemsOfType(Item.Pistol) > 1 || (h.LikelihoodOfHavingItemOfType(game, Item.Pistol) > 0 && h.LastCombatCardChosen != Item.Pistol))
                         {
                             huntersWithWeaponsToDestroy.Add(h);
                         }
-                        else if (h.NumberOfKnownItemsOfType(Item.Stake) > 1 || (h.NumberOfKnownItemsOfType(Item.Stake) > 0 && h.LastCombatCardChosen != Item.Stake))
+                        else if (h.NumberOfKnownItemsOfType(Item.Stake) > 1 || (h.LikelihoodOfHavingItemOfType(game, Item.Stake) > 0 && h.LastCombatCardChosen != Item.Stake))
                         {
                             huntersWithWeaponsToDestroy.Add(h);
                         }
                     }
                 }
             }
-            int numberOfAttempts = 2;
+
+            int numberOfAttempts = 4;
             do
             {
                 numberOfAttempts--;
@@ -730,6 +747,34 @@ namespace FuryOfDracula.ArtificialIntelligence
                       cardChosen == EnemyCombatCard.EscapeMist) || ((cardChosen == EnemyCombatCard.EscapeMist || cardChosen == EnemyCombatCard.EscapeMan || cardChosen == EnemyCombatCard.EscapeBat || cardChosen == EnemyCombatCard.Claws || cardChosen == EnemyCombatCard.Punch)) && numberOfAttempts > 0);
             enemyTarget = huntersInvolved[new Random().Next(0, huntersInvolved.Count())].Hunter;
             return cardChosen;
+        }
+
+        public float CombatScore(GameState game, List<HunterPlayer> huntersInvolved)
+        {
+            List<float> combatScores = new List<float>();
+            foreach (HunterPlayer h in huntersInvolved)
+            {
+                combatScores.Add(game.IndividualCombatScore(h));
+            }
+            float totalCombatScore = 0;
+            foreach (float score in combatScores)
+            {
+                totalCombatScore += score;
+            }
+            bool zeroChanceOfTakingDamageWhenNotUsingMesmerize = true;
+            foreach (HunterPlayer h in huntersInvolved)
+            {
+                if (h.LikelihoodOfHavingItemOfType(game, Item.Stake) > 0 || h.LikelihoodOfHavingItemOfType(game, Item.Crucifix) > 0 || h.LikelihoodOfHavingItemOfType(game, Item.Knife) > 0 || h.LikelihoodOfHavingItemOfType(game, Item.SacredBullets) > 0 || h.LikelihoodOfHavingItemOfType(game, Item.HolyWater) > 0)
+                {
+                    zeroChanceOfTakingDamageWhenNotUsingMesmerize = false;
+                    break;
+                }
+            }
+            if (!zeroChanceOfTakingDamageWhenNotUsingMesmerize)
+            {
+                totalCombatScore += 50 / game.Dracula.Blood;
+            }
+            return totalCombatScore;
         }
 
         public bool ChooseToCancelCharteredCarriageWithFalseTipoff(GameState game)
@@ -2573,15 +2618,15 @@ namespace FuryOfDracula.ArtificialIntelligence
 
         public void UpdateStrategy(GameState game)
         {
-            int distanceToNearestHunter = game.GetDistanceToClosestHunter(game.Dracula.CurrentLocation, false) - 1;
-            for (int i = 0; i < 6; i++)
-            {
-                if (game.Dracula.Trail[i] != null && game.Dracula.Trail[i].DraculaCards.Count() > 1 && game.Dracula.Trail[i].DraculaCards[1].Power == Power.WolfForm)
-                {
-                    distanceToNearestHunter++;
-                }
-            }
-            // if it's dark and I can get to a Hunter before light, go aggressive
+            //int distanceToNearestHunter = game.GetDistanceToClosestHunter(game.Dracula.CurrentLocation, false) - 1;
+            //for (int i = 0; i < 6; i++)
+            //{
+            //    if (game.Dracula.Trail[i] != null && game.Dracula.Trail[i].DraculaCards.Count() > 1 && game.Dracula.Trail[i].DraculaCards[1].Power == Power.WolfForm)
+            //    {
+            //        distanceToNearestHunter++;
+            //    }
+            //}
+            // if it's dark and I can get to a sufficiently weak Hunter before light, go aggressive
             int turnsUntilDark = 0;
             int turnsUntilLight = 0;
             if ((int)game.TimeOfDay > 3)
@@ -2592,18 +2637,71 @@ namespace FuryOfDracula.ArtificialIntelligence
             {
                 turnsUntilDark = 4 - (int)game.TimeOfDay;
             }
-            if (turnsUntilLight > distanceToNearestHunter)
-            {
-                Strategy = Strategy.Aggressive;
-            }
-            else if (game.Dracula.Blood < 6)
+
+            if (game.Dracula.Blood < 6)
             {
                 Strategy = Strategy.FleeToCastleDracula;
+                victim = null;
+                return;
+            }
+            if (victim != null)
+            {
+                if (turnsUntilLight <= game.GetDistanceToHunter(victim))
+                {
+                    Strategy = Strategy.Sneaky;
+                    victim = null;
+                    return;
+                }
             }
             else
             {
-                Strategy = Strategy.Sneaky;
+                List<HunterPlayer> potentialVictims = new List<HunterPlayer>();
+                List<float> scores = new List<float>();
+                for (int i = 1; i < 5; i++)
+                {
+                    List<HunterPlayer> huntersAtLocation = new List<HunterPlayer>();
+                    for (int j = 1; j < 5; j++)
+                    {
+                        if (game.Hunters[j].CurrentLocation == game.Hunters[i].CurrentLocation)
+                        {
+                            huntersAtLocation.Add(game.Hunters[j]);
+                        }
+                    }
+                    float score = CombatScore(game, huntersAtLocation);
+                    if (score < 25)
+                    {
+                        potentialVictims.Add(game.Hunters[i]);
+                        scores.Add(score);
+                    }
+                }
+                while (victim == null && potentialVictims.Any())
+                {
+                    float lowestScore = 1000;
+                    int index = -1;
+                    int lowestIndex = -1;
+                    foreach (HunterPlayer hunter in potentialVictims)
+                    {
+                        index++;
+                        if (scores[index] < lowestScore)
+                        {
+                            lowestScore = scores[index];
+                            lowestIndex = index;
+                        }
+                    }
+                    if (turnsUntilLight > game.GetDistanceToHunter(potentialVictims[lowestIndex]))
+                    {
+                        victim = potentialVictims[lowestIndex];
+                        Strategy = Strategy.Aggressive;
+                        return;
+                    }
+                    else
+                    {
+                        potentialVictims.Remove(potentialVictims[lowestIndex]);
+                    }
+                }
             }
+            Strategy = Strategy.Sneaky;
+            victim = null;
         }
     }
 }

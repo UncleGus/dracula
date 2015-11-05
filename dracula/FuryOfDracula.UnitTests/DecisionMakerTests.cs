@@ -13,8 +13,8 @@ namespace FuryOfDracula.UnitTests
         private GameState game;
         private DecisionMaker logic;
 
-        [TestFixtureSetUp]
-        public void BeforeAll()
+        [SetUp]
+        public void BeforeEach()
         {
             game = new GameState();
             logic = new DecisionMaker();
@@ -303,7 +303,6 @@ namespace FuryOfDracula.UnitTests
         public void AddEscapeAsBatCardToAllTrails_TrailLength1_ReturnsCorrectCount()
         {
             int doubleBackSlot;
-            game.Dracula.Trail[5] = game.Dracula.Trail[4] = game.Dracula.Trail[3] = game.Dracula.Trail[2] = game.Dracula.Trail[1] = game.Dracula.Trail[1] = game.Dracula.Trail[0] = null;
             game.Dracula.MoveTo(Location.Marseilles, Power.None, out doubleBackSlot);
             logic.InitialisePossibilityTree(game);
             logic.EliminateTrailsThatDoNotContainLocationAtPosition(game, Location.Marseilles, 0);
@@ -316,7 +315,6 @@ namespace FuryOfDracula.UnitTests
         public void AddDisembarkedCardToAllPossibleTrails_ThreeTrails_ReturnsCorrectCount()
         {
             int doubleBackSlot;
-            game.Dracula.Trail[5] = game.Dracula.Trail[4] = game.Dracula.Trail[3] = game.Dracula.Trail[2] = game.Dracula.Trail[1] = game.Dracula.Trail[1] = game.Dracula.Trail[0] = null;
             game.Dracula.MoveTo(Location.Marseilles, Power.None, out doubleBackSlot);
             logic.InitialisePossibilityTree(game);
             logic.EliminateTrailsThatDoNotContainLocationAtPosition(game, Location.Marseilles, 0);
@@ -324,6 +322,37 @@ namespace FuryOfDracula.UnitTests
             logic.AddBlueBackedCardToAllPossibleTrails(game);
             logic.AddDisembarkedCardToAllPossibleTrails(game);
             Assert.AreEqual(7, logic.PossibilityTree.Count());
+        }
+
+        [Test]
+        public void CombatScore_something()
+        {
+            //game.Hunters[(int)Hunter.LordGodalming].DrawItemCard();
+            game.Hunters[(int)Hunter.LordGodalming].DrawItemCard();
+            game.Hunters[(int)Hunter.LordGodalming].DrawItemCard();
+            game.Hunters[(int)Hunter.DrSeward].DrawItemCard();
+            game.Hunters[(int)Hunter.DrSeward].DrawItemCard();
+            game.Hunters[(int)Hunter.DrSeward].AdjustBites(1);
+            //game.Hunters[(int)Hunter.DrSeward].DrawItemCard();
+            ItemCard itemToAdd = game.ItemDeck.Find(card => card.Item == Item.Crucifix);
+            game.ItemDiscard.Remove(itemToAdd);
+            game.Hunters[(int)Hunter.LordGodalming].ItemsKnownToDracula.Add(itemToAdd);
+            itemToAdd = game.ItemDeck.Find(card => card.Item == Item.Crucifix);
+            game.ItemDiscard.Remove(itemToAdd);
+            game.Hunters[(int)Hunter.LordGodalming].ItemsKnownToDracula.Add(itemToAdd);
+            itemToAdd = game.ItemDeck.Find(card => card.Item == Item.Rifle);
+            game.ItemDiscard.Remove(itemToAdd);
+            game.Hunters[(int)Hunter.DrSeward].ItemsKnownToDracula.Add(itemToAdd);
+            itemToAdd = game.ItemDeck.Find(card => card.Item == Item.Stake);
+            game.ItemDiscard.Remove(itemToAdd);
+            game.Hunters[(int)Hunter.DrSeward].ItemsKnownToDracula.Add(itemToAdd);
+            List<HunterPlayer> huntersInCombat = new List<HunterPlayer>();
+            huntersInCombat.Add(game.Hunters[(int)Hunter.LordGodalming]);
+            huntersInCombat.Add(game.Hunters[(int)Hunter.DrSeward]);
+            huntersInCombat.Add(game.Hunters[(int)Hunter.MinaHarker]);
+            game.Dracula.AdjustBlood(-14);
+            float score = logic.CombatScore(game, huntersInCombat);
+            Assert.Fail();
         }
     }
 }

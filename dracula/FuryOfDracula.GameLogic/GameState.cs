@@ -583,5 +583,83 @@ namespace FuryOfDracula.GameLogic
             }
             return closestHunters;
         }
+
+        public int NumberOfItemCardsInFullDeck
+        {
+            get
+            {
+                return 40;
+            }
+        }
+
+        internal int NumberOfItemsOfType(Item item)
+        {
+            switch (item)
+            {
+                case Item.Crucifix: return 3;
+                case Item.Dogs: return 2;
+                case Item.FastHorse: return 3;
+                case Item.Garlic: return 4;
+                case Item.HeavenlyHost: return 2;
+                case Item.HolyWater: return 3;
+                case Item.Knife: return 5;
+                case Item.LocalRumors: return 2;
+                case Item.Pistol: return 5;
+                case Item.Rifle: return 4;
+                case Item.SacredBullets: return 3;
+                case Item.Stake: return 4;
+                default: return 0;
+            }
+        }
+
+        internal int NumberOfRevealedItemsOfType(Item item)
+        {
+            int count = Hunters[(int)Hunter.LordGodalming].NumberOfKnownItemsOfType(item) + Hunters[(int)Hunter.DrSeward].NumberOfKnownItemsOfType(item) + Hunters[(int)Hunter.VanHelsing].NumberOfKnownItemsOfType(item) + Hunters[(int)Hunter.MinaHarker].NumberOfKnownItemsOfType(item);
+            ItemCard discardedItemCard = ItemDiscard.Find(card => card.Item == item);
+            List<ItemCard> temporaryDiscard = new List<ItemCard>();
+            while (discardedItemCard != null)
+            {
+                count++;
+                temporaryDiscard.Add(discardedItemCard);
+                ItemDiscard.Remove(discardedItemCard);
+            }
+            ItemDiscard.AddRange(temporaryDiscard);
+            return count;
+        }
+
+        public float CombatWorthOfItem(Item item)
+        {
+            switch (item)
+            {
+                case Item.Crucifix: return 6F;
+                case Item.HeavenlyHost: return 1.75F;
+                case Item.HolyWater: return 1F;
+                case Item.Knife: return 2F;
+                case Item.Pistol: return 1.5F;
+                case Item.Rifle: return 3F;
+                case Item.SacredBullets: return 1.25F;
+                case Item.Stake: return 10F;
+                default: return 0F;
+            }
+        }
+
+        public float IndividualCombatScore(HunterPlayer hunter) {
+            float individualCombatScore = 0;
+            for (int i = 1; i < 13; i++)
+            {
+                individualCombatScore += hunter.LikelihoodOfHavingItemOfType(this, (Item)i) * CombatWorthOfItem((Item)i);
+            }
+            switch (hunter.BitesRequiredToKill - hunter.BiteCount)
+            {
+                case 1: individualCombatScore -= 8; break;
+                case 3: individualCombatScore += 4; break;
+            }
+            return individualCombatScore;
+        }
+
+        public int GetDistanceToHunter(HunterPlayer victim)
+        {
+            return DistanceByRoadOrSeaBetween(Dracula.CurrentLocation, victim.CurrentLocation, false);
+        }
     }
 }

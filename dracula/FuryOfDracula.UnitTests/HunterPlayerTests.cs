@@ -10,7 +10,7 @@ namespace FuryOfDracula.UnitTests
     {
         public HunterPlayer vanHelsing;
 
-        [TestFixtureSetUp]
+        [SetUp]
         public void BeforeAll()
         {
             vanHelsing = new HunterPlayer(Hunter.VanHelsing, 10, 0, 2);
@@ -97,6 +97,55 @@ namespace FuryOfDracula.UnitTests
         {
             vanHelsing.ItemsKnownToDracula.Clear();
             Assert.AreEqual(0, vanHelsing.NumberOfKnownItemsOfType(Item.Crucifix));
+        }
+
+        [Test]
+        public void LikelihoodOfHavingItemOfType_NoItems_Returns0()
+        {
+            GameState game = new GameState();
+            Assert.AreEqual(0, vanHelsing.LikelihoodOfHavingItemOfType(game, Item.Crucifix));
+        }
+
+        [Test]
+        public void LikelihoodOfHavingItemOfType_1ItemKnown_Returns1()
+        {
+            GameState game = new GameState();
+            ItemCard knife = game.ItemDeck.Find(card => card.Item == Item.Knife);
+            vanHelsing.DrawItemCard();
+            vanHelsing.ItemsKnownToDracula.Add(knife);
+            game.ItemDeck.Remove(knife);
+            Assert.AreEqual(1, vanHelsing.LikelihoodOfHavingItemOfType(game, Item.Knife));
+        }
+
+        [Test]
+        public void LikelihoodOfHavingItemOfType_1ItemKnown1Unknown_Returns1()
+        {
+            GameState game = new GameState();
+            ItemCard knife = game.ItemDeck.Find(card => card.Item == Item.Knife);
+            vanHelsing.ItemsKnownToDracula.Add(knife);
+            vanHelsing.DrawItemCard();
+            vanHelsing.DrawItemCard();
+            game.ItemDeck.Remove(knife);
+            Assert.AreEqual(1, vanHelsing.LikelihoodOfHavingItemOfType(game, Item.Knife));
+        }
+
+        [Test]
+        public void LikelihoodOfHavingItemOfType_1UnknownItem_Returns5OutOf40()
+        {
+            GameState game = new GameState();
+            vanHelsing.DrawItemCard();
+            Assert.AreEqual( 5F / 40F, vanHelsing.LikelihoodOfHavingItemOfType(game, Item.Knife));
+        }
+
+        [Test]
+        public void LikelihoodOfHavingItemOfType_1UnknownItemIKnownItemDifferentType_Returns3OutOf39()
+        {
+            GameState game = new GameState();
+            vanHelsing.DrawItemCard();
+            vanHelsing.DrawItemCard();
+            ItemCard knife = game.ItemDeck.Find(card => card.Item == Item.Knife);
+            vanHelsing.ItemsKnownToDracula.Add(knife);
+            Assert.AreEqual(3F / 40F, vanHelsing.LikelihoodOfHavingItemOfType(game, Item.Crucifix));
         }
     }
 }
