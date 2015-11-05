@@ -622,6 +622,7 @@ namespace FuryOfDracula.GameLogic
                 count++;
                 temporaryDiscard.Add(discardedItemCard);
                 ItemDiscard.Remove(discardedItemCard);
+                discardedItemCard = ItemDiscard.Find(card => card.Item == item);
             }
             ItemDiscard.AddRange(temporaryDiscard);
             return count;

@@ -325,6 +325,7 @@ namespace FuryOfDracula.UnitTests
         }
 
         [Test]
+        [Ignore("Just for debugging")]
         public void CombatScore_something()
         {
             //game.Hunters[(int)Hunter.LordGodalming].DrawItemCard();

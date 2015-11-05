@@ -654,7 +654,7 @@ namespace FuryOfDracula.ArtificialIntelligence
                 enemyCombatCards.Remove(EnemyCombatCard.Fangs);
             }
             EnemyCombatCard cardChosen;
-            if (enemyCombatCards.Contains(EnemyCombatCard.Claws) && (int)game.TimeOfDay < 4 && cardUsedLastRound != EnemyCombatCard.EscapeMan)
+            if (enemyCombatCards.Contains(EnemyCombatCard.Claws) && (int)game.TimeOfDay < 4 && cardUsedLastRound != EnemyCombatCard.EscapeMan && roundsWithoutEscape < 1)
             {
                 enemyTarget = huntersInvolved[new Random().Next(0, huntersInvolved.Count())].Hunter;
                 return EnemyCombatCard.EscapeMan;
@@ -669,7 +669,7 @@ namespace FuryOfDracula.ArtificialIntelligence
                         escapeCards.Add(card);
                     }
                 }
-                if (escapeCards.Any())
+                if (escapeCards.Any() && roundsWithoutEscape < 1)
                 {
                     enemyTarget = huntersInvolved[new Random().Next(0, huntersInvolved.Count())].Hunter;
                     return escapeCards[new Random().Next(0, escapeCards.Count())];
@@ -928,12 +928,36 @@ namespace FuryOfDracula.ArtificialIntelligence
 
         public CardType ChooseToDiscardItemFromHunterInsteadOfEvent(HunterPlayer hunterDiscardingCard)
         {
-            int chanceOfDiscardingGoodLuck = hunterDiscardingCard.NumberOfKnownEventsOfType(Event.GoodLuck) / hunterDiscardingCard.EventCount;
-            int chanceOfDiscardingForewarned = hunterDiscardingCard.NumberOfKnownEventsOfType(Event.Forewarned) / hunterDiscardingCard.EventCount;
-            int chanceOfDiscardingHeroicLeap = hunterDiscardingCard.NumberOfKnownEventsOfType(Event.HeroicLeap) / hunterDiscardingCard.EventCount;
-            int chanceOfDiscardingStake = hunterDiscardingCard.NumberOfKnownItemsOfType(Item.Stake) / hunterDiscardingCard.ItemCount;
-            int chanceOfDiscardingCrucifix = hunterDiscardingCard.NumberOfKnownItemsOfType(Item.Crucifix) / hunterDiscardingCard.ItemCount;
-            int chanceOfDiscardingHeavenlyHost = hunterDiscardingCard.NumberOfKnownItemsOfType(Item.HeavenlyHost) / hunterDiscardingCard.ItemCount;
+            int chanceOfDiscardingGoodLuck;
+            int chanceOfDiscardingForewarned;
+            int chanceOfDiscardingHeroicLeap;
+            int chanceOfDiscardingStake;
+            int chanceOfDiscardingCrucifix;
+            int chanceOfDiscardingHeavenlyHost;
+            if (hunterDiscardingCard.EventCount == 0)
+            {
+                chanceOfDiscardingGoodLuck = 0;
+                chanceOfDiscardingForewarned = 0;
+                chanceOfDiscardingHeroicLeap = 0;
+            }
+            else
+            {
+                chanceOfDiscardingGoodLuck = hunterDiscardingCard.NumberOfKnownEventsOfType(Event.GoodLuck) / hunterDiscardingCard.EventCount;
+                chanceOfDiscardingForewarned = hunterDiscardingCard.NumberOfKnownEventsOfType(Event.Forewarned) / hunterDiscardingCard.EventCount;
+                chanceOfDiscardingHeroicLeap = hunterDiscardingCard.NumberOfKnownEventsOfType(Event.HeroicLeap) / hunterDiscardingCard.EventCount;
+            }
+            if (hunterDiscardingCard.ItemCount == 0)
+            {
+                chanceOfDiscardingStake = 0;
+                chanceOfDiscardingCrucifix = 0;
+                chanceOfDiscardingHeavenlyHost = 0;
+            }
+            else
+            {
+                chanceOfDiscardingStake = hunterDiscardingCard.NumberOfKnownItemsOfType(Item.Stake) / hunterDiscardingCard.ItemCount;
+                chanceOfDiscardingCrucifix = hunterDiscardingCard.NumberOfKnownItemsOfType(Item.Crucifix) / hunterDiscardingCard.ItemCount;
+                chanceOfDiscardingHeavenlyHost = hunterDiscardingCard.NumberOfKnownItemsOfType(Item.HeavenlyHost) / hunterDiscardingCard.ItemCount;
+            }
             if (chanceOfDiscardingCrucifix + chanceOfDiscardingForewarned + chanceOfDiscardingGoodLuck + chanceOfDiscardingHeavenlyHost + chanceOfDiscardingHeroicLeap + chanceOfDiscardingStake > 0)
             {
                 if (chanceOfDiscardingCrucifix + chanceOfDiscardingHeavenlyHost + chanceOfDiscardingStake > chanceOfDiscardingForewarned + chanceOfDiscardingGoodLuck + chanceOfDiscardingHeroicLeap)

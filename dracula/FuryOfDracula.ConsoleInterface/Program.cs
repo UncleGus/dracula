@@ -68,19 +68,11 @@ namespace FuryOfDracula.ConsoleInterface
 
                 switch (commandSet.command)
                 {
-                    case "strategy":
-                        if (logic.Strategy == Strategy.Aggressive)
-                        {
-                            logic.Strategy = Strategy.Sneaky;
-                            Console.WriteLine("Strategy now Sneaky");
-                        }
-                        else if (logic.Strategy == Strategy.Sneaky)
-                        {
-                            logic.Strategy = Strategy.Aggressive;
-                            Console.WriteLine("Strategy now Aggressive");
-                        }; break;
+                    case "r":
+                    case "retrieve": RetrieveCardFromDiscard(game, commandSet.argument1, commandSet.argument2); break;
                     case "w":
-                    case "water": UseHolyWaterAtHospital(game, commandSet.argument1); break;
+                    case "water":
+                        UseHolyWaterAtHospital(game, commandSet.argument1); break;
                     case "h":
                     case "help":
                         DisplayHelp(); break;
@@ -150,6 +142,97 @@ namespace FuryOfDracula.ConsoleInterface
                         Console.WriteLine("I didn't understand that"); break;
                 }
             } while (commandSet.command != "exit");
+        }
+
+        private static void RetrieveCardFromDiscard(GameState game, string cardName, string hunterIndex)
+        {
+            var index = 0;
+            var hunterToRetrieve = Hunter.Nobody;
+            if (int.TryParse(hunterIndex, out index) && index > 0 && index < 5)
+            {
+                hunterToRetrieve = (Hunter)index;
+            }
+            var line = "";
+            while (hunterToRetrieve == Hunter.Nobody && index != -1)
+            {
+                Console.WriteLine("Who is retrieving a card? {0}= {1}, {2}= {3}, {4}= {5}, {6}= {7} (-1 to cancel)",
+                    (int)Hunter.LordGodalming, Hunter.LordGodalming.Name(), (int)Hunter.DrSeward,
+                    Hunter.DrSeward.Name(), (int)Hunter.VanHelsing, Hunter.VanHelsing.Name(), (int)Hunter.MinaHarker,
+                    Hunter.MinaHarker.Name());
+                line = Console.ReadLine();
+                if (int.TryParse(line, out index))
+                {
+                    if (index == -1)
+                    {
+                        Console.WriteLine("Cancelled");
+                        return;
+                    }
+                    hunterToRetrieve = game.GetHunterFromInt(index);
+                    Console.WriteLine(hunterToRetrieve.Name());
+                }
+                else
+                {
+                    Console.WriteLine("I didn't understand that");
+                }
+            }
+            var itemToRetrieve = Enumerations.GetItemFromString(cardName);
+            var eventToRetrieve = Enumerations.GetEventFromString(cardName);
+            while (itemToRetrieve == Item.None && eventToRetrieve == Event.None && line.ToLower() != "cancel")
+            {
+                Console.WriteLine("What is the name of the card you are retrieving? (type cancel to cancel)");
+                line = Console.ReadLine().ToLower();
+                if (line.ToLower() == "cancel")
+                {
+                    Console.WriteLine("Cancelled");
+                    return;
+                }
+
+                itemToRetrieve = Enumerations.GetItemFromString(line);
+                eventToRetrieve = Enumerations.GetEventFromString(line);
+                if (itemToRetrieve == Item.None && eventToRetrieve == Event.None)
+                {
+                    Console.WriteLine("I couldn't find any card with that name");
+                }
+                else if (itemToRetrieve != Item.None && eventToRetrieve != Event.None)
+                {
+                    Console.WriteLine("I couldn't tell if you meant an Item or an Event card");
+                }
+            }
+            if (itemToRetrieve != Item.None)
+            {
+                ItemCard itemCardToRetrieve = game.ItemDiscard.Find(card => card.Item == itemToRetrieve);
+                if (itemCardToRetrieve == null)
+                {
+                    Console.WriteLine("There are no Item cards of type {0} in the discard pile", itemToRetrieve);
+                    return;
+                }
+                else
+                {
+                    game.Hunters[index].DrawItemCard();
+                    game.Hunters[index].ItemsKnownToDracula.Add(itemCardToRetrieve);
+                    game.ItemDiscard.Remove(itemCardToRetrieve);
+                    Console.WriteLine("{0} retrieved {1}, up to {2}", hunterToRetrieve.Name(), itemToRetrieve.Name(), game.Hunters[index].ItemCount);
+                }
+
+            }
+            else if (eventToRetrieve != Event.None)
+            {
+                EventCard eventCardToRetrieve = game.EventDiscard.Find(card => card.Event == eventToRetrieve);
+                if (eventCardToRetrieve == null)
+                {
+                    Console.WriteLine("There are no Event cards of type {0} in the discard pile", eventToRetrieve);
+                    return;
+                }
+                else
+                {
+                    game.Hunters[index].DrawEventCard();
+                    game.Hunters[index].EventsKnownToDracula.Add(eventCardToRetrieve);
+                    game.EventDiscard.Remove(eventCardToRetrieve);
+                    Console.WriteLine("{0} retrieved {1}, up to {2}", hunterToRetrieve.Name(), eventToRetrieve.Name(), game.Hunters[index].EventCount);
+                }
+            }
+            CheckForDiscardRequired(game);
+            CheckForCardsRevealedForBeingBitten(game);
         }
 
         private static void UseHolyWaterAtHospital(GameState game, string hunterIndex)
