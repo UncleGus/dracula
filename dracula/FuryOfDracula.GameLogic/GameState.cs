@@ -614,17 +614,7 @@ namespace FuryOfDracula.GameLogic
 
         internal int NumberOfRevealedItemsOfType(Item item)
         {
-            int count = Hunters[(int)Hunter.LordGodalming].NumberOfKnownItemsOfType(item) + Hunters[(int)Hunter.DrSeward].NumberOfKnownItemsOfType(item) + Hunters[(int)Hunter.VanHelsing].NumberOfKnownItemsOfType(item) + Hunters[(int)Hunter.MinaHarker].NumberOfKnownItemsOfType(item);
-            ItemCard discardedItemCard = ItemDiscard.Find(card => card.Item == item);
-            List<ItemCard> temporaryDiscard = new List<ItemCard>();
-            while (discardedItemCard != null)
-            {
-                count++;
-                temporaryDiscard.Add(discardedItemCard);
-                ItemDiscard.Remove(discardedItemCard);
-                discardedItemCard = ItemDiscard.Find(card => card.Item == item);
-            }
-            ItemDiscard.AddRange(temporaryDiscard);
+            int count = Hunters[(int)Hunter.LordGodalming].NumberOfKnownItemsOfType(item) + Hunters[(int)Hunter.DrSeward].NumberOfKnownItemsOfType(item) + Hunters[(int)Hunter.VanHelsing].NumberOfKnownItemsOfType(item) + Hunters[(int)Hunter.MinaHarker].NumberOfKnownItemsOfType(item) + ItemDiscard.Count(card => card.Item == item);
             return count;
         }
 
@@ -644,7 +634,8 @@ namespace FuryOfDracula.GameLogic
             }
         }
 
-        public float IndividualCombatScore(HunterPlayer hunter) {
+        public float IndividualCombatScore(HunterPlayer hunter)
+        {
             float individualCombatScore = 0;
             for (int i = 1; i < 13; i++)
             {
@@ -662,5 +653,84 @@ namespace FuryOfDracula.GameLogic
         {
             return DistanceByRoadOrSeaBetween(Dracula.CurrentLocation, victim.CurrentLocation, false);
         }
+
+        public List<HunterPlayer> HuntersWithinDistanceOf(Location location, int turns)
+        {
+            List<HunterPlayer> huntersWithinRange = new List<HunterPlayer>();
+            for (int i = 1; i < 5; i++)
+            {
+                if (DistanceByRoadOrSeaBetween(location, Hunters[i].CurrentLocation, false) <= turns)
+                {
+                    huntersWithinRange.Add(Hunters[i]);
+                }
+            }
+            return huntersWithinRange;
+        }
+
+        public float LikelihoodOfAnyHunterHavingEventOfType(Event ev)
+        {
+            float likelihoodOfNotHavingEvent = 1;
+            for (int i = 1; i < 5; i++)
+            {
+                likelihoodOfNotHavingEvent *= 1 - Hunters[i].LikelihoodOfHavingEventOfType(this, ev);
+            }
+            return 1 - likelihoodOfNotHavingEvent;
+        }
+
+        internal int NumberOfEventsOfType(Event ev)
+        {
+            switch (ev)
+            {
+                case Event.AdvancePlanning: return 3;
+                case Event.BloodTransfusion: return 1;
+                case Event.CharteredCarriage: return 3;
+                case Event.ConsecratedGround: return 1;
+                case Event.ControlStorms: return 1;
+                case Event.DevilishPower: return 2;
+                case Event.DraculasBrides: return 1;
+                case Event.EscapeRoute: return 2;
+                case Event.Evasion: return 1;
+                case Event.ExcellentWeather: return 2;
+                case Event.FalseTipoff: return 2;
+                case Event.Forewarned: return 3;
+                case Event.GoodLuck: return 2;
+                case Event.GreatStrength: return 1;
+                case Event.HeroicLeap: return 1;
+                case Event.HiredScouts: return 3;
+                case Event.Hypnosis: return 2;
+                case Event.ImmanuelHildesheim: return 1;
+                case Event.JonathanHarker: return 1;
+                case Event.LongDay: return 2;
+                case Event.MoneyTrail: return 1;
+                case Event.MysticResearch: return 2;
+                case Event.NewspaperReports: return 5;
+                case Event.NightVisit: return 1;
+                case Event.QuinceyPMorris: return 1;
+                case Event.Rage: return 1;
+                case Event.ReEquip: return 3;
+                case Event.RelentlessMinion: return 2;
+                case Event.Roadblock: return 1;
+                case Event.RufusSmith: return 1;
+                case Event.SecretWeapon: return 2;
+                case Event.Seduction: return 1;
+                case Event.SensationalistPress: return 1;
+                case Event.SenseofEmergency: return 2;
+                case Event.TelegraphAhead: return 2;
+                case Event.TimeRunsShort: return 1;
+                case Event.Trap: return 3;
+                case Event.UnearthlySwiftness: return 1;
+                case Event.VampireLair: return 1;
+                case Event.VampiricInfluence: return 2;
+                case Event.WildHorses: return 1;
+                default: return 0;
+            }
+        }
+
+        internal int NumberOfRevealedEventsOfType(Event ev)
+        {
+            int count = Hunters[(int)Hunter.LordGodalming].NumberOfKnownEventsOfType(ev) + Hunters[(int)Hunter.DrSeward].NumberOfKnownEventsOfType(ev) + Hunters[(int)Hunter.VanHelsing].NumberOfKnownEventsOfType(ev) + Hunters[(int)Hunter.MinaHarker].NumberOfKnownEventsOfType(ev) + EventDiscard.Count(card => card.Event == ev);
+            return count;
+        }
+
     }
 }

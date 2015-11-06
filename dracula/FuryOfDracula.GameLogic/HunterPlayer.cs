@@ -242,5 +242,20 @@ namespace FuryOfDracula.GameLogic
             int numberOfItemsUnaccountedFor = game.NumberOfItemsOfType(item) - game.NumberOfRevealedItemsOfType(item);
             return (float)numberOfItemsUnaccountedFor / game.ItemDeck.Count();
         }
+
+        public float LikelihoodOfHavingEventOfType(GameState game, Event ev)
+        {
+            if (EventsKnownToDracula.Find(card => card.Event == ev) != null)
+            {
+                return NumberOfKnownEventsOfType(ev);
+            }
+            int numberOfUnknownCards = EventCount - EventsKnownToDracula.Count();
+            if (numberOfUnknownCards == 0)
+            {
+                return 0F;
+            }
+            int numberOfEventsUnaccountedFor = game.NumberOfEventsOfType(ev) - game.NumberOfRevealedEventsOfType(ev);
+            return (float)numberOfEventsUnaccountedFor / game.EventDeck.Count();
+        }
     }
 }

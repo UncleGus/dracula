@@ -241,7 +241,6 @@ namespace FuryOfDracula.ArtificialIntelligence
             return possibleMoves[rand].Location;
         }
 
-
         public bool ChooseToDelayHunterWithFalseTipoff(GameState game)
         {
             if (game.Dracula.EventHand.Find(card => card.Event == Event.FalseTipoff) != null)
@@ -2642,15 +2641,6 @@ namespace FuryOfDracula.ArtificialIntelligence
 
         public void UpdateStrategy(GameState game)
         {
-            //int distanceToNearestHunter = game.GetDistanceToClosestHunter(game.Dracula.CurrentLocation, false) - 1;
-            //for (int i = 0; i < 6; i++)
-            //{
-            //    if (game.Dracula.Trail[i] != null && game.Dracula.Trail[i].DraculaCards.Count() > 1 && game.Dracula.Trail[i].DraculaCards[1].Power == Power.WolfForm)
-            //    {
-            //        distanceToNearestHunter++;
-            //    }
-            //}
-            // if it's dark and I can get to a sufficiently weak Hunter before light, go aggressive
             int turnsUntilDark = 0;
             int turnsUntilLight = 0;
             if ((int)game.TimeOfDay > 3)
@@ -2662,70 +2652,112 @@ namespace FuryOfDracula.ArtificialIntelligence
                 turnsUntilDark = 4 - (int)game.TimeOfDay;
             }
 
+            // if there are any hunters in range
+            var potentialVictims = game.HuntersWithinDistanceOf(game.Dracula.CurrentLocation, turnsUntilLight);
+            var victimsToEliminate = new List<HunterPlayer>();
+            foreach (HunterPlayer h in potentialVictims)
+            {
+                // eliminate any that have a stake 
+                if (h.LikelihoodOfHavingItemOfType(game, Item.Stake) > 0.5)
+                {
+                    // unless they only have 1 and I have a rage card that can discard it
+                    if (h.LikelihoodOfHavingItemOfType(game, Item.Stake) < 2 && game.Dracula.EventHand.Any(card => card.Event == Event.Rage))
+                    {
+                        // but if someone can cancel my rage card and I can't cancel their good luck
+                        if (game.Dracula.EventHand.Count(card => card.Event == Event.DevilishPower) - game.LikelihoodOfAnyHunterHavingEventOfType(Event.GoodLuck) < 0.5)
+                        {
+                            victimsToEliminate.Add(h);
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        victimsToEliminate.Add(h);
+                        continue;
+                    }
+                }
+                // elminate any that have Heavenly Host 
+                if (h.LikelihoodOfHavingItemOfType(game, Item.HeavenlyHost) > 0.75)
+                {
+                    // unless they only have 1 and I have a rage card that can discard it
+                    if (h.LikelihoodOfHavingItemOfType(game, Item.HeavenlyHost) < 2 && game.Dracula.EventHand.Any(card => card.Event == Event.Rage))
+                    {
+                        // but if someone can cancel my rage card and I can't cancel their good luck
+                        if (game.Dracula.EventHand.Count(card => card.Event == Event.DevilishPower) - game.LikelihoodOfAnyHunterHavingEventOfType(Event.GoodLuck) < 0.5)
+                        {
+                            victimsToEliminate.Add(h);
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        victimsToEliminate.Add(h);
+                        continue;
+                    }
+                }
+            }
+            foreach (HunterPlayer h in victimsToEliminate)
+            {
+                potentialVictims.Remove(h);
+            }
+            potentialVictims.Clear();
+            // if there are any that are in the same location as someone who is not a potential victim, I don't want to attack them both
+            foreach (HunterPlayer h in potentialVictims)
+            {
+                for (int i = 1; i < 5; i++)
+                {
+                    if (!potentialVictims.Contains(game.Hunters[i]) && h.CurrentLocation == game.Hunters[i].CurrentLocation)
+                    {
+                        victimsToEliminate.Add(h);
+                    }
+                }
+            }
+            foreach (HunterPlayer h in victimsToEliminate)
+            {
+                potentialVictims.Remove(h);
+            }
+
+            if (potentialVictims.Any())
+            {
+                // if it's worth breaking cover to attack
+                if ((NumberOfPossibleCurrentLocations < 6 && potentialVictims.Any(hunter => LikelihoodOfHunterDeath(game, hunter) > LikelihoodOfDraculaDeath(game))) || (game.Vampires > 3 && potentialVictims.Any(hunter => LikelihoodOfHunterDeath(game, hunter) > 25)))
+                {
+                    float highestLikelihoodOfDeath = 0;
+                    foreach (HunterPlayer hunter in potentialVictims)
+                    {
+                        if (LikelihoodOfHunterDeath(game, hunter) > highestLikelihoodOfDeath)
+                        {
+                            victim = hunter;
+                            highestLikelihoodOfDeath = LikelihoodOfHunterDeath(game, hunter);
+                        }
+                    }
+                    if (victim != null)
+                    {
+                        Strategy = Strategy.Aggressive;
+                        return;
+                    }
+                }
+            }
+
             if (game.Dracula.Blood < 6)
             {
                 Strategy = Strategy.FleeToCastleDracula;
                 victim = null;
                 return;
             }
-            if (victim != null)
-            {
-                if (turnsUntilLight <= game.GetDistanceToHunter(victim))
-                {
-                    Strategy = Strategy.Sneaky;
-                    victim = null;
-                    return;
-                }
-            }
-            else
-            {
-                List<HunterPlayer> potentialVictims = new List<HunterPlayer>();
-                List<float> scores = new List<float>();
-                for (int i = 1; i < 5; i++)
-                {
-                    List<HunterPlayer> huntersAtLocation = new List<HunterPlayer>();
-                    for (int j = 1; j < 5; j++)
-                    {
-                        if (game.Hunters[j].CurrentLocation == game.Hunters[i].CurrentLocation)
-                        {
-                            huntersAtLocation.Add(game.Hunters[j]);
-                        }
-                    }
-                    float score = CombatScore(game, huntersAtLocation);
-                    if (score < 25)
-                    {
-                        potentialVictims.Add(game.Hunters[i]);
-                        scores.Add(score);
-                    }
-                }
-                while (victim == null && potentialVictims.Any())
-                {
-                    float lowestScore = 1000;
-                    int index = -1;
-                    int lowestIndex = -1;
-                    foreach (HunterPlayer hunter in potentialVictims)
-                    {
-                        index++;
-                        if (scores[index] < lowestScore)
-                        {
-                            lowestScore = scores[index];
-                            lowestIndex = index;
-                        }
-                    }
-                    if (turnsUntilLight > game.GetDistanceToHunter(potentialVictims[lowestIndex]))
-                    {
-                        victim = potentialVictims[lowestIndex];
-                        Strategy = Strategy.Aggressive;
-                        return;
-                    }
-                    else
-                    {
-                        potentialVictims.Remove(potentialVictims[lowestIndex]);
-                    }
-                }
-            }
             Strategy = Strategy.Sneaky;
             victim = null;
+        }
+
+        private float LikelihoodOfHunterDeath(GameState game, HunterPlayer hunter)
+        {
+            int numberOfBitesUntilDeath = hunter.BitesRequiredToKill - hunter.BiteCount;
+            return Math.Max(75 / hunter.Health + 3, numberOfBitesUntilDeath == 1 ? 50 : 0);
+        }
+
+        private float LikelihoodOfDraculaDeath(GameState game)
+        {
+            return 75 / game.Dracula.Blood + 3;
         }
     }
 }
