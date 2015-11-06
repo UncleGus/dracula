@@ -12,6 +12,17 @@ namespace FuryOfDracula.ArtificialIntelligence
         public Location Location;
         public Power Power;
         public TimeOfDay TimeOfDay;
+        public bool IsRevealed;
+        public CardBack CardBack;
+
+        public PossibleTrailSlot(Location location, Power power, TimeOfDay timeOfDay, CardBack cardBack)
+        {
+            Location = location;
+            Power = power;
+            TimeOfDay = timeOfDay;
+            CardBack = cardBack;
+            IsRevealed = false;
+        }
 
         public PossibleTrailSlot(Location location, Power power, TimeOfDay timeOfDay)
         {
@@ -25,6 +36,8 @@ namespace FuryOfDracula.ArtificialIntelligence
             Location = location;
             Power = power;
             TimeOfDay = TimeOfDay.None;
+            IsRevealed = false;
+            CardBack = CardBack.None;
         }
     }
 }

@@ -1319,27 +1319,27 @@ namespace FuryOfDracula.ConsoleInterface
             else
             {
                 var trailIndex = game.Dracula.RevealCardInTrailWithLocation(firstLocationToReveal);
-                if (trailIndex == -1)
+                if (trailIndex > -1)
                 {
-                    trailIndex = game.Dracula.RevealCardInCatacombsWithLocation(firstLocationToReveal);
+                    Console.WriteLine("{0} revealed", firstLocationToReveal.Name());
+                    logic.EliminateTrailsThatDoNotContainLocationAtPosition(game, firstLocationToReveal, trailIndex);
                     trailIndex = -2;
                 }
                 else
                 {
+                    trailIndex = game.Dracula.RevealCardInCatacombsWithLocation(firstLocationToReveal);
+                }
+                if (trailIndex > -1)
+                {
                     Console.WriteLine("{0} revealed", firstLocationToReveal.Name());
                     logic.EliminateTrailsThatDoNotContainLocationAtPosition(game, firstLocationToReveal, trailIndex);
+                    game.Dracula.RevealEncountersAtPositionInTrail(trailIndex);
+                    DrawGameState(game);
                 }
-                if (trailIndex == -1)
+                else if (trailIndex == -1)
                 {
                     Console.WriteLine("{0} is not in Dracula's trail or Catacombs", firstLocationToReveal.Name());
                     logic.EliminateTrailsThatContainLocation(game, firstLocationToReveal);
-                }
-                else if (trailIndex > 0)
-                {
-                    logic.EliminateTrailsThatDoNotContainLocationAtPosition(game, firstLocationToReveal, trailIndex);
-                    Console.WriteLine("{0} revealed", firstLocationToReveal.Name());
-                    game.Dracula.RevealEncountersAtPositionInTrail(trailIndex);
-                    DrawGameState(game);
                 }
             }
             if (DraculaIsPlayingSensationalistPressToPreventRevealingLocation(game, secondLocationToReveal, logic))
@@ -1350,28 +1350,27 @@ namespace FuryOfDracula.ConsoleInterface
             else
             {
                 var trailIndex = game.Dracula.RevealCardInTrailWithLocation(secondLocationToReveal);
-                if (trailIndex == -1)
+                if (trailIndex > -1)
+                {
+                    Console.WriteLine("{0} revealed", secondLocationToReveal.Name());
+                    logic.EliminateTrailsThatDoNotContainLocationAtPosition(game, secondLocationToReveal, trailIndex);
+                    trailIndex = -2;
+                }
+                else
                 {
                     trailIndex = game.Dracula.RevealCardInCatacombsWithLocation(secondLocationToReveal);
                 }
-                else
+                if (trailIndex > -1)
                 {
                     Console.WriteLine("{0} revealed", secondLocationToReveal.Name());
                     logic.EliminateTrailsThatDoNotContainLocationAtPosition(game, secondLocationToReveal, trailIndex);
+                    game.Dracula.RevealEncountersAtPositionInTrail(trailIndex);
                     DrawGameState(game);
-                    return;
                 }
-                if (trailIndex == -1)
+                else if (trailIndex == -1)
                 {
                     Console.WriteLine("{0} is not in Dracula's trail or Catacombs", secondLocationToReveal.Name());
                     logic.EliminateTrailsThatContainLocation(game, secondLocationToReveal);
-                }
-                else
-                {
-                    logic.EliminateTrailsThatDoNotContainLocationAtPosition(game, secondLocationToReveal, trailIndex);
-                    Console.WriteLine("{0} revealed", secondLocationToReveal.Name());
-                    game.Dracula.RevealEncountersAtPositionInTrail(trailIndex);
-                    DrawGameState(game);
                 }
             }
         }
@@ -1902,6 +1901,7 @@ namespace FuryOfDracula.ConsoleInterface
                         h.AdjustBites(1);
                     }
                     hunterDied = true;
+                    game.AdjustVampires(2);
                 }
             }
             return hunterDied;
@@ -3449,7 +3449,9 @@ namespace FuryOfDracula.ConsoleInterface
                             case Event.Roadblock:
                                 game.RoadBlockLocation1 = roadBlock1;
                                 game.RoadBlockLocation2 = roadBlock2;
-                                game.RoadBlockConnectionType = roadBlockType; break;
+                                game.RoadBlockConnectionType = roadBlockType;
+                                Console.WriteLine("Dracula placed the roadblock token on the {0} between {1} and {2}", roadBlockType, roadBlock1, roadBlock2);
+                                break;
                         }
                     }
                 }

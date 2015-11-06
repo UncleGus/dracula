@@ -295,7 +295,7 @@ namespace FuryOfDracula.UnitTests
             List<PossibleTrailSlot[]> possibilityTree = new List<PossibleTrailSlot[]>();
             possibilityTree.Add(actualTrail);
             List<int> numberOfPossibilities;
-            List<PossibleTrailSlot> orderedMoves = logic.DetermineOrderedMoves(game, possibilityTree, 6, 0, out numberOfPossibilities);
+            List<PossibleTrailSlot> orderedMoves = logic.DetermineUniqueMovesOrderedByFreedomOfMovement(game, possibilityTree, 6, 0, out numberOfPossibilities);
             Assert.AreEqual(9, orderedMoves.Count());
         }
 
@@ -355,5 +355,11 @@ namespace FuryOfDracula.UnitTests
             float score = logic.CombatScore(game, huntersInCombat);
             Assert.Fail();
         }
+
+        //[Test]
+        //public void NumberOfPossibleCurrentLocationsFromPotentialTrail_ReturnsSomethingUseful()
+        //{
+        //    var imaginaryTrail = new PossibleTrailSlot[6] { new PossibleTrailSlot() }
+        //}
     }
 }
