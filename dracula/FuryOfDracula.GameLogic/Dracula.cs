@@ -70,16 +70,20 @@ namespace FuryOfDracula.GameLogic
 
         [DataMember]
         public bool LostBloodFromSeaMovementLastTurn { get; set; }
-        public int CurrentLocationPosition { get {
+        public int CurrentLocationPosition
+        {
+            get
+            {
                 for (int i = 0; i < 6; i++)
                 {
-                    if (Trail[i].DraculaCards.First().Location == CurrentLocation)
+                    if (Trail[i] != null && Trail[i].DraculaCards.First().Location == CurrentLocation)
                     {
                         return i;
                     }
                 }
                 return -1;
-            } }
+            }
+        }
 
         public DraculaCardSlot MoveTo(Location destination, Power power, out int doubleBackSlot)
         {

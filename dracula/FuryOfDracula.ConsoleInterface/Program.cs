@@ -1056,14 +1056,25 @@ namespace FuryOfDracula.ConsoleInterface
         /// <param name="game">The GameState</param>
         /// <param name="cardsDroppedOffTrail">A List of cards that have dropped off the end of the Trail</param>
         /// <param name="logic">The artificial intelligence component</param>
-        private static void DealWithDroppedOffCardSlots(GameState game, List<DraculaCardSlot> cardsDroppedOffTrail,
-            DecisionMaker logic)
+        private static void DealWithDroppedOffCardSlots(GameState game, List<DraculaCardSlot> cardsDroppedOffTrail, DecisionMaker logic)
         {
             foreach (var cardDroppedOffTrail in cardsDroppedOffTrail)
             {
                 if (cardDroppedOffTrail.DraculaCards.Count() > 1)
                 {
                     cardDroppedOffTrail.DraculaCards.Remove(cardDroppedOffTrail.DraculaCards[1]);
+                }
+                if (cardDroppedOffTrail.DraculaCards.First().Location == game.Dracula.LocationWhereHideWasUsed && game.Dracula.LocationWhereHideWasUsed != Location.Nowhere)
+                {
+                    int position;
+                    var encountersToReturnToEncounterPool = game.Dracula.DiscardHide(out position);
+                    Console.WriteLine("The location where Dracula used Hide dropped off the trail, so the Hide card is also removed from the trail. It was in position {0}", position + 1);
+                    logic.EliminateTrailsThatDoNotContainHideAtPosition(game, position);
+                    foreach (var enc in encountersToReturnToEncounterPool)
+                    {
+                        enc.IsRevealed = false;
+                        game.EncounterPool.Add(enc);
+                    }
                 }
                 var index = logic.ChooseToPutDroppedOffCardInCatacombs(game, cardDroppedOffTrail);
                 if (index > -1)
@@ -1082,19 +1093,6 @@ namespace FuryOfDracula.ConsoleInterface
                         MatureEncounter(game, cardDroppedOffTrail.EncounterTiles.First(), logic);
                         cardDroppedOffTrail.EncounterTiles.Remove(cardDroppedOffTrail.EncounterTiles.First());
                     }
-                }
-                if (cardDroppedOffTrail.DraculaCards.First().Location == game.Dracula.LocationWhereHideWasUsed &&
-                    game.Dracula.LocationWhereHideWasUsed != Location.Nowhere)
-                {
-                    int position;
-                    var encountersToReturnToEncounterPool = game.Dracula.DiscardHide(out position);
-                    logic.EliminateTrailsThatDoNotContainHideAtPosition(game, position);
-                    foreach (var enc in encountersToReturnToEncounterPool)
-                    {
-                        enc.IsRevealed = false;
-                        game.EncounterPool.Add(enc);
-                    }
-                    Console.WriteLine("The location where Dracula used Hide dropped off the trail, so the Hide card is also removed from the trail. It was in position {0}", position + 1);
                 }
             }
         }
@@ -3355,14 +3353,13 @@ namespace FuryOfDracula.ConsoleInterface
         /// <param name="logic">The artificial intelligence component</param>
         private static void EndHunterTurn(GameState game, DecisionMaker logic)
         {
+            game.AdvanceTimeTracker();
+            logic.UpdateStrategy(game);
             bool firstMove = true;
             var power = Power.None;
             Location destination;
             destination = logic.ChooseDestinationAndPower(game, out power);
 
-            game.AdvanceTimeTracker();
-
-            logic.UpdateStrategy(game);
 
             var catacombsSlotsCleared = logic.ChooseWhichCatacombsCardsToDiscard(game, destination);
             if (catacombsSlotsCleared.Count() > 0)
@@ -3524,15 +3521,44 @@ namespace FuryOfDracula.ConsoleInterface
                         game.Dracula.LostBloodFromSeaMovementLastTurn = false;
                     }
                 }
-
-            }
-            if (game.Map.TypeOfLocation(game.Dracula.CurrentLocation) == LocationType.Sea || !game.HuntersAt(game.Dracula.CurrentLocation).Any())
-            {
-                if (game.Map.TypeOfLocation(game.Dracula.CurrentLocation) != LocationType.Sea)
+                if (!game.HuntersAt(game.Dracula.CurrentLocation).Any() && game.Map.TypeOfLocation(game.Dracula.CurrentLocation) != LocationType.Sea)
                 {
                     logic.EliminateTrailsThatHaveHuntersAtPosition(game, game.Dracula.CurrentLocationPosition);
                 }
-
+                else if (game.HuntersAt(game.Dracula.CurrentLocation).Any() && game.Map.TypeOfLocation(game.Dracula.CurrentLocation) != LocationType.Sea)
+                {
+                    game.Dracula.Trail[0].DraculaCards.First().IsRevealed = true;
+                    logic.EliminateTrailsThatDoNotContainLocationAtPosition(game, game.Dracula.Trail[0].DraculaCards.First().Location, 0);
+                }
+            }
+            switch (power)
+            {
+                case Power.WolfForm:
+                    game.Dracula.AdjustBlood(-1); break;
+                case Power.Feed:
+                    game.Dracula.AdjustBlood(1); break;
+                case Power.DarkCall:
+                    game.Dracula.AdjustBlood(-2);
+                    for (int i = 0; i < 10; i++)
+                    {
+                        game.Dracula.DrawEncounter(game.EncounterPool);
+                    }
+                    while (game.Dracula.EncounterHand.Count() > game.Dracula.EncounterHandSize)
+                    {
+                        game.Dracula.DiscardEncounterTile(game, logic.ChooseEncounterTileToDiscardFromEncounterHand(game));
+                    }
+                    break;
+            }
+            if (game.Dracula.CurrentLocation == game.Dracula.LocationWhereHideWasUsed && power == Power.DoubleBack &&
+                game.Dracula.LocationWhereHideWasUsed != Location.Nowhere)
+            {
+                int position = game.Dracula.RevealHideCard();
+                Console.WriteLine("Dracula used Double Back to return to the location where he previously used Hide. Hide was at position {0}.", position + 1);
+                logic.EliminateTrailsThatDoNotContainHideAtPosition(game, position);
+            }
+            CheckForJonathanHarker(game, logic);
+            if (game.Map.TypeOfLocation(game.Dracula.CurrentLocation) != LocationType.Sea && !game.HuntersAt(game.Dracula.CurrentLocation).Any())
+            {
                 switch (power)
                 {
                     case Power.Hide:
@@ -3540,12 +3566,13 @@ namespace FuryOfDracula.ConsoleInterface
                     case Power.WolfForm:
                         game.Dracula.PlaceEncounterTileOnCard(logic.ChooseEncounterTileToPlaceOnDraculaCardSlot(game, game.Dracula.Trail[0]), game.Dracula.Trail[0]); break;
                     case Power.DoubleBack:
-                        var encounterTileToDiscard = logic.ChooseEncounterTileToDiscardFromDoubleBackedCatacombsLocation(game);
-                        game.Dracula.DiscardEncounterTileFromCardSlot(encounterTileToDiscard, game.Dracula.Trail[0], game.EncounterPool); break;
-                    case Power.Feed:
-                        game.Dracula.AdjustBlood(1); break;
+                        if (game.Dracula.Trail[0].EncounterTiles.Count() > 1)
+                        {
+                            var encounterTileToDiscard = logic.ChooseEncounterTileToDiscardFromDoubleBackedCatacombsLocation(game);
+                            game.Dracula.DiscardEncounterTileFromCardSlot(encounterTileToDiscard, game.Dracula.Trail[0], game.EncounterPool);
+                        }
+                        break;
                     case Power.DarkCall:
-                        game.Dracula.AdjustBlood(-2);
                         for (int i = 0; i < 10; i++)
                         {
                             game.Dracula.DrawEncounter(game.EncounterPool);
@@ -3557,10 +3584,8 @@ namespace FuryOfDracula.ConsoleInterface
                         break;
                 }
             }
-            else
+            else if (game.Map.TypeOfLocation(game.Dracula.CurrentLocation) != LocationType.Sea && game.HuntersAt(game.Dracula.CurrentLocation).Any())
             {
-                game.Dracula.Trail[0].DraculaCards.First().IsRevealed = true;
-                logic.EliminateTrailsThatDoNotContainLocationAtPosition(game, game.Dracula.Trail[0].DraculaCards.First().Location, 0);
                 DrawGameState(game);
                 var huntersAttacked = new List<HunterPlayer>();
                 foreach (var h in game.Hunters)
@@ -3573,19 +3598,11 @@ namespace FuryOfDracula.ConsoleInterface
                 Console.WriteLine("Dracula attacks {0}{1}!", huntersAttacked.First().Hunter.Name(), huntersAttacked.Count > 1 ? " et al" : "");
                 ResolveCombat(game, huntersAttacked, Opponent.Dracula, logic);
             }
-            if (game.Dracula.CurrentLocation == game.Dracula.LocationWhereHideWasUsed && power == Power.DoubleBack &&
-                game.Dracula.LocationWhereHideWasUsed != Location.Nowhere)
-            {
-                int position = game.Dracula.RevealHideCard();
-                Console.WriteLine("Dracula used Double Back to return to the location where he previously used Hide. Hide was at position {0}.", position + 4);
-                logic.EliminateTrailsThatDoNotContainHideAtPosition(game, position);
-            }
             DealWithDroppedOffCardSlots(game, cardsDroppedOffTrail, logic);
             while (game.Dracula.EncounterHand.Count() < game.Dracula.EncounterHandSize)
             {
                 game.Dracula.DrawEncounter(game.EncounterPool);
             }
-            CheckForJonathanHarker(game, logic);
         }
 
         /// <summary>

@@ -34,6 +34,7 @@ namespace FuryOfDracula.ArtificialIntelligence
         public PossibleTrailSlot(Location location, Power power, TimeOfDay timeOfDay)
         {
             Location = location;
+            Power = power;
             if (power == Power.Feed || power == Power.DarkCall)
             {
                 IsRevealed = true;
@@ -48,6 +49,7 @@ namespace FuryOfDracula.ArtificialIntelligence
         public PossibleTrailSlot(Location location, Power power)
         {
             Location = location;
+            Power = power;
             if (power == Power.Feed || power == Power.DarkCall)
             {
                 IsRevealed = true;
