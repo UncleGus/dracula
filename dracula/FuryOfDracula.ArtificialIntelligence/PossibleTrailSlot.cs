@@ -21,22 +21,42 @@ namespace FuryOfDracula.ArtificialIntelligence
             Power = power;
             TimeOfDay = timeOfDay;
             CardBack = cardBack;
-            IsRevealed = false;
+            if (power == Power.Feed || power == Power.DarkCall)
+            {
+                IsRevealed = true;
+            }
+            else
+            {
+                IsRevealed = false;
+            }
         }
 
         public PossibleTrailSlot(Location location, Power power, TimeOfDay timeOfDay)
         {
             Location = location;
-            Power = power;
+            if (power == Power.Feed || power == Power.DarkCall)
+            {
+                IsRevealed = true;
+            }
+            else
+            {
+                IsRevealed = false;
+            }
             TimeOfDay = timeOfDay;
         }
 
         public PossibleTrailSlot(Location location, Power power)
         {
             Location = location;
-            Power = power;
+            if (power == Power.Feed || power == Power.DarkCall)
+            {
+                IsRevealed = true;
+            }
+            else
+            {
+                IsRevealed = false;
+            }
             TimeOfDay = TimeOfDay.None;
-            IsRevealed = false;
             CardBack = CardBack.None;
         }
     }

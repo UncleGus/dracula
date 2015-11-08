@@ -138,7 +138,7 @@ namespace FuryOfDracula.UnitTests
             game.Dracula.MoveTo(Location.Belgrade, Power.None, out rubbish);
             logic.InitialisePossibilityTree(game);
             game.Dracula.MoveTo(Location.Nowhere, Power.DarkCall, out rubbish);
-            logic.AddPowerCardToAllPossibleTrails(Power.DarkCall);
+            logic.AddPowerCardToAllPossibleTrails(game, Power.DarkCall);
             Assert.AreNotEqual(null, logic.PossibilityTree.Find(trail => trail[0].Power == Power.DarkCall && trail[1].Location == Location.Munich));
             Assert.AreEqual(null, logic.PossibilityTree.Find(trail => trail[0].Power == Power.Feed && trail[1].Location == Location.Milan));
         }
@@ -356,10 +356,72 @@ namespace FuryOfDracula.UnitTests
             Assert.Fail();
         }
 
-        //[Test]
-        //public void NumberOfPossibleCurrentLocationsFromPotentialTrail_ReturnsSomethingUseful()
-        //{
-        //    var imaginaryTrail = new PossibleTrailSlot[6] { new PossibleTrailSlot() }
-        //}
+        [Test]
+        public void GetPossibleMovesFromTrail_MadridSaragossaToulouseClermontFerrandParis_ReturnsNantesLeHavreBrusselsStrasbourgGenevaHideFeedDarkCallWolfFormDoubleBack()
+        {
+            int doubleBackSlot = -1;
+            game.Dracula.MoveTo(Location.Madrid, Power.None, out doubleBackSlot);
+            game.Dracula.MoveTo(Location.Saragossa, Power.None, out doubleBackSlot);
+            game.Dracula.MoveTo(Location.Toulouse, Power.None, out doubleBackSlot);
+            game.Dracula.MoveTo(Location.ClermontFerrand, Power.None, out doubleBackSlot);
+            game.Dracula.MoveTo(Location.Paris, Power.None, out doubleBackSlot);
+            while (game.TimeOfDay != TimeOfDay.Midnight)
+            {
+                game.AdvanceTimeTracker();
+            }
+            var possibleMoves = logic.GetPossibleMovesFromTrail(game, logic.GetActualTrail(game));
+            Assert.AreEqual(22, possibleMoves.Count());
+        }
+
+        [Test]
+        public void ChooseDestinationAndPower_TestingEvaluationOfCurrentLocationsWithPossibleMoves()
+        {
+            int doubleBackSlot = -1;
+            game.AdvanceTimeTracker();
+            game.Dracula.MoveTo(Location.Madrid, Power.None, out doubleBackSlot);
+            logic.InitialisePossibilityTree(game);
+            game.AdvanceTimeTracker();
+            game.Dracula.MoveTo(Location.Saragossa, Power.None, out doubleBackSlot);
+            logic.AddOrangeBackedCardToAllPossibleTrails(game);
+            game.AdvanceTimeTracker();
+            game.Dracula.MoveTo(Location.Toulouse, Power.None, out doubleBackSlot);
+            logic.AddOrangeBackedCardToAllPossibleTrails(game);
+            game.AdvanceTimeTracker();
+            game.Dracula.MoveTo(Location.ClermontFerrand, Power.None, out doubleBackSlot);
+            logic.AddOrangeBackedCardToAllPossibleTrails(game);
+            logic.EliminateTrailsThatDoNotContainLocationAtPosition(game, Location.ClermontFerrand, 0);
+            game.AdvanceTimeTracker();
+            game.Dracula.MoveTo(Location.Paris, Power.None, out doubleBackSlot);
+            logic.AddOrangeBackedCardToAllPossibleTrails(game);
+            var possibleMoves = logic.GetPossibleMovesFromTrail(game, logic.GetActualTrail(game));
+            var possibleCurrentOrangeBackedLocations = new List<Location>();
+            foreach (var trail in logic.PossibilityTree)
+            {
+                possibleCurrentOrangeBackedLocations.AddRange(logic.GetPossibleCurrentLocationsFromPossibilityTree(logic.AddOrangeBackedCardToTrail(game, trail)));
+            }
+            var possibleCurrentBlueBackedLocations = new List<Location>();
+            foreach (var trail in logic.PossibilityTree)
+            {
+                possibleCurrentBlueBackedLocations.AddRange(logic.GetPossibleCurrentLocationsFromPossibilityTree(logic.AddBlueBackedCardToTrail(game, trail)));
+            }
+            var uniquePossibleCurrentOrangeBackedLocations = new List<Location>();
+            var uniquePossibleCurrentBlueBackedLocations = new List<Location>();
+            foreach (var location in possibleCurrentOrangeBackedLocations)
+            {
+                if (!uniquePossibleCurrentOrangeBackedLocations.Contains(location))
+                {
+                    uniquePossibleCurrentOrangeBackedLocations.Add(location);
+                }
+            }
+            foreach (var location in possibleCurrentBlueBackedLocations)
+            {
+                if (!uniquePossibleCurrentBlueBackedLocations.Contains(location))
+                {
+                    uniquePossibleCurrentBlueBackedLocations.Add(location);
+                }
+            }
+            Assert.AreEqual(15, uniquePossibleCurrentOrangeBackedLocations.Count());
+            Assert.AreEqual(1, uniquePossibleCurrentBlueBackedLocations.Count());
+        }
     }
 }

@@ -3485,7 +3485,7 @@ namespace FuryOfDracula.ConsoleInterface
                 }
                 if (power == Power.DarkCall || power == Power.Feed)
                 {
-                    logic.AddPowerCardToAllPossibleTrails(power);
+                    logic.AddPowerCardToAllPossibleTrails(game, power);
                 }
                 else if (power == Power.Hide)
                 {
