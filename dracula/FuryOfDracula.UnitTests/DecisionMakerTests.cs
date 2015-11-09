@@ -324,38 +324,6 @@ namespace FuryOfDracula.UnitTests
             Assert.AreEqual(7, logic.PossibilityTree.Count());
         }
 
-        //[Test]
-        //[Ignore("Just for debugging")]
-        //public void CombatScore_something()
-        //{
-        //    //game.Hunters[(int)Hunter.LordGodalming].DrawItemCard();
-        //    game.Hunters[(int)Hunter.LordGodalming].DrawItemCard();
-        //    game.Hunters[(int)Hunter.LordGodalming].DrawItemCard();
-        //    game.Hunters[(int)Hunter.DrSeward].DrawItemCard();
-        //    game.Hunters[(int)Hunter.DrSeward].DrawItemCard();
-        //    game.Hunters[(int)Hunter.DrSeward].AdjustBites(1);
-        //    //game.Hunters[(int)Hunter.DrSeward].DrawItemCard();
-        //    ItemCard itemToAdd = game.ItemDeck.Find(card => card.Item == Item.Crucifix);
-        //    game.ItemDiscard.Remove(itemToAdd);
-        //    game.Hunters[(int)Hunter.LordGodalming].ItemsKnownToDracula.Add(itemToAdd);
-        //    itemToAdd = game.ItemDeck.Find(card => card.Item == Item.Crucifix);
-        //    game.ItemDiscard.Remove(itemToAdd);
-        //    game.Hunters[(int)Hunter.LordGodalming].ItemsKnownToDracula.Add(itemToAdd);
-        //    itemToAdd = game.ItemDeck.Find(card => card.Item == Item.Rifle);
-        //    game.ItemDiscard.Remove(itemToAdd);
-        //    game.Hunters[(int)Hunter.DrSeward].ItemsKnownToDracula.Add(itemToAdd);
-        //    itemToAdd = game.ItemDeck.Find(card => card.Item == Item.Stake);
-        //    game.ItemDiscard.Remove(itemToAdd);
-        //    game.Hunters[(int)Hunter.DrSeward].ItemsKnownToDracula.Add(itemToAdd);
-        //    List<HunterPlayer> huntersInCombat = new List<HunterPlayer>();
-        //    huntersInCombat.Add(game.Hunters[(int)Hunter.LordGodalming]);
-        //    huntersInCombat.Add(game.Hunters[(int)Hunter.DrSeward]);
-        //    huntersInCombat.Add(game.Hunters[(int)Hunter.MinaHarker]);
-        //    game.Dracula.AdjustBlood(-14);
-        //    float score = logic.CombatScore(game, huntersInCombat);
-        //    Assert.Fail();
-        //}
-
         [Test]
         public void GetPossibleMovesFromTrail_MadridSaragossaToulouseClermontFerrandParis_ReturnsNantesLeHavreBrusselsStrasbourgGenevaHideFeedDarkCallWolfFormDoubleBack()
         {
@@ -422,6 +390,28 @@ namespace FuryOfDracula.UnitTests
             }
             Assert.AreEqual(15, uniquePossibleCurrentOrangeBackedLocations.Count());
             Assert.AreEqual(2, uniquePossibleCurrentBlueBackedLocations.Count());
+        }
+
+        [Test]
+        public void GetPossibleMovesThatLeadToDeadEnds_ReturnsUsefulList()
+        {
+            int doubleBackSlot = -1;
+            game.AdvanceTimeTracker();
+            game.Dracula.MoveTo(Location.MediterraneanSea, Power.None, out doubleBackSlot);
+            logic.AddOrangeBackedCardToAllPossibleTrails(game);
+            game.AdvanceTimeTracker();
+            game.Dracula.MoveTo(Location.AtlanticOcean, Power.None, out doubleBackSlot);
+            logic.AddOrangeBackedCardToAllPossibleTrails(game);
+            game.AdvanceTimeTracker();
+            game.Dracula.MoveTo(Location.MediterraneanSea, Power.DoubleBack, out doubleBackSlot);
+            logic.AddOrangeBackedCardToAllPossibleTrails(game);
+            game.AdvanceTimeTracker();
+            game.Dracula.MoveTo(Location.TyrrhenianSea, Power.None, out doubleBackSlot);
+            logic.AddOrangeBackedCardToAllPossibleTrails(game);
+            var actualTrail = logic.GetActualTrail(game);
+            var possibleMoves = logic.GetPossibleMovesFromTrail(game, logic.GetActualTrail(game));
+            var numberOfMovesBeforeDeadEnd = new List<int>();
+            Assert.AreEqual(1, logic.GetPossibleMovesThatLeadToDeadEnds(game, actualTrail, possibleMoves, numberOfMovesBeforeDeadEnd).Count(move => move.Location == Location.Cagliari));
         }
     }
 }
