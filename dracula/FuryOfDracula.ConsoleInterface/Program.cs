@@ -68,6 +68,7 @@ namespace FuryOfDracula.ConsoleInterface
 
                 switch (commandSet.command)
                 {
+                    case "trade": TradeCardsBetweenHunters(game, commandSet.argument1, commandSet.argument2); break;
                     case "r":
                     case "retrieve": RetrieveCardFromDiscard(game, commandSet.argument1, commandSet.argument2); break;
                     case "w":
@@ -142,6 +143,110 @@ namespace FuryOfDracula.ConsoleInterface
                         Console.WriteLine("I didn't understand that"); break;
                 }
             } while (commandSet.command != "exit");
+        }
+
+        private static void TradeCardsBetweenHunters(GameState game, string firstHunterIndex, string secondHunterIndex)
+        {
+            var firstHunterTrading = Hunter.Nobody;
+            int index = -2;
+            if (int.TryParse(firstHunterIndex, out index))
+            {
+                firstHunterTrading = game.GetHunterFromInt(index);
+            }
+            var line = "";
+            while (firstHunterTrading == Hunter.Nobody && index != -1)
+            {
+                Console.WriteLine("Who is trading? {0}= {1}, {2}= {3}, {4}= {5}, {6}= {7} (-1 to cancel)",
+                    (int)Hunter.LordGodalming, Hunter.LordGodalming.Name(), (int)Hunter.DrSeward,
+                    Hunter.DrSeward.Name(), (int)Hunter.VanHelsing, Hunter.VanHelsing.Name(), (int)Hunter.MinaHarker,
+                    Hunter.MinaHarker.Name());
+                line = Console.ReadLine();
+                if (int.TryParse(line, out index))
+                {
+                    if (index < -1 || index > 4)
+                    {
+                        index = -2;
+                    }
+                    if (index == -1)
+                    {
+                        Console.WriteLine("Cancelled");
+                        return;
+                    }
+                    firstHunterTrading = game.GetHunterFromInt(index);
+                    Console.WriteLine(firstHunterTrading.Name());
+                }
+                else
+                {
+                    Console.WriteLine("I didn't understand that");
+                }
+            }
+            var secondHunterTrading = Hunter.Nobody;
+            index = -2;
+            if (int.TryParse(secondHunterIndex, out index))
+            {
+                secondHunterTrading = game.GetHunterFromInt(index);
+            }
+            line = "";
+            while (secondHunterTrading == Hunter.Nobody && index != -1)
+            {
+                Console.WriteLine("Who else is trading? {0}= {1}, {2}= {3}, {4}= {5}, {6}= {7} (-1 to cancel)",
+                    (int)Hunter.LordGodalming, Hunter.LordGodalming.Name(), (int)Hunter.DrSeward,
+                    Hunter.DrSeward.Name(), (int)Hunter.VanHelsing, Hunter.VanHelsing.Name(), (int)Hunter.MinaHarker,
+                    Hunter.MinaHarker.Name());
+                line = Console.ReadLine();
+                if (int.TryParse(line, out index))
+                {
+                    if (index < -1 || index > 4)
+                    {
+                        index = -2;
+                    }
+                    if (index == -1)
+                    {
+                        Console.WriteLine("Cancelled");
+                        return;
+                    }
+                    secondHunterTrading = game.GetHunterFromInt(index);
+                    Console.WriteLine(secondHunterTrading.Name());
+                }
+                else
+                {
+                    Console.WriteLine("I didn't understand that");
+                }
+            }
+            line = "";
+            int answer = -1;
+            while (answer < 0)
+            {
+                Console.WriteLine("How many Items does {0} now have?", firstHunterTrading.Name());
+                Int32.TryParse(line, out answer);
+            }
+            game.Hunters[(int)firstHunterTrading].SetItemCount(answer);
+            line = "";
+            answer = -1;
+            while (answer < 0)
+            {
+                Console.WriteLine("How many Items does {0} now have?", secondHunterTrading.Name());
+                Int32.TryParse(line, out answer);
+            }
+            game.Hunters[(int)secondHunterTrading].SetItemCount(answer);
+            var allKnownItems = new List<ItemCard>();
+            allKnownItems.AddRange(game.Hunters[(int)firstHunterTrading].ItemsKnownToDracula);
+            allKnownItems.AddRange(game.Hunters[(int)secondHunterTrading].ItemsKnownToDracula);
+            if (game.Hunters[(int)firstHunterTrading].ItemCount == 0)
+            {
+                game.Hunters[(int)secondHunterTrading].ItemsKnownToDracula = allKnownItems;
+            }
+            else if (game.Hunters[(int)secondHunterTrading].ItemCount == 0)
+            {
+                game.Hunters[(int)firstHunterTrading].ItemsKnownToDracula = allKnownItems;
+            }
+            else
+            {
+                game.Hunters[(int)firstHunterTrading].ItemsKnownToDracula.Clear();
+                game.Hunters[(int)secondHunterTrading].ItemsKnownToDracula.Clear();
+                game.ItemDeck.AddRange(allKnownItems); // just putting back in unknown for now. TODO: create a "traded" list that can be updated and used to calculate likelihoods
+            }
+            CheckForDiscardRequired(game);
         }
 
         private static void RetrieveCardFromDiscard(GameState game, string cardName, string hunterIndex)
@@ -753,7 +858,7 @@ namespace FuryOfDracula.ConsoleInterface
             if (answer > 0)
             {
                 game.Hunters[answer].DiscardEvent(game, Event.CharteredCarriage);
-                if (DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.CharteredCarriage, eventInitiallyPlayed, logic))
+                if (DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.CharteredCarriage, eventInitiallyPlayed, logic, game.Hunters[answer]))
                 {
                     game.Dracula.DiscardEvent(Event.DevilishPower, game.EventDiscard);
                     return 0;
@@ -814,7 +919,7 @@ namespace FuryOfDracula.ConsoleInterface
                 return;
             }
             game.Hunters[(int)hunterPlayingEvent].DiscardEvent(game, eventBeingPlayed);
-            if (DraculaIsPlayingDevilishPowerToCancelEvent(game, eventBeingPlayed, eventBeingPlayed, logic))
+            if (DraculaIsPlayingDevilishPowerToCancelEvent(game, eventBeingPlayed, eventBeingPlayed, logic, game.Hunters[(int)hunterPlayingEvent]))
             {
                 Console.WriteLine("{0} cancelled", eventBeingPlayed.Name());
                 return;
@@ -1577,9 +1682,9 @@ namespace FuryOfDracula.ConsoleInterface
         /// <param name="logic">The artificial intelligence component</param>
         /// <returns>True if Dracula successfully plays Devilish Power</returns>
         private static bool DraculaIsPlayingDevilishPowerToCancelEvent(GameState game, Event eventBeingPlayedNow,
-            Event eventInitiallyPlayed, DecisionMaker logic)
+            Event eventInitiallyPlayed, DecisionMaker logic, HunterPlayer hunterPlayingEvent)
         {
-            if (logic.ChooseToCancelEventWithDevilishPower(game, eventBeingPlayedNow, eventInitiallyPlayed))
+            if (logic.ChooseToCancelEventWithDevilishPower(game, eventBeingPlayedNow, eventInitiallyPlayed, hunterPlayingEvent))
             {
                 Console.WriteLine("Dracula is playing Devilish Power to cancel {0}", eventBeingPlayedNow.Name());
                 game.Dracula.DiscardEvent(Event.DevilishPower, game.EventDiscard);
@@ -1621,7 +1726,7 @@ namespace FuryOfDracula.ConsoleInterface
             if (answer > 0)
             {
                 game.Hunters[answer].DiscardEvent(game, Event.GoodLuck);
-                if (DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.GoodLuck, eventInitiallyPlayed, logic))
+                if (DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.GoodLuck, eventInitiallyPlayed, logic, game.Hunters[answer]))
                 {
                     game.Dracula.DiscardEvent(Event.DevilishPower, game.EventDiscard);
                     return 0;
@@ -2347,7 +2452,7 @@ namespace FuryOfDracula.ConsoleInterface
                 if ("yes".StartsWith(line.ToLower()))
                 {
                     game.Hunters[(int)h].DiscardEvent(game, Event.SecretWeapon);
-                    if (DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.SecretWeapon, Event.SecretWeapon, logic))
+                    if (DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.SecretWeapon, Event.SecretWeapon, logic, game.Hunters[(int)h]))
                     {
                         Console.WriteLine("Secret Weapon cancelled");
                     }
@@ -2379,7 +2484,7 @@ namespace FuryOfDracula.ConsoleInterface
                 if ("yes".StartsWith(line.ToLower()))
                 {
                     game.Hunters[(int)h].DiscardEvent(game, Event.Forewarned);
-                    if (DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.SecretWeapon, Event.SecretWeapon, logic))
+                    if (DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.SecretWeapon, Event.SecretWeapon, logic, game.Hunters[(int)h]))
                     {
                         Console.WriteLine("Forewarned cancelled");
                     }
@@ -4241,7 +4346,7 @@ namespace FuryOfDracula.ConsoleInterface
                         {
                             case Event.AdvancePlanning:
                                 game.Hunters[answer].DiscardEvent(game, Event.AdvancePlanning);
-                                if (!DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.AdvancePlanning, Event.AdvancePlanning, logic))
+                                if (!DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.AdvancePlanning, Event.AdvancePlanning, logic, game.Hunters[answer]))
                                 {
                                     Console.WriteLine("One participant of your choice has combat rolls at +1 for this combat");
                                     CheckForCardsRevealedForBeingBitten(game);
@@ -4254,7 +4359,7 @@ namespace FuryOfDracula.ConsoleInterface
                                 break;
                             case Event.EscapeRoute:
                                 game.Hunters[answer].DiscardEvent(game, Event.EscapeRoute);
-                                if (!DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.EscapeRoute, Event.EscapeRoute, logic))
+                                if (!DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.EscapeRoute, Event.EscapeRoute, logic, game.Hunters[answer]))
                                 {
                                     Console.WriteLine("Combat cancelled", ((Hunter)answer).Name());
                                     CheckForCardsRevealedForBeingBitten(game);
@@ -4264,7 +4369,7 @@ namespace FuryOfDracula.ConsoleInterface
                                 Console.WriteLine("Escape Route cancelled"); break;
                             case Event.HeroicLeap:
                                 game.Hunters[answer].DiscardEvent(game, Event.HeroicLeap);
-                                if (!DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.HeroicLeap, Event.HeroicLeap, logic))
+                                if (!DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.HeroicLeap, Event.HeroicLeap, logic, game.Hunters[answer]))
                                 {
                                     Console.WriteLine("Roll a die and enter the result");
                                     var dieRoll = 0;
@@ -4728,7 +4833,7 @@ namespace FuryOfDracula.ConsoleInterface
             if ("yes".StartsWith(input.ToLower()))
             {
                 game.Hunters[(int)bittenHunter].DiscardEvent(game, Event.GreatStrength);
-                if (!DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.GreatStrength, Event.GreatStrength, logic))
+                if (!DraculaIsPlayingDevilishPowerToCancelEvent(game, Event.GreatStrength, Event.GreatStrength, logic, game.Hunters[(int)bittenHunter]))
                 {
                     Console.WriteLine("Bite effect cancelled");
                     return true;

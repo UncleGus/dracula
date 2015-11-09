@@ -137,6 +137,9 @@ namespace FuryOfDracula.ArtificialIntelligence
                 }
             }
 
+            var numberOfMovesUntilDeadEnd = new List<int>();
+            var deadEndMoves = GetPossibleMovesThatLeadToDeadEnds(game, currentActualTrail, possibleMoves, numberOfMovesUntilDeadEnd);
+            int turnsUntilTrailCleared = GetNumberOfTurnsUntilTrailCleared(game);
             int index;
             int randomNumber;
             List<PossibleTrailSlot> shortList;
@@ -162,7 +165,14 @@ namespace FuryOfDracula.ArtificialIntelligence
                     foreach (var move in possibleMoves)
                     {
                         index++;
-                        chancesToSelectMove.Add((int)(Math.Pow(numberOfPossibleLocationsAfterMove[index] * distancesFromNearestHunter[index], CHANCETOSELECTSCALAR) * PercentageDifferenceInLikelihoodOfDraculaDeath(game.Dracula.Blood, move.Power)));
+                        var deadEndIndex = deadEndMoves.FindIndex(m => m.Location == move.Location && m.Power == move.Power);
+                        if (deadEndIndex > -1 && turnsUntilTrailCleared > numberOfMovesUntilDeadEnd[deadEndIndex])
+                        {
+                            chancesToSelectMove.Add(1);
+                        } else
+                        {
+                            chancesToSelectMove.Add((int)(Math.Pow(numberOfPossibleLocationsAfterMove[index] * distancesFromNearestHunter[index], CHANCETOSELECTSCALAR) * PercentageDifferenceInLikelihoodOfDraculaDeath(game.Dracula.Blood, move.Power)));
+                        }
                     }
                     int totalCombinations = 0;
                     foreach (int i in chancesToSelectMove)
@@ -262,6 +272,18 @@ namespace FuryOfDracula.ArtificialIntelligence
             int rand = new Random().Next(0, possibleMoves.Count());
             power = possibleMoves[rand].Power;
             return possibleMoves[rand].Location;
+        }
+
+        private int GetNumberOfTurnsUntilTrailCleared(GameState game)
+        {
+            for (int i = 5; i >= 0; i--)
+            {
+                if (game.Dracula.Trail[i] != null && game.Dracula.Trail[i].EncounterTiles.Any(tile => tile.Encounter == Encounter.NewVampire || tile.Encounter == Encounter.DesecratedSoil))
+                {
+                    return TrailContainsPower(GetActualTrail(game), Power.DoubleBack) ? 6 : 7 - i;
+                }
+            }
+            return 99;
         }
 
         private double PercentageDifferenceInLikelihoodOfDraculaDeath(int blood, Power power)
@@ -645,7 +667,7 @@ namespace FuryOfDracula.ArtificialIntelligence
                 : game.Dracula.Trail[0].EncounterTiles[1];
         }
 
-        public bool ChooseToCancelEventWithDevilishPower(GameState game, Event eventBeingPlayedNow, Event eventInitiallyPlayed)
+        public bool ChooseToCancelEventWithDevilishPower(GameState game, Event eventBeingPlayedNow, Event eventInitiallyPlayed, HunterPlayer hunterPlayingEvent)
         {
             if (game.Dracula.EventHand.Find(card => card.Event == Event.DevilishPower) != null)
             {
@@ -656,7 +678,15 @@ namespace FuryOfDracula.ArtificialIntelligence
                 }
                 switch (eventInitiallyPlayed)
                 {
-                    case Event.Evasion: randomChances = (int)(NumberOfPossibleCurrentLocations / 3); break;
+                    case Event.Evasion: randomChances = (NumberOfPossibleCurrentLocations / 3); break;
+                    case Event.NewspaperReports: if (game.OldestUnrevealedLocationInTrail() == game.Dracula.CurrentLocation)
+                        {
+                            return false;
+                        } else
+                        {
+                            randomChances = (NumberOfPossibleCurrentLocations / 3);
+                        }
+                        break;
                     case Event.TimeRunsShort: randomChances = 3; break;
                     case Event.GoodLuck: randomChances = 2; break;
                     case Event.HiredScouts: randomChances = (int)((0.75 * (NumberOfPossibleCurrentLocations - 5)) * (0.75 * (NumberOfPossibleCurrentLocations - 5))); break;

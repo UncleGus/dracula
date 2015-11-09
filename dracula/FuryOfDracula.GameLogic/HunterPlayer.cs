@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Linq;
+using System;
 
 namespace FuryOfDracula.GameLogic
 {
@@ -256,6 +257,11 @@ namespace FuryOfDracula.GameLogic
             }
             int numberOfEventsUnaccountedFor = game.NumberOfEventsOfType(ev) - game.NumberOfRevealedEventsOfType(ev);
             return (float)numberOfEventsUnaccountedFor / game.EventDeck.Count();
+        }
+
+        public void SetItemCount(int number)
+        {
+            ItemCount = number;
         }
     }
 }

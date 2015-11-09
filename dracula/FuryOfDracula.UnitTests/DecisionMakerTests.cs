@@ -388,7 +388,7 @@ namespace FuryOfDracula.UnitTests
                     uniquePossibleCurrentBlueBackedLocations.Add(location);
                 }
             }
-            Assert.AreEqual(15, uniquePossibleCurrentOrangeBackedLocations.Count());
+            Assert.AreEqual(14, uniquePossibleCurrentOrangeBackedLocations.Count());
             Assert.AreEqual(2, uniquePossibleCurrentBlueBackedLocations.Count());
         }
 

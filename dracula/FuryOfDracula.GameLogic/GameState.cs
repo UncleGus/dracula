@@ -732,5 +732,15 @@ namespace FuryOfDracula.GameLogic
             return count;
         }
 
+        public Location OldestUnrevealedLocationInTrail()
+        {
+            for (int i = 5; i >= 0; i--) {
+                if (Dracula.Trail[i] != null && Dracula.Trail[i].DraculaCards.First().Location != Location.Nowhere && Dracula.Trail[i].DraculaCards.First().IsRevealed)
+                {
+                    return Dracula.Trail[i].DraculaCards.First().Location;
+                }
+            }
+            return Location.Nowhere;
+        }
     }
 }
