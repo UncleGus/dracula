@@ -21,6 +21,8 @@ namespace FuryOfDracula.GameLogic
             ItemCount = 0;
             EventCount = 0;
             ItemsKnownToDracula = new List<ItemCard>();
+            ItemsPartiallyKnownToDracula = new List<ItemCard>();
+            PartiallyKnownItemChances = new List<float>();
             EventsKnownToDracula = new List<EventCard>();
             HasDogsFaceUp = false;
             HuntersInGroup = new List<Hunter>();
@@ -86,6 +88,12 @@ namespace FuryOfDracula.GameLogic
 
         [DataMember]
         public List<ItemCard> ItemsKnownToDracula { get; set; }
+
+        [DataMember]
+        public List<ItemCard> ItemsPartiallyKnownToDracula { get; set; }
+
+        [DataMember]
+        public List<float> PartiallyKnownItemChances { get; set; }
 
         [DataMember]
         public List<EventCard> EventsKnownToDracula { get; set; }
