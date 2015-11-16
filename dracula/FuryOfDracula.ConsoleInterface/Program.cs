@@ -70,6 +70,7 @@ namespace FuryOfDracula.ConsoleInterface
                 {
                     case "trade": TradeCardsBetweenHunters(game, commandSet.argument1, commandSet.argument2); break;
                     case "r":
+                    case "rest": RestHunter(game, commandSet.argument1); break;
                     case "retrieve": RetrieveCardFromDiscard(game, commandSet.argument1, commandSet.argument2); break;
                     case "w":
                     case "water":
@@ -143,6 +144,45 @@ namespace FuryOfDracula.ConsoleInterface
                         Console.WriteLine("I didn't understand that"); break;
                 }
             } while (commandSet.command != "exit");
+        }
+
+        private static void RestHunter(GameState game, string restingHunterIndex)
+        {
+            var hunterResting = Hunter.Nobody;
+            int index = -2;
+            if (int.TryParse(restingHunterIndex, out index))
+            {
+                hunterResting = game.GetHunterFromInt(index);
+            }
+            var line = "";
+            while (hunterResting == Hunter.Nobody && index != -1)
+            {
+                Console.WriteLine("Who is resting? {0}= {1}, {2}= {3}, {4}= {5}, {6}= {7} (-1 to cancel)",
+                    (int)Hunter.LordGodalming, Hunter.LordGodalming.Name(), (int)Hunter.DrSeward,
+                    Hunter.DrSeward.Name(), (int)Hunter.VanHelsing, Hunter.VanHelsing.Name(), (int)Hunter.MinaHarker,
+                    Hunter.MinaHarker.Name());
+                line = Console.ReadLine();
+                if (int.TryParse(line, out index))
+                {
+                    if (index < -1 || index > 4)
+                    {
+                        index = -2;
+                    }
+                    if (index == -1)
+                    {
+                        Console.WriteLine("Cancelled");
+                        return;
+                    }
+                    hunterResting = game.GetHunterFromInt(index);
+                    Console.WriteLine(hunterResting.Name());
+                }
+                else
+                {
+                    Console.WriteLine("I didn't understand that");
+                }
+            }
+            game.Hunters[(int)hunterResting].AdjustHealth(2);
+            Console.WriteLine("{0} now has {1} health. Use the Draw, Take and Discard commands to draw the Event cards.", hunterResting, game.Hunters[(int)hunterResting].Health);
         }
 
         private static void TradeCardsBetweenHunters(GameState game, string firstHunterIndex, string secondHunterIndex)
@@ -481,15 +521,18 @@ namespace FuryOfDracula.ConsoleInterface
             Console.WriteLine("Commands can be written as the full word or the letter in brackets:");
             Console.WriteLine("Catch: (C)atch a train");
             Console.WriteLine("Move: (M)ove Hunter");
+            Console.WriteLine("Rest: (R)est Hunter");
             Console.WriteLine("Draw: (D)raw a card for a Hunter");
             Console.WriteLine("Take: Let Dracula (T)ake an Event card");
             Console.WriteLine("Discard: Disc(A)rd a card from a Hunter");
             Console.WriteLine("Event: Play an (E)vent card");
             Console.WriteLine("Use: (U)se an Item from a Hunter");
+            Console.WriteLine("Trade: Trade items between Hunters");
             Console.WriteLine("Group: Set up a Hunter (G)roup");
             Console.WriteLine("Resolve: (S)pend resolve");
             Console.WriteLine("Front: Resolve an Encounter in (F)ront of a Hunter");
             Console.WriteLine("Water: Use Holy (W)ater font at the Hospital");
+            Console.WriteLine("Retrieve: Retrieve a card from the discard pile");
             Console.WriteLine("Cycle: C(Y)cle a card discard back into a new deck");
             Console.WriteLine("State: Show the state of the game");
             Console.WriteLine("Save: Save the game to a file");

@@ -169,7 +169,8 @@ namespace FuryOfDracula.ArtificialIntelligence
                         if (deadEndIndex > -1 && turnsUntilTrailCleared > numberOfMovesUntilDeadEnd[deadEndIndex])
                         {
                             chancesToSelectMove.Add(1);
-                        } else
+                        }
+                        else
                         {
                             chancesToSelectMove.Add((int)(Math.Pow(numberOfPossibleLocationsAfterMove[index] * distancesFromNearestHunter[index], CHANCETOSELECTSCALAR) * PercentageDifferenceInLikelihoodOfDraculaDeath(game.Dracula.Blood, move.Power)));
                         }
@@ -682,7 +683,8 @@ namespace FuryOfDracula.ArtificialIntelligence
                     case Event.NewspaperReports: if (game.OldestUnrevealedLocationInTrail() == game.Dracula.CurrentLocation)
                         {
                             return false;
-                        } else
+                        }
+                        else
                         {
                             randomChances = (NumberOfPossibleCurrentLocations / 3);
                         }
